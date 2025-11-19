@@ -1,0 +1,265 @@
+/**
+ * timelineStore.ts
+ * Zustand store for Timeline/Gantt tasks.
+ *
+ * - Stores tasks per projectId and provides CRUD operations.
+ * - getTasks uses a cached getter per project to return a stable, sorted array
+ *   reference when underlying data hasn't changed to avoid unnecessary re-renders.
+ * - Utility date helpers are provided for ISO (YYYY-MM-DD) manipulation in UTC.
+ */
+
+import { create } from 'zustand'
+import { createCachedGetterWithKey } from '../lib/cachedGetter'
+
+/**
+ * Task status
+ */
+export type TaskStatus = 'not_started' | 'in_progress' | 'completed' | 'delayed'
+
+/**
+ * Task priority
+ */
+export type TaskPriority = 'low' | 'medium' | 'high'
+
+/**
+ * Simple dependency relation between tasks
+ */
+export interface TaskDependency {
+  /** Unique dependency id */
+  id: string
+  /** Predecessor task id */
+  predecessorId: string
+  /** Successor task id */
+  successorId: string
+  /** Relation type, default 'FS' */
+  type?: 'FS' | 'SS' | 'FF' | 'SF'
+  /** Lag in days (may be negative) */
+  lag?: number
+}
+
+/**
+ * Timeline / Gantt task entity
+ */
+export interface TimelineTask {
+  id: string
+  projectId: string
+  name: string
+  description?: string
+  startDate: string // YYYY-MM-DD
+  endDate: string // YYYY-MM-DD
+  duration: number // inclusive days
+  progress: number // 0..100
+  status: TaskStatus
+  priority: TaskPriority
+  wbsId?: string
+  rabId?: string
+  dependencies?: TaskDependency[]
+  assignedResources?: string[]
+
+  baselineStartDate?: string
+  baselineEndDate?: string
+
+  createdAt: string
+  updatedAt: string
+}
+
+/**
+ * Store interface and actions
+ */
+export interface TimelineState {
+  /** Tasks grouped by projectId */
+  tasksByProject: Record<string, TimelineTask[]>
+
+  /** Get tasks for project (sorted) */
+  getTasks: (projectId: string) => TimelineTask[]
+
+  /** Set/replace all tasks for a project */
+  setTasks: (projectId: string, tasks: TimelineTask[]) => void
+
+  /** Add a task; returns generated id */
+  addTask: (
+    projectId: string,
+    data: Omit<TimelineTask, 'id' | 'projectId' | 'createdAt' | 'updatedAt' | 'endDate' | 'duration' | 'baselineStartDate' | 'baselineEndDate'> &
+      Partial<Pick<TimelineTask, 'endDate' | 'duration'>>
+  ) => string
+
+  /** Update partial task fields */
+  updateTask: (projectId: string, id: string, patch: Partial<TimelineTask>) => void
+
+  /** Update start/end dates (duration recalculated) */
+  updateTaskDates: (projectId: string, id: string, dates: { startDate: string; endDate: string }) => void
+
+  /** Remove a task and clean dependencies */
+  removeTask: (projectId: string, id: string) => void
+
+  /** Snapshot baseline (copy current dates to baseline fields) */
+  setBaseline: (projectId: string, overwrite?: boolean) => void
+}
+
+/**
+ * Generate reasonably-unique id for tasks
+ *
+ * @param prefix optional prefix
+ * @returns id string
+ */
+function rid(prefix = 'task'): string {
+  return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`
+}
+
+/**
+ * Parse ISO date (YYYY-MM-DD) as UTC date object to avoid TZ drift
+ *
+ * @param s ISO date string
+ * @returns Date (UTC)
+ */
+function parseISODate(s: string): Date {
+  const [y, m, d] = s.split('-').map((n) => parseInt(n, 10))
+  return new Date(Date.UTC(y, m - 1, d))
+}
+
+/**
+ * Convert Date -> YYYY-MM-DD (UTC)
+ *
+ * @param d date
+ * @returns YYYY-MM-DD
+ */
+function toISODate(d: Date): string {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString().split('T')[0]
+}
+
+/**
+ * Add days to ISO date (UTC)
+ *
+ * @param baseISO base ISO date
+ * @param days days to add (can be negative)
+ * @returns new ISO date string
+ */
+function addDays(baseISO: string, days: number): string {
+  const d = parseISODate(baseISO)
+  d.setUTCDate(d.getUTCDate() + days)
+  return toISODate(d)
+}
+
+/**
+ * Inclusive days between start..end (>=1)
+ *
+ * @param startISO start date (YYYY-MM-DD)
+ * @param endISO end date (YYYY-MM-DD)
+ * @returns number of days inclusive
+ */
+function inclusiveDays(startISO: string, endISO: string): number {
+  const s = parseISODate(startISO).getTime()
+  const e = parseISODate(endISO).getTime()
+  const one = 1000 * 60 * 60 * 24
+  return Math.max(1, Math.floor((e - s) / one) + 1)
+}
+
+/**
+ * Create Timeline store with cached getter per project to return stable arrays
+ */
+export const useTimelineStore = create<TimelineState>((set, get) => {
+  // cached getter per project: returns sorted stable array while source reference unchanged
+  const getTasksCached = createCachedGetterWithKey<TimelineTask[] | undefined, TimelineTask[]>(
+    (projectId?: string) => {
+      const pid = projectId || ''
+      return get().tasksByProject[pid] || []
+    },
+    (src) => {
+      const arr = src ? [...src] : []
+      arr.sort((a, b) => {
+        if (a.startDate === b.startDate) return a.name.localeCompare(b.name)
+        return a.startDate.localeCompare(b.startDate)
+      })
+      return arr
+    }
+  )
+
+  return {
+    tasksByProject: {},
+
+    getTasks: (projectId: string) => {
+      return getTasksCached(projectId)
+    },
+
+    setTasks: (projectId: string, tasks: TimelineTask[]) => {
+      set((s) => ({
+        tasksByProject: {
+          ...s.tasksByProject,
+          [projectId]: tasks.map((t) => ({ ...t, duration: inclusiveDays(t.startDate, t.endDate) })),
+        },
+      }))
+    },
+
+    addTask: (projectId, data) => {
+      const id = rid('task')
+      const now = new Date().toISOString()
+      const dur = Math.max(1, Number(data.duration || 1))
+      const endDate = data.endDate ?? addDays(data.startDate, dur - 1)
+      const task: TimelineTask = {
+        id,
+        projectId,
+        name: data.name,
+        description: data.description || '',
+        startDate: data.startDate,
+        endDate,
+        duration: inclusiveDays(data.startDate, endDate),
+        progress: Number(data.progress || 0),
+        status: (data.status as TaskStatus) || 'not_started',
+        priority: (data.priority as TaskPriority) || 'medium',
+        wbsId: data.wbsId,
+        rabId: data.rabId,
+        dependencies: data.dependencies || [],
+        assignedResources: data.assignedResources || [],
+        createdAt: now,
+        updatedAt: now,
+      }
+
+      set((s) => {
+        const arr = s.tasksByProject[projectId] || []
+        return { tasksByProject: { ...s.tasksByProject, [projectId]: [...arr, task] } }
+      })
+
+      return id
+    },
+
+    updateTask: (projectId, id, patch) => {
+      set((s) => {
+        const arr = s.tasksByProject[projectId] || []
+        const next = arr.map((t) => {
+          if (t.id !== id) return t
+          const start = patch.startDate ?? t.startDate
+          const end = patch.endDate ?? t.endDate
+          return { ...t, ...patch, duration: inclusiveDays(start, end), updatedAt: new Date().toISOString() }
+        })
+        return { tasksByProject: { ...s.tasksByProject, [projectId]: next } }
+      })
+    },
+
+    updateTaskDates: (projectId, id, dates) => {
+      const { startDate, endDate } = dates
+      get().updateTask(projectId, id, { startDate, endDate })
+    },
+
+    removeTask: (projectId, id) => {
+      set((s) => {
+        const arr = s.tasksByProject[projectId] || []
+        const filtered = arr.filter((t) => t.id !== id)
+        const cleaned = filtered.map((t) => ({ ...t, dependencies: (t.dependencies || []).filter((d) => d.predecessorId !== id && d.successorId !== id) }))
+        return { tasksByProject: { ...s.tasksByProject, [projectId]: cleaned } }
+      })
+    },
+
+    setBaseline: (projectId, overwrite = true) => {
+      set((s) => {
+        const arr = s.tasksByProject[projectId] || []
+        const next = arr.map((t) => {
+          if (!overwrite && t.baselineStartDate && t.baselineEndDate) return t
+          return { ...t, baselineStartDate: t.startDate, baselineEndDate: t.endDate, updatedAt: new Date().toISOString() }
+        })
+        return { tasksByProject: { ...s.tasksByProject, [projectId]: next } }
+      })
+    },
+  }
+})
+
+export default useTimelineStore

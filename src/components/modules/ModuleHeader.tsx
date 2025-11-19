@@ -1,0 +1,47 @@
+/**
+ * ModuleHeader.tsx
+ * Consistent header for each module page with icon, title, description, and right-aligned actions.
+ */
+
+import React from "react"
+
+/**
+ * Props for ModuleHeader
+ */
+export interface ModuleHeaderProps {
+  /** Leading icon for the module */
+  icon?: React.ReactNode
+  /** Module title */
+  title: string
+  /** Short description */
+  description?: string
+  /** Right side actions (buttons, etc.) */
+  actions?: React.ReactNode
+}
+
+/**
+ * ModuleHeader
+ * Simple, accessible header bar for modules.
+ */
+export function ModuleHeader({ icon, title, description, actions }: ModuleHeaderProps) {
+  return (
+    <div className="mb-4 flex flex-col gap-3 rounded-xl border bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 md:flex-row md:items-center md:justify-between">
+      <div className="flex items-start gap-3">
+        {icon ? (
+          <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+            {icon}
+          </div>
+        ) : null}
+        <div>
+          <div className="text-base font-semibold">{title}</div>
+          {description ? (
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">{description}</p>
+          ) : null}
+        </div>
+      </div>
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+    </div>
+  )
+}
+
+export default ModuleHeader
