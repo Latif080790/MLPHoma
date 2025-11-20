@@ -13,6 +13,18 @@
 
 import { create } from 'zustand'
 import type { CurvaSDataPoint, CurvaSAnalysis } from '../types/curvaS'
+import { notify as toast } from '@/lib/toast'
+import { validate, formatZodErrors } from '@/lib/validationMiddleware'
+import {
+  curvaSDataPointInputSchema,
+  curvaSBaselineConfigSchema,
+  curvaSScenarioSchema,
+} from '@/lib/validationSchemas'
+import {
+  syncCurvaSDataPoint,
+  syncCurvaSAnalysis,
+  syncCurvaSScenario,
+} from '@/lib/supabaseSyncService'
 
 /**
  * SavedScenario
@@ -215,6 +227,19 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
 
   generateBaseline: (projectId, totalBudget, startDate, endDate) => {
     if (!projectId) return
+    
+    // Validate baseline config
+    const validation = validate(curvaSBaselineConfigSchema, {
+      projectId,
+      totalBudget,
+      startDate,
+      endDate,
+    })
+    if (!validation.success) {
+      toast.error('Baseline Validation Error', formatZodErrors(validation.errors))
+      return
+    }
+    
     const dates = generateMonthlyDates(startDate, endDate)
     const stepProgress = 100 / Math.max(1, dates.length)
     const stepCost = totalBudget / Math.max(1, dates.length)
@@ -257,6 +282,8 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
         [projectId]: { totalBudget, totalDuration, progressMethod: 'even' },
       },
     }))
+    
+    toast.success('Baseline generated successfully', `${newPoints.length} data points created`)
   },
 
   analyzeProject: (projectId) => {
@@ -268,32 +295,57 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
     set((state) => ({
       analyses: { ...state.analyses, [projectId]: next },
     }))
+    
+    // Sync analysis to Supabase if valid
+    if (next) {
+      syncCurvaSAnalysis(next)
+    }
   },
 
   addDataPoint: (projectId, point) => {
+    // Validate data point
+    const validation = validate(curvaSDataPointInputSchema, {
+      projectId,
+      date: point.date,
+      plannedProgress: point.plannedProgress,
+      actualProgress: point.actualProgress,
+      plannedCost: point.plannedCost,
+      actualCost: point.actualCost,
+    })
+    if (!validation.success) {
+      toast.error('Data Point Validation Error', formatZodErrors(validation.errors))
+      return
+    }
+    
     set((state) => {
       const arr = [...(state.dataPoints[projectId] || EMPTY_POINTS)]
       const idx = arr.findIndex((p) => p.date === point.date)
+      let savedPoint: CurvaSDataPoint
       if (idx >= 0) {
-        const merged: CurvaSDataPoint = {
+        savedPoint = {
           ...arr[idx],
           ...point,
           id: point.id || arr[idx].id || pointId(projectId, point.date),
           updatedAt: new Date().toISOString(),
         }
-        arr[idx] = merged
+        arr[idx] = savedPoint
       } else {
-        arr.push({
+        savedPoint = {
           ...point,
           id: point.id || pointId(projectId, point.date),
           createdAt: point.createdAt || new Date().toISOString(),
           updatedAt: point.updatedAt || new Date().toISOString(),
-        })
+        }
+        arr.push(savedPoint)
       }
       arr.sort((a, b) => a.date.localeCompare(b.date))
       if (isSamePoints(state.dataPoints[projectId] || EMPTY_POINTS, arr)) {
         return state
       }
+      
+      // Sync to Supabase
+      syncCurvaSDataPoint(savedPoint)
+      
       return {
         dataPoints: { ...state.dataPoints, [projectId]: arr },
       }
@@ -351,13 +403,27 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
   // Saved scenario actions
   addSavedScenario: (projectId, scenario) => {
     if (!projectId || !scenario) return
+    
+    // Validate scenario
+    const validation = validate(curvaSScenarioSchema, scenario)
+    if (!validation.success) {
+      toast.error('Scenario Validation Error', formatZodErrors(validation.errors))
+      return
+    }
+    
     set((state) => {
       const prev = state.savedScenarios[projectId] || []
       // avoid duplicates by id
       if (prev.find((s) => s.id === scenario.id)) {
+        toast.warning('Scenario already exists', scenario.name)
         return { savedScenarios: { ...state.savedScenarios, [projectId]: prev } }
       }
       const next = [...prev, scenario]
+      
+      // Sync to Supabase
+      syncCurvaSScenario(scenario, projectId)
+      
+      toast.success('Scenario saved successfully', scenario.name)
       return { savedScenarios: { ...state.savedScenarios, [projectId]: next } }
     })
   },

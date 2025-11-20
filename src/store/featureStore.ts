@@ -17,6 +17,13 @@ import type { FeatureConfig } from '../config/featureSchema'
 import { generateDefaultFeatureConfig } from '../lib/featureDefaults'
 import { migrateConfig } from '../lib/featureMigrations'
 import { nanoid } from 'nanoid/non-secure'
+import { notify as toast } from '@/lib/toast'
+import { validate, formatZodErrors } from '@/lib/validationMiddleware'
+import {
+  featureSnapshotInputSchema,
+  moduleConfigUpdateSchema,
+} from '@/lib/validationSchemas'
+import { syncFeatureConfig, syncFeatureSnapshot } from '@/lib/supabaseSyncService'
 
 /**
  * Shape of a saved snapshot/version for a project's feature config.
@@ -154,10 +161,21 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
       return { configs: nextMap }
     })
     writeToStorage(projectId, next)
+    
+    // Sync to Supabase
+    syncFeatureConfig(next)
   },
 
   updateModuleConfig: (projectId: string, moduleKey: keyof FeatureConfig | string, patch: any) => {
     if (!projectId) return
+    
+    // Validate module config update
+    const validation = validate(moduleConfigUpdateSchema, { moduleKey, patch })
+    if (!validation.success) {
+      toast.error('Validation Error', formatZodErrors(validation.errors))
+      return
+    }
+    
     set((s) => {
       const prev = s.configs[projectId] ?? generateDefaultFeatureConfig(projectId)
       const modulePrev = (prev as any)[moduleKey] ?? {}
@@ -165,6 +183,10 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
       const nextConfig = { ...prev, [moduleKey]: moduleNext }
       // persist
       writeToStorage(projectId, nextConfig)
+      
+      // Sync to Supabase
+      syncFeatureConfig(nextConfig)
+      
       return { configs: { ...s.configs, [projectId]: nextConfig } }
     })
   },
@@ -194,9 +216,23 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
   saveSnapshot: (projectId: string, name?: string) => {
     if (!projectId) throw new Error('saveSnapshot requires projectId')
     const cfg = get().configs[projectId] ?? readFromStorage(projectId) ?? generateDefaultFeatureConfig(projectId)
+    
+    const snapshotData = {
+      projectId,
+      name: name?.trim() || `Snapshot ${new Date().toLocaleString()}`,
+      config: cfg,
+    }
+    
+    // Validate snapshot data
+    const validation = validate(featureSnapshotInputSchema, snapshotData)
+    if (!validation.success) {
+      toast.error('Snapshot Validation Error', formatZodErrors(validation.errors))
+      throw new Error('Invalid snapshot data')
+    }
+    
     const snap: FeatureSnapshot = {
       id: nanoid(),
-      name: name?.trim() || `Snapshot ${new Date().toLocaleString()}`,
+      name: snapshotData.name,
       createdAt: new Date().toISOString(),
       config: JSON.parse(JSON.stringify(cfg)),
     }
@@ -205,6 +241,11 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     // keep reasonable limit (e.g., 50)
     const bounded = snaps.slice(0, 50)
     writeSnapshotsToStorage(projectId, bounded)
+    
+    // Sync to Supabase
+    syncFeatureSnapshot(snap)
+    
+    toast.success('Snapshot saved successfully', snapshotData.name)
     return snap
   },
 
@@ -212,11 +253,16 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     if (!projectId) return null
     const snaps = readSnapshotsFromStorage(projectId)
     const found = snaps.find((s) => s.id === snapshotId)
-    if (!found) return null
+    if (!found) {
+      toast.error('Snapshot not found', `Snapshot ID: ${snapshotId}`)
+      return null
+    }
     const cfg = migrateConfig(found.config)
     // persist restored config
     set((s) => ({ configs: { ...s.configs, [projectId]: cfg } }))
     writeToStorage(projectId, cfg)
+    
+    toast.success('Snapshot restored successfully', found.name)
     return cfg
   },
 

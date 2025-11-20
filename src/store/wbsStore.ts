@@ -6,7 +6,11 @@
 
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
+import { notify as toast } from '../lib/toast'
 import type { WBSStore, WBSItem } from '../types/wbs'
+import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
+import { wbsItemInputSchema, wbsItemUpdateSchema } from '../lib/validationSchemas'
+import { syncWBSItem, syncDelete } from '../lib/supabaseSyncService'
 
 /**
  * Generate unique ID
@@ -79,8 +83,17 @@ export const useWBSStore = create<WBSStore>()(
 
       // Add new WBS item
       addItem: (projectId, item) => {
+        // Validate input
+        const validation = validate(wbsItemInputSchema, { ...item, projectId })
+        if (!validation.success) {
+          const errorMsg = mergeErrorMessages(validation.errors)
+          toast.error('Failed to add WBS item', { description: errorMsg })
+          set({ error: errorMsg })
+          return
+        }
+
         const newItem: WBSItem = {
-          ...item,
+          ...validation.data,
           id: generateId(),
           projectId,
           createdAt: new Date().toISOString(),
@@ -111,17 +124,33 @@ export const useWBSStore = create<WBSStore>()(
             selectedId: newItem.id,
           }
         })
+
+        // Sync to Supabase
+        syncWBSItem(newItem)
       },
 
       // Update WBS item
       updateItem: (projectId, id, updates) => {
+        // Validate updates
+          const validation = validate(wbsItemUpdateSchema, updates)
+          if (!validation.success) {
+            const errorMsg = mergeErrorMessages(validation.errors)
+            toast.error('Failed to update WBS item', { description: errorMsg })
+          set({ error: errorMsg })
+          return
+        }
+
+        let updatedItem: WBSItem | null = null
+
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
-          const updatedItems = currentItems.map(item =>
-            item.id === id
-              ? { ...item, ...updates, updatedAt: new Date().toISOString() }
-              : item
-          )
+          const updatedItems = currentItems.map(item => {
+            if (item.id === id) {
+              updatedItem = { ...item, ...validation.data, updatedAt: new Date().toISOString() }
+              return updatedItem
+            }
+            return item
+          })
 
           return {
             itemsByProject: {
@@ -130,10 +159,17 @@ export const useWBSStore = create<WBSStore>()(
             },
           }
         })
+
+        // Sync to Supabase
+        if (updatedItem) {
+          syncWBSItem(updatedItem)
+        }
       },
 
       // Delete WBS item (and children)
       deleteItem: (projectId, id) => {
+        const toDeleteIds: string[] = []
+
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
           
@@ -151,6 +187,8 @@ export const useWBSStore = create<WBSStore>()(
               }
             })
           }
+
+          toDeleteIds.push(...toDelete)
 
           // Remove items
           const updatedItems = currentItems.filter(item => !toDelete.has(item.id))
@@ -170,6 +208,11 @@ export const useWBSStore = create<WBSStore>()(
             },
             selectedId: newSelectedId,
           }
+        })
+
+        // Sync deletions to Supabase
+        toDeleteIds.forEach(itemId => {
+          syncDelete('wbs_items', itemId)
         })
       },
 

@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, test } from 'vitest'
 import { computeAHSPUnitPrice, computeSubtotal, computeFinalTotal, computeItemTotals } from '../rabUtils'
 
 describe('rabUtils - computeAHSPUnitPrice', () => {
   it('returns 0 for empty components', () => {
-    expect(computeAHSPUnitPrice([])).toBe(0)
+    const result = computeAHSPUnitPrice([])
+    expect(result.subtotal).toBe(0)
   })
   it('sums coefficient * unitPrice', () => {
     const components = [
@@ -11,7 +12,8 @@ describe('rabUtils - computeAHSPUnitPrice', () => {
       { coefficient: 0.5, unitPrice: 2000 },
     ]
     // 2*1000 + 0.5*2000 = 2000 + 1000 = 3000
-    expect(computeAHSPUnitPrice(components)).toBe(3000)
+    const result = computeAHSPUnitPrice(components)
+    expect(result.subtotal).toBe(3000)
   })
 })
 
@@ -46,23 +48,14 @@ describe('rabUtils - computeItemTotals', () => {
     expect(Number(r.finalTotal.toFixed(1))).toBe(266.2)
   })
 })
-/**
- * src/lib/__tests__/rabUtils.test.ts
- *
- * Basic unit tests for rabUtils functions.
- *
- * Note: test runner might not be configured in this environment; file provided
- * as reference and for CI integration.
- */
-
-import { computeAHSPUnitPrice, computeItemTotals } from '../rabUtils'
 
 test('computeAHSPUnitPrice sums coefficient*unitPrice', () => {
   const components = [
     { coefficient: 2, unitPrice: 100 },
     { coefficient: 0.5, unitPrice: 200 },
   ]
-  expect(computeAHSPUnitPrice(components)).toBeCloseTo(2 * 100 + 0.5 * 200)
+  const result = computeAHSPUnitPrice(components)
+  expect(result.subtotal).toBeCloseTo(2 * 100 + 0.5 * 200)
 })
 
 test('computeItemTotals calculates subtotal and finalTotal', () => {

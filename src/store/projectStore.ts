@@ -12,7 +12,11 @@
 
 import { create } from 'zustand'
 import { createCachedGetter } from '../lib/cachedGetter'
-import { fetchProjects, upsertProject, deleteProject, supabase } from '../lib/supabaseClient'
+import { fetchProjects, supabase } from '../lib/supabaseClient'
+import { syncProject as syncProj, syncDelete } from '../lib/supabaseSyncService'
+import { validate } from '../lib/validationMiddleware'
+import { projectInputSchema, projectUpdateSchema } from '../lib/validationSchemas'
+import { toast } from 'sonner'
 
 /**
  * PaymentTerms
@@ -81,7 +85,6 @@ interface ProjectState {
 
   /** Supabase Sync */
   loadProjects: () => Promise<void>
-  syncProject: (project: Project) => Promise<void>
 }
 
 /**
@@ -108,6 +111,19 @@ export const useProjectStore = create<ProjectState>((set, get) => {
      */
     addProject: (project: Project) => {
       if (!project || !project.id) return
+      
+      // Validate input (skip id field)
+      const { id, ...projectData } = project
+      const validation = validate(projectInputSchema, projectData)
+      if (!validation.success) {
+        const errors = validation.errors || []
+        const errorMsg = errors[0]?.message || 'Validation failed'
+        toast.error('Failed to add project', {
+          description: errorMsg
+        })
+        return
+      }
+      
       set((state) => {
         // If identical object reference exists, keep state unchanged
         const prev = state.projects[project.id]
@@ -116,8 +132,8 @@ export const useProjectStore = create<ProjectState>((set, get) => {
           projects: { ...state.projects, [project.id]: project },
         }
       })
-      // Sync
-      get().syncProject(project)
+      // Queue-based sync with retry
+      syncProj(project)
     },
 
     /**
@@ -126,18 +142,32 @@ export const useProjectStore = create<ProjectState>((set, get) => {
      */
     updateProject: (projectId: string, patch: Partial<Project>) => {
       if (!projectId) return
+      
+      // Validate updates
+      const validation = validate(projectUpdateSchema, patch)
+      if (!validation.success) {
+        const errors = validation.errors || []
+        const errorMsg = errors[0]?.message || 'Validation failed'
+        toast.error('Failed to update project', {
+          description: errorMsg
+        })
+        return
+      }
+      
       set((state) => {
         const existing = state.projects[projectId]
         if (!existing) return state
-        const merged: Project = { ...existing, ...patch }
+        const merged: Project = { ...existing, ...validation.data! }
         // If nothing changed by shallow compare, return same state
         if (Object.is(existing, merged)) return state
         
-        // Sync
-        get().syncProject(merged)
-        
         return { projects: { ...state.projects, [projectId]: merged } }
       })
+      // Queue-based sync with retry
+      const updated = get().projects[projectId]
+      if (updated) {
+        syncProj(updated)
+      }
     },
 
     /**
@@ -153,10 +183,8 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         const nextActive = state.activeProjectId === projectId ? undefined : state.activeProjectId
         return { projects: copy, activeProjectId: nextActive }
       })
-      // Sync delete
-      if (supabase) {
-        deleteProject(projectId).catch(err => console.warn('Failed to delete project from Supabase', err))
-      }
+      // Queue-based delete with retry
+      syncDelete('projects', projectId)
     },
 
     /**
@@ -250,19 +278,6 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         }
       } catch (err) {
         console.warn('Failed to load projects from Supabase', err)
-      }
-    },
-
-    /**
-     * syncProject
-     * Save a project to Supabase.
-     */
-    syncProject: async (project: Project) => {
-      if (!supabase) return
-      try {
-        await upsertProject(project)
-      } catch (err) {
-        console.warn('Failed to sync project to Supabase', err)
       }
     },
   }

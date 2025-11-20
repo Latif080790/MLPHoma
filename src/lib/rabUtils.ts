@@ -1,11 +1,20 @@
 /**
  * src/lib/rabUtils.ts
  *
+ * DEPRECATED: This file now re-exports from calculationService for backward compatibility.
+ * New code should import directly from calculationService.ts
+ * 
  * Utility calculation functions untuk AHSP → RAB.
  * Berisi fungsi untuk menghitung harga satuan AHSP dari komponen,
  * dan menghitung subtotal & final total untuk RAB item berdasarkan
  * overhead/profit/tax project.
  */
+
+import { 
+  calculateComponentsTotal,
+  calculatePriceWithMarkup,
+  calculateRABItemTotal 
+} from './calculationService'
 
 /**
  * AHSPComponentMini
@@ -18,18 +27,19 @@ export interface AHSPComponentMini {
 
 /**
  * Compute AHSP unit price from components.
- *
+ * 
+ * @deprecated Use calculateComponentsTotal from calculationService instead
  * @param components array of AHSPComponentMini
- * @returns basePrice (sum of coefficient * unitPrice)
+ * @returns ComponentCalculationResult with subtotal and detailed breakdown
  */
-export function computeAHSPUnitPrice(components: AHSPComponentMini[]): number {
-  if (!components || components.length === 0) return 0
-  return components.reduce((s, c) => s + (Number(c.coefficient || 0) * Number(c.unitPrice || 0)), 0)
+export function computeAHSPUnitPrice(components: AHSPComponentMini[]) {
+  return calculateComponentsTotal(components)
 }
 
 /**
  * Compute subtotal for a RAB item
  *
+ * @deprecated Simple multiplication, use inline calculation or calculationService
  * @param volume item volume
  * @param unitPrice unit price (AHSP unit price or override)
  * @returns subtotal
@@ -41,6 +51,7 @@ export function computeSubtotal(volume: number, unitPrice: number): number {
 /**
  * Compute final total applying overhead, profit, tax (percentages)
  *
+ * @deprecated Use calculatePriceWithMarkup from calculationService instead
  * Calculation order:
  *  - subtotal = volume * unitPrice
  *  - withOverhead = subtotal * (1 + overhead/100)
@@ -59,16 +70,19 @@ export function computeFinalTotal(
   profit = 0,
   tax = 0
 ): number {
-  let result = Number(subtotal || 0)
-  if (overhead) result = result * (1 + Number(overhead) / 100)
-  if (profit) result = result * (1 + Number(profit) / 100)
-  if (tax) result = result * (1 + Number(tax) / 100)
-  return result
+  const result = calculatePriceWithMarkup({
+    basePrice: subtotal,
+    overheadPercent: overhead,
+    profitPercent: profit,
+    taxPercent: tax
+  })
+  return result.finalPrice
 }
 
 /**
  * Convenience: compute subtotal & finalTotal from item inputs
  *
+ * @deprecated Use calculateRABItemTotal from calculationService instead
  * @param params object with volume, unitPrice, overhead, profit, tax
  * @returns { subtotal, finalTotal }
  */
@@ -79,9 +93,18 @@ export function computeItemTotals(params: {
   profit?: number
   tax?: number
 }) {
-  const subtotal = computeSubtotal(params.volume || 0, params.unitPrice || 0)
-  const finalTotal = computeFinalTotal(subtotal, params.overhead || 0, params.profit || 0, params.tax || 0)
-  return { subtotal, finalTotal }
+  const result = calculateRABItemTotal({
+    volume: params.volume,
+    unitPrice: params.unitPrice,
+    overheadPercent: params.overhead,
+    profitPercent: params.profit,
+    taxPercent: params.tax
+  })
+  
+  return { 
+    subtotal: result.subtotal, 
+    finalTotal: result.finalPrice 
+  }
 }
 
 export default {
