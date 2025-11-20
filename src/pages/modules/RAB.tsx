@@ -16,11 +16,14 @@ import { formatIDR } from '../../lib/utils'
 import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 
+const EMPTY_ARRAY: any[] = []
+
 /** RAB module component */
 export default function RAB() {
   const syncProjectToSupabase = useRabStore(s => s.syncProjectToSupabase)
-  const currentProject = useProjectStore(s => s.getActiveProject())
-  const items = useRabStore(s => currentProject ? s.getItems(currentProject.id) : [])
+  // Use direct state selection to ensure stability
+  const currentProject = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
+  const items = useRabStore(s => currentProject ? s.getItems(currentProject.id) : EMPTY_ARRAY)
   const [syncing, setSyncing] = React.useState(false)
 
   const handleSync = async () => {

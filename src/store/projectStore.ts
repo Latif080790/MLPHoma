@@ -12,6 +12,7 @@
 
 import { create } from 'zustand'
 import { createCachedGetter } from '../lib/cachedGetter'
+import { fetchProjects, upsertProject, deleteProject, supabase } from '../lib/supabaseClient'
 
 /**
  * PaymentTerms
@@ -24,6 +25,10 @@ export interface PaymentTerms {
   billingPercent?: number
   /** Retention fraction (0..1) */
   retentionRate?: number
+  /** Loan Interest Rate (annual fraction, e.g. 0.12 for 12%) */
+  loanInterestRate?: number
+  /** Tax Rate (fraction of billing, e.g. 0.11 for PPN or 0.03 for PPH) */
+  taxRate?: number
   /** Optional additional fields */
   [key: string]: any
 }
@@ -73,6 +78,10 @@ interface ProjectState {
   getProject: (projectId: string) => Project | null
   getActiveProject: () => Project | null
   getProjects: () => Project[]
+
+  /** Supabase Sync */
+  loadProjects: () => Promise<void>
+  syncProject: (project: Project) => Promise<void>
 }
 
 /**
@@ -107,6 +116,8 @@ export const useProjectStore = create<ProjectState>((set, get) => {
           projects: { ...state.projects, [project.id]: project },
         }
       })
+      // Sync
+      get().syncProject(project)
     },
 
     /**
@@ -121,6 +132,10 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         const merged: Project = { ...existing, ...patch }
         // If nothing changed by shallow compare, return same state
         if (Object.is(existing, merged)) return state
+        
+        // Sync
+        get().syncProject(merged)
+        
         return { projects: { ...state.projects, [projectId]: merged } }
       })
     },
@@ -138,6 +153,10 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         const nextActive = state.activeProjectId === projectId ? undefined : state.activeProjectId
         return { projects: copy, activeProjectId: nextActive }
       })
+      // Sync delete
+      if (supabase) {
+        deleteProject(projectId).catch(err => console.warn('Failed to delete project from Supabase', err))
+      }
     },
 
     /**
@@ -199,6 +218,52 @@ export const useProjectStore = create<ProjectState>((set, get) => {
      */
     getProjects: () => {
       return getProjectsCached()
+    },
+
+    /**
+     * loadProjects
+     * Fetch projects from Supabase and merge into store.
+     */
+    loadProjects: async () => {
+      if (!supabase) return
+      try {
+        const { data, error } = await fetchProjects()
+        if (error) throw error
+        if (data) {
+          const projects: Record<string, Project> = {}
+          data.forEach((row: any) => {
+            projects[row.id] = {
+              id: row.id,
+              name: row.name,
+              code: row.code,
+              clientName: row.client_name,
+              location: row.location,
+              startDate: row.start_date,
+              endDate: row.end_date,
+              budget: row.budget,
+              status: row.status,
+              paymentTerms: row.payment_terms,
+              meta: row.meta,
+            }
+          })
+          set({ projects })
+        }
+      } catch (err) {
+        console.warn('Failed to load projects from Supabase', err)
+      }
+    },
+
+    /**
+     * syncProject
+     * Save a project to Supabase.
+     */
+    syncProject: async (project: Project) => {
+      if (!supabase) return
+      try {
+        await upsertProject(project)
+      } catch (err) {
+        console.warn('Failed to sync project to Supabase', err)
+      }
     },
   }
 })

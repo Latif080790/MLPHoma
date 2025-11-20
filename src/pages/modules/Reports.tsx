@@ -18,11 +18,13 @@ import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { calculateCashFlow } from "../../lib/cashflowCalculator"
 
+const EMPTY_ARRAY: any[] = []
+
 /**
  * Build RAB KPI summary from items
  */
 function useRabSummary(projectId: string) {
-  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? [])
+  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? EMPTY_ARRAY)
   const total = useMemo(
     () => rabItems.reduce((sum: number, it: any) => sum + (it.finalTotal || it.final_total || it.finalPrice || 0), 0),
     [rabItems]
@@ -61,8 +63,8 @@ function useCashFlowSummary(projectId: string, budget: number, terms: any) {
  * Resource Summary Hook (Top 3 High Cost Items)
  */
 function useResourceSummary(projectId: string) {
-  const rap = useRapStore((s: any) => s.getSchedule?.(projectId) ?? [])
-  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? [])
+  const rap = useRapStore((s: any) => s.getPlan?.(projectId) ?? EMPTY_ARRAY)
+  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? EMPTY_ARRAY)
 
   const topItems = useMemo(() => {
     const map: Record<string, { name: string; total: number }> = {}
@@ -196,7 +198,7 @@ async function exportPDF(element: HTMLElement | null, filename = "Reports.pdf") 
  * Reports module
  */
 export default function Reports() {
-  const project = useProjectStore((s: any) => s.getActiveProject?.() ?? null)
+  const project = useProjectStore((s: any) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectName = project?.name ?? "—"
   const projectId = project?.id ?? "demo"
 
@@ -205,7 +207,7 @@ export default function Reports() {
   const cashFlow = useCashFlowSummary(projectId, project?.budget ?? 0, project?.paymentTerms)
   const topResources = useResourceSummary(projectId)
 
-  const rap = useRapStore((s: any) => s.getSchedule?.(projectId) ?? [])
+  const rap = useRapStore((s: any) => s.getPlan?.(projectId) ?? EMPTY_ARRAY)
   const totalRap = useMemo(
     () =>
       rap.reduce(

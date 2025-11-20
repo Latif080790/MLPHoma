@@ -26,6 +26,8 @@ import CashChart from '../../components/cashflow/CashChart'
 import PeriodTable from '../../components/cashflow/PeriodTable'
 import { calculateCashFlow } from '../../lib/cashflowCalculator'
 
+const EMPTY_ARRAY: any[] = []
+
 /**
  * CashFlow
  *
@@ -39,9 +41,9 @@ import { calculateCashFlow } from '../../lib/cashflowCalculator'
 export default function CashFlow(): JSX.Element {
   /**
    * Ambil proyek aktif secara defensif.
-   * Menggunakan fungsi getter dari store jika tersedia agar tidak membuat subscription baru.
+   * Menggunakan selector langsung ke state untuk menghindari pemanggilan fungsi getter yang mungkin tidak stabil.
    */
-  const activeProject = useProjectStore((s) => (typeof s.getActiveProject === 'function' ? s.getActiveProject() : null))
+  const activeProject = useProjectStore((s) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = activeProject?.id ?? ''
   const projectName = activeProject?.name ?? '-'
   const projectBudget = activeProject?.budget ?? 0
@@ -55,7 +57,7 @@ export default function CashFlow(): JSX.Element {
   const analyzeCurva = useCurvaSStore((s) => s.analyzeProject)
   
   // Subscribe to data points for calculation
-  const points = useCurvaSStore((s) => (projectId ? s.getDataPoints(projectId) : []))
+  const points = useCurvaSStore((s) => (projectId ? s.getDataPoints(projectId) : EMPTY_ARRAY))
 
   /**
    * Baca saved scenarios untuk menampilkan empty state jika kosong.
@@ -63,11 +65,11 @@ export default function CashFlow(): JSX.Element {
    */
   const savedScenarios = useCurvaSStore((s) => {
     try {
-      return typeof s.getSavedScenarios === 'function' ? s.getSavedScenarios(projectId) : []
+      return typeof s.getSavedScenarios === 'function' ? s.getSavedScenarios(projectId) : EMPTY_ARRAY
     } catch (e) {
       // eslint-disable-next-line no-console
       console.warn('CashFlow: failed to read saved scenarios', e)
-      return []
+      return EMPTY_ARRAY
     }
   })
 

@@ -4,7 +4,7 @@
  * Menyediakan form sederhana untuk menambah proyek baru.
  */
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../components/ui/card'
@@ -142,6 +142,12 @@ export default function ProjectManagement() {
   const addProject = useProjectStore((s) => s.addProject)
   const updateProject = useProjectStore((s) => s.updateProject)
   const removeProject = useProjectStore((s) => s.removeProject)
+  const loadProjects = useProjectStore((s) => s.loadProjects)
+
+  // Load projects from Supabase on mount
+  useEffect(() => {
+    loadProjects()
+  }, [loadProjects])
 
   // Dialog state
   const [showDialog, setShowDialog] = useState(false)

@@ -20,12 +20,15 @@ export function calculateCashFlow(
   const dpPct = terms.downPaymentPercent ?? 0.1
   const billingPct = terms.billingPercent ?? 1.0 // Default 100% of progress is billable
   const retentionPct = terms.retentionRate ?? 0.05
+  const loanInterestRate = terms.loanInterestRate ?? 0 // Annual rate (e.g. 0.12)
+  const taxRate = terms.taxRate ?? 0 // Tax on billing (e.g. 0.03)
 
   const dpAmount = totalBudget * dpPct
   
   let cumOutflow = 0
   let cumInflow = 0
   let prevProgress = 0
+  let currentBalance = 0
 
   // Sort points by date
   const sortedPoints = [...points].sort((a, b) => a.date.localeCompare(b.date))
@@ -39,7 +42,7 @@ export function calculateCashFlow(
     const prevPoint = idx > 0 ? sortedPoints[idx - 1] : null
     const currentCost = (p.actualCost || p.plannedCost || 0)
     const prevCost = prevPoint ? (prevPoint.actualCost || prevPoint.plannedCost || 0) : 0
-    const periodOutflow = Math.max(0, currentCost - prevCost)
+    let periodOutflow = Math.max(0, currentCost - prevCost)
 
     // Inflow:
     // 1. DP in first period? Or separate?
@@ -78,10 +81,28 @@ export function calculateCashFlow(
       periodInflow += totalRetention
     }
 
+    // --- NEW: Tax Calculation ---
+    // Tax is calculated on the Inflow (Billing)
+    // Assuming Tax is an Outflow (Payment to Gov)
+    if (taxRate > 0 && periodInflow > 0) {
+      const taxAmount = periodInflow * taxRate
+      periodOutflow += taxAmount
+    }
+
+    // --- NEW: Loan Interest Calculation ---
+    // Interest is calculated on the *previous* period's negative balance (deficit)
+    // Monthly rate = Annual Rate / 12
+    if (loanInterestRate > 0 && currentBalance < 0) {
+      const monthlyRate = loanInterestRate / 12
+      const interestExpense = Math.abs(currentBalance) * monthlyRate
+      periodOutflow += interestExpense
+    }
+
     // Update state
     cumOutflow += periodOutflow
     cumInflow += periodInflow
     prevProgress = currentProgress
+    currentBalance = cumInflow - cumOutflow
 
     return {
       period: p.date,
@@ -89,7 +110,7 @@ export function calculateCashFlow(
       inflow: periodInflow,
       cumOutflow,
       cumInflow,
-      balance: cumInflow - cumOutflow
+      balance: currentBalance
     }
   })
 }
