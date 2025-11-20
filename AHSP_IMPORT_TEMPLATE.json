@@ -1,0 +1,5125 @@
+[
+  {
+    "code": "1.1.3.1",
+    "name": "Pek. 1 m2 Pembersihan & Pengupasan Permukaan Tanah (Striping) sd Tanaman \u2205 2cm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. 1 m2 Pembersihan & Pengupasan Permukaan Tanah (Striping) sd Tanaman \u2205 2cm",
+    "basePrice": 16440.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.005,
+        "price": 230000.0,
+        "category": "Labor"
+      }
+    ]
+  },
+  {
+    "code": "1.1.4.2",
+    "name": "Pek. Pasangan 1 m1 Bouwplank",
+    "unit": "m1",
+    "category": "General",
+    "description": "Pek. Pasangan 1 m1 Bouwplank",
+    "basePrice": 77560.38,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.012,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.006,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.001,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.001,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kayu Kaso 5x7cm Kelas III",
+        "code": "M.394",
+        "unit": "m3",
+        "coefficient": 0.013,
+        "price": 3433000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Papan Kayu Kelas III",
+        "code": "M.409",
+        "unit": "m3",
+        "coefficient": 0.007,
+        "price": 3433000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku 2 - 5cm",
+        "code": "M.56",
+        "unit": "Kg",
+        "coefficient": 0.02,
+        "price": 31100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Waterpass",
+        "code": "M.1738",
+        "unit": "Hari",
+        "coefficient": 0.006,
+        "price": 828900.0,
+        "category": "Equipment"
+      }
+    ]
+  },
+  {
+    "code": "1.1.2.4",
+    "name": "Pek. Pembuatan 1 m2 Direksi Keet (Kantor) Los Kerja dan Gudang",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pembuatan 1 m2 Direksi Keet (Kantor) Los Kerja dan Gudang",
+    "basePrice": 2781819.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 1.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.4,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.12,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kayu Kaso 5x7cm Kelas II",
+        "code": "M.393",
+        "unit": "m3",
+        "coefficient": 0.35,
+        "price": 4291300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Triplek 4mm",
+        "code": "M.92",
+        "unit": "Lbr",
+        "coefficient": 1.0,
+        "price": 124100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pondasi Pasangan Batu (Rollag Bata)",
+        "code": "M.30",
+        "unit": "m3",
+        "coefficient": 0.17,
+        "price": 1721700.0,
+        "category": "Material"
+      },
+      {
+        "name": "GRC Pelat. t=4mm. Uk 122x244cm",
+        "code": "M.143",
+        "unit": "Lbr",
+        "coefficient": 1.24,
+        "price": 100200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku",
+        "code": "M.54",
+        "unit": "Kg",
+        "coefficient": 0.75,
+        "price": 31100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Asbes Gelombang",
+        "code": "M.119",
+        "unit": "Lbr",
+        "coefficient": 0.3,
+        "price": 85400.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku Asbes",
+        "code": "M.60",
+        "unit": "Kg",
+        "coefficient": 0.1,
+        "price": 35700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Floor Lantai (Beton Lantai Kerja)",
+        "code": "2.2.1.4.1",
+        "unit": "m3",
+        "coefficient": 0.15,
+        "price": 1638800.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pintu Double Teakwood Rangka Kayu",
+        "code": "M.186",
+        "unit": "m2",
+        "coefficient": 0.1,
+        "price": 542000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Frame Besi Kaca Naco",
+        "code": "M.523",
+        "unit": "Daun",
+        "coefficient": 1.0,
+        "price": 95600.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "1.2.1.1.1",
+    "name": "Pek. Penggalian 1 m3 Tanah Biasa Sedalam 0 s.d. 1m Untuk Volume sd 200m3",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. Penggalian 1 m3 Tanah Biasa Sedalam 0 s.d. 1m Untuk Volume sd 200m3",
+    "basePrice": 123415.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.75,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.038,
+        "price": 230000.0,
+        "category": "Labor"
+      }
+    ]
+  },
+  {
+    "code": "1.2.1.1.4",
+    "name": "Pek. Penggalian 1 m3 Tanah Biasa Sedalam 1 s.d. 2m Untuk Volume sd 200m3",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. Penggalian 1 m3 Tanah Biasa Sedalam 1 s.d. 2m Untuk Volume sd 200m3",
+    "basePrice": 147960.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.9,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.045,
+        "price": 230000.0,
+        "category": "Labor"
+      }
+    ]
+  },
+  {
+    "code": "1.3.1.1",
+    "name": "Pek. 1 m3 Urukan Kembali Galian Tanah Tanpa Pemadatan Secara Manual",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. 1 m3 Urukan Kembali Galian Tanah Tanpa Pemadatan Secara Manual",
+    "basePrice": 82200.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.5,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.025,
+        "price": 230000.0,
+        "category": "Labor"
+      }
+    ]
+  },
+  {
+    "code": "1.3.2.1",
+    "name": "Pek. 1 m3 Pemadatan Tanah Per 20cm Menggunakan Alat Timbris Secara manual",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. 1 m3 Pemadatan Tanah Per 20cm Menggunakan Alat Timbris Secara manual",
+    "basePrice": 82200.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.5,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.025,
+        "price": 230000.0,
+        "category": "Labor"
+      }
+    ]
+  },
+  {
+    "code": "1.3.1.2",
+    "name": "Pek. 1 m3 Urukan dengan Pasir Uruk Untuk Volume sd 200 m3 Tanpa Pemadatan Secara Manual",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. 1 m3 Urukan dengan Pasir Uruk Untuk Volume sd 200 m3 Tanpa Pemadatan Secara Manual",
+    "basePrice": 282960.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.3,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.015,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Pasir Urug",
+        "code": "M.27",
+        "unit": "m3",
+        "coefficient": 1.2,
+        "price": 194700.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.4.1",
+    "name": "Pek. 1 m3 Beton Mutu Rendah F'c 7.5 MPa. Slump 100 \u00b1 25mm Agregat Maks 19mm Secara Manual",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. 1 m3 Beton Mutu Rendah F'c 7.5 MPa. Slump 100 \u00b1 25mm Agregat Maks 19mm Secara Manual",
+    "basePrice": 927392.2,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 1.65,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.275,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.028,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.009,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 250.0,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Beton",
+        "code": "M.25",
+        "unit": "Kg",
+        "coefficient": 888.0,
+        "price": 200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kerikil (Maks 19mm)",
+        "code": "M.21",
+        "unit": "Kg",
+        "coefficient": 1.009,
+        "price": 200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Air",
+        "code": "M.1",
+        "unit": "Ltr",
+        "coefficient": 202.0,
+        "price": 200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.3.1",
+    "name": "Pek. Pemasangan 1 m2 Bekisting untuk Pondasi Telapak (3 Kali Pakai)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Bekisting untuk Pondasi Telapak (3 Kali Pakai)",
+    "basePrice": 199173.8,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.52,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.26,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.026,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.009,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Papan Kayu Kelas III",
+        "code": "M.409",
+        "unit": "m3",
+        "coefficient": 0.016,
+        "price": 3433000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku 5 - 10cm",
+        "code": "M.58",
+        "unit": "Kg",
+        "coefficient": 0.3,
+        "price": 31100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Minyak Bekisting",
+        "code": "M.81",
+        "unit": "Ltr",
+        "coefficient": 0.1,
+        "price": 15900.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.3.3",
+    "name": "Pek. Pemasangan 1 m2 Bekisting untuk Sloof (3 Kali Pakai)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Bekisting untuk Sloof (3 Kali Pakai)",
+    "basePrice": 206039.8,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.52,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.26,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.026,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.009,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Papan Kayu Kelas III",
+        "code": "M.409",
+        "unit": "m3",
+        "coefficient": 0.018,
+        "price": 3433000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku 5 - 10cm",
+        "code": "M.58",
+        "unit": "Kg",
+        "coefficient": 0.3,
+        "price": 31100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Minyak Bekisting",
+        "code": "M.81",
+        "unit": "Ltr",
+        "coefficient": 0.1,
+        "price": 15900.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.3.4",
+    "name": "Pek. Pemasangan 1 m2 Bekisting untuk Kolom (3 Kali Pakai)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Bekisting untuk Kolom (3 Kali Pakai)",
+    "basePrice": 298587.32,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.66,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.33,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.033,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Paku 5 - 12cm",
+        "code": "M.59",
+        "unit": "Kg",
+        "coefficient": 0.4,
+        "price": 31100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Minyak Bekisting",
+        "code": "M.81",
+        "unit": "Ltr",
+        "coefficient": 0.2,
+        "price": 15900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Balok Kayu Kelas II",
+        "code": "M.388",
+        "unit": "m3",
+        "coefficient": 0.00465,
+        "price": 8504700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Plywood Tebal 12mm",
+        "code": "M.90",
+        "unit": "Lbr",
+        "coefficient": 0.12705,
+        "price": 409300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Dolken Kayu 8/10cm Panjang 4m",
+        "code": "M.15",
+        "unit": "Btg",
+        "coefficient": 0.65,
+        "price": 34300.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.3.8",
+    "name": "Pek. Pemasangan 1 m2 Bekisting untuk Tangga (3 Kali Pakai)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Bekisting untuk Tangga (3 Kali Pakai)",
+    "basePrice": 300748.5,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.66,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.33,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.033,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Paku 5 - 10cm",
+        "code": "M.58",
+        "unit": "Kg",
+        "coefficient": 0.4,
+        "price": 31100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Minyak Bekisting",
+        "code": "M.81",
+        "unit": "Ltr",
+        "coefficient": 0.15,
+        "price": 15900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Balok Kayu Kelas II",
+        "code": "M.388",
+        "unit": "m3",
+        "coefficient": 0.005,
+        "price": 8504700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Plywood Tebal 12mm",
+        "code": "M.90",
+        "unit": "Lbr",
+        "coefficient": 0.127,
+        "price": 409300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Dolken Kayu 8/10cm Panjang 4m",
+        "code": "M.15",
+        "unit": "Btg",
+        "coefficient": 0.65,
+        "price": 34300.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.6.1.10",
+    "name": "Pek. Pemasangan 1 m2 Dinding Bata Merah Tebal \u00bd Batu Campuran 1SP : 6PP",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Dinding Bata Merah Tebal \u00bd Batu Campuran 1SP : 6PP",
+    "basePrice": 158156.8,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Bata Merah",
+        "code": "M.35",
+        "unit": "Buah",
+        "coefficient": 71.91,
+        "price": 1200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 8.32,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.049,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.3.5",
+    "name": "Pek. Pemasangan 1 m2 Bekisting untuk Balok (3 Kali Pakai)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Bekisting untuk Balok (3 Kali Pakai)",
+    "basePrice": 306496.69,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.66,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.33,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.033,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Paku 5   12cm",
+        "code": "M.59",
+        "unit": "Kg",
+        "coefficient": 0.4,
+        "price": 31100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Minyak Bekisting",
+        "code": "M.81",
+        "unit": "Ltr",
+        "coefficient": 0.2,
+        "price": 15900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Balok Kayu Kelas II",
+        "code": "M.388",
+        "unit": "m3",
+        "coefficient": 0.00558,
+        "price": 8504700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Plywood Tebal 12mm",
+        "code": "M.90",
+        "unit": "Lbr",
+        "coefficient": 0.12705,
+        "price": 409300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Dolken Kayu 8/10cm Panjang 4m",
+        "code": "M.15",
+        "unit": "Btg",
+        "coefficient": 0.65,
+        "price": 34300.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.4.5",
+    "name": "Pek. 1 m3 Beton Mutu Rendah F'c 20 MPa. Slump 100 \u00b1 25mm Agregat Maks 19mm Secara Manual",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. 1 m3 Beton Mutu Rendah F'c 20 MPa. Slump 100 \u00b1 25mm Agregat Maks 19mm Secara Manual",
+    "basePrice": 1266190.4,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 1.65,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.275,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.028,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.009,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 348.0,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Beton",
+        "code": "M.25",
+        "unit": "Kg",
+        "coefficient": 790.0,
+        "price": 200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kerikil (Maks 19mm)",
+        "code": "M.21",
+        "unit": "Kg",
+        "coefficient": 1009.0,
+        "price": 200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Air",
+        "code": "M.1",
+        "unit": "Ltr",
+        "coefficient": 202.0,
+        "price": 200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.2.1.10",
+    "name": "Pek. Pemasangan 1 m3 Pondasi Batu Belah Campuran 1 SP : 6 PP Cara Manual",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m3 Pondasi Batu Belah Campuran 1 SP : 6 PP Cara Manual",
+    "basePrice": 1127451.2,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 1.5,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.5,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.15,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Batu Belah",
+        "code": "M.16",
+        "unit": "m3",
+        "coefficient": 1.2,
+        "price": 419500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 117.0,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.561,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.2.1.1",
+    "name": "Pek. Pemasangan 1 m3 Batu Kosong (Aanstamping) untuk Pondasi Gedung",
+    "unit": "m3",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m3 Batu Kosong (Aanstamping) untuk Pondasi Gedung",
+    "basePrice": 787384.1,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.78,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.39,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.039,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.013,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Batu Belah",
+        "code": "M.16",
+        "unit": "m3",
+        "coefficient": 1.2,
+        "price": 419500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Urug",
+        "code": "M.27",
+        "unit": "m3",
+        "coefficient": 0.432,
+        "price": 194700.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.1.3",
+    "name": "Pek. 1 Kg Penulangan Kolom, Balok, Ring Balok, & Sloof untuk BjTP atau BjTS Dia. <12mm Cara Manual",
+    "unit": "kg",
+    "category": "General",
+    "description": "Pek. 1 Kg Penulangan Kolom, Balok, Ring Balok, & Sloof untuk BjTP atau BjTS Dia. <12mm Cara Manual",
+    "basePrice": 22503.49,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.0016,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Besi",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.0016,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.00016,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.00016,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "*) Baja Tulangan Polos (BjTP)",
+        "code": "M.342",
+        "unit": "Kg",
+        "coefficient": 1.02,
+        "price": 20700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kawat Bendrat",
+        "code": "M.353",
+        "unit": "Kg",
+        "coefficient": 0.028,
+        "price": 28200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "A.4.1.1.17.a",
+    "name": "Pembesian 1 kg dengan besi polos atau besi ulir",
+    "unit": "kg",
+    "category": "General",
+    "description": "Pembesian 1 kg dengan besi polos atau besi ulir",
+    "basePrice": 17862.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01.01",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Besi",
+        "code": "L.02.05",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03.01",
+        "unit": "OH",
+        "coefficient": 0.0,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04.01",
+        "unit": "OH",
+        "coefficient": 0.0,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Besi beton (polos/ulir)",
+        "code": "-",
+        "unit": "kg",
+        "coefficient": 1.05,
+        "price": 14256.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kawat beton",
+        "code": "-",
+        "unit": "kg",
+        "coefficient": 0.02,
+        "price": 22500.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.6.3.2",
+    "name": "Pek. Pemasangan 1 m2 Dinding Kerawang (rooster) Uk. 12x11x24cm dengan Mortar Tipe N Fc\u2019 5.2 MPa (Setara Campuran 1SP : 4PP)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Dinding Kerawang (rooster) Uk. 12x11x24cm dengan Mortar Tipe N Fc\u2019 5.2 MPa (Setara Campuran 1SP : 4PP)",
+    "basePrice": 839724.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Bata Rooster",
+        "code": "M.41",
+        "unit": "Buah",
+        "coefficient": 36.46,
+        "price": 21000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 11.0,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.035,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.6",
+    "name": "Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm",
+    "basePrice": 62336.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 4.416,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.027,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.8",
+    "name": "Pek. Pemasangan 1 m2 Acian",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Acian",
+    "basePrice": 56442.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 3.25,
+        "price": 1600.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.6",
+    "name": "Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm",
+    "basePrice": 62336.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 4.416,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.027,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.8",
+    "name": "Pek. Pemasangan 1 m2 Acian",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Acian",
+    "basePrice": 56442.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 3.25,
+        "price": 1600.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.3",
+    "name": "Pek. Pemasangan 1 m2 Plesteran 1SP : 3PP Tebal 15mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Plesteran 1SP : 3PP Tebal 15mm",
+    "basePrice": 67115.2,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 7.776,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.023,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.4",
+    "name": "Pek. Pemasangan 1 m2 Plesteran 1SP : 4PP Tebal 15mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Plesteran 1SP : 4PP Tebal 15mm",
+    "basePrice": 64806.8,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 6.24,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.024,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.5",
+    "name": "Pek. Pemasangan 1 m2 Plesteran 1SP : 5PP Tebal 15mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Plesteran 1SP : 5PP Tebal 15mm",
+    "basePrice": 63415.6,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 5.184,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.026,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.6",
+    "name": "Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm",
+    "basePrice": 62336.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 4.416,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.027,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.8",
+    "name": "Pek. Pemasangan 1 m2 Acian",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Acian",
+    "basePrice": 56442.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 3.25,
+        "price": 1600.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.7.13",
+    "name": "Pek. Pemasangan 1 m2 Kamprotan untuk Finishing 1SP : 2PP",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Kamprotan untuk Finishing 1SP : 2PP",
+    "basePrice": 41999.2,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.133,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.067,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.007,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.002,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 4.32,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.006,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.5.3.2",
+    "name": "Pek. Pemasangan 1 m2 Rangka Besi Hollow Galvanis 40.40mm. Modul 60x60cm. untuk Langit-langit (Plafon)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Rangka Besi Hollow Galvanis 40.40mm. Modul 60x60cm. untuk Langit-langit (Plafon)",
+    "basePrice": 172971.5,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.35,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Besi",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.35,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.035,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0117,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Hollow Galvanis 4x4 (Plafond)",
+        "code": "M.94",
+        "unit": "m1",
+        "coefficient": 4.0,
+        "price": 11200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kawat Las",
+        "code": "M.358",
+        "unit": "Kg",
+        "coefficient": 0.05,
+        "price": 46100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.5.3.1",
+    "name": "Pek. Pemasangan 1 m2 Rangka Langit langit (Plafon) Besi Hollow 40.40",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Rangka Langit langit (Plafon) Besi Hollow 40.40",
+    "basePrice": 197771.5,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.35,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Besi",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.35,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.035,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0117,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Rangka Metal Hollow 40.40mm",
+        "code": "M.373",
+        "unit": "m1",
+        "coefficient": 4.0,
+        "price": 17400.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kawat Las",
+        "code": "M.358",
+        "unit": "Kg",
+        "coefficient": 0.05,
+        "price": 46100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.5.2.1",
+    "name": "Pek. Pemasangan 1 m2 Langit-langit Papan Gypsum Tebal 9mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Langit-langit Papan Gypsum Tebal 9mm",
+    "basePrice": 71069.5,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.05,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.005,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0017,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Papan Gipsum 120x240cm",
+        "code": "M.405",
+        "unit": "Lbr",
+        "coefficient": 0.364,
+        "price": 111500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku Sekrup",
+        "code": "M.66",
+        "unit": "Kg",
+        "coefficient": 0.11,
+        "price": 44100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "A.4.5.1.9.a",
+    "name": "Pemasangan 1 m\u2019 list langit-langit gypsum profil 10 cm",
+    "unit": "ls",
+    "category": "General",
+    "description": "Pemasangan 1 m\u2019 list langit-langit gypsum profil 10 cm",
+    "basePrice": 70887.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01.01",
+        "unit": "OH",
+        "coefficient": 0.05,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02.04",
+        "unit": "OH",
+        "coefficient": 0.05,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala tukang",
+        "code": "L.03.01",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04.01",
+        "unit": "OH",
+        "coefficient": 0.0,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "List Gipsum profil 10 cm Pj. 2.00 m'",
+        "code": "-",
+        "unit": "m'",
+        "coefficient": 1.05,
+        "price": 50000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Tepung gypsum",
+        "code": "-",
+        "unit": "kg",
+        "coefficient": 0.01,
+        "price": 10000.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.5.2.1",
+    "name": "Pek. Pemasangan 1 m2 Langit langit Papan Gypsum Tebal 9mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Langit langit Papan Gypsum Tebal 9mm",
+    "basePrice": 71069.5,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.05,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.005,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0017,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Papan Gipsum 120x240cm",
+        "code": "M.405",
+        "unit": "Lbr",
+        "coefficient": 0.364,
+        "price": 111500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku Sekrup",
+        "code": "M.66",
+        "unit": "Kg",
+        "coefficient": 0.11,
+        "price": 44100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.5.2.6",
+    "name": "Pek. Pemasangan 1 m1 List Langit-langit (Plafon) Gypsum",
+    "unit": "m1",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m1 List Langit-langit (Plafon) Gypsum",
+    "basePrice": 44493.25,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.025,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.025,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.0025,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0008,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "List Gypsum",
+        "code": "M.163",
+        "unit": "m1",
+        "coefficient": 1.1,
+        "price": 32000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku",
+        "code": "M.54",
+        "unit": "Kg",
+        "coefficient": 0.01,
+        "price": 31100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.5.2.6",
+    "name": "Pek. Pemasangan 1 m1 List Langit langit (Plafon) Gypsum",
+    "unit": "m1",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m1 List Langit langit (Plafon) Gypsum",
+    "basePrice": 44493.25,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.025,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.025,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.0025,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0008,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "List Gypsum",
+        "code": "M.163",
+        "unit": "m1",
+        "coefficient": 1.1,
+        "price": 32000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku",
+        "code": "M.54",
+        "unit": "Kg",
+        "coefficient": 0.01,
+        "price": 31100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.9.5.3",
+    "name": "Pek. Pemasangan 1 m2 Lantai Ubin Granit Uk. 60cm x 60cm (1SP : 2PP)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Lantai Ubin Granit Uk. 60cm x 60cm (1SP : 2PP)",
+    "basePrice": 321551.7,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.25,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.083,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.008,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.002,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Ubin Granit Uk. 60x60cm",
+        "code": "M.215",
+        "unit": "Buah",
+        "coefficient": 2.917,
+        "price": 81700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 13.632,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Warna",
+        "code": "M.34",
+        "unit": "Kg",
+        "coefficient": 1.5,
+        "price": 1500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.027,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "User",
+    "name": "1.1\tPemasangan 1m2 lantai keramik motif granit ukuran 60cm x 60cm (unpolish)",
+    "unit": "m2",
+    "category": "General",
+    "description": "1.1\tPemasangan 1m2 lantai keramik motif granit ukuran 60cm x 60cm (unpolish)",
+    "basePrice": 639065.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01.01",
+        "unit": "OH",
+        "coefficient": 0.7,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02.03",
+        "unit": "OH",
+        "coefficient": 0.35,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala tukang",
+        "code": "L.03.01",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04.01",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Keramik granit kw.1 ukuran 60 x 60 cm",
+        "code": "-",
+        "unit": "Buah",
+        "coefficient": 3.1,
+        "price": 138710.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "-",
+        "unit": "Kg",
+        "coefficient": 9.6,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "-",
+        "unit": "M3",
+        "coefficient": 0.05,
+        "price": 149200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Warna",
+        "code": "-",
+        "unit": "Kg",
+        "coefficient": 1.5,
+        "price": 1500.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "User",
+    "name": "1.1\tPemasangan 1m2 lantai keramik motif granit ukuran 60cm x 60cm (unpolish)",
+    "unit": "m2",
+    "category": "General",
+    "description": "1.1\tPemasangan 1m2 lantai keramik motif granit ukuran 60cm x 60cm (unpolish)",
+    "basePrice": 209065.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01.01",
+        "unit": "OH",
+        "coefficient": 0.7,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02.03",
+        "unit": "OH",
+        "coefficient": 0.35,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala tukang",
+        "code": "L.03.01",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04.01",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "-",
+        "unit": "Kg",
+        "coefficient": 9.6,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "-",
+        "unit": "M3",
+        "coefficient": 0.05,
+        "price": 149200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Warna",
+        "code": "-",
+        "unit": "Kg",
+        "coefficient": 1.5,
+        "price": 1500.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.9.4.1",
+    "name": "Pek. Pemasangan 1 m2 Lantai Homogenous Tile Uk. 30x30cm (1SP : 2PP)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Lantai Homogenous Tile Uk. 30x30cm (1SP : 2PP)",
+    "basePrice": 537207.08,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.1429,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.071,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.007,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0024,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Homogeneous Tile Uk. 30x30cm",
+        "code": "M.269",
+        "unit": "Buah",
+        "coefficient": 11.667,
+        "price": 40500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 13.632,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Warna",
+        "code": "M.34",
+        "unit": "Kg",
+        "coefficient": 1.5,
+        "price": 1500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.027,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.8.10",
+    "name": "Pek. Pengecatan 1 m2 Tembok Baru (1 Lapis Plamuur. 1 Lapis Cat Dasar. 2 Lapis Cat Penutup)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pengecatan 1 m2 Tembok Baru (1 Lapis Plamuur. 1 Lapis Cat Dasar. 2 Lapis Cat Penutup)",
+    "basePrice": 45717.86,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.0667,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Cat",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.0667,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.0067,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0022,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Cat Dasar",
+        "code": "M.45",
+        "unit": "Kg",
+        "coefficient": 0.1,
+        "price": 88100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Cat Penutup Interior",
+        "code": "M.48",
+        "unit": "Kg",
+        "coefficient": 0.26,
+        "price": 49700.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.8.20",
+    "name": "Pek. Pengecatan 1 m2 Plafond (1 Lapis Cat Dasar dan 2 Lapis Cat Penutup)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pengecatan 1 m2 Plafond (1 Lapis Cat Dasar dan 2 Lapis Cat Penutup)",
+    "basePrice": 48918.84,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.0625,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Cat",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.0625,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.0063,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0021,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Cat Dasar",
+        "code": "M.45",
+        "unit": "Kg",
+        "coefficient": 0.12,
+        "price": 88100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Cat Plafond",
+        "code": "M.49",
+        "unit": "Kg",
+        "coefficient": 0.18,
+        "price": 88100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.11.3.1",
+    "name": "Pek. Pemasangan 1 m1 Kusen Aluminium",
+    "unit": "m1",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m1 Kusen Aluminium",
+    "basePrice": 432211.7,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.043,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.043,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.004,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.001,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Profil Aluminium 4 Inch",
+        "code": "M.508",
+        "unit": "m1",
+        "coefficient": 1.1,
+        "price": 377500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku Sekrup",
+        "code": "M.67",
+        "unit": "Buah",
+        "coefficient": 2.0,
+        "price": 200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Sealant",
+        "code": "M.516",
+        "unit": "Tube",
+        "coefficient": 0.06,
+        "price": 21000.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.11.1.6",
+    "name": "Pek. Pemasangan 1 m2 Jendela Kaca Rangka Aluminium",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Jendela Kaca Rangka Aluminium",
+    "basePrice": 772716.2,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.085,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.085,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.009,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.003,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Rangka Aluminium",
+        "code": "M.234",
+        "unit": "m1",
+        "coefficient": 4.4,
+        "price": 23900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Profil Kaca Tebal 6mm",
+        "code": "M.510",
+        "unit": "m2",
+        "coefficient": 1.1,
+        "price": 573800.0,
+        "category": "Material"
+      },
+      {
+        "name": "Sealant",
+        "code": "M.516",
+        "unit": "Tube",
+        "coefficient": 0.27,
+        "price": 21000.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "A.4.6.1.8",
+    "name": "Pembuatan 1 m2 daun pintu plywood  rangkap, rangka kayu kelas II tertutup ( kayu Kruing )",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pembuatan 1 m2 daun pintu plywood  rangkap, rangka kayu kelas II tertutup ( kayu Kruing )",
+    "basePrice": 533865.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01.01",
+        "unit": "OH",
+        "coefficient": 0.7,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang kayu",
+        "code": "L.02.04",
+        "unit": "OH",
+        "coefficient": 2.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala tukang",
+        "code": "L.03.01",
+        "unit": "OH",
+        "coefficient": 0.21,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04.01",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Paku Biasa",
+        "code": "-",
+        "unit": "kg",
+        "coefficient": 0.03,
+        "price": 27400.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.12.3",
+    "name": "Pek. Pemasangan 1 m2 Kaca Polos Tebal 5mm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Kaca Polos Tebal 5mm",
+    "basePrice": 185648.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.015,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.15,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.015,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.005,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kaca Polos 5mm",
+        "code": "M.489",
+        "unit": "m2",
+        "coefficient": 1.1,
+        "price": 136300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Silicone Sealant 300 ml",
+        "code": "M.518",
+        "unit": "Tube",
+        "coefficient": 0.05,
+        "price": 48400.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.11.4.5",
+    "name": "Pek. Pemasangan 1 Buah Engsel Pintu",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Buah Engsel Pintu",
+    "basePrice": 65198.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.015,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.15,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.015,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.005,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Engsel Pintu",
+        "code": "M.476",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 31900.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "A.4.6.2.4",
+    "name": "Pemasangan 1 buah kunci silinder",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pemasangan 1 buah kunci silinder",
+    "basePrice": 186270.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01.01",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang kayu",
+        "code": "L.02.04",
+        "unit": "OH",
+        "coefficient": 0.5,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala tukang",
+        "code": "L.03.01",
+        "unit": "OH",
+        "coefficient": 0.05,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04.01",
+        "unit": "OH",
+        "coefficient": 0.0,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kunci silinder",
+        "code": "-",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 85300.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.11.4.4",
+    "name": "Pek. Pemasangan 1 Buah Kunci Tanam Silinder",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Buah Kunci Tanam Silinder",
+    "basePrice": 189489.5,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.005,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.5,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.05,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.017,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kunci Silinder",
+        "code": "M.500",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 85300.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.11.4.2",
+    "name": "Pek. Pemasangan 1 Buah Kunci Tanam Biasa",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Buah Kunci Tanam Biasa",
+    "basePrice": 380054.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.5,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.05,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.017,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kunci Tanam Biasa",
+        "code": "M.503",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 275100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.9.10.1.4",
+    "name": "Pek. Pemasangan 1 m2 Dinding Keramik 20cm x 20cm (1SP : 2PP)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Dinding Keramik 20cm x 20cm (1SP : 2PP)",
+    "basePrice": 338851.6,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.4,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.02,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.007,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Keramik Uk. 20x20cm",
+        "code": "M.157",
+        "unit": "Buah",
+        "coefficient": 26.0,
+        "price": 8300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 9.3,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.018,
+        "price": 149200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Warna",
+        "code": "M.34",
+        "unit": "Kg",
+        "coefficient": 1.94,
+        "price": 1500.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "6.4.1.2",
+    "name": "Pek. Pemasangan 1 m Pipa PVC AW. Dia. 3/4\" (20 mm)",
+    "unit": "ls",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m Pipa PVC AW. Dia. 3/4\" (20 mm)",
+    "basePrice": 34045.8,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.024,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Pipa",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.004,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.001,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Pipa PVC AW ; Dia. 3/4\" ; (20 mm) + Fitting & Aksesoris",
+        "code": "M.1236",
+        "unit": "m1",
+        "coefficient": 1.45,
+        "price": 15300.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "5.5.4.12",
+    "name": "Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 3/4\" ; (20 mm)",
+    "unit": "ls",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 3/4\" ; (20 mm)",
+    "basePrice": 58841.6,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.048,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Pipa",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.08,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.008,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.003,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Pipa PVC AW ; Dia. 3/4\" ; (20 mm) dan Aksesoris",
+        "code": "M.941",
+        "unit": "m1",
+        "coefficient": 1.5,
+        "price": 23100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Isolasi",
+        "code": "M.533",
+        "unit": "m1",
+        "coefficient": 1.2,
+        "price": 200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "5.5.4.19",
+    "name": "Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 4\" ; (100 mm)",
+    "unit": "ls",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 4\" ; (100 mm)",
+    "basePrice": 281789.4,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.255,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Pipa",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.425,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.043,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.014,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Pipa PVC AW ; Dia. 4\" ; (100 mm) dan Aksesoris",
+        "code": "M.948",
+        "unit": "m1",
+        "coefficient": 1.5,
+        "price": 103100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Isolasi",
+        "code": "M.533",
+        "unit": "m1",
+        "coefficient": 1.2,
+        "price": 200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "5.5.4.18",
+    "name": "Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 3\" (80 mm)",
+    "unit": "ls",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 3\" (80 mm)",
+    "basePrice": 213203.4,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.19,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Pipa",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.318,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.032,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Pipa PVC AW ; Dia. 3\" (80 mm) dan Aksesoris",
+        "code": "M.947",
+        "unit": "m1",
+        "coefficient": 1.5,
+        "price": 78700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Isolasi",
+        "code": "M.533",
+        "unit": "m1",
+        "coefficient": 1.2,
+        "price": 200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.18.6.1",
+    "name": "Pek. Pemasangan 1 Buah Floor Drain",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Buah Floor Drain",
+    "basePrice": 73091.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Floor Drain",
+        "code": "M.1173",
+        "unit": "Unit",
+        "coefficient": 1.0,
+        "price": 50900.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.18.3.1",
+    "name": "Pek. Pemasangan 1 Buah Closet Duduk/Monoblock",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Buah Closet Duduk/Monoblock",
+    "basePrice": 2663586.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.5,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 1.2,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.12,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Closet Duduk",
+        "code": "M.1170",
+        "unit": "Unit",
+        "coefficient": 1.0,
+        "price": 2231900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Flexible Hose",
+        "code": "M.1172",
+        "unit": "Unit",
+        "coefficient": 1.0,
+        "price": 107200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "6.3.2",
+    "name": "Pek. Pemasangan 1 Buah Bak Kontrol Pasangan Bata 45cm x 45cm Tinggi 50cm dengan Tutup Beton",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Buah Bak Kontrol Pasangan Bata 45cm x 45cm Tinggi 50cm dengan Tutup Beton",
+    "basePrice": 1046457.3,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 3.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 1.15,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.016,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Bata Merah",
+        "code": "M.35",
+        "unit": "Buah",
+        "coefficient": 70.0,
+        "price": 1200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 77.0,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.1,
+        "price": 149200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Beton",
+        "code": "M.24",
+        "unit": "m3",
+        "coefficient": 0.1,
+        "price": 311700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kerikil",
+        "code": "M.18",
+        "unit": "m3",
+        "coefficient": 0.1,
+        "price": 387500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Baja Tulangan",
+        "code": "M.341",
+        "unit": "Kg",
+        "coefficient": 2.6,
+        "price": 20700.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "6.3.3",
+    "name": "Pek. Pemasangan 1 Buah Bak Kontrol Pasangan Bata 60cm x 60cm Tinggi 65cm dengan Tutup Beton",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Buah Bak Kontrol Pasangan Bata 60cm x 60cm Tinggi 65cm dengan Tutup Beton",
+    "basePrice": 1208636.6,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 3.2,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 1.15,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.016,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Bata Merah",
+        "code": "M.35",
+        "unit": "Buah",
+        "coefficient": 123.0,
+        "price": 1200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 114.0,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.184,
+        "price": 149200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Beton",
+        "code": "M.24",
+        "unit": "m3",
+        "coefficient": 0.12,
+        "price": 311700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kerikil",
+        "code": "M.18",
+        "unit": "m3",
+        "coefficient": 0.033,
+        "price": 387500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Baja Tulangan",
+        "code": "M.341",
+        "unit": "Kg",
+        "coefficient": 4.85,
+        "price": 20700.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.1.1.7",
+    "name": "Pek. Pemasangan 1 m1 Nok/Bubung Genteng Palentong Besar",
+    "unit": "m1",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m1 Nok/Bubung Genteng Palentong Besar",
+    "basePrice": 287281.4,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.4,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.02,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0067,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Genteng Bubung",
+        "code": "M.138",
+        "unit": "Buah",
+        "coefficient": 4.0,
+        "price": 41800.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "M.33",
+        "unit": "Kg",
+        "coefficient": 8.0,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "M.28",
+        "unit": "m3",
+        "coefficient": 0.032,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.1.1",
+    "name": "Pek. 1 Kg Penulangan Slab untuk BjTP atau BjTS Diameter < 12mm Cara Manual",
+    "unit": "kg",
+    "category": "General",
+    "description": "Pek. 1 Kg Penulangan Slab untuk BjTP atau BjTS Diameter < 12mm Cara Manual",
+    "basePrice": 17021.51,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.007,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Besi",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.007,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.0007,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0007,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "*) Baja Tulangan Polos (BjTP)",
+        "code": "-",
+        "unit": "Kg",
+        "coefficient": 1.02,
+        "price": 13700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kawat Bendrat",
+        "code": "M.353",
+        "unit": "Kg",
+        "coefficient": 0.015,
+        "price": 28200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.1.1.2",
+    "name": "Pek. Pemasangan 1 m2 Atap Jurai/Limasan Rangka Atap Baja Ringan (Canai Dingin) Profil C75",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Atap Jurai/Limasan Rangka Atap Baja Ringan (Canai Dingin) Profil C75",
+    "basePrice": 479402.75,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.7604,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Besi",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.7604,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.076,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0253,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Baja Ringan Canai Dingin C75",
+        "code": "M.336",
+        "unit": "Btg",
+        "coefficient": 0.9603,
+        "price": 214500.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.1.1.3",
+    "name": "Pek. Pemasangan 1 m2 Atap Genteng Palentong Besar",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Atap Genteng Palentong Besar",
+    "basePrice": 274837.25,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.15,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.075,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.0075,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0025,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Genteng Palentong Besar (Morando)",
+        "code": "M.141",
+        "unit": "Buah",
+        "coefficient": 12.0,
+        "price": 19700.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.3.5",
+    "name": "Pek. Pemasangan 1 m1 Lisplank Non Kayu (GRC Serat Semen) Lebar 30cm",
+    "unit": "m1",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m1 Lisplank Non Kayu (GRC Serat Semen) Lebar 30cm",
+    "basePrice": 158572.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.02,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0067,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Serat Semen Lebar 30cm",
+        "code": "M.246",
+        "unit": "m1",
+        "coefficient": 1.05,
+        "price": 95600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku 5   7cm",
+        "code": "M.57",
+        "unit": "Kg",
+        "coefficient": 0.05,
+        "price": 31100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.3.6",
+    "name": "Pek. Pemasangan 1 m1 Lisplank Non Kayu (GRC Serat Semen) Lebar 20cm",
+    "unit": "m1",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m1 Lisplank Non Kayu (GRC Serat Semen) Lebar 20cm",
+    "basePrice": 146602.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.2,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.02,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0067,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Serat Semen Lebar 20cm",
+        "code": "M.245",
+        "unit": "m1",
+        "coefficient": 1.05,
+        "price": 84200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Paku 5   7cm",
+        "code": "M.57",
+        "unit": "Kg",
+        "coefficient": 0.05,
+        "price": 31100.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "A.4.4.3.57.b",
+    "name": "Pemasangan 1 m2 dinding batu alam hitam serit lurus 20 x 40 cm",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pemasangan 1 m2 dinding batu alam hitam serit lurus 20 x 40 cm",
+    "basePrice": 489043.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01.01",
+        "unit": "OH",
+        "coefficient": 0.7,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Batu",
+        "code": "L.02.03",
+        "unit": "OH",
+        "coefficient": 0.35,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala tukang",
+        "code": "L.03.01",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04.01",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Batu Hitam serit motif lurus Ukuran 20 X 40 cm",
+        "code": "-",
+        "unit": "m2",
+        "coefficient": 1.1,
+        "price": 254800.0,
+        "category": "Material"
+      },
+      {
+        "name": "Semen Portland",
+        "code": "-",
+        "unit": "Kg",
+        "coefficient": 11.75,
+        "price": 1600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pasir Pasang",
+        "code": "-",
+        "unit": "M3",
+        "coefficient": 0.04,
+        "price": 149200.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.11.1.11",
+    "name": "Pek. Pembuatan 1 m2 Daun Pintu Panel Kayu Kelas I atau II",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pembuatan 1 m2 Daun Pintu Panel Kayu Kelas I atau II",
+    "basePrice": 1279552.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 1.0,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 3.0,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.3,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.1,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Papan Kayu Kelas I",
+        "code": "M.407",
+        "unit": "m3",
+        "coefficient": 0.04,
+        "price": 12340300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Lem Kayu",
+        "code": "M.77",
+        "unit": "Kg",
+        "coefficient": 0.5,
+        "price": 25900.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "A.4.6.2.5",
+    "name": "Pemasangan 1 buah engsel pintu",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pemasangan 1 buah engsel pintu",
+    "basePrice": 77935.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01.01",
+        "unit": "OH",
+        "coefficient": 0.02,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang kayu",
+        "code": "L.02.04",
+        "unit": "OH",
+        "coefficient": 0.15,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala tukang",
+        "code": "L.03.01",
+        "unit": "OH",
+        "coefficient": 0.02,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04.01",
+        "unit": "OH",
+        "coefficient": 0.0,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Engsel pintu kuningan",
+        "code": "-",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 45603.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "6.5.13.3",
+    "name": "Pek. Pemasangan 1 Buah Roof Drain. Dia. 3\" (80 mm)",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Buah Roof Drain. Dia. 3\" (80 mm)",
+    "basePrice": 212781.5,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.208,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Pipa",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.348,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.035,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Roof Drain ; Dia. 3\u201c (80 mm) + Material Bantu",
+        "code": "M.1561",
+        "unit": "Buah",
+        "coefficient": 1.25,
+        "price": 87500.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.18.6.2",
+    "name": "Pek.  Pemasangan 1 Buah Kran Diameter \u00bd Inch atau \u00be Inch",
+    "unit": "buah",
+    "category": "General",
+    "description": "Pek.  Pemasangan 1 Buah Kran Diameter \u00bd Inch atau \u00be Inch",
+    "basePrice": 142600.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.01,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.4,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.04,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.0033,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kran Air",
+        "code": "M.1178",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 48000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Sealtape",
+        "code": "M.517",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 12700.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "2.2.1.3.6",
+    "name": "Pek. Pemasangan 1 m2 Bekisting untuk Plat Lantai (3 Kali Pakai)",
+    "unit": "m2",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 m2 Bekisting untuk Plat Lantai (3 Kali Pakai)",
+    "basePrice": 343156.86,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.66,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Kayu",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.33,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.033,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Paku 5   10cm",
+        "code": "M.58",
+        "unit": "Kg",
+        "coefficient": 0.4,
+        "price": 31100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Minyak Bekisting",
+        "code": "M.81",
+        "unit": "Ltr",
+        "coefficient": 0.2,
+        "price": 15900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Balok Kayu Kelas II",
+        "code": "M.388",
+        "unit": "m3",
+        "coefficient": 0.00465,
+        "price": 8504700.0,
+        "category": "Material"
+      },
+      {
+        "name": "Plywood Tebal 12mm",
+        "code": "M.90",
+        "unit": "Lbr",
+        "coefficient": 0.127,
+        "price": 409300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Dolken Kayu 8/10cm Panjang 4m",
+        "code": "M.15",
+        "unit": "Btg",
+        "coefficient": 1.95,
+        "price": 34300.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "5.1.5.13",
+    "name": "Pek. Pemasangan 1 titik Instalasi Stop Kontak",
+    "unit": "titik",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 titik Instalasi Stop Kontak",
+    "basePrice": 832751.9,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.205,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Listrik",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.342,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.034,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "NYM 3 x 2.5 mm2 dan Aksesoris",
+        "code": "M.661",
+        "unit": "m1",
+        "coefficient": 14.3,
+        "price": 23300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Conduit HI 20 mm",
+        "code": "M.563",
+        "unit": "m1",
+        "coefficient": 14.3,
+        "price": 8200.0,
+        "category": "Material"
+      },
+      {
+        "name": "T Dus",
+        "code": "M.531",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 1900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Socket Conduit 20mm",
+        "code": "M.764",
+        "unit": "Buah",
+        "coefficient": 8.0,
+        "price": 1200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Klem 20mm",
+        "code": "M.528",
+        "unit": "Buah",
+        "coefficient": 8.0,
+        "price": 25600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Fischer S6 + Sekrup",
+        "code": "M.532",
+        "unit": "Buah",
+        "coefficient": 12.0,
+        "price": 400.0,
+        "category": "Material"
+      },
+      {
+        "name": "L Bow",
+        "code": "M.529",
+        "unit": "Buah",
+        "coefficient": 4.0,
+        "price": 14200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Isolasi",
+        "code": "M.533",
+        "unit": "m1",
+        "coefficient": 0.5,
+        "price": 200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Las Dop",
+        "code": "M.530",
+        "unit": "Buah",
+        "coefficient": 4.0,
+        "price": 600.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "5.1.5.1",
+    "name": "Pek. Pemasangan 1 Unit Saklar Tunggal",
+    "unit": "unit",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Unit Saklar Tunggal",
+    "basePrice": 46308.6,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.031,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Listrik",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.052,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.005,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.002,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Saklar Tunggal dan Aksesoris",
+        "code": "M.534",
+        "unit": "Buah",
+        "coefficient": 1.1,
+        "price": 28000.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "5.1.5.2",
+    "name": "Pek. Pemasangan 1 Unit Saklar Ganda",
+    "unit": "unit",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Unit Saklar Ganda",
+    "basePrice": 52248.6,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.031,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Listrik",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.052,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.005,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.002,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Saklar Ganda dan Aksesoris",
+        "code": "M.535",
+        "unit": "Buah",
+        "coefficient": 1.1,
+        "price": 33400.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "5.3.1.1",
+    "name": "Pek. Pemasangan 1 Titik Instalasi Lampu",
+    "unit": "titik",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Titik Instalasi Lampu",
+    "basePrice": 708013.4,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.19,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Listrik",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.318,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.032,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "NYM 3 x 2.5 mm2 dan Aksesoris",
+        "code": "M.661",
+        "unit": "m1",
+        "coefficient": 8.8,
+        "price": 23300.0,
+        "category": "Material"
+      },
+      {
+        "name": "Conduit HI 20 mm",
+        "code": "M.563",
+        "unit": "m1",
+        "coefficient": 8.8,
+        "price": 8200.0,
+        "category": "Material"
+      },
+      {
+        "name": "T Dus",
+        "code": "M.531",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 1900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Socket Conduit 20mm",
+        "code": "M.764",
+        "unit": "Buah",
+        "coefficient": 5.0,
+        "price": 1200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Klem 20mm",
+        "code": "M.528",
+        "unit": "Buah",
+        "coefficient": 10.0,
+        "price": 25600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Fischer S6 + Sekrup",
+        "code": "M.532",
+        "unit": "Buah",
+        "coefficient": 15.0,
+        "price": 400.0,
+        "category": "Material"
+      },
+      {
+        "name": "Flexible Conduit 20mm",
+        "code": "M.565",
+        "unit": "m1",
+        "coefficient": 1.0,
+        "price": 6700.0,
+        "category": "Material"
+      },
+      {
+        "name": "L Bow",
+        "code": "M.529",
+        "unit": "Buah",
+        "coefficient": 4.0,
+        "price": 14200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Isolasi",
+        "code": "M.533",
+        "unit": "m1",
+        "coefficient": 0.5,
+        "price": 200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Las Dop",
+        "code": "M.530",
+        "unit": "Buah",
+        "coefficient": 4.0,
+        "price": 600.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "5.3.1.2",
+    "name": "Pek. Pemasangan 1 Titik Instalasi Lampu (Kabel LSOH)",
+    "unit": "titik",
+    "category": "General",
+    "description": "Pek. Pemasangan 1 Titik Instalasi Lampu (Kabel LSOH)",
+    "basePrice": 718573.4,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.19,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Listrik",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.318,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.032,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.011,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "NYM 3 x 2.5 mm2 (LSOH) dan Aksesoris",
+        "code": "M.662",
+        "unit": "m1",
+        "coefficient": 8.8,
+        "price": 24500.0,
+        "category": "Material"
+      },
+      {
+        "name": "Conduit HI 20 mm",
+        "code": "M.563",
+        "unit": "m1",
+        "coefficient": 8.8,
+        "price": 8200.0,
+        "category": "Material"
+      },
+      {
+        "name": "T Dus",
+        "code": "M.531",
+        "unit": "Buah",
+        "coefficient": 1.0,
+        "price": 1900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Socket Conduit 20mm",
+        "code": "M.764",
+        "unit": "Buah",
+        "coefficient": 5.0,
+        "price": 1200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Klem 20mm",
+        "code": "M.528",
+        "unit": "Buah",
+        "coefficient": 10.0,
+        "price": 25600.0,
+        "category": "Material"
+      },
+      {
+        "name": "Fischer S6 + Sekrup",
+        "code": "M.532",
+        "unit": "Buah",
+        "coefficient": 15.0,
+        "price": 400.0,
+        "category": "Material"
+      },
+      {
+        "name": "Flexible Conduit 20mm",
+        "code": "M.565",
+        "unit": "m1",
+        "coefficient": 1.0,
+        "price": 6700.0,
+        "category": "Material"
+      },
+      {
+        "name": "L Bow",
+        "code": "M.529",
+        "unit": "Buah",
+        "coefficient": 4.0,
+        "price": 14200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Isolasi",
+        "code": "M.533",
+        "unit": "m1",
+        "coefficient": 0.5,
+        "price": 200.0,
+        "category": "Material"
+      },
+      {
+        "name": "Las Dop",
+        "code": "M.530",
+        "unit": "Buah",
+        "coefficient": 4.0,
+        "price": 600.0,
+        "category": "Material"
+      }
+    ]
+  },
+  {
+    "code": "3.13.4",
+    "name": "Pek. Pembuatan dan Pemasangan 1 m1 Railing Besi Pengaman Tinggi 1.2m",
+    "unit": "m1",
+    "category": "General",
+    "description": "Pek. Pembuatan dan Pemasangan 1 m1 Railing Besi Pengaman Tinggi 1.2m",
+    "basePrice": 2642038.0,
+    "overheadPercentage": 0,
+    "profitPercentage": 0,
+    "isActive": true,
+    "components": [
+      {
+        "name": "Pekerja",
+        "code": "L.01",
+        "unit": "OH",
+        "coefficient": 0.3,
+        "price": 152900.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Tukang Las",
+        "code": "L.02",
+        "unit": "OH",
+        "coefficient": 0.6,
+        "price": 178600.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Kepala Tukang",
+        "code": "L.03",
+        "unit": "OH",
+        "coefficient": 0.06,
+        "price": 204300.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Mandor",
+        "code": "L.04",
+        "unit": "OH",
+        "coefficient": 0.02,
+        "price": 230000.0,
+        "category": "Labor"
+      },
+      {
+        "name": "Pipa Besi Hitam Dia. 3 Inch",
+        "code": "M.367",
+        "unit": "m1",
+        "coefficient": 4.8,
+        "price": 247900.0,
+        "category": "Material"
+      },
+      {
+        "name": "Pipa Besi Hitam Dia. 1 Inch",
+        "code": "M.364",
+        "unit": "m1",
+        "coefficient": 9.9,
+        "price": 127000.0,
+        "category": "Material"
+      },
+      {
+        "name": "Cat Zyncromate",
+        "code": "M.51",
+        "unit": "Kg",
+        "coefficient": 0.1,
+        "price": 57100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Kawat Las",
+        "code": "M.358",
+        "unit": "Kg",
+        "coefficient": 0.05,
+        "price": 46100.0,
+        "category": "Material"
+      },
+      {
+        "name": "Alat Las Listrik",
+        "code": "M.1605",
+        "unit": "Jam",
+        "coefficient": 0.17,
+        "price": 99500.0,
+        "category": "Equipment"
+      }
+    ]
+  }
+]

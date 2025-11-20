@@ -25,6 +25,7 @@ import { Input } from '../ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { Download, LineChart, RefreshCcw, Equal, Calculator, FileSpreadsheet, FileText } from 'lucide-react'
 import { useTimelineStore } from '../../store/timelineStore'
+import { useRabStore } from '../../store/rabStore'
 import type { TimelineTask } from '../../store/timelineStore'
 import { toast } from 'sonner'
 import html2canvas from 'html2canvas'
@@ -145,6 +146,32 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
 
   // Chart/export ref
   const exportRef = useRef<HTMLDivElement | null>(null)
+
+  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? [])
+
+  /** Import amounts from RAB items linked to tasks */
+  const importFromRAB = () => {
+    if (!items.length) return
+    
+    // Map taskId -> total cost
+    const taskCosts = new Map<string, number>()
+    rabItems.forEach((item: any) => {
+      if (item.taskId) {
+        const cost = item.finalTotal || (item.volume * (item.unit_price || 0)) || 0
+        taskCosts.set(item.taskId, (taskCosts.get(item.taskId) || 0) + cost)
+      }
+    })
+
+    setItems(prev => prev.map(it => ({
+      ...it,
+      amount: Math.round(taskCosts.get(it.taskId) || 0)
+    })))
+    
+    const total = Array.from(taskCosts.values()).reduce((a, b) => a + b, 0)
+    setTotalBudget(Math.round(total))
+    
+    toast.success(`Imported Rp ${fmtIDR(total)} from RAB`)
+  }
 
   /** Initialize items when tasks change */
   useEffect(() => {
@@ -361,6 +388,10 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
           </div>
 
           <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={importFromRAB}>
+              <FileText className="h-4 w-4" />
+              Import from RAB
+            </Button>
             <Button variant="outline" className="gap-2" onClick={assignEqual}>
               <Equal className="h-4 w-4" />
               Equal per Task

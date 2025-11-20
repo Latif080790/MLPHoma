@@ -36,6 +36,30 @@ export interface AhspItemRow {
   updated_at?: string
 }
 
+export interface ResourceRow {
+  id: string
+  code: string
+  name: string
+  type: string
+  unit: string
+  unit_price: number
+  created_at?: string
+  updated_at?: string
+}
+
+export interface AhspComponentRow {
+  id: string
+  ahsp_id: string
+  resource_id: string
+  type: string
+  coefficient: number
+  unit: string
+  unit_price: number
+  subtotal: number
+  created_at?: string
+  updated_at?: string
+}
+
 export interface RabItemRow {
   id: string
   project_id: string
@@ -60,6 +84,18 @@ export async function batchUpsertAhsp(items: AhspItemRow[]) {
   if (!items.length) return { error: null }
   const client = assertSupabase()
   return client.from('ahsp_items').upsert(items, { onConflict: 'id' })
+}
+
+export async function batchUpsertResources(items: ResourceRow[]) {
+  if (!items.length) return { error: null }
+  const client = assertSupabase()
+  return client.from('resources').upsert(items, { onConflict: 'id' })
+}
+
+export async function batchUpsertAhspComponents(items: AhspComponentRow[]) {
+  if (!items.length) return { error: null }
+  const client = assertSupabase()
+  return client.from('ahsp_components').upsert(items, { onConflict: 'id' })
 }
 
 export async function fetchAhspItems() {
@@ -96,6 +132,18 @@ export async function deleteRabItem(id: string) {
 export async function deleteRabItemsByProject(projectId: string) {
   const client = assertSupabase()
   return client.from('rab_items').delete().eq('project_id', projectId)
+}
+
+// Delete AHSP component by ID
+export async function deleteAhspComponent(id: string) {
+  const client = assertSupabase()
+  return client.from('ahsp_components').delete().eq('id', id)
+}
+
+// Delete resource by ID
+export async function deleteResource(id: string) {
+  const client = assertSupabase()
+  return client.from('resources').delete().eq('id', id)
 }
 
 // Projects

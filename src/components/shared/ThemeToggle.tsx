@@ -7,11 +7,13 @@ import React from "react"
 
 /**
  * getInitialDark
- * Detect initial dark mode based on document class or media.
+ * Detect initial dark mode based on localStorage or system preference.
  */
 function getInitialDark(): boolean {
-  if (typeof document !== "undefined") {
-    if (document.documentElement.classList.contains("dark")) return true
+  if (typeof window !== "undefined" && window.localStorage) {
+    const stored = window.localStorage.getItem("theme")
+    if (stored === "dark") return true
+    if (stored === "light") return false
   }
   if (typeof window !== "undefined" && window.matchMedia) {
     return window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -22,6 +24,7 @@ function getInitialDark(): boolean {
 /**
  * ThemeToggle
  * Toggle dark mode by adding/removing the "dark" class on <html>.
+ * Persists preference to localStorage.
  */
 export function ThemeToggle() {
   const [dark, setDark] = React.useState<boolean>(getInitialDark)
@@ -30,8 +33,10 @@ export function ThemeToggle() {
     const root = document.documentElement
     if (dark) {
       root.classList.add("dark")
+      localStorage.setItem("theme", "dark")
     } else {
       root.classList.remove("dark")
+      localStorage.setItem("theme", "light")
     }
   }, [dark])
 
