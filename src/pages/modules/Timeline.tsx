@@ -20,7 +20,9 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
 import { Plus, Trash2, AlertTriangle, Filter, Search, Settings2, Download, Flag } from 'lucide-react'
 import GanttChart from '../../components/timeline/GanttChart'
 import TaskEditor from '../../components/timeline/TaskEditor'
+import { WBSImportDialog } from '../../components/timeline/WBSImportDialog'
 import { useTimelineStore } from '../../store/timelineStore'
+import { useProjectStore } from '../../store/projectStore'
 import type { TimelineTask } from '../../store/timelineStore'
 import { toast } from 'sonner'
 import html2canvas from 'html2canvas'
@@ -33,6 +35,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../../components/ui/dropdown-menu'
+import { AppShell } from '../../components/layout/AppShell'
+import { ModuleHeader } from '../../components/modules/ModuleHeader'
+import { EmptyState } from '../../components/common/EmptyState'
 
 /** YYYY-MM-DD from Date (local-safe for UI) */
 function toISODate(d: Date): string {
@@ -156,9 +161,13 @@ function seedDemoTasks(projectId: string): boolean {
 
 /** Timeline page component */
 export default function Timeline() {
-  const projectId = 'PRJ-2024-001'
+  const activeProject = useProjectStore((s) => s.getActiveProject())
+  const projectId = activeProject?.id || ''
+  const projectName = activeProject?.name || '—'
+
   const { getTasks, removeTask } = useTimelineStore()
   const [editorOpen, setEditorOpen] = useState(false)
+  const [importWBSOpen, setImportWBSOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TimelineTask | null>(null)
   const [selectedId, setSelectedId] = useState<string>('')
 
@@ -175,6 +184,7 @@ export default function Timeline() {
 
   // Auto-seed demo tasks if empty
   useEffect(() => {
+    if (!projectId) return
     const tasks = getTasks(projectId) || []
     if (!tasks.length) {
       const seeded = seedDemoTasks(projectId)
@@ -290,22 +300,46 @@ export default function Timeline() {
     pdf.save(`timeline-${projectId}.pdf`)
   }
 
+  if (!projectId) {
+    return (
+      <AppShell>
+        <ModuleHeader
+          icon={<AlertTriangle size={18} />}
+          title="Timeline"
+          description="Project schedule and Gantt chart"
+        />
+        <EmptyState
+          title="No Project Selected"
+          description="Please select a project to view its timeline."
+          imageKeyword="gantt chart"
+        />
+      </AppShell>
+    )
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header actions */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold">Timeline & Gantt</h1>
-        <div className="flex items-center gap-2">
-          <Button onClick={openNew} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Task
-          </Button>
-          <Button variant="outline" className="gap-2 bg-transparent" onClick={removeSelected}>
-            <Trash2 className="h-4 w-4" />
-            Remove Task
-          </Button>
-        </div>
-      </div>
+    <AppShell projectName={projectName}>
+      <ModuleHeader
+        icon={<AlertTriangle size={18} />}
+        title="Timeline & Gantt"
+        description="Interactive Gantt chart with CPM analysis, dependencies, and baseline tracking."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setImportWBSOpen(true)} className="gap-2" size="sm">
+              <FileText className="h-4 w-4" />
+              Import WBS
+            </Button>
+            <Button onClick={openNew} className="gap-2" size="sm">
+              <Plus className="h-4 w-4" />
+              Add Task
+            </Button>
+            <Button variant="outline" className="gap-2 bg-transparent" onClick={removeSelected} size="sm">
+              <Trash2 className="h-4 w-4" />
+              Remove Task
+            </Button>
+          </div>
+        }
+      />
 
       {/* Toolbar */}
       <Card>
@@ -546,6 +580,12 @@ export default function Timeline() {
           setEditorOpen(false)
         }}
       />
-    </div>
+
+      <WBSImportDialog 
+        projectId={projectId}
+        open={importWBSOpen}
+        onOpenChange={setImportWBSOpen}
+      />
+    </AppShell>
   )
 }

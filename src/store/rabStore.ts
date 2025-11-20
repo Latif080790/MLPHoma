@@ -14,6 +14,7 @@
 
 import { create } from 'zustand'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
+import { supabase, upsertRabItems, deleteRabItem, deleteRabItemsByProject } from '../lib/supabaseClient'
 
 /**
  * RABItem
@@ -68,6 +69,7 @@ interface RabState {
   loadFromStorage: () => void
   getHistory: (projectId: string) => { past: number; future: number }
   clearHistory: (projectId: string) => void
+  syncProjectToSupabase?: (projectId: string) => Promise<void>
 }
 
 function generateId(prefix = 'rab') {
@@ -156,6 +158,22 @@ export const useRabStore = create<RabState>((set, get) => {
       })
       get().logAction({ projectId, action: 'addItem', payload: newItem })
       get().persist()
+      if (supabase) {
+        upsertRabItems([
+          {
+            id: newItem.id,
+            project_id: projectId,
+            ahsp_code: newItem.item_code,
+            name: newItem.name,
+            unit: newItem.unit,
+            volume: newItem.volume,
+            unit_price: newItem.unit_price,
+            final_total: newItem.finalTotal ?? newItem.final_total ?? newItem.finalPrice,
+            created_at: newItem.createdAt,
+            updated_at: newItem.updatedAt,
+          },
+        ])
+      }
       return id
     },
 
@@ -168,6 +186,25 @@ export const useRabStore = create<RabState>((set, get) => {
       })
       get().logAction({ projectId, action: 'updateItem', payload: { id, updates } })
       get().persist()
+      if (supabase) {
+        const item = get().itemsByProject[projectId]?.find(i => i.id === id)
+        if (item) {
+          upsertRabItems([
+            {
+              id: item.id,
+              project_id: projectId,
+              ahsp_code: item.item_code,
+              name: item.name,
+              unit: item.unit,
+              volume: item.volume,
+              unit_price: item.unit_price,
+              final_total: item.finalTotal ?? item.final_total ?? item.finalPrice,
+              created_at: item.createdAt,
+              updated_at: item.updatedAt,
+            },
+          ])
+        }
+      }
     },
 
     getItems: (projectId) => {
@@ -188,6 +225,20 @@ export const useRabStore = create<RabState>((set, get) => {
       set((s) => ({ itemsByProject: { ...s.itemsByProject, [projectId]: normalized } }))
       get().logAction({ projectId, action: 'importItems', payload: { count: normalized.length } })
       get().persist()
+      if (supabase && normalized.length) {
+        upsertRabItems(normalized.map(n => ({
+          id: n.id,
+          project_id: projectId,
+          ahsp_code: n.item_code,
+          name: n.name,
+          unit: n.unit,
+          volume: n.volume,
+          unit_price: n.unit_price,
+          final_total: n.finalTotal ?? n.final_total ?? n.finalPrice,
+          created_at: n.createdAt,
+          updated_at: n.updatedAt,
+        })))
+      }
     },
 
     clearProject: (projectId) => {
@@ -199,6 +250,9 @@ export const useRabStore = create<RabState>((set, get) => {
       })
       get().logAction({ projectId, action: 'clearProject' })
       get().persist()
+      if (supabase) {
+        deleteRabItemsByProject(projectId).catch(err => console.warn('Failed to delete project from Supabase:', err))
+      }
     },
 
     removeItem: (projectId, id) => {
@@ -210,6 +264,9 @@ export const useRabStore = create<RabState>((set, get) => {
       })
       get().logAction({ projectId, action: 'removeItem', payload: { id } })
       get().persist()
+      if (supabase) {
+        deleteRabItem(id).catch(err => console.warn('Failed to delete RAB item from Supabase:', err))
+      }
     },
 
     undo: (projectId) => {
@@ -283,6 +340,24 @@ export const useRabStore = create<RabState>((set, get) => {
       set((s) => ({ historyByProject: { ...s.historyByProject, [projectId]: [] }, futureByProject: { ...s.futureByProject, [projectId]: [] } }))
       get().logAction({ projectId, action: 'clearHistory' })
       get().persist()
+    },
+    syncProjectToSupabase: async (projectId: string) => {
+      if (!supabase) return
+      const items = get().itemsByProject[projectId] || []
+      if (!items.length) return
+      await upsertRabItems(items.map(it => ({
+        id: it.id,
+        project_id: projectId,
+        ahsp_code: it.item_code,
+        name: it.name,
+        unit: it.unit,
+        volume: it.volume,
+        unit_price: it.unit_price,
+        final_total: it.finalTotal ?? it.final_total ?? it.finalPrice,
+        created_at: it.createdAt,
+        updated_at: it.updatedAt,
+      })))
+      get().logAction({ projectId, action: 'syncProjectToSupabase', payload: { count: items.length } })
     },
   }
 })

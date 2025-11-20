@@ -9,7 +9,7 @@
  * - Semua tombol dengan variant="outline" diberi className="bg-transparent".
  */
 
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState, useMemo } from 'react'
 import { PlusSquare, Download, RefreshCw } from 'lucide-react'
 import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
@@ -24,6 +24,7 @@ import CompareControls from '../../components/cashflow/CompareControls'
 import WhatIfPanel from '../../components/cashflow/WhatIfPanel'
 import CashChart from '../../components/cashflow/CashChart'
 import PeriodTable from '../../components/cashflow/PeriodTable'
+import { calculateCashFlow } from '../../lib/cashflowCalculator'
 
 /**
  * CashFlow
@@ -44,6 +45,7 @@ export default function CashFlow(): JSX.Element {
   const projectId = activeProject?.id ?? ''
   const projectName = activeProject?.name ?? '-'
   const projectBudget = activeProject?.budget ?? 0
+  const paymentTerms = activeProject?.paymentTerms || {}
 
   /**
    * Selector/store helpers yang hanya mengambil referensi fungsi (tidak subscribe data besar).
@@ -51,6 +53,9 @@ export default function CashFlow(): JSX.Element {
   const getRapPlan = useRapStore((s) => s.getPlan)
   const setPlannedFromRap = useCurvaSStore((s) => s.setPlannedFromRap)
   const analyzeCurva = useCurvaSStore((s) => s.analyzeProject)
+  
+  // Subscribe to data points for calculation
+  const points = useCurvaSStore((s) => (projectId ? s.getDataPoints(projectId) : []))
 
   /**
    * Baca saved scenarios untuk menampilkan empty state jika kosong.
@@ -65,6 +70,26 @@ export default function CashFlow(): JSX.Element {
       return []
     }
   })
+
+  // Calculate cashflow rows
+  const rows = useMemo(() => {
+    return calculateCashFlow(points, paymentTerms, projectBudget)
+  }, [points, paymentTerms, projectBudget])
+
+  // Calculate summary totals
+  const summary = useMemo(() => {
+    if (!rows.length) return { totalOutflow: 0, totalInflow: 0, endingBalance: 0, minBalance: 0, hasDeficit: false }
+    const last = rows[rows.length - 1]
+    const minBalance = Math.min(...rows.map(r => r.balance))
+    const hasDeficit = rows.some(r => r.balance < 0)
+    return {
+      totalOutflow: last.cumOutflow,
+      totalInflow: last.cumInflow,
+      endingBalance: last.balance,
+      minBalance,
+      hasDeficit
+    }
+  }, [rows])
 
   // UI local state
   const [dense, setDense] = useState<boolean>(false)
@@ -207,7 +232,13 @@ export default function CashFlow(): JSX.Element {
       />
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <SummaryCard projectId={projectId} />
+        <SummaryCard 
+          totalOutflow={summary.totalOutflow}
+          totalInflow={summary.totalInflow}
+          endingBalance={summary.endingBalance}
+          minBalance={summary.minBalance}
+          hasDeficit={summary.hasDeficit}
+        />
         <div className="md:col-span-2">
           {Array.isArray(savedScenarios) && savedScenarios.length === 0 ? (
             <div className="rounded-xl border p-4 dark:border-neutral-800">
@@ -224,8 +255,8 @@ export default function CashFlow(): JSX.Element {
 
       <div className="mt-6 grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2">
-          <CashChart projectId={projectId} dense={dense} />
-          <PeriodTable projectId={projectId} />
+          <CashChart rows={rows} />
+          <PeriodTable rows={rows} />
         </div>
 
         <div>

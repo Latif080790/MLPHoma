@@ -118,17 +118,27 @@ export default function Progress() {
 
   const onAdd = () => {
     if (!form.date) return
-    addDataPoint(projectId, {
+    
+    // Find existing point to preserve planned values if needed, 
+    // but actually we should just omit them from the update object 
+    // so the store's merge logic keeps the old ones.
+    // However, if it's a new point, we might want defaults.
+    // The store handles merge. We just need to not send 0.
+
+    const payload: any = {
       projectId,
       date: form.date,
-      plannedProgress: 0,
-      plannedCost: 0,
       actualProgress: Number(form.progress) || 0,
       actualCost: Number(form.cost) || 0,
       notes: form.notes,
-      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    } as any)
+    }
+
+    // Only add createdAt if it's likely a new point (though store handles this too)
+    // We don't send plannedProgress/plannedCost so they are not overwritten.
+    
+    addDataPoint(projectId, payload)
+    
     setForm({
       date: new Date().toISOString().split("T")[0],
       progress: 0,
@@ -137,6 +147,11 @@ export default function Progress() {
       photoUrl: "",
     })
   }
+
+  const currentPlanned = useMemo(() => {
+    const p = all.find(d => d.date === form.date)
+    return p ? { progress: p.plannedProgress, cost: p.plannedCost } : null
+  }, [all, form.date])
 
   return (
     <AppShell projectName={projectName}>
@@ -193,6 +208,11 @@ export default function Progress() {
                       value={form.date}
                       onChange={(e) => setForm({ ...form, date: e.target.value })}
                     />
+                    {currentPlanned && (
+                      <div className="mt-1 text-xs text-neutral-500">
+                        Planned: {currentPlanned.progress.toFixed(1)}% / Rp {currentPlanned.cost.toLocaleString('id-ID')}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="progress">Progress (%)</Label>

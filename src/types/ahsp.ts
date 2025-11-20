@@ -126,7 +126,7 @@ export interface AHSPActions {
   exportResources: () => Resource[]
   
   // AHSP item actions
-  addAHSPItem: (item: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'>) => void
+  addAHSPItem: (item: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => string
   updateAHSPItem: (id: string, updates: Partial<AHSPItem>) => void
   deleteAHSPItem: (id: string) => void
   importAHSPItems: (items: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'>[]) => void
@@ -137,6 +137,7 @@ export interface AHSPActions {
   updateComponent: (id: string, updates: Partial<AHSPComponent>) => void
   deleteComponent: (id: string) => void
   reorderComponents: (ahspId: string, componentIds: string[]) => void
+  moveComponents: (fromAhspId: string, toAhspId: string) => void
   
   // Calculation actions
   calculateAHSPPrice: (ahspId: string) => void

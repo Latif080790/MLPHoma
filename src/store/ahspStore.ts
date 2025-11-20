@@ -1,10 +1,10 @@
-
 /**
  * ahspStore.ts
  * Zustand store for AHSP (Analisis Harga Satuan Pekerjaan) management
  */
 
 import { create } from 'zustand'
+import { batchUpsertAhsp, supabase, deleteAhspItem } from '../lib/supabaseClient'
 import { devtools } from 'zustand/middleware'
 import type { 
   AHSPStore, 
@@ -12,7 +12,8 @@ import type {
   AHSPItem, 
   AHSPComponent,
   ResourceType,
-  ResourceUnit 
+  ResourceUnit,
+  AHSPState
 } from '../types/ahsp'
 
 /**
@@ -120,9 +121,10 @@ export const useAHSPStore = create<AHSPStore>()(
 
       // AHSP item actions
       addAHSPItem: (item) => {
+        const id = item.id || generateId('ahsp')
         const newItem: AHSPItem = {
           ...item,
-          id: generateId('ahsp'),
+          id,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           basePrice: item.basePrice || 0,
@@ -136,6 +138,27 @@ export const useAHSPStore = create<AHSPStore>()(
             [newItem.id]: [],
           },
         }))
+
+        // Fire-and-forget remote sync (ignore if supabase not configured)
+        if (supabase) {
+          batchUpsertAhsp([
+            {
+              id: newItem.id,
+              code: newItem.code,
+              name: newItem.name,
+              description: newItem.description,
+              unit: newItem.unit,
+              category: newItem.category,
+              base_price: newItem.basePrice,
+              final_price: newItem.finalPrice,
+              overhead_percentage: newItem.overheadPercentage,
+              profit_percentage: newItem.profitPercentage,
+              created_at: newItem.createdAt,
+              updated_at: newItem.updatedAt,
+            },
+          ])
+        }
+        return id
       },
 
       updateAHSPItem: (id, updates) => {
@@ -146,6 +169,29 @@ export const useAHSPStore = create<AHSPStore>()(
               : item
           ),
         }))
+
+        if (supabase) {
+          const state = get()
+          const updated = state.ahspItems.find(i => i.id === id)
+          if (updated) {
+            batchUpsertAhsp([
+              {
+                id: updated.id,
+                code: updated.code,
+                name: updated.name,
+                description: updated.description,
+                unit: updated.unit,
+                category: updated.category,
+                base_price: updated.basePrice,
+                final_price: updated.finalPrice,
+                overhead_percentage: updated.overheadPercentage,
+                profit_percentage: updated.profitPercentage,
+                created_at: updated.createdAt,
+                updated_at: updated.updatedAt,
+              },
+            ])
+          }
+        }
       },
 
       deleteAHSPItem: (id) => {
@@ -158,6 +204,9 @@ export const useAHSPStore = create<AHSPStore>()(
             componentsByAHSP: newComponentsByAHSP,
           }
         })
+        if (supabase) {
+          deleteAhspItem(id).catch(err => console.warn('Failed to delete AHSP item from Supabase:', err))
+        }
       },
 
       importAHSPItems: (items) => {
@@ -327,6 +376,25 @@ export const useAHSPStore = create<AHSPStore>()(
         })
       },
 
+      moveComponents: (fromAhspId, toAhspId) => {
+        set((state) => {
+          const components = state.componentsByAHSP[fromAhspId] || []
+          const updatedComponents = components.map(c => ({ ...c, ahspId: toAhspId }))
+          
+          const newComponentsByAHSP = { ...state.componentsByAHSP }
+          delete newComponentsByAHSP[fromAhspId]
+          
+          newComponentsByAHSP[toAhspId] = [
+            ...(newComponentsByAHSP[toAhspId] || []),
+            ...updatedComponents
+          ]
+
+          return {
+            componentsByAHSP: newComponentsByAHSP
+          }
+        })
+      },
+
       // Calculation actions
       calculateAHSPPrice: (ahspId) => {
         set((state) => {
@@ -360,6 +428,29 @@ export const useAHSPStore = create<AHSPStore>()(
             ),
           }
         })
+
+        // Sync recalculated price
+        if (supabase) {
+          const item = get().ahspItems.find(i => i.id === ahspId)
+          if (item) {
+            batchUpsertAhsp([
+              {
+                id: item.id,
+                code: item.code,
+                name: item.name,
+                description: item.description,
+                unit: item.unit,
+                category: item.category,
+                base_price: item.basePrice,
+                final_price: item.finalPrice,
+                overhead_percentage: item.overheadPercentage,
+                profit_percentage: item.profitPercentage,
+                created_at: item.createdAt,
+                updated_at: item.updatedAt,
+              },
+            ])
+          }
+        }
       },
 
       recalculateAllPrices: () => {

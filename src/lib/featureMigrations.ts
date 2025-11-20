@@ -38,18 +38,20 @@ export function migrateConfig(cfg: any): FeatureConfig {
     }
 
     // Ensure schemaVersion set across modules
-    const ensureMeta = (mod: any) => {
-      if (!mod?.meta) {
-        mod.meta = { projectId: cfg.projectId || '', name: '', schemaVersion: CURRENT, updatedAt: new Date().toISOString(), updatedBy: 'migration' }
+    const ensureMeta = (key: string) => {
+      if (!cfg[key]) {
+         cfg[key] = { meta: { projectId: cfg.projectId || '', name: '', schemaVersion: CURRENT, updatedAt: new Date().toISOString(), updatedBy: 'migration' } }
+      } else if (!cfg[key].meta) {
+        cfg[key].meta = { projectId: cfg.projectId || '', name: '', schemaVersion: CURRENT, updatedAt: new Date().toISOString(), updatedBy: 'migration' }
       } else {
-        mod.meta.schemaVersion = mod.meta.schemaVersion || CURRENT
+        cfg[key].meta.schemaVersion = cfg[key].meta.schemaVersion || CURRENT
       }
     }
 
     // apply for known module keys
     const moduleKeys = ['projectManagement', 'wbs', 'ahsp', 'rab', 'timeline', 'rap', 'curvas', 'resources', 'cashflow', 'progress', 'reporting']
     moduleKeys.forEach((k) => {
-      ensureMeta(cfg[k])
+      ensureMeta(k)
     })
 
     // final canonical fields

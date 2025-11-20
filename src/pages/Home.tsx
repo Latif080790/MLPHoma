@@ -69,20 +69,21 @@ function ModuleLink(props: {
   )
 }
 
+const EMPTY_ARRAY: any[] = []
+
 /**
  * Home
  * Beranda aplikasi: hero + module entrances.
  */
 export default function Home() {
-/**
- * Home
- * Beranda aplikasi: hero + module entrances.
- */
-export default function Home() {
-  const activeProject = useProjectStore((s) => s.getActiveProject())
+  const activeProjectId = useProjectStore((s) => s.activeProjectId)
+  const projects = useProjectStore((s) => s.projects)
+  const activeProject = activeProjectId ? projects[activeProjectId] : null
   const projectId = activeProject?.id
+  
   const analysis = useCurvaSStore((s) => (projectId ? s.getAnalysis(projectId) : null))
-  const rabItems = useRabStore((s) => (projectId ? s.getItems(projectId) : []))
+  // Use a stable empty array reference to prevent infinite loops if projectId is undefined
+  const rabItems = useRabStore((s) => (projectId ? s.getItems(projectId) : EMPTY_ARRAY))
   
   const totalBudget = useMemo(() => {
     if (!activeProject) return 0
@@ -160,7 +161,7 @@ export default function Home() {
               label="Cost Performance (CPI)"
               value={analysis ? analysis.metrics.cpi.toFixed(2) : "—"}
               icon={<TrendingUp size={18} />}
-              hint={analysis ? `VAC: ${formatIDR(analysis.metrics.vac)}` : "No analysis data"}
+              hint={analysis ? `VAC: ${formatIDR(analysis.metrics.vac ?? 0)}` : "No analysis data"}
               accentClassName={analysis && analysis.metrics.cpi < 0.9 ? "text-rose-600" : "text-emerald-600"}
             />
           </>
