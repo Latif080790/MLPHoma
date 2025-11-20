@@ -52,7 +52,7 @@ export interface ValidationOptions {
 /**
  * Format Zod errors into readable ValidationError array
  */
-function formatZodErrors(error: ZodError): ValidationError[] {
+export function formatZodErrors(error: ZodError): ValidationError[] {
   return error.errors.map((err) => ({
     field: err.path.join('.'),
     message: err.message,

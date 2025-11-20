@@ -15,22 +15,27 @@ import { vi } from 'vitest'
 import WhatIfPanel from '../WhatIfPanel'
 import useCurvaSStore from '../../../store/curvaSStore'
 import useProjectStore from '../../../store/projectStore'
-import notify from '../../../lib/toast'
+import * as toast from '../../../lib/toast'
 
-vi.mock('../../../lib/toast', () => ({
-  __esModule: true,
-  default: {
+vi.mock('../../../lib/toast', () => {
+  const mockNotify = {
     success: vi.fn(),
     error: vi.fn(),
-  },
-}))
+    info: vi.fn(),
+    warning: vi.fn(),
+  }
+  return {
+    notify: mockNotify,
+    default: mockNotify,
+  }
+})
 
 describe('WhatIfPanel actions', () => {
   const projectId = 'TEST-P-01'
   beforeEach(() => {
     // Reset stores to known state
     act(() => {
-      useCurvaSStore.setState({ savedScenarios: {} })
+      useCurvaSStore.setState({ savedScenarios: {}, baselineCache: {}, curvaSData: {} })
       useProjectStore.setState({
         projects: {
           [projectId]: { id: projectId, name: 'Test Project', budget: 1000000, status: 'Active' },
@@ -39,8 +44,7 @@ describe('WhatIfPanel actions', () => {
       } as any)
     })
     // reset mock
-    ;(notify.success as any).mockClear()
-    ;(notify.error as any).mockClear()
+    vi.clearAllMocks()
   })
 
   test('save scenario adds scenario and triggers success toast', async () => {
@@ -61,7 +65,7 @@ describe('WhatIfPanel actions', () => {
     expect(Array.isArray(scenarios)).toBe(true)
     expect(scenarios.length).toBeGreaterThanOrEqual(1)
     expect(scenarios.find((s) => s.name === 'My Scenario')).toBeTruthy()
-    expect(notify.success).toHaveBeenCalledWith('Scenario saved')
+    expect(toast.notify.success).toHaveBeenCalledWith('Scenario saved')
   })
 
   test('apply saves payment terms to project store and triggers toast', async () => {
@@ -80,6 +84,6 @@ describe('WhatIfPanel actions', () => {
     expect(Math.round((proj?.paymentTerms?.downPaymentPercent ?? 0) * 100)).toBe(10)
     expect(Math.round((proj?.paymentTerms?.billingPercent ?? 0) * 100)).toBe(30)
     expect(Math.round((proj?.paymentTerms?.retentionRate ?? 0) * 100)).toBe(5)
-    expect(notify.success).toHaveBeenCalledWith('Payment terms applied to project')
+    expect(toast.notify.success).toHaveBeenCalledWith('Payment terms applied to project')
   })
 })

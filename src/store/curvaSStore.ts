@@ -14,7 +14,7 @@
 import { create } from 'zustand'
 import type { CurvaSDataPoint, CurvaSAnalysis } from '../types/curvaS'
 import { notify as toast } from '@/lib/toast'
-import { validate, formatZodErrors } from '@/lib/validationMiddleware'
+import { validate, mergeErrorMessages } from '@/lib/validationMiddleware'
 import {
   curvaSDataPointInputSchema,
   curvaSBaselineConfigSchema,
@@ -236,7 +236,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
       endDate,
     })
     if (!validation.success) {
-      toast.error('Baseline Validation Error', formatZodErrors(validation.errors))
+      toast.error('Baseline Validation Error', mergeErrorMessages(validation.errors))
       return
     }
     
@@ -313,7 +313,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
       actualCost: point.actualCost,
     })
     if (!validation.success) {
-      toast.error('Data Point Validation Error', formatZodErrors(validation.errors))
+      toast.error('Data Point Validation Error', mergeErrorMessages(validation.errors))
       return
     }
     
@@ -407,7 +407,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
     // Validate scenario
     const validation = validate(curvaSScenarioSchema, scenario)
     if (!validation.success) {
-      toast.error('Scenario Validation Error', formatZodErrors(validation.errors))
+      toast.error('Scenario Validation Error', mergeErrorMessages(validation.errors))
       return
     }
     

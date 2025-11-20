@@ -18,7 +18,7 @@ import { generateDefaultFeatureConfig } from '../lib/featureDefaults'
 import { migrateConfig } from '../lib/featureMigrations'
 import { nanoid } from 'nanoid/non-secure'
 import { notify as toast } from '@/lib/toast'
-import { validate, formatZodErrors } from '@/lib/validationMiddleware'
+import { validate, mergeErrorMessages } from '@/lib/validationMiddleware'
 import {
   featureSnapshotInputSchema,
   moduleConfigUpdateSchema,
@@ -172,7 +172,7 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     // Validate module config update
     const validation = validate(moduleConfigUpdateSchema, { moduleKey, patch })
     if (!validation.success) {
-      toast.error('Validation Error', formatZodErrors(validation.errors))
+      toast.error('Validation Error', mergeErrorMessages(validation.errors))
       return
     }
     
@@ -226,7 +226,7 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     // Validate snapshot data
     const validation = validate(featureSnapshotInputSchema, snapshotData)
     if (!validation.success) {
-      toast.error('Snapshot Validation Error', formatZodErrors(validation.errors))
+      toast.error('Snapshot Validation Error', mergeErrorMessages(validation.errors))
       throw new Error('Invalid snapshot data')
     }
     

@@ -4,6 +4,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useWBSStore, validateWBS } from '../wbsStore'
+import type { WBSItem } from '@/types/wbs'
 import * as supabaseSyncService from '@/lib/supabaseSyncService'
 import * as toast from '@/lib/toast'
 
@@ -13,21 +14,34 @@ vi.mock('@/lib/supabaseSyncService', () => ({
   syncDelete: vi.fn().mockResolvedValue({ success: true }),
 }))
 
-vi.mock('@/lib/toast', () => ({
-  notify: vi.fn(),
-}))
+vi.mock('@/lib/toast', () => {
+  const mockNotify = {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  }
+  return {
+    notify: mockNotify,
+    default: mockNotify,
+  }
+})
 
 describe('wbsStore', () => {
   beforeEach(() => {
-    // Reset store before each test
-    const store = useWBSStore.getState()
-    store.clearProject('test-project')
+    // Reset store completely before each test
+    useWBSStore.setState({
+      itemsByProject: {},
+      selectedId: null,
+      expandedIds: new Set(),
+      loading: false,
+      error: null,
+    })
     vi.clearAllMocks()
   })
 
   describe('addItem', () => {
     it('should add a root-level WBS item', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
       
       const newItem = {
@@ -39,8 +53,11 @@ describe('wbsStore', () => {
         sortOrder: 0,
       }
 
-      store.addItem(projectId, newItem)
-      const items = store.itemsByProject[projectId] || []
+      // Call addItem
+      useWBSStore.getState().addItem(projectId, newItem)
+      
+      // Get fresh state after action
+      const items = useWBSStore.getState().itemsByProject[projectId] || []
 
       expect(items).toHaveLength(1)
       expect(items[0].name).toBe('Phase 1')
@@ -51,11 +68,10 @@ describe('wbsStore', () => {
     })
 
     it('should add a child WBS item', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
       // Add parent
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1',
         name: 'Phase 1',
@@ -64,21 +80,19 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      const parentItem = (store.itemsByProject[projectId] || [])[0]
+      const parentItem = useWBSStore.getState().itemsByProject[projectId][0]
 
       // Add child
-      const childItem = {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1.1',
         name: 'Task 1.1',
         level: 2,
         parentId: parentItem.id,
         sortOrder: 0,
-      }
+      })
 
-      store.addItem(projectId, childItem)
-
-      const items = store.itemsByProject[projectId] || []
+      const items = useWBSStore.getState().itemsByProject[projectId]
       expect(items).toHaveLength(2)
       
       const child = items.find(i => i.code === '1.1')
@@ -88,7 +102,6 @@ describe('wbsStore', () => {
     })
 
     it('should validate required fields', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
       const invalidItem = {
@@ -100,18 +113,17 @@ describe('wbsStore', () => {
         sortOrder: 0,
       }
 
-      store.addItem(projectId, invalidItem as any)
+      useWBSStore.getState().addItem(projectId, invalidItem as any)
       
-      const items = store.itemsByProject[projectId] || []
+      const items = useWBSStore.getState().itemsByProject[projectId] || []
       expect(items).toHaveLength(0)  // Should not add invalid item
-      expect(toast.notify).toHaveBeenCalled()
+      expect(toast.notify.error).toHaveBeenCalled()
     })
 
     it('should generate unique IDs for each item', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1',
         name: 'Item 1',
@@ -120,7 +132,7 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '2',
         name: 'Item 2',
@@ -129,17 +141,16 @@ describe('wbsStore', () => {
         sortOrder: 1,
       })
 
-      const items = store.itemsByProject[projectId] || []
+      const items = useWBSStore.getState().itemsByProject[projectId]
       expect(items[0].id).not.toBe(items[1].id)
     })
   })
 
   describe('updateItem', () => {
     it('should update WBS item properties', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1',
         name: 'Original Name',
@@ -148,35 +159,33 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      const item = (store.itemsByProject[projectId] || [])[0]
+      const item = useWBSStore.getState().itemsByProject[projectId][0]
 
-      store.updateItem(projectId, item.id, {
+      useWBSStore.getState().updateItem(projectId, item.id, {
         name: 'Updated Name',
         description: 'New description',
       })
 
-      const updatedItem = (store.itemsByProject[projectId] || []).find(i => i.id === item.id)
+      const updatedItem = useWBSStore.getState().itemsByProject[projectId].find(i => i.id === item.id)
       expect(updatedItem?.name).toBe('Updated Name')
       expect(updatedItem?.description).toBe('New description')
     })
 
     it('should not update non-existent item', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
-      store.updateItem(projectId, 'non-existent-id', {
+      useWBSStore.getState().updateItem(projectId, 'non-existent-id', {
         name: 'Should not update',
       })
 
-      const items = store.itemsByProject[projectId] || []
+      const items = useWBSStore.getState().itemsByProject[projectId] || []
       expect(items).toHaveLength(0)
     })
 
     it('should validate update data', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1',
         name: 'Item 1',
@@ -185,24 +194,23 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      const item = (store.itemsByProject[projectId] || [])[0]
+      const item = useWBSStore.getState().itemsByProject[projectId][0]
 
       // Invalid level (negative)
-      store.updateItem(projectId, item.id, {
+      useWBSStore.getState().updateItem(projectId, item.id, {
         level: -1,  // Should be rejected
       })
 
-      const updatedItem = (store.itemsByProject[projectId] || []).find(i => i.id === item.id)
+      const updatedItem = useWBSStore.getState().itemsByProject[projectId].find(i => i.id === item.id)
       expect(updatedItem?.level).toBe(1)  // Should remain unchanged
     })
   })
 
   describe('deleteItem', () => {
     it('should delete a WBS item', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1',
         name: 'Item to delete',
@@ -211,20 +219,19 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      const item = (store.itemsByProject[projectId] || [])[0]
-      store.deleteItem(projectId, item.id)
+      const item = useWBSStore.getState().itemsByProject[projectId][0]
+      useWBSStore.getState().deleteItem(projectId, item.id)
 
-      const items = store.itemsByProject[projectId] || []
+      const items = useWBSStore.getState().itemsByProject[projectId] || []
       expect(items).toHaveLength(0)
       expect(supabaseSyncService.syncDelete).toHaveBeenCalled()
     })
 
     it('should delete item and all descendants', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
       // Add parent
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1',
         name: 'Parent',
@@ -233,10 +240,10 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      const parent = (store.itemsByProject[projectId] || [])[0]
+      const parent = useWBSStore.getState().itemsByProject[projectId][0]
 
       // Add children
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1.1',
         name: 'Child 1',
@@ -245,7 +252,7 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1.2',
         name: 'Child 2',
@@ -254,23 +261,22 @@ describe('wbsStore', () => {
         sortOrder: 1,
       })
 
-      expect(store.itemsByProject[projectId]).toHaveLength(3)
+      expect(useWBSStore.getState().itemsByProject[projectId]).toHaveLength(3)
 
       // Delete parent (should delete children too)
-      store.deleteItem(projectId, parent.id)
+      useWBSStore.getState().deleteItem(projectId, parent.id)
 
-      const items = store.itemsByProject[projectId] || []
+      const items = useWBSStore.getState().itemsByProject[projectId] || []
       expect(items).toHaveLength(0)  // All descendants should be deleted
     })
   })
 
   describe('findDescendants', () => {
     it('should find all descendants of an item', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
       // Create tree structure
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1',
         name: 'Root',
@@ -279,9 +285,9 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      const item1 = (store.itemsByProject[projectId] || [])[0]
+      const item1 = useWBSStore.getState().itemsByProject[projectId][0]
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1.1',
         name: 'Item 1.1',
@@ -290,9 +296,9 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      const child1 = (store.itemsByProject[projectId] || []).find(i => i.code === '1.1')!
+      const child1 = useWBSStore.getState().itemsByProject[projectId].find(i => i.code === '1.1')!
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1.1.1',
         name: 'Item 1.1.1',
@@ -301,7 +307,7 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1.2',
         name: 'Item 1.2',
@@ -310,27 +316,17 @@ describe('wbsStore', () => {
         sortOrder: 1,
       })
 
-      // Should find child, grandchild, and child2
-      const items = store.itemsByProject[projectId] || []
-      const descendants = items.filter(i => {
-        let currentParentId = i.parentId
-        while (currentParentId) {
-          if (currentParentId === item1.id) return true
-            const parent = items.find(ci => ci.id === currentParentId)
-            currentParentId = parent?.parentId ?? null
-        }
-        return false
-      })
+      // Use findDescendants method from store
+      const descendants = useWBSStore.getState().findDescendants(projectId, item1.id)
       expect(descendants).toHaveLength(3)  // 1.1, 1.1.1, 1.2
     })
   })
 
   describe('validateWBS', () => {
     it('should validate WBS structure', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
-      store.addItem(projectId, {
+      useWBSStore.getState().addItem(projectId, {
         projectId,
         code: '1',
         name: 'Valid Item',
@@ -339,56 +335,71 @@ describe('wbsStore', () => {
         sortOrder: 0,
       })
 
-      const items = store.itemsByProject[projectId] || []
+      const items = useWBSStore.getState().itemsByProject[projectId] || []
       const validation = validateWBS(items)
 
       expect(validation.isValid).toBe(true)
       expect(validation.errors).toHaveLength(0)
     })
 
-    it('should detect duplicate codes', () => {
-      const store = useWBSStore.getState()
+    it('should auto-generate codes for items', () => {
       const projectId = 'test-project'
 
-      store.addItem(projectId, {
+      // Add first root item
+      useWBSStore.getState().addItem(projectId, {
         projectId,
-        code: '1',
+        code: 'will-be-overwritten',
         name: 'Item 1',
         level: 1,
         parentId: null,
         sortOrder: 0,
       })
 
-      store.addItem(projectId, {
+      // Add second root item
+      useWBSStore.getState().addItem(projectId, {
         projectId,
-        code: '1',  // Duplicate code
+        code: 'will-be-overwritten',
         name: 'Item 2',
         level: 1,
         parentId: null,
         sortOrder: 1,
       })
 
-      const items = store.itemsByProject[projectId] || []
-      // Store should handle this appropriately
-      expect(items.length).toBeGreaterThan(0)
+      // Codes should be auto-generated as '1' and '2'
+      const items = useWBSStore.getState().itemsByProject[projectId] || []
+      expect(items.length).toBe(2)
+      
+      const codes = items.map(i => i.code).sort()
+      expect(codes).toEqual(['1', '2'])
     })
 
     it('should detect invalid parent references', () => {
-      const store = useWBSStore.getState()
       const projectId = 'test-project'
 
-      store.addItem(projectId, {
+      // Manually create item with invalid parent (bypass store validation)
+      const invalidItem: WBSItem = {
+        id: 'invalid-id',
         projectId,
         code: '1',
-        name: 'Valid Item',
+        name: 'Invalid Item',
         level: 1,
         parentId: 'non-existent-parent',  // Invalid parent
         sortOrder: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      useWBSStore.setState({
+        itemsByProject: {
+          [projectId]: [invalidItem],
+        },
       })
 
-      const items = store.itemsByProject[projectId] || []
-      // Store should handle this validation
-      expect(Array.isArray(items)).toBe(true)
+      const items = useWBSStore.getState().itemsByProject[projectId] || []
+      const validation = validateWBS(items)
+      
+      expect(validation.isValid).toBe(false)
+      expect(validation.errors.some(e => e.includes('Invalid parent'))).toBe(true)
     })
   })
 })

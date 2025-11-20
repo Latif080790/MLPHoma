@@ -72,6 +72,8 @@ export interface WBSActions {
   importWBS: (projectId: string, items: Omit<WBSItem, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>[]) => void
   /** Export WBS structure */
   exportWBS: (projectId: string) => WBSItem[]
+  /** Find all descendants of an item (recursive) */
+  findDescendants: (projectId: string, itemId: string) => WBSItem[]
   /** Clear project WBS */
   clearProject: (projectId: string) => void
 }
