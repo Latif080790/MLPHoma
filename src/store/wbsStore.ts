@@ -377,6 +377,23 @@ export const useWBSStore = create<WBSStore>()(
         return sortHierarchy(items)
       },
 
+      // Find all descendants of an item (recursive)
+      findDescendants: (projectId, itemId) => {
+        const items = get().itemsByProject[projectId] || []
+        const descendants: WBSItem[] = []
+        
+        function collectDescendants(parentId: string) {
+          const children = items.filter(item => item.parentId === parentId)
+          children.forEach(child => {
+            descendants.push(child)
+            collectDescendants(child.id)
+          })
+        }
+        
+        collectDescendants(itemId)
+        return descendants
+      },
+
       // Clear project WBS
       clearProject: (projectId) => {
         set((state) => {

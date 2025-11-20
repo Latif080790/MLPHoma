@@ -11,7 +11,7 @@
 import { create } from 'zustand'
 import { toast } from 'sonner'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
-import { validate, formatZodErrors } from '../lib/validationMiddleware'
+import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/validationSchemas'
 import { syncTimelineTask, syncDelete } from '../lib/supabaseSyncService'
 
@@ -219,7 +219,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
       // Validate input
       const validation = validate(timelineTaskInputSchema, taskData)
       if (!validation.success) {
-        const errorMsg = formatZodErrors(validation.errors)
+        const errorMsg = mergeErrorMessages(validation.errors)
         toast.error('Failed to add task', { description: errorMsg })
         return ''
       }
@@ -248,7 +248,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
       // Validate updates
       const validation = validate(timelineTaskUpdateSchema, patch)
       if (!validation.success) {
-        const errorMsg = formatZodErrors(validation.errors)
+        const errorMsg = mergeErrorMessages(validation.errors)
         toast.error('Failed to update task', { description: errorMsg })
         return
       }
