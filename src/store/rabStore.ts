@@ -32,6 +32,7 @@ export interface RABItem {
   finalTotal?: number
   final_total?: number
   finalPrice?: number
+  taskId?: string // Link to Timeline Task (WBS)
   createdAt?: string
   updatedAt?: string
   [key: string]: any
@@ -148,6 +149,7 @@ export const useRabStore = create<RabState>((set, get) => {
         finalTotal: (item as any).finalTotal ?? (item as any).final_total ?? (item as any).finalPrice ?? 0,
         final_total: (item as any).final_total ?? (item as any).finalTotal,
         finalPrice: (item as any).finalPrice ?? (item as any).finalTotal,
+        taskId: (item as any).taskId,
         createdAt: now,
         updatedAt: now,
         ...item,

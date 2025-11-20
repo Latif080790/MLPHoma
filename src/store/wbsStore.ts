@@ -309,11 +309,11 @@ export const useWBSStore = create<WBSStore>()(
         const now = new Date().toISOString()
         const newItems: WBSItem[] = items.map((item, index) => ({
           ...item,
-          id: generateId(),
+          id: item.id || generateId(),
           projectId,
           createdAt: now,
           updatedAt: now,
-          sortOrder: index,
+          sortOrder: item.sortOrder ?? index,
         }))
 
         set((state) => {

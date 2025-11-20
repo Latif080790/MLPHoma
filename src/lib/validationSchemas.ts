@@ -14,7 +14,7 @@ export const unitEnum = z.enum([
 export const ahspItemSchema = z.object({
   code: z.string()
     .min(1, 'Code is required')
-    .regex(/^[0-9\.]+$/, 'Code must contain only numbers and dots'),
+    .regex(/^[A-Za-z0-9\.\-]+$/, 'Code must contain only letters, numbers, dots, and dashes'),
   name: z.string().min(1, 'Name is required').max(200, 'Name must be less than 200 characters'),
   description: z.string().optional().or(z.literal('')),
   unit: unitEnum,

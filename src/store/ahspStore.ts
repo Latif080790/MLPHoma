@@ -4,7 +4,15 @@
  */
 
 import { create } from 'zustand'
-import { batchUpsertAhsp, supabase, deleteAhspItem } from '../lib/supabaseClient'
+import { 
+  batchUpsertAhsp, 
+  supabase, 
+  deleteAhspItem,
+  batchUpsertResources,
+  batchUpsertAhspComponents,
+  deleteAhspComponent, // Need to add this to client
+  deleteResource // Need to add this to client
+} from '../lib/supabaseClient'
 import { devtools } from 'zustand/middleware'
 import type { 
   AHSPStore, 
@@ -64,6 +72,19 @@ export const useAHSPStore = create<AHSPStore>()(
         set((state) => ({
           resources: [...state.resources, newResource],
         }))
+
+        if (supabase) {
+          batchUpsertResources([{
+            id: newResource.id,
+            code: newResource.code,
+            name: newResource.name,
+            type: newResource.type,
+            unit: newResource.unit,
+            unit_price: newResource.unitPrice,
+            created_at: newResource.createdAt,
+            updated_at: newResource.updatedAt
+          }])
+        }
       },
 
       updateResource: (id, updates) => {
@@ -270,6 +291,21 @@ export const useAHSPStore = create<AHSPStore>()(
             components: null,
           },
         }))
+
+        if (supabase) {
+          batchUpsertAhspComponents([{
+            id: newComponent.id,
+            ahsp_id: newComponent.ahspId,
+            resource_id: newComponent.resourceId,
+            type: newComponent.type,
+            coefficient: newComponent.coefficient,
+            unit: newComponent.unit,
+            unit_price: newComponent.unitPrice,
+            subtotal: newComponent.subtotal,
+            created_at: newComponent.createdAt,
+            updated_at: newComponent.updatedAt
+          }])
+        }
 
         // Recalculate AHSP price
         get().calculateAHSPPrice(ahspId)

@@ -1,0 +1,1708 @@
+1.1.3.1	Pek. 1 m2 Pembersihan & Pengupasan Permukaan Tanah (Striping) sd Tanaman ∅ 2cm					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.3.1.a (c) 					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.100	 152,900.00 	 15,290.00 
+	 Mandor	L.04	OH	0.005	 230,000.00 	 1,150.00 
+				 JUMLAH HARGA TENAGA KERJA		 16,440.00 
+B	 BAHAN				  	  
+				 JUMLAH HARGA BAHAN		 -   
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 16,440.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 16,440.00 
+						
+1.1.4.2	Pek. Pasangan 1 m1 Bouwplank					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.1.2.1.d (a)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.012	 152,900.00 	 1,834.80 
+	 Tukang Kayu	L.02	OH	0.006	 178,600.00 	 1,071.60 
+	 Kepala Tukang	L.03	OH	0.001	 204,300.00 	 122.58 
+	 Mandor	L.04	OH	0.001	 230,000.00 	 276.00 
+				 JUMLAH HARGA TENAGA KERJA		 3,304.98 
+B	 BAHAN					  
+	 Kayu Kaso 5x7cm Kelas III	M.394	m3	0.013	 3,433,000.00 	 44,629.00 
+	 Papan Kayu Kelas III	M.409	m3	0.007	 3,433,000.00 	 24,031.00 
+	 Paku 2 - 5cm	M.56	Kg	0.020	 31,100.00 	 622.00 
+				 JUMLAH HARGA BAHAN		 69,282.00 
+C	 PERALATAN					  
+	 Waterpass	M.1738	Hari	0.0060	 828,900.00 	 4,973.40 
+				 JUMLAH HARGA ALAT		 4,973.40 
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 77,560.38 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 77,560.38 
+						
+1.1.2.4	Pek. Pembuatan 1 m2 Direksi Keet (Kantor) Los Kerja dan Gudang					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran Bidang Sumber Daya Air La.02					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	1.200	 152,900.00 	 183,480.00 
+	 Tukang Batu	L.02	OH	0.400	 178,600.00 	 71,440.00 
+	 Kepala Tukang	L.03	OH	0.040	 204,300.00 	 8,172.00 
+	 Mandor	L.04	OH	0.120	 230,000.00 	 27,600.00 
+				 JUMLAH HARGA TENAGA KERJA		 290,692.00 
+B	 BAHAN				  	  
+	 Kayu Kaso 5x7cm Kelas II	M.393	m3	0.350	 4,291,300.00 	 1,501,955.00 
+	 Triplek 4mm	M.92	Lbr	1.000	 124,100.00 	 124,100.00 
+	 Pondasi Pasangan Batu (Rollag Bata)	M.30	m3	0.170	 1,721,700.00 	 292,689.00 
+	 GRC Pelat. t=4mm. Uk 122x244cm	M.143	Lbr	1.240	 100,200.00 	 124,248.00 
+	 Paku	M.54	Kg	0.750	 31,100.00 	 23,325.00 
+	 Asbes Gelombang	M.119	Lbr	0.300	 85,400.00 	 25,620.00 
+	 Paku Asbes	M.60	Kg	0.100	 35,700.00 	 3,570.00 
+	 Floor Lantai (Beton Lantai Kerja)	2.2.1.4.1	m3	0.150	 1,638,800.00 	 245,820.00 
+	 Pintu Double Teakwood Rangka Kayu	M.186	m2	0.100	 542,000.00 	 54,200.00 
+	 Frame Besi Kaca Naco	M.523	Daun	1.000	 95,600.00 	 95,600.00 
+	 Cat Dinding/Plafond	3.8.10	m2	16.500		 -   
+				 JUMLAH HARGA BAHAN		 2,491,127.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 2,781,819.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 2,781,819.00 
+						
+						
+1.2.1.1.1	Pek. Penggalian 1 m3 Tanah Biasa Sedalam 0 s.d. 1m Untuk Volume sd 200m3					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.3.4.1.a.1 (c)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.750	 152,900.00 	 114,675.00 
+	 Mandor	L.04	OH	0.0380	 230,000.00 	 8,740.00 
+				 JUMLAH HARGA TENAGA KERJA		 123,415.00 
+B	 BAHAN					  
+				 JUMLAH HARGA BAHAN		 -   
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 123,415.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 123,415.00 
+						
+1.2.1.1.4	Pek. Penggalian 1 m3 Tanah Biasa Sedalam 1 s.d. 2m Untuk Volume sd 200m3					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.3.4.1.a.4 (a)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.900	 152,900.00 	 137,610.00 
+	 Mandor	L.04	OH	0.0450	 230,000.00 	 10,350.00 
+				 JUMLAH HARGA TENAGA KERJA		 147,960.00 
+B	 BAHAN					  
+				 JUMLAH HARGA BAHAN		 -   
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 147,960.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 147,960.00 
+						
+A.2.3.1.8	(K3) Pembuangan 1 m3 tanah sejauh 30 meter				  	  
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.33 	 152,900 	 50,457 
+	Mandor	L.04.01	OH	 0.01 	 230,000 	 2,300 
+				 JUMLAH TENAGA KERJA 		 52,757 
+B	BAHAN				  	  
+				 JUMLAH HARGA BAHAN 		 - 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 52,757 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 52,757 
+						  
+1.3.1.1	Pek. 1 m3 Urukan Kembali Galian Tanah Tanpa Pemadatan Secara Manual					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.3.5.1.a (c)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.5000	 152,900.00 	 76,450.00 
+	 Mandor	L.04	OH	0.0250	 230,000.00 	 5,750.00 
+				 JUMLAH HARGA TENAGA KERJA		 82,200.00 
+B	 BAHAN					  
+				 JUMLAH HARGA BAHAN		 -   
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 82,200.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 82,200.00 
+						
+1.3.2.1	Pek. 1 m3 Pemadatan Tanah Per 20cm Menggunakan Alat Timbris Secara manual					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.3.5.2.a (c)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.5000	 152,900.00 	 76,450.00 
+	 Mandor	L.04	OH	0.0250	 230,000.00 	 5,750.00 
+				 JUMLAH HARGA TENAGA KERJA		 82,200.00 
+B	 BAHAN					  
+				 JUMLAH HARGA BAHAN		 -   
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 82,200.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 82,200.00 
+						
+						
+1.3.1.2	Pek. 1 m3 Urukan dengan Pasir Uruk Untuk Volume sd 200 m3 Tanpa Pemadatan Secara Manual					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.3.5.1.b (c)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.3000	 152,900.00 	 45,870.00 
+	 Mandor	L.04	OH	0.0150	 230,000.00 	 3,450.00 
+				 JUMLAH HARGA TENAGA KERJA		 49,320.00 
+B	 BAHAN					  
+	 Pasir Urug	M.27	m3	1.200	 194,700.00 	 233,640.00 
+				 JUMLAH HARGA BAHAN		 233,640.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 282,960.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 282,960.00 
+						
+						
+2.2.1.4.1	Pek. 1 m3 Beton Mutu Rendah F'c 7.5 MPa. Slump 100 ± 25mm Agregat Maks 19mm Secara Manual					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	1.6500	 152,900.00 	 252,285.00 
+	 Tukang Batu	 L.02	OH	0.2750	 178,600.00 	 49,115.00 
+	 Kepala Tukang	 L.03	OH	0.0280	 204,300.00 	 5,720.40 
+	 Mandor	 L.04	OH	0.0090	 230,000.00 	 2,070.00 
+				 JUMLAH HARGA TENAGA KERJA		 309,190.40 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	250.000	 1,600.00 	 400,000.00 
+	 Pasir Beton	M.25	Kg	888.000	 200.00 	 177,600.00 
+	 Kerikil (Maks 19mm)	M.21	Kg	1.009	 200.00 	 201.80 
+	 Air	M.1	Ltr	202.000	 200.00 	 40,400.00 
+				 JUMLAH HARGA BAHAN		 618,201.80 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 927,392.20 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 927,392.20 
+						
+						
+2.2.1.3.1	Pek. Pemasangan 1 m2 Bekisting untuk Pondasi Telapak (3 Kali Pakai)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.5200	 152,900.00 	 79,508.00 
+	 Tukang Kayu	 L.02	OH	0.2600	 178,600.00 	 46,436.00 
+	 Kepala Tukang	 L.03	OH	0.0260	 204,300.00 	 5,311.80 
+	 Mandor	 L.04	OH	0.0090	 230,000.00 	 2,070.00 
+				 JUMLAH HARGA TENAGA KERJA		 133,325.80 
+B	 BAHAN				  	  
+	 Papan Kayu Kelas III	M.409	m3	0.016	 3,433,000.00 	 54,928.00 
+	 Paku 5 - 10cm	M.58	Kg	0.300	 31,100.00 	 9,330.00 
+	 Minyak Bekisting	M.81	Ltr	0.100	 15,900.00 	 1,590.00 
+				 JUMLAH HARGA BAHAN		 65,848.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 199,173.80 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 199,173.80 
+						
+						
+2.2.1.3.3	Pek. Pemasangan 1 m2 Bekisting untuk Sloof (3 Kali Pakai)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.5200	 152,900.00 	 79,508.00 
+	 Tukang Kayu	 L.02	OH	0.2600	 178,600.00 	 46,436.00 
+	 Kepala Tukang	 L.03	OH	0.0260	 204,300.00 	 5,311.80 
+	 Mandor	 L.04	OH	0.0090	 230,000.00 	 2,070.00 
+				 JUMLAH HARGA TENAGA KERJA		 133,325.80 
+B	 BAHAN					  
+	 Papan Kayu Kelas III	M.409	m3	0.018	 3,433,000.00 	 61,794.00 
+	 Paku 5 - 10cm	M.58	Kg	0.300	 31,100.00 	 9,330.00 
+	 Minyak Bekisting	M.81	Ltr	0.100	 15,900.00 	 1,590.00 
+				 JUMLAH HARGA BAHAN		 72,714.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 206,039.80 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 206,039.80 
+						
+						
+2.2.1.3.4	Pek. Pemasangan 1 m2 Bekisting untuk Kolom (3 Kali Pakai)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.6600	 152,900.00 	 100,914.00 
+	 Tukang Kayu	 L.02	OH	0.3300	 178,600.00 	 58,938.00 
+	 Kepala Tukang	 L.03	OH	0.0330	 204,300.00 	 6,741.90 
+	 Mandor	 L.04	OH	0.0110	 230,000.00 	 2,530.00 
+				 JUMLAH HARGA TENAGA KERJA		 169,123.90 
+B	 BAHAN					  
+	 Paku 5 - 12cm	M.59	Kg	0.400	 31,100.00 	 12,440.00 
+	 Minyak Bekisting	M.81	Ltr	0.200	 15,900.00 	 3,180.00 
+	 Balok Kayu Kelas II	M.388	m3	0.00465	 8,504,700.00 	 39,546.86 
+	 Plywood Tebal 12mm	M.90	Lbr	0.12705	 409,300.00 	 52,001.57 
+	 Dolken Kayu 8/10cm Panjang 4m	M.15	Btg	0.650	 34,300.00 	 22,295.00 
+				 JUMLAH HARGA BAHAN		 129,463.42 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 298,587.32 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 298,587.32 
+						
+						
+2.2.1.3.8	Pek. Pemasangan 1 m2 Bekisting untuk Tangga (3 Kali Pakai)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.6600	 152,900.00 	 100,914.00 
+	 Tukang Kayu	 L.02	OH	0.3300	 178,600.00 	 58,938.00 
+	 Kepala Tukang	 L.03	OH	0.0330	 204,300.00 	 6,741.90 
+	 Mandor	 L.04	OH	0.0110	 230,000.00 	 2,530.00 
+				 JUMLAH HARGA TENAGA KERJA		 169,123.90 
+B	 BAHAN					  
+	 Paku 5 - 10cm	M.58	Kg	0.400	 31,100.00 	 12,440.00 
+	 Minyak Bekisting	M.81	Ltr	0.150	 15,900.00 	 2,385.00 
+	 Balok Kayu Kelas II	M.388	m3	0.00500	 8,504,700.00 	 42,523.50 
+	 Plywood Tebal 12mm	M.90	Lbr	0.12700	 409,300.00 	 51,981.10 
+	 Dolken Kayu 8/10cm Panjang 4m	M.15	Btg	0.650	 34,300.00 	 22,295.00 
+				 JUMLAH HARGA BAHAN		 131,624.60 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 300,748.50 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 300,748.50 
+						
+						
+3.6.1.10	Pek. Pemasangan 1 m2 Dinding Bata Merah Tebal ½ Batu Campuran 1SP : 6PP					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Bata Merah	M.35	Buah	71.910	 1,200.00 	 86,292.00 
+	 Semen Portland	M.33	Kg	8.320	 1,600.00 	 13,312.00 
+	 Pasir Pasang	M.28	m3	0.049	 149,200.00 	 7,310.80 
+				 JUMLAH HARGA BAHAN		 106,914.80 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 158,156.80 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 158,156.80 
+						
+2.2.1.3.5	Pek. Pemasangan 1 m2 Bekisting untuk Balok (3 Kali Pakai)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.6600	 152,900.00 	 100,914.00 
+	 Tukang Kayu	 L.02	OH	0.3300	 178,600.00 	 58,938.00 
+	 Kepala Tukang	 L.03	OH	0.0330	 204,300.00 	 6,741.90 
+	 Mandor	 L.04	OH	0.0110	 230,000.00 	 2,530.00 
+				 JUMLAH HARGA TENAGA KERJA		 169,123.90 
+B	 BAHAN					  
+	 Paku 5   12cm	M.59	Kg	0.400	 31,100.00 	 12,440.00 
+	 Minyak Bekisting	M.81	Ltr	0.200	 15,900.00 	 3,180.00 
+	 Balok Kayu Kelas II	M.388	m3	0.00558	 8,504,700.00 	 47,456.23 
+	 Plywood Tebal 12mm	M.90	Lbr	0.12705	 409,300.00 	 52,001.57 
+	 Dolken Kayu 8/10cm Panjang 4m	M.15	Btg	0.650	 34,300.00 	 22,295.00 
+				 JUMLAH HARGA BAHAN		 137,372.79 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 306,496.69 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 306,496.69 
+						
+						
+2.2.1.4.5	Pek. 1 m3 Beton Mutu Rendah F'c 20 MPa. Slump 100 ± 25mm Agregat Maks 19mm Secara Manual					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	1.6500	 152,900.00 	 252,285.00 
+	 Tukang Batu	 L.02	OH	0.2750	 178,600.00 	 49,115.00 
+	 Kepala Tukang	 L.03	OH	0.0280	 204,300.00 	 5,720.40 
+	 Mandor	 L.04	OH	0.0090	 230,000.00 	 2,070.00 
+				 JUMLAH HARGA TENAGA KERJA		 309,190.40 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	348.000	 1,600.00 	 556,800.00 
+	 Pasir Beton	M.25	Kg	790.000	 200.00 	 158,000.00 
+	 Kerikil (Maks 19mm)	M.21	Kg	1009.000	 200.00 	 201,800.00 
+	 Air	M.1	Ltr	202.000	 200.00 	 40,400.00 
+				 JUMLAH HARGA BAHAN		 957,000.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 1,266,190.40 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 1,266,190.40 
+						
+						
+2.2.2.1.10	Pek. Pemasangan 1 m3 Pondasi Batu Belah Campuran 1 SP : 6 PP Cara Manual					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran SDA P.01.e.1.a					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	1.5000	 152,900.00 	 229,350.00 
+	 Tukang Batu	L.02	OH	0.5000	 178,600.00 	 89,300.00 
+	 Mandor	L.04	OH	0.1500	 230,000.00 	 34,500.00 
+				 JUMLAH HARGA TENAGA KERJA		 353,150.00 
+B	 BAHAN					  
+	 Batu Belah	M.16	m3	1.200	 419,500.00 	 503,400.00 
+	 Semen Portland	M.33	Kg	117.000	 1,600.00 	 187,200.00 
+	 Pasir Pasang	M.28	m3	0.561	 149,200.00 	 83,701.20 
+				 JUMLAH HARGA BAHAN		 774,301.20 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 1,127,451.20 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 1,127,451.20 
+						
+2.2.2.1.1	Pek. Pemasangan 1 m3 Batu Kosong (Aanstamping) untuk Pondasi Gedung					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.7800	 152,900.00 	 119,262.00 
+	 Tukang Batu	L.02	OH	0.3900	 178,600.00 	 69,654.00 
+	 Kepala Tukang	L.03	OH	0.0390	 204,300.00 	 7,967.70 
+	 Mandor	L.04	OH	0.0130	 230,000.00 	 2,990.00 
+				 JUMLAH HARGA TENAGA KERJA		 199,873.70 
+B	 BAHAN					  
+	 Batu Belah	M.16	m3	1.200	 419,500.00 	 503,400.00 
+	 Pasir Urug	M.27	m3	0.432	 194,700.00 	 84,110.40 
+				 JUMLAH HARGA BAHAN		 587,510.40 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 787,384.10 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 787,384.10 
+						
+						
+2.2.1.1.3	Pek. 1 Kg Penulangan Kolom, Balok, Ring Balok, & Sloof untuk BjTP atau BjTS Dia. <12mm Cara Manual					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.4.6.a.3 (a)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.0016	 152,900.00 	 244.64 
+	 Tukang Besi	 L.02	OH	0.0016	 178,600.00 	 285.76 
+	 Kepala Tukang	 L.03	OH	0.00016	 204,300.00 	 32.69 
+	 Mandor	 L.04	OH	0.00016	 230,000.00 	 36.80 
+				 JUMLAH HARGA TENAGA KERJA		 599.89 
+B	 BAHAN					  
+*)	 Baja Tulangan Polos (BjTP)	M.342	Kg	1.020	 20,700.00 	 21,114.00 
+	 Kawat Bendrat	M.353	Kg	0.028	 28,200.00 	 789.60 
+				 JUMLAH HARGA BAHAN		 21,903.60 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 22,503.49 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 22,503.49 
+		Catatan :				
+		*)	BjTP atau BjTS sesuaikan dengan kebutuhan			
+						
+						
+A.4.1.1.17.a	Pembesian 1 kg dengan besi polos atau besi ulir				  	  
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.01 	 152,900 	 1,070 
+	Tukang Besi	L.02.05	OH	 0.01 	 178,600 	 1,250 
+	Kepala Tukang	L.03.01	OH	 0.00 	 204,300 	 143 
+	Mandor	L.04.01	OH	 0.00 	 230,000 	 92 
+				 JUMLAH TENAGA KERJA 		 2,556 
+B	BAHAN				  	  
+	Besi beton (polos/ulir)		kg	 1.05 	 14,256 	 14,969 
+	Kawat beton		kg	 0.02 	 22,500 	 338 
+				 JUMLAH HARGA BAHAN 		 15,307 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 17,862 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 17,862 
+						  
+3.6.3.2	Pek. Pemasangan 1 m2 Dinding Kerawang (rooster) Uk. 12x11x24cm dengan Mortar Tipe N Fc’ 5.2 MPa (Setara Campuran 1SP : 4PP)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Bata Rooster	M.41	Buah	36.460	 21,000.00 	 765,660.00 
+	 Semen Portland	M.33	Kg	11.000	 1,600.00 	 17,600.00 
+	 Pasir Pasang	M.28	m3	0.035	 149,200.00 	 5,222.00 
+				 JUMLAH HARGA BAHAN		 788,482.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 839,724.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 839,724.00 
+						
+						
+3.7.6	Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	4.416	 1,600.00 	 7,065.60 
+	 Pasir Pasang	M.28	m3	0.027	 149,200.00 	 4,028.40 
+				 JUMLAH HARGA BAHAN		 11,094.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 62,336.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 62,336.00 
+						
+3.7.8	Pek. Pemasangan 1 m2 Acian					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	3.250	 1,600.00 	 5,200.00 
+				 JUMLAH HARGA BAHAN		 5,200.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 56,442.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 56,442.00 
+						
+3.7.6	Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	4.416	 1,600.00 	 7,065.60 
+	 Pasir Pasang	M.28	m3	0.027	 149,200.00 	 4,028.40 
+				 JUMLAH HARGA BAHAN		 11,094.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 62,336.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 62,336.00 
+						
+3.7.8	Pek. Pemasangan 1 m2 Acian					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	3.250	 1,600.00 	 5,200.00 
+				 JUMLAH HARGA BAHAN		 5,200.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 56,442.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 56,442.00 
+						
+3.7.3	Pek. Pemasangan 1 m2 Plesteran 1SP : 3PP Tebal 15mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	7.776	 1,600.00 	 12,441.60 
+	 Pasir Pasang	M.28	m3	0.023	 149,200.00 	 3,431.60 
+				 JUMLAH HARGA BAHAN		 15,873.20 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 67,115.20 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 67,115.20 
+						
+3.7.4	Pek. Pemasangan 1 m2 Plesteran 1SP : 4PP Tebal 15mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	6.240	 1,600.00 	 9,984.00 
+	 Pasir Pasang	M.28	m3	0.024	 149,200.00 	 3,580.80 
+				 JUMLAH HARGA BAHAN		 13,564.80 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 64,806.80 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 64,806.80 
+						
+3.7.5	Pek. Pemasangan 1 m2 Plesteran 1SP : 5PP Tebal 15mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	5.184	 1,600.00 	 8,294.40 
+	 Pasir Pasang	M.28	m3	0.026	 149,200.00 	 3,879.20 
+				 JUMLAH HARGA BAHAN		 12,173.60 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 63,415.60 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 63,415.60 
+						
+3.7.6	Pek. Pemasangan 1 m2 Plesteran 1SP : 6PP Tebal 15mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	4.416	 1,600.00 	 7,065.60 
+	 Pasir Pasang	M.28	m3	0.027	 149,200.00 	 4,028.40 
+				 JUMLAH HARGA BAHAN		 11,094.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 62,336.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 62,336.00 
+						
+3.7.8	Pek. Pemasangan 1 m2 Acian					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2000	 152,900.00 	 30,580.00 
+	 Tukang	L.02	OH	0.1000	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.0100	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 51,242.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	3.250	 1,600.00 	 5,200.00 
+				 JUMLAH HARGA BAHAN		 5,200.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 56,442.00 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 56,442.00 
+						
+3.7.13	Pek. Pemasangan 1 m2 Kamprotan untuk Finishing 1SP : 2PP					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.1330	 152,900.00 	 20,335.70 
+	 Tukang	L.02	OH	0.0670	 178,600.00 	 11,966.20 
+	 Kepala Tukang	L.03	OH	0.0070	 204,300.00 	 1,430.10 
+	 Mandor	L.04	OH	0.0020	 230,000.00 	 460.00 
+				 JUMLAH HARGA TENAGA KERJA		 34,192.00 
+B	 BAHAN					  
+	 Semen Portland	M.33	Kg	4.320	 1,600.00 	 6,912.00 
+	 Pasir Pasang	M.28	m3	0.006	 149,200.00 	 895.20 
+				 JUMLAH HARGA BAHAN		 7,807.20 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 41,999.20 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 41,999.20 
+						
+						
+3.5.3.2	Pek. Pemasangan 1 m2 Rangka Besi Hollow Galvanis 40.40mm. Modul 60x60cm. untuk Langit-langit (Plafon)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.3500	 152,900.00 	 53,515.00 
+	 Tukang Besi	L.02	OH	0.3500	 178,600.00 	 62,510.00 
+	 Kepala Tukang	L.03	OH	0.0350	 204,300.00 	 7,150.50 
+	 Mandor	L.04	OH	0.0117	 230,000.00 	 2,691.00 
+				 JUMLAH HARGA TENAGA KERJA		 125,866.50 
+B	 BAHAN					  
+	 Hollow Galvanis 4x4 (Plafond)	M.94	m1	4.000	 11,200.00 	 44,800.00 
+	 Kawat Las	M.358	Kg	0.050	 46,100.00 	 2,305.00 
+				 JUMLAH HARGA BAHAN		 47,105.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 172,971.50 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 172,971.50 
+						
+						
+3.5.3.1	Pek. Pemasangan 1 m2 Rangka Langit langit (Plafon) Besi Hollow 40.40					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.3500	 152,900.00 	 53,515.00 
+	 Tukang Besi	L.02	OH	0.3500	 178,600.00 	 62,510.00 
+	 Kepala Tukang	L.03	OH	0.0350	 204,300.00 	 7,150.50 
+	 Mandor	L.04	OH	0.0117	 230,000.00 	 2,691.00 
+				 JUMLAH HARGA TENAGA KERJA		 125,866.50 
+B	 BAHAN					  
+	 Rangka Metal Hollow 40.40mm	M.373	m1	4.000	 17,400.00 	 69,600.00 
+	 Kawat Las	M.358	Kg	0.050	 46,100.00 	 2,305.00 
+				 JUMLAH HARGA BAHAN		 71,905.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 197,771.50 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 197,771.50 
+						
+						
+3.5.2.1	Pek. Pemasangan 1 m2 Langit-langit Papan Gypsum Tebal 9mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.1000	 152,900.00 	 15,290.00 
+	 Tukang Kayu	L.02	OH	0.0500	 178,600.00 	 8,930.00 
+	 Kepala Tukang	L.03	OH	0.0050	 204,300.00 	 1,021.50 
+	 Mandor	L.04	OH	0.0017	 230,000.00 	 391.00 
+				 JUMLAH HARGA TENAGA KERJA		 25,632.50 
+B	 BAHAN					  
+	 Papan Gipsum 120x240cm	M.405	Lbr	0.364	 111,500.00 	 40,586.00 
+	 Paku Sekrup	M.66	Kg	0.110	 44,100.00 	 4,851.00 
+				 JUMLAH HARGA BAHAN		 45,437.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 71,069.50 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 71,069.50 
+						
+						
+A.4.5.1.9.a	Pemasangan 1 m’ list langit-langit gypsum profil 10 cm				  	  
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.05 	 152,900 	 7,645 
+	Tukang Kayu	L.02.04	OH	 0.05 	 178,600 	 8,930 
+	Kepala tukang	L.03.01	OH	 0.01 	 204,300 	 1,022 
+	Mandor	L.04.01	OH	 0.00 	 230,000 	 690 
+				 JUMLAH TENAGA KERJA 		 18,287 
+B	BAHAN				  	  
+	List Gipsum profil 10 cm Pj. 2.00 m'		m'	 1.05 	 50,000 	 52,500 
+	Tepung gypsum		kg	 0.01 	 10,000 	 100 
+				 JUMLAH HARGA BAHAN 		 52,600 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 70,887 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 70,887 
+						  
+3.5.2.1	Pek. Pemasangan 1 m2 Langit langit Papan Gypsum Tebal 9mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.1000	 152,900.00 	 15,290.00 
+	 Tukang Kayu	L.02	OH	0.0500	 178,600.00 	 8,930.00 
+	 Kepala Tukang	L.03	OH	0.0050	 204,300.00 	 1,021.50 
+	 Mandor	L.04	OH	0.0017	 230,000.00 	 391.00 
+				 JUMLAH HARGA TENAGA KERJA		 25,632.50 
+B	 BAHAN					  
+	 Papan Gipsum 120x240cm	M.405	Lbr	0.364	 111,500.00 	 40,586.00 
+	 Paku Sekrup	M.66	Kg	0.110	 44,100.00 	 4,851.00 
+				 JUMLAH HARGA BAHAN		 45,437.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 71,069.50 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 71,069.50 
+						
+						
+3.5.2.6	Pek. Pemasangan 1 m1 List Langit-langit (Plafon) Gypsum					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0250	 152,900.00 	 3,822.50 
+	 Tukang Kayu	L.02	OH	0.0250	 178,600.00 	 4,465.00 
+	 Kepala Tukang	L.03	OH	0.0025	 204,300.00 	 510.75 
+	 Mandor	L.04	OH	0.0008	 230,000.00 	 184.00 
+				 JUMLAH HARGA TENAGA KERJA		 8,982.25 
+B	 BAHAN					  
+	 List Gypsum	M.163	m1	1.100	 32,000.00 	 35,200.00 
+	 Paku	M.54	Kg	0.010	 31,100.00 	 311.00 
+				 JUMLAH HARGA BAHAN		 35,511.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 44,493.25 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 44,493.25 
+						
+						
+3.5.2.6	Pek. Pemasangan 1 m1 List Langit langit (Plafon) Gypsum					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0250	 152,900.00 	 3,822.50 
+	 Tukang Kayu	L.02	OH	0.0250	 178,600.00 	 4,465.00 
+	 Kepala Tukang	L.03	OH	0.0025	 204,300.00 	 510.75 
+	 Mandor	L.04	OH	0.0008	 230,000.00 	 184.00 
+				 JUMLAH HARGA TENAGA KERJA		 8,982.25 
+B	 BAHAN					  
+	 List Gypsum	M.163	m1	1.100	 32,000.00 	 35,200.00 
+	 Paku	M.54	Kg	0.010	 31,100.00 	 311.00 
+				 JUMLAH HARGA BAHAN		 35,511.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 44,493.25 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 44,493.25 
+						
+						
+3.9.5.3	Pek. Pemasangan 1 m2 Lantai Ubin Granit Uk. 60cm x 60cm (1SP : 2PP)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.2500	 152,900.00 	 38,225.00 
+	 Tukang	L.02	OH	0.083	 178,600.00 	 14,823.80 
+	 Kepala Tukang	L.03	OH	0.008	 204,300.00 	 1,634.40 
+	 Mandor	L.04	OH	0.0020	 230,000.00 	 460.00 
+				 JUMLAH HARGA TENAGA KERJA		 55,143.20 
+B	 BAHAN					  
+	 Ubin Granit Uk. 60x60cm	M.215	Buah	2.917	 81,700.00 	 238,318.90 
+	 Semen Portland	M.33	Kg	13.632	 1,600.00 	 21,811.20 
+	 Semen Warna	M.34	Kg	1.500	 1,500.00 	 2,250.00 
+	 Pasir Pasang	M.28	m3	0.027	 149,200.00 	 4,028.40 
+				 JUMLAH HARGA BAHAN		 266,408.50 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 321,551.70 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 321,551.70 
+						
+						
+User 1.1	Pemasangan 1m2 lantai keramik motif granit ukuran 60cm x 60cm (unpolish)					
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.70 	 152,900 	 107,030 
+	Tukang Batu	L.02.03	OH	 0.35 	 178,600 	 62,510 
+	Kepala tukang	L.03.01	OH	 0.04 	 204,300 	 7,151 
+	Mandor	L.04.01	OH	 0.04 	 230,000 	 8,050 
+				 JUMLAH TENAGA KERJA 		 184,741 
+B	BAHAN				  	  
+	Keramik granit kw.1 ukuran 60 x 60 cm		Buah	 3.10 	 138,710 	 430,000 
+	Semen Portland		Kg	 9.60 	 1,600 	 15,360 
+	Pasir Pasang		M3	 0.05 	 149,200 	 6,714 
+	Semen Warna		Kg	 1.50 	 1,500 	 2,250 
+				 JUMLAH HARGA BAHAN 		 454,324 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 639,065 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 639,065 
+						
+User 1.1	Pemasangan 1m2 lantai keramik motif granit ukuran 60cm x 60cm (unpolish)					
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.70 	 152,900 	 107,030 
+	Tukang Batu	L.02.03	OH	 0.35 	 178,600 	 62,510 
+	Kepala tukang	L.03.01	OH	 0.04 	 204,300 	 7,151 
+	Mandor	L.04.01	OH	 0.04 	 230,000 	 8,050 
+				 JUMLAH TENAGA KERJA 		 184,741 
+B	BAHAN				  	  
+	Keramik granit kw.1 ukuran 60 x 60 cm		Buah	 3.10 		 - 
+	Semen Portland		Kg	 9.60 	 1,600 	 15,360 
+	Pasir Pasang		M3	 0.05 	 149,200 	 6,714 
+	Semen Warna		Kg	 1.50 	 1,500 	 2,250 
+				 JUMLAH HARGA BAHAN 		 24,324 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 209,065 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 209,065 
+						  
+						
+3.9.4.1	Pek. Pemasangan 1 m2 Lantai Homogenous Tile Uk. 30x30cm (1SP : 2PP)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.1429	 152,900.00 	 21,849.41 
+	 Tukang	L.02	OH	0.071	 178,600.00 	 12,752.04 
+	 Kepala Tukang	L.03	OH	0.007	 204,300.00 	 1,450.53 
+	 Mandor	L.04	OH	0.0024	 230,000.00 	 552.00 
+				 JUMLAH HARGA TENAGA KERJA		 36,603.98 
+B	 BAHAN					  
+	 Homogeneous Tile Uk. 30x30cm	M.269	Buah	11.667	 40,500.00 	 472,513.50 
+	 Semen Portland	M.33	Kg	13.632	 1,600.00 	 21,811.20 
+	 Semen Warna	M.34	Kg	1.500	 1,500.00 	 2,250.00 
+	 Pasir Pasang	M.28	m3	0.027	 149,200.00 	 4,028.40 
+				 JUMLAH HARGA BAHAN		 500,603.10 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 537,207.08 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 537,207.08 
+						
+						
+3.8.10	Pek. Pengecatan 1 m2 Tembok Baru (1 Lapis Plamuur. 1 Lapis Cat Dasar. 2 Lapis Cat Penutup)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0667	 152,900.00 	 10,198.43 
+	 Tukang Cat	L.02	OH	0.0667	 178,600.00 	 11,912.62 
+	 Kepala Tukang	L.03	OH	0.0067	 204,300.00 	 1,368.81 
+	 Mandor	L.04	OH	0.0022	 230,000.00 	 506.00 
+				 JUMLAH HARGA TENAGA KERJA		 23,985.86 
+B	 BAHAN					  
+	 Cat Dasar	M.45	Kg	0.100	 88,100.00 	 8,810.00 
+	 Cat Penutup Interior	M.48	Kg	0.260	 49,700.00 	 12,922.00 
+				 JUMLAH HARGA BAHAN		 21,732.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 45,717.86 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 45,717.86 
+						
+						
+User 1.2	1m2 Pengecetan Dinding Exterior					
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.02 	 152,900 	 3,058 
+	Tukang cat	L.02.08	OH	 0.06 	 178,600 	 11,252 
+	Kepala tukang	L.03.01	OH	 0.01 	 204,300 	 1,287 
+	Mandor	L.04.01	OH	 0.00 	 230,000 	 690 
+				 JUMLAH TENAGA KERJA 		 16,287 
+B	BAHAN				  	  
+	Plamur Tembok		Kg	 0.10 	 62,088 	 6,209 
+	Cat tembok / cat dasar		Kg	 0.10 	 41,267 	 4,127 
+	Cat Penutup Tembok		Kg	 0.26 	 41,267 	 10,729 
+				 JUMLAH HARGA BAHAN 		 21,065 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 37,352 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 37,352 
+						
+3.8.20	Pek. Pengecatan 1 m2 Plafond (1 Lapis Cat Dasar dan 2 Lapis Cat Penutup)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0625	 152,900.00 	 9,556.25 
+	 Tukang Cat	L.02	OH	0.0625	 178,600.00 	 11,162.50 
+	 Kepala Tukang	L.03	OH	0.0063	 204,300.00 	 1,287.09 
+	 Mandor	L.04	OH	0.0021	 230,000.00 	 483.00 
+				 JUMLAH HARGA TENAGA KERJA		 22,488.84 
+B	 BAHAN					  
+	 Cat Dasar	M.45	Kg	0.120	 88,100.00 	 10,572.00 
+	 Cat Plafond	M.49	Kg	0.180	 88,100.00 	 15,858.00 
+				 JUMLAH HARGA BAHAN		 26,430.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 48,918.84 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 48,918.84 
+						
+						
+3.11.3.1	Pek. Pemasangan 1 m1 Kusen Aluminium					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0430	 152,900.00 	 6,574.70 
+	 Tukang	L.02	OH	0.043	 178,600.00 	 7,679.80 
+	 Kepala Tukang	L.03	OH	0.004	 204,300.00 	 817.20 
+	 Mandor	L.04	OH	0.0010	 230,000.00 	 230.00 
+				 JUMLAH HARGA TENAGA KERJA		 15,301.70 
+B	 BAHAN					  
+	 Profil Aluminium 4 Inch	M.508	m1	1.100	 377,500.00 	 415,250.00 
+	 Paku Sekrup	M.67	Buah	2.000	 200.00 	 400.00 
+	 Sealant	M.516	Tube	0.060	 21,000.00 	 1,260.00 
+				 JUMLAH HARGA BAHAN		 416,910.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 432,211.70 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 432,211.70 
+						
+						
+3.11.1.6	Pek. Pemasangan 1 m2 Jendela Kaca Rangka Aluminium					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0850	 152,900.00 	 12,996.50 
+	 Tukang	L.02	OH	0.085	 178,600.00 	 15,181.00 
+	 Kepala Tukang	L.03	OH	0.009	 204,300.00 	 1,838.70 
+	 Mandor	L.04	OH	0.0030	 230,000.00 	 690.00 
+				 JUMLAH HARGA TENAGA KERJA		 30,706.20 
+B	 BAHAN					  
+	 Rangka Aluminium	M.234	m1	4.400	 23,900.00 	 105,160.00 
+	 Profil Kaca Tebal 6mm	M.510	m2	1.100	 573,800.00 	 631,180.00 
+	 Sealant	M.516	Tube	0.270	 21,000.00 	 5,670.00 
+				 JUMLAH HARGA BAHAN		 742,010.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 772,716.20 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 772,716.20 
+						
+						
+A.4.6.1.8	Pembuatan 1 m2 daun pintu plywood  rangkap, rangka kayu kelas II tertutup ( kayu Kruing )					
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.70 	 152,900 	 107,030 
+	Tukang kayu	L.02.04	OH	 2.10 	 178,600 	 375,060 
+	Kepala tukang	L.03.01	OH	 0.21 	 204,300 	 42,903 
+	Mandor	L.04.01	OH	 0.04 	 230,000 	 8,050 
+				 JUMLAH TENAGA KERJA 		 533,043 
+B	BAHAN				  	  
+	Kayu Papan Kruing		m3	 0.03 		 - 
+	Paku Biasa		kg	 0.03 	 27,400 	 822 
+	Lem Kayu/Karet		kg	 0.50 		 - 
+	Plywood 4 mm uk. 120 x 240 mm		Lbr	 1.00 		 - 
+				 JUMLAH HARGA BAHAN 		 822 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 533,865 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 533,865 
+						  
+						
+3.12.3	Pek. Pemasangan 1 m2 Kaca Polos Tebal 5mm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0150	 152,900.00 	 2,293.50 
+	 Tukang	L.02	OH	0.150	 178,600.00 	 26,790.00 
+	 Kepala Tukang	L.03	OH	0.015	 204,300.00 	 3,064.50 
+	 Mandor	L.04	OH	0.0050	 230,000.00 	 1,150.00 
+				 JUMLAH HARGA TENAGA KERJA		 33,298.00 
+B	 BAHAN					  
+	 Kaca Polos 5mm	M.489	m2	1.100	 136,300.00 	 149,930.00 
+	 Silicone Sealant 300 ml	M.518	Tube	0.050	 48,400.00 	 2,420.00 
+				 JUMLAH HARGA BAHAN		 152,350.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 185,648.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 185,648.00 
+						
+						
+(2022) A.4.6.1.5	Pembuatan 1 m2 Daun Pintu Panel, Kayu Kelas I atau II					
+NO	URAIAN	KODE	SATUAN	KOEFISIEN	 Harga 	 JUMLAH HARGA (Rp) 
+A	TENAGA KERJA					
+	Pekerja	L.01	OH	1.000	 Rp152,900 	 Rp152,900 
+	Tukang Kayu	L.02	OH	3.000	 Rp178,600 	 Rp535,800 
+	Kepala Tukang	L.03	OH	0.300	 Rp204,300 	 Rp61,290 
+	Mandor	L.04	OH	0.050	 Rp230,000 	 Rp11,500 
+				 JUMLAH HARGA TENAGA KERJA 		 Rp761,490 
+B	BAHAN					
+	Papan kayu		m3	0.040	 Rp3,433,000 	 Rp137,320 
+	Lem kayu		Kg	0.500	 Rp25,900 	 Rp12,950 
+				 JUMLAH HARGA BAHAN 		 Rp150,270 
+C	PERALATAN					
+						 Rp- 
+				 JUMLAH HARGA ALAT 		 Rp- 
+D	Jumlah (A+B+C)					 Rp911,760 
+E	Biaya Umum & Keuntungan (maksimum 15%)			0.0%		 Rp- 
+F	HARGA SATUAN PEKERJAAN (D+E)					 Rp911,760 
+						
+						
+3.11.4.5	Pek. Pemasangan 1 Buah Engsel Pintu					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0150	 152,900.00 	 2,293.50 
+	 Tukang Kayu	L.02	OH	0.150	 178,600.00 	 26,790.00 
+	 Kepala Tukang	L.03	OH	0.015	 204,300.00 	 3,064.50 
+	 Mandor	L.04	OH	0.0050	 230,000.00 	 1,150.00 
+				 JUMLAH HARGA TENAGA KERJA		 33,298.00 
+B	 BAHAN					  
+	 Engsel Pintu	M.476	Buah	1.000	 31,900.00 	 31,900.00 
+				 JUMLAH HARGA BAHAN		 31,900.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 65,198.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 65,198.00 
+						
+						
+A.4.6.2.4	Pemasangan 1 buah kunci silinder				  	  
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.01 	 152,900 	 765 
+	Tukang kayu	L.02.04	OH	 0.50 	 178,600 	 89,300 
+	Kepala tukang	L.03.01	OH	 0.05 	 204,300 	 10,215 
+	Mandor	L.04.01	OH	 0.00 	 230,000 	 690 
+				 JUMLAH TENAGA KERJA 		 100,970 
+B	BAHAN				  	  
+	Kunci silinder		Buah	 1.00 	 85,300 	 85,300 
+				 JUMLAH HARGA BAHAN 		 85,300 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 186,270 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 186,270 
+						  
+						
+3.11.4.4	Pek. Pemasangan 1 Buah Kunci Tanam Silinder					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0050	 152,900.00 	 764.50 
+	 Tukang Kayu	L.02	OH	0.500	 178,600.00 	 89,300.00 
+	 Kepala Tukang	L.03	OH	0.050	 204,300.00 	 10,215.00 
+	 Mandor	L.04	OH	0.0170	 230,000.00 	 3,910.00 
+				 JUMLAH HARGA TENAGA KERJA		 104,189.50 
+B	 BAHAN					  
+	 Kunci Silinder	M.500	Buah	1.000	 85,300.00 	 85,300.00 
+				 JUMLAH HARGA BAHAN		 85,300.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 189,489.50 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 189,489.50 
+						
+						
+(2022) A.4.6.2.2	Pemasangan 1 Buah Kunci Tanam Biasa					
+NO	URAIAN	KODE	SATUAN	KOEFISIEN	 Harga 	 JUMLAH HARGA (Rp) 
+A	TENAGA KERJA					
+	Pekerja	L.01	OH	0.01	 Rp152,900 	 Rp1,529 
+	Tukang Kayu	L.02	OH	0.50	 Rp178,600 	 Rp89,300 
+	Kepala Tukang	L.03	OH	0.05	 Rp204,300 	 Rp10,215 
+	Mandor	L.04	OH	0.005	 Rp230,000 	 Rp1,150 
+				 JUMLAH HARGA TENAGA KERJA 		 Rp102,194 
+B	BAHAN					
+	Kunci tanam antik		Buah	1.00	 Rp150,500 	 Rp150,500 
+				 JUMLAH HARGA BAHAN 		 Rp150,500 
+C	PERALATAN					
+						 Rp- 
+				 JUMLAH HARGA ALAT 		 Rp- 
+D	Jumlah (A+B+C)					 Rp252,694 
+E	Biaya Umum & Keuntungan (maksimum 15%)			0.0%		 Rp- 
+F	HARGA SATUAN PEKERJAAN (D+E)					 Rp252,694 
+						
+						
+3.11.4.2	Pek. Pemasangan 1 Buah Kunci Tanam Biasa					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0100	 152,900.00 	 1,529.00 
+	 Tukang Kayu	L.02	OH	0.500	 178,600.00 	 89,300.00 
+	 Kepala Tukang	L.03	OH	0.050	 204,300.00 	 10,215.00 
+	 Mandor	L.04	OH	0.0170	 230,000.00 	 3,910.00 
+				 JUMLAH HARGA TENAGA KERJA		 104,954.00 
+B	 BAHAN					  
+	 Kunci Tanam Biasa	M.503	Buah	1.000	 275,100.00 	 275,100.00 
+				 JUMLAH HARGA BAHAN		 275,100.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 380,054.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 380,054.00 
+						
+						
+(2022) A.4.6.2.6	Pemasangan 1 Buah Engsel Jendela Kupu-Kupu					
+NO	URAIAN	KODE	SATUAN	KOEFISIEN	 Harga 	 JUMLAH HARGA (Rp) 
+A	TENAGA KERJA					
+	Pekerja	L.01	OH	0.010	 Rp152,900 	 Rp1,529 
+	Tukang Kayu	L.02	OH	0.10	 Rp178,600 	 Rp17,860 
+	Kepala Tukang	L.03	OH	0.010	 Rp204,300 	 Rp2,043 
+	Mandor	L.04	OH	0.0005	 Rp230,000 	 Rp115 
+				 JUMLAH HARGA TENAGA KERJA 		 Rp21,547 
+B	BAHAN					
+	Engsel 		Buah	1.00	 Rp44,600 	 Rp44,600 
+				 JUMLAH HARGA BAHAN 		 Rp44,600 
+C	PERALATAN					
+						 Rp- 
+				 JUMLAH HARGA ALAT 		 Rp- 
+D	Jumlah (A+B+C)					 Rp66,147 
+E	Biaya Umum & Keuntungan (maksimum 15%)			0.0%		 Rp- 
+F	HARGA SATUAN PEKERJAAN (D+E)					 Rp66,147 
+						
+						
+3.9.10.1.4	Pek. Pemasangan 1 m2 Dinding Keramik 20cm x 20cm (1SP : 2PP)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.4000	 152,900.00 	 61,160.00 
+	 Tukang	L.02	OH	0.200	 178,600.00 	 35,720.00 
+	 Kepala Tukang	L.03	OH	0.020	 204,300.00 	 4,086.00 
+	 Mandor	L.04	OH	0.0070	 230,000.00 	 1,610.00 
+				 JUMLAH HARGA TENAGA KERJA		 102,576.00 
+B	 BAHAN					  
+	 Keramik Uk. 20x20cm	M.157	Buah	26.000	 8,300.00 	 215,800.00 
+	 Semen Portland	M.33	Kg	9.300	 1,600.00 	 14,880.00 
+	 Pasir Pasang	M.28	m3	0.018	 149,200.00 	 2,685.60 
+	 Semen Warna	M.34	Kg	1.940	 1,500.00 	 2,910.00 
+				 JUMLAH HARGA BAHAN		 236,275.60 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 338,851.60 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 338,851.60 
+						
+						
+6.4.1.2	Pek. Pemasangan 1 m Pipa PVC AW. Dia. 3/4" (20 mm)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.024	 152,900.00 	 3,669.60 
+	 Tukang Pipa	 L.02	OH	0.040	 178,600.00 	 7,144.00 
+	 Kepala Tukang	 L.03	OH	0.004	 204,300.00 	 817.20 
+	 Mandor	 L.04	OH	0.001	 230,000.00 	 230.00 
+				 JUMLAH HARGA TENAGA KERJA		 11,860.80 
+B	 BAHAN					  
+	 Pipa PVC AW ; Dia. 3/4" ; (20 mm) + Fitting & Aksesoris	M.1236	m1	1.450	 15,300.00 	 22,185.00 
+				 JUMLAH HARGA BAHAN		 22,185.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 34,045.80 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 34,045.80 
+						
+						
+5.5.4.12	Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 3/4" ; (20 mm)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.048	 152,900.00 	 7,339.20 
+	 Tukang Pipa	 L.02	OH	0.080	 178,600.00 	 14,288.00 
+	 Kepala Tukang	 L.03	OH	0.008	 204,300.00 	 1,634.40 
+	 Mandor	 L.04	OH	0.003	 230,000.00 	 690.00 
+				 JUMLAH HARGA TENAGA KERJA		 23,951.60 
+B	 BAHAN					  
+	 Pipa PVC AW ; Dia. 3/4" ; (20 mm) dan Aksesoris	M.941	m1	1.500	 23,100.00 	 34,650.00 
+	 Isolasi	M.533	m1	1.200	 200.00 	 240.00 
+				 JUMLAH HARGA BAHAN		 34,890.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 58,841.60 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 58,841.60 
+						
+						
+5.5.4.19	Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 4" ; (100 mm)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.255	 152,900.00 	 38,989.50 
+	 Tukang Pipa	 L.02	OH	0.425	 178,600.00 	 75,905.00 
+	 Kepala Tukang	 L.03	OH	0.043	 204,300.00 	 8,784.90 
+	 Mandor	 L.04	OH	0.014	 230,000.00 	 3,220.00 
+				 JUMLAH HARGA TENAGA KERJA		 126,899.40 
+B	 BAHAN					  
+	 Pipa PVC AW ; Dia. 4" ; (100 mm) dan Aksesoris	M.948	m1	1.500	 103,100.00 	 154,650.00 
+	 Isolasi	M.533	m1	1.200	 200.00 	 240.00 
+				 JUMLAH HARGA BAHAN		 154,890.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 281,789.40 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 281,789.40 
+						
+						
+						
+5.6	PEKERJAAN SISTEM PROTEKSI KEBAKARAN					
+5.6.1	Sistem Perpipaan & Aksesoris					
+						
+5.5.4.18	Pek. Pemasangan 1 m Pipa PVC AW ; Dia. 3" (80 mm)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.190	 152,900.00 	 29,051.00 
+	 Tukang Pipa	 L.02	OH	0.318	 178,600.00 	 56,794.80 
+	 Kepala Tukang	 L.03	OH	0.032	 204,300.00 	 6,537.60 
+	 Mandor	 L.04	OH	0.011	 230,000.00 	 2,530.00 
+				 JUMLAH HARGA TENAGA KERJA		 94,913.40 
+B	 BAHAN					  
+	 Pipa PVC AW ; Dia. 3" (80 mm) dan Aksesoris	M.947	m1	1.500	 78,700.00 	 118,050.00 
+	 Isolasi	M.533	m1	1.200	 200.00 	 240.00 
+				 JUMLAH HARGA BAHAN		 118,290.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 213,203.40 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 213,203.40 
+						
+						
+3.18.6.1	Pek. Pemasangan 1 Buah Floor Drain					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0100	 152,900.00 	 1,529.00 
+	 Tukang	L.02	OH	0.100	 178,600.00 	 17,860.00 
+	 Kepala Tukang	L.03	OH	0.010	 204,300.00 	 2,043.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 22,191.00 
+B	 BAHAN					  
+	 Floor Drain	M.1173	Unit	1.000	 50,900.00 	 50,900.00 
+				 JUMLAH HARGA BAHAN		 50,900.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 73,091.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 73,091.00 
+						
+3.18.3.1	Pek. Pemasangan 1 Buah Closet Duduk/Monoblock					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.5000	 152,900.00 	 76,450.00 
+	 Tukang	L.02	OH	1.200	 178,600.00 	 214,320.00 
+	 Kepala Tukang	L.03	OH	0.120	 204,300.00 	 24,516.00 
+	 Mandor	L.04	OH	0.0400	 230,000.00 	 9,200.00 
+				 JUMLAH HARGA TENAGA KERJA		 324,486.00 
+B	 BAHAN					  
+	 Closet Duduk	M.1170	Unit	1.000	 2,231,900.00 	 2,231,900.00 
+	 Flexible Hose	M.1172	Unit	1.000	 107,200.00 	 107,200.00 
+				 JUMLAH HARGA BAHAN		 2,339,100.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 2,663,586.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 2,663,586.00 
+						
+						
+6.3.2	Pek. Pemasangan 1 Buah Bak Kontrol Pasangan Bata 45cm x 45cm Tinggi 50cm dengan Tutup Beton					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	3.200	 152,900.00 	 489,280.00 
+	 Tukang Batu	 L.02	OH	1.150	 178,600.00 	 205,390.00 
+	 Kepala Tukang	 L.03	OH	0.011	 204,300.00 	 2,247.30 
+	 Mandor	 L.04	OH	0.016	 230,000.00 	 3,680.00 
+				 JUMLAH HARGA TENAGA KERJA		 700,597.30 
+B	 BAHAN					  
+	 Bata Merah	M.35	Buah	70.000	 1,200.00 	 84,000.00 
+	 Semen Portland	M.33	Kg	77.000	 1,600.00 	 123,200.00 
+	 Pasir Pasang	M.28	m3	0.100	 149,200.00 	 14,920.00 
+	 Pasir Beton	M.24	m3	0.100	 311,700.00 	 31,170.00 
+	 Kerikil	M.18	m3	0.100	 387,500.00 	 38,750.00 
+	 Baja Tulangan	M.341	Kg	2.600	 20,700.00 	 53,820.00 
+				 JUMLAH HARGA BAHAN		 345,860.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 1,046,457.30 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 1,046,457.30 
+						
+6.3.3	Pek. Pemasangan 1 Buah Bak Kontrol Pasangan Bata 60cm x 60cm Tinggi 65cm dengan Tutup Beton					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	3.200	 152,900.00 	 489,280.00 
+	 Tukang Batu	 L.02	OH	1.150	 178,600.00 	 205,390.00 
+	 Kepala Tukang	 L.03	OH	0.011	 204,300.00 	 2,247.30 
+	 Mandor	 L.04	OH	0.016	 230,000.00 	 3,680.00 
+				 JUMLAH HARGA TENAGA KERJA		 700,597.30 
+B	 BAHAN					  
+	 Bata Merah	M.35	Buah	123.000	 1,200.00 	 147,600.00 
+	 Semen Portland	M.33	Kg	114.000	 1,600.00 	 182,400.00 
+	 Pasir Pasang	M.28	m3	0.184	 149,200.00 	 27,452.80 
+	 Pasir Beton	M.24	m3	0.120	 311,700.00 	 37,404.00 
+	 Kerikil	M.18	m3	0.033	 387,500.00 	 12,787.50 
+	 Baja Tulangan	M.341	Kg	4.850	 20,700.00 	 100,395.00 
+				 JUMLAH HARGA BAHAN		 508,039.30 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 1,208,636.60 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 1,208,636.60 
+						
+3.1.1.7	Pek. Pemasangan 1 m1 Nok/Bubung Genteng Palentong Besar					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.4000	 152,900.00 	 61,160.00 
+	 Tukang Kayu	L.02	OH	0.2000	 178,600.00 	 35,720.00 
+	 Kepala Tukang	L.03	OH	0.0200	 204,300.00 	 4,086.00 
+	 Mandor	L.04	OH	0.0067	 230,000.00 	 1,541.00 
+				 JUMLAH HARGA TENAGA KERJA		 102,507.00 
+B	 BAHAN					  
+	 Genteng Bubung	M.138	Buah	4.000	 41,800.00 	 167,200.00 
+	 Semen Portland	M.33	Kg	8.000	 1,600.00 	 12,800.00 
+	 Pasir Pasang	M.28	m3	0.032	 149,200.00 	 4,774.40 
+				 JUMLAH HARGA BAHAN		 184,774.40 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 287,281.40 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 287,281.40 
+						
+						
+2.2.1.1.1	Pek. 1 Kg Penulangan Slab untuk BjTP atau BjTS Diameter < 12mm Cara Manual					
+	Lihat Permen PUPR No 8 Tahun 2023 Lampiran B U.4.6.a.1 (a)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.0070	 152,900.00 	 1,070.30 
+	 Tukang Besi	 L.02	OH	0.0070	 178,600.00 	 1,250.20 
+	 Kepala Tukang	 L.03	OH	0.0007	 204,300.00 	 143.01 
+	 Mandor	 L.04	OH	0.0007	 230,000.00 	 161.00 
+				 JUMLAH HARGA TENAGA KERJA		 2,624.51 
+B	 BAHAN					  
+	 *) Baja Tulangan Polos (BjTP)		Kg	1.020	 13,700.00 	 13,974.00 
+	 Kawat Bendrat	M.353	Kg	0.015	 28,200.00 	 423.00 
+				 JUMLAH HARGA BAHAN		 14,397.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 17,021.51 
+E	 Biaya Umum dan Keuntungan  (10% - 15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 17,021.51 
+		Catatan :				
+		*)	BjTP atau BjTS sesuaikan dengan kebutuhan			
+						  
+2.1.1.2	Pek. Pemasangan 1 m2 Atap Jurai/Limasan Rangka Atap Baja Ringan (Canai Dingin) Profil C75					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.7604	 152,900.00 	 116,265.16 
+	 Tukang Besi	 L.02	OH	0.7604	 178,600.00 	 135,807.44 
+	 Kepala Tukang	 L.03	OH	0.076	 204,300.00 	 15,526.80 
+	 Mandor	 L.04	OH	0.0253	 230,000.00 	 5,819.00 
+				 JUMLAH HARGA TENAGA KERJA		 273,418.40 
+B	 BAHAN					  
+	 Baja Ringan Canai Dingin C75	M.336	Btg	0.9603	 214,500.00 	 205,984.35 
+				 JUMLAH HARGA BAHAN		 205,984.35 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 479,402.75 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 479,402.75 
+						
+3.1.1.3	Pek. Pemasangan 1 m2 Atap Genteng Palentong Besar					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.1500	 152,900.00 	 22,935.00 
+	 Tukang Kayu	L.02	OH	0.0750	 178,600.00 	 13,395.00 
+	 Kepala Tukang	L.03	OH	0.0075	 204,300.00 	 1,532.25 
+	 Mandor	L.04	OH	0.0025	 230,000.00 	 575.00 
+				 JUMLAH HARGA TENAGA KERJA		 38,437.25 
+B	 BAHAN					  
+	 Genteng Palentong Besar (Morando)	M.141	Buah	12.000	 19,700.00 	 236,400.00 
+				 JUMLAH HARGA BAHAN		 236,400.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 274,837.25 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 274,837.25 
+						
+User 1.5	1m2 Pengecetan Dinding Exterior (Putih)					
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.02 	 152,900 	 3,058 
+	Tukang cat	L.02.08	OH	 0.06 	 178,600 	 11,252 
+	Kepala tukang	L.03.01	OH	 0.01 	 204,300 	 1,287 
+	Mandor	L.04.01	OH	 0.00 	 230,000 	 690 
+				 JUMLAH TENAGA KERJA 		 16,287 
+B	BAHAN				  	  
+	Plamur Tembok		Kg	 0.10 		 - 
+	Cat tembok / cat dasar		Kg	 0.10 		 - 
+	Cat Penutup Tembok		Kg	 0.26 		 - 
+				 JUMLAH HARGA BAHAN 		 - 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 16,287 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 16,287 
+						
+3.3.5	Pek. Pemasangan 1 m1 Lisplank Non Kayu (GRC Serat Semen) Lebar 30cm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.1000	 152,900.00 	 15,290.00 
+	 Tukang	L.02	OH	0.2000	 178,600.00 	 35,720.00 
+	 Kepala Tukang	L.03	OH	0.0200	 204,300.00 	 4,086.00 
+	 Mandor	L.04	OH	0.0067	 230,000.00 	 1,541.00 
+				 JUMLAH HARGA TENAGA KERJA		 56,637.00 
+B	 BAHAN					  
+	 Serat Semen Lebar 30cm	M.246	m1	1.0500	 95,600.00 	 100,380.00 
+	 Paku 5   7cm	M.57	Kg	0.050	 31,100.00 	 1,555.00 
+				 JUMLAH HARGA BAHAN		 101,935.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 158,572.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 158,572.00 
+						
+3.3.6	Pek. Pemasangan 1 m1 Lisplank Non Kayu (GRC Serat Semen) Lebar 20cm					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.1000	 152,900.00 	 15,290.00 
+	 Tukang	L.02	OH	0.2000	 178,600.00 	 35,720.00 
+	 Kepala Tukang	L.03	OH	0.0200	 204,300.00 	 4,086.00 
+	 Mandor	L.04	OH	0.0067	 230,000.00 	 1,541.00 
+				 JUMLAH HARGA TENAGA KERJA		 56,637.00 
+B	 BAHAN					  
+	 Serat Semen Lebar 20cm	M.245	m1	1.0500	 84,200.00 	 88,410.00 
+	 Paku 5   7cm	M.57	Kg	0.050	 31,100.00 	 1,555.00 
+				 JUMLAH HARGA BAHAN		 89,965.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 146,602.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 146,602.00 
+						
+3.5	PEKERJAAN LANGIT LANGIT (PLAFON)					
+3.5.1	LANGIT LANGIT (PLAFON) AKUSTIK					
+						
+A.4.4.3.57.b	Pemasangan 1 m2 dinding batu alam hitam serit lurus 20 x 40 cm				  	  
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.70 	 152,900 	 107,030 
+	Tukang Batu	L.02.03	OH	 0.35 	 178,600 	 62,510 
+	Kepala tukang	L.03.01	OH	 0.04 	 204,300 	 7,151 
+	Mandor	L.04.01	OH	 0.04 	 230,000 	 8,050 
+				 JUMLAH TENAGA KERJA 		 184,741 
+B	BAHAN				  	  
+	Batu Hitam serit motif lurus Ukuran 20 X 40 cm		m2	 1.10 	 254,800 	 280,280 
+	Semen Portland		Kg	 11.75 	 1,600 	 18,800 
+	Pasir Pasang		M3	 0.04 	 149,200 	 5,222 
+				 JUMLAH HARGA BAHAN 		 304,302 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 489,043 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 489,043 
+						  
+3.11.1.11	Pek. Pembuatan 1 m2 Daun Pintu Panel Kayu Kelas I atau II					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	1.0000	 152,900.00 	 152,900.00 
+	 Tukang Kayu	L.02	OH	3.000	 178,600.00 	 535,800.00 
+	 Kepala Tukang	L.03	OH	0.300	 204,300.00 	 61,290.00 
+	 Mandor	L.04	OH	0.1000	 230,000.00 	 23,000.00 
+				 JUMLAH HARGA TENAGA KERJA		 772,990.00 
+B	 BAHAN					  
+	 Papan Kayu Kelas I	M.407	m3	0.040	 12,340,300.00 	 493,612.00 
+	 Lem Kayu	M.77	Kg	0.500	 25,900.00 	 12,950.00 
+				 JUMLAH HARGA BAHAN		 506,562.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 1,279,552.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 1,279,552.00 
+						
+						
+A.4.6.2.5	Pemasangan 1 buah engsel pintu				  	  
+No	Uraian	Kode	Satuan	 Koefisien 	 Harga 	 Jumlah Harga 
+A	TENAGA				  	  
+	Pekerja	L.01.01	OH	 0.02 	 152,900 	 2,294 
+	Tukang kayu	L.02.04	OH	 0.15 	 178,600 	 26,790 
+	Kepala tukang	L.03.01	OH	 0.02 	 204,300 	 3,065 
+	Mandor	L.04.01	OH	 0.00 	 230,000 	 184 
+				 JUMLAH TENAGA KERJA 		 32,332 
+B	BAHAN				  	  
+	Engsel pintu kuningan		Buah	 1.00 	 45,603 	 45,603 
+				 JUMLAH HARGA BAHAN 		 45,603 
+C	PERALATAN				  	  
+				 JUMLAH HARGA ALAT 		 - 
+D	Jumlah (A+B+C)				  	 77,935 
+E	Overhead & Profit (Maksimal 15%)			0%	  	 - 
+F	Harga Satuan Pekerjaan (D+E)				  	 77,935 
+						  
+6.5.13.3	Pek. Pemasangan 1 Buah Roof Drain. Dia. 3" (80 mm)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.208	 152,900.00 	 31,803.20 
+	 Tukang Pipa	 L.02	OH	0.348	 178,600.00 	 62,152.80 
+	 Kepala Tukang	 L.03	OH	0.035	 204,300.00 	 7,150.50 
+	 Mandor	 L.04	OH	0.010	 230,000.00 	 2,300.00 
+				 JUMLAH HARGA TENAGA KERJA		 103,406.50 
+B	 BAHAN					  
+	 Roof Drain ; Dia. 3“ (80 mm) + Material Bantu	M.1561	Buah	1.250	 87,500.00 	 109,375.00 
+				 JUMLAH HARGA BAHAN		 109,375.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 212,781.50 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 212,781.50 
+						
+3.18.6.2	Pek.  Pemasangan 1 Buah Kran Diameter ½ Inch atau ¾ Inch					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.0100	 152,900.00 	 1,529.00 
+	 Tukang	L.02	OH	0.400	 178,600.00 	 71,440.00 
+	 Kepala Tukang	L.03	OH	0.040	 204,300.00 	 8,172.00 
+	 Mandor	L.04	OH	0.0033	 230,000.00 	 759.00 
+				 JUMLAH HARGA TENAGA KERJA		 81,900.00 
+B	 BAHAN					  
+	 Kran Air	M.1178	Buah	1.000	 48,000.00 	 48,000.00 
+	 Sealtape	M.517	Buah	1.000	 12,700.00 	 12,700.00 
+				 JUMLAH HARGA BAHAN		 60,700.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 142,600.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 142,600.00 
+						
+2.2.1.3.6	Pek. Pemasangan 1 m2 Bekisting untuk Plat Lantai (3 Kali Pakai)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.6600	 152,900.00 	 100,914.00 
+	 Tukang Kayu	 L.02	OH	0.3300	 178,600.00 	 58,938.00 
+	 Kepala Tukang	 L.03	OH	0.0330	 204,300.00 	 6,741.90 
+	 Mandor	 L.04	OH	0.0110	 230,000.00 	 2,530.00 
+				 JUMLAH HARGA TENAGA KERJA		 169,123.90 
+B	 BAHAN					  
+	 Paku 5   10cm	M.58	Kg	0.400	 31,100.00 	 12,440.00 
+	 Minyak Bekisting	M.81	Ltr	0.200	 15,900.00 	 3,180.00 
+	 Balok Kayu Kelas II	M.388	m3	0.00465	 8,504,700.00 	 39,546.86 
+	 Plywood Tebal 12mm	M.90	Lbr	0.12700	 409,300.00 	 51,981.10 
+	 Dolken Kayu 8/10cm Panjang 4m	M.15	Btg	1.950	 34,300.00 	 66,885.00 
+				 JUMLAH HARGA BAHAN		 174,032.96 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 343,156.86 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 343,156.86 
+						
+5.1.5.13	Pek. Pemasangan 1 titik Instalasi Stop Kontak					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.205	 152,900.00 	 31,344.50 
+	 Tukang Listrik	 L.02	OH	0.342	 178,600.00 	 61,081.20 
+	 Kepala Tukang	 L.03	OH	0.034	 204,300.00 	 6,946.20 
+	 Mandor	 L.04	OH	0.011	 230,000.00 	 2,530.00 
+				 JUMLAH HARGA TENAGA KERJA		 101,901.90 
+B	 BAHAN					  
+	 NYM 3 x 2.5 mm2 dan Aksesoris	M.661	m1	14.300	 23,300.00 	 333,190.00 
+	 Conduit HI 20 mm	M.563	m1	14.300	 8,200.00 	 117,260.00 
+	 T Dus	M.531	Buah	1.000	 1,900.00 	 1,900.00 
+	 Socket Conduit 20mm	M.764	Buah	8.000	 1,200.00 	 9,600.00 
+	 Klem 20mm	M.528	Buah	8.000	 25,600.00 	 204,800.00 
+	 Fischer S6 + Sekrup	M.532	Buah	12.000	 400.00 	 4,800.00 
+	 L Bow	M.529	Buah	4.000	 14,200.00 	 56,800.00 
+	 Isolasi	M.533	m1	0.500	 200.00 	 100.00 
+	 Las Dop	M.530	Buah	4.000	 600.00 	 2,400.00 
+				 JUMLAH HARGA BAHAN		 730,850.00 
+C	 PERALATAN				  	  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 832,751.90 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 832,751.90 
+						
+5.1.5.1	Pek. Pemasangan 1 Unit Saklar Tunggal					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.031	 152,900.00 	 4,739.90 
+	 Tukang Listrik	 L.02	OH	0.052	 178,600.00 	 9,287.20 
+	 Kepala Tukang	 L.03	OH	0.005	 204,300.00 	 1,021.50 
+	 Mandor	 L.04	OH	0.002	 230,000.00 	 460.00 
+				 JUMLAH HARGA TENAGA KERJA		 15,508.60 
+B	 BAHAN					  
+	 Saklar Tunggal dan Aksesoris	M.534	Buah	1.100	 28,000.00 	 30,800.00 
+				 JUMLAH HARGA BAHAN		 30,800.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 46,308.60 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 46,308.60 
+						
+5.1.5.2	Pek. Pemasangan 1 Unit Saklar Ganda					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.031	 152,900.00 	 4,739.90 
+	 Tukang Listrik	 L.02	OH	0.052	 178,600.00 	 9,287.20 
+	 Kepala Tukang	 L.03	OH	0.005	 204,300.00 	 1,021.50 
+	 Mandor	 L.04	OH	0.002	 230,000.00 	 460.00 
+				 JUMLAH HARGA TENAGA KERJA		 15,508.60 
+B	 BAHAN					  
+	 Saklar Ganda dan Aksesoris	M.535	Buah	1.100	 33,400.00 	 36,740.00 
+				 JUMLAH HARGA BAHAN		 36,740.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 52,248.60 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 52,248.60 
+						
+5.3.1.1	Pek. Pemasangan 1 Titik Instalasi Lampu					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.190	 152,900.00 	 29,051.00 
+	 Tukang Listrik	 L.02	OH	0.318	 178,600.00 	 56,794.80 
+	 Kepala Tukang	 L.03	OH	0.032	 204,300.00 	 6,537.60 
+	 Mandor	 L.04	OH	0.011	 230,000.00 	 2,530.00 
+				 JUMLAH HARGA TENAGA KERJA		 94,913.40 
+B	 BAHAN					  
+	 NYM 3 x 2.5 mm2 dan Aksesoris	M.661	m1	8.800	 23,300.00 	 205,040.00 
+	 Conduit HI 20 mm	M.563	m1	8.800	 8,200.00 	 72,160.00 
+	 T Dus	M.531	Buah	1.000	 1,900.00 	 1,900.00 
+	 Socket Conduit 20mm	M.764	Buah	5.000	 1,200.00 	 6,000.00 
+	 Klem 20mm	M.528	Buah	10.000	 25,600.00 	 256,000.00 
+	 Fischer S6 + Sekrup	M.532	Buah	15.000	 400.00 	 6,000.00 
+	 Flexible Conduit 20mm	M.565	m1	1.000	 6,700.00 	 6,700.00 
+	 L Bow	M.529	Buah	4.000	 14,200.00 	 56,800.00 
+	 Isolasi	M.533	m1	0.500	 200.00 	 100.00 
+	 Las Dop	M.530	Buah	4.000	 600.00 	 2,400.00 
+				 JUMLAH HARGA BAHAN		 613,100.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 708,013.40 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 708,013.40 
+						
+5.3.1.2	Pek. Pemasangan 1 Titik Instalasi Lampu (Kabel LSOH)					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	 L.01	OH	0.190	 152,900.00 	 29,051.00 
+	 Tukang Listrik	 L.02	OH	0.318	 178,600.00 	 56,794.80 
+	 Kepala Tukang	 L.03	OH	0.032	 204,300.00 	 6,537.60 
+	 Mandor	 L.04	OH	0.011	 230,000.00 	 2,530.00 
+				 JUMLAH HARGA TENAGA KERJA		 94,913.40 
+B	 BAHAN					  
+	 NYM 3 x 2.5 mm2 (LSOH) dan Aksesoris	M.662	m1	8.800	 24,500.00 	 215,600.00 
+	 Conduit HI 20 mm	M.563	m1	8.800	 8,200.00 	 72,160.00 
+	 T Dus	M.531	Buah	1.000	 1,900.00 	 1,900.00 
+	 Socket Conduit 20mm	M.764	Buah	5.000	 1,200.00 	 6,000.00 
+	 Klem 20mm	M.528	Buah	10.000	 25,600.00 	 256,000.00 
+	 Fischer S6 + Sekrup	M.532	Buah	15.000	 400.00 	 6,000.00 
+	 Flexible Conduit 20mm	M.565	m1	1.000	 6,700.00 	 6,700.00 
+	 L Bow	M.529	Buah	4.000	 14,200.00 	 56,800.00 
+	 Isolasi	M.533	m1	0.500	 200.00 	 100.00 
+	 Las Dop	M.530	Buah	4.000	 600.00 	 2,400.00 
+				 JUMLAH HARGA BAHAN		 623,660.00 
+C	 PERALATAN					  
+				 JUMLAH HARGA ALAT		 -   
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 718,573.40 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 718,573.40 
+						
+3.13.4	Pek. Pembuatan dan Pemasangan 1 m1 Railing Besi Pengaman Tinggi 1.2m					
+No	Uraian	Kode	Satuan	Koefisien	 Harga 	 Jumlah Harga (Rp) 
+A	 TENAGA KERJA					  
+	 Pekerja	L.01	OH	0.3000	 152,900.00 	 45,870.00 
+	 Tukang Las	L.02	OH	0.600	 178,600.00 	 107,160.00 
+	 Kepala Tukang	L.03	OH	0.060	 204,300.00 	 12,258.00 
+	 Mandor	L.04	OH	0.0200	 230,000.00 	 4,600.00 
+				 JUMLAH HARGA TENAGA KERJA		 169,888.00 
+B	 BAHAN					  
+	 Pipa Besi Hitam Dia. 3 Inch	M.367	m1	4.800	 247,900.00 	 1,189,920.00 
+	 Pipa Besi Hitam Dia. 1 Inch	M.364	m1	9.900	 127,000.00 	 1,257,300.00 
+	 Cat Zyncromate	M.51	Kg	0.100	 57,100.00 	 5,710.00 
+	 Kawat Las	M.358	Kg	0.050	 46,100.00 	 2,305.00 
+				 JUMLAH HARGA BAHAN		 2,455,235.00 
+C	 PERALATAN					  
+	 Alat Las Listrik	M.1605	Jam	0.170	 99,500.00 	 16,915.00 
+				 JUMLAH HARGA ALAT		 16,915.00 
+						  
+D	 Jumlah Harga Tenaga Kerja, Bahan, dan Peralatan (A+B+C)  					 2,642,038.00 
+E	 Biaya Umum dan Keuntungan  (10%   15%) x D 			0%		 -   
+F	 Harga Satuan Pekerjaan (D+E)					 2,642,038.00 
