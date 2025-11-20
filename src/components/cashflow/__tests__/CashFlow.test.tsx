@@ -8,9 +8,9 @@
 
 import React from 'react'
 import { render, screen, act } from '@testing-library/react'
-import CashFlow from '../../pages/modules/CashFlow'
-import useCurvaSStore from '../../store/curvaSStore'
-import { useProjectStore } from '../../store/projectStore'
+import CashFlow from '../../../pages/modules/CashFlow'
+import useCurvaSStore from '../../../store/curvaSStore'
+import { useProjectStore } from '../../../store/projectStore'
 
 describe('CashFlow page', () => {
   const projectId = 'TEST-PROJ'
@@ -28,10 +28,12 @@ describe('CashFlow page', () => {
 
     // Ensure project store reports an active project
     act(() => {
-      const set = (useProjectStore as any).setState
-      set({
-        getActiveProject: () => ({ id: projectId, name: 'Test Project', budget: 1000000 }),
-      })
+      useProjectStore.setState({
+        projects: {
+          [projectId]: { id: projectId, name: 'Test Project', budget: 1000000 }
+        },
+        activeProjectId: projectId
+      } as any)
     })
   })
 
@@ -44,7 +46,7 @@ describe('CashFlow page', () => {
 
   test('shows empty state when there are no saved scenarios', () => {
     render(<CashFlow />)
-    expect(screen.getByText(/No saved scenarios/i)).toBeTruthy()
+    expect(screen.getAllByText(/No saved scenarios/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/You don't have any saved cashflow scenarios/i)).toBeTruthy()
   })
 

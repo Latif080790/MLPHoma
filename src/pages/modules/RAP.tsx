@@ -15,6 +15,9 @@ import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { useProjectStore } from '../../store/projectStore'
 import { useRapStore } from '../../store/rapStore'
+import { useTimelineStore } from '../../store/timelineStore'
+import { useRabStore } from '../../store/rabStore'
+import { toast } from 'sonner'
 
 /**
  * RAP helpers and components (named exports)
@@ -107,6 +110,9 @@ export default function RAP(): JSX.Element {
   const setPlanFn =
     useRapStore((s) => (s as any).setPlan || (s as any).upsertPlan || (s as any).setProjectPlan || null) ||
     null
+  
+  const { getTasks } = useTimelineStore()
+  const { getItems: getRabItems } = useRabStore()
 
   // Load initial plan from store or build a default
   const initialStorePlan = useMemo(() => tryGetPlanFromStore(getPlan, projectId), [getPlan, projectId])
@@ -233,6 +239,73 @@ export default function RAP(): JSX.Element {
     },
     [monthsInput, activePreset, targetTotal]
   )
+
+  /**
+   * Generate plan from Timeline Schedule + RAB Costs
+   */
+  const handleGenerateFromSchedule = useCallback(() => {
+    const tasks = getTasks(projectId) || []
+    const rabItems = getRabItems(projectId) || []
+    
+    if (!tasks.length) {
+      toast.error('No tasks found in Timeline')
+      return
+    }
+
+    // Map RAB ID to Cost
+    const rabCostMap = new Map<string, number>()
+    rabItems.forEach(item => {
+      const cost = item.finalTotal ?? item.final_total ?? item.finalPrice ?? 0
+      rabCostMap.set(item.id, cost)
+    })
+
+    // Calculate monthly distribution
+    const monthlyCosts = new Map<string, number>()
+    let totalCost = 0
+    let hasLinkedCosts = false
+
+    tasks.forEach(task => {
+      const cost = task.rabId ? (rabCostMap.get(task.rabId) || 0) : 0
+      if (cost <= 0) return
+
+      hasLinkedCosts = true
+      totalCost += cost
+      
+      const start = new Date(task.startDate)
+      const end = new Date(task.endDate)
+      
+      // Simple daily distribution
+      const duration = Math.max(1, (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24) + 1)
+      const dailyCost = cost / duration
+
+      let current = new Date(start)
+      // Clone end date to avoid mutation issues if any
+      const endDateObj = new Date(end)
+      
+      while (current <= endDateObj) {
+        const monthKey = current.toISOString().slice(0, 7) // YYYY-MM
+        monthlyCosts.set(monthKey, (monthlyCosts.get(monthKey) || 0) + dailyCost)
+        current.setDate(current.getDate() + 1)
+      }
+    })
+
+    if (!hasLinkedCosts) {
+      toast.warning('No costs found linked to tasks. Link tasks to RAB items first.')
+      return
+    }
+
+    // Convert to plan array
+    const sortedMonths = Array.from(monthlyCosts.keys()).sort()
+    const newPlan: RapPlanItem[] = sortedMonths.map(period => ({
+      period,
+      planned: monthlyCosts.get(period) || 0
+    }))
+
+    setPlan(newPlan)
+    setMonthsInput(newPlan.length)
+    setTargetTotal(totalCost)
+    toast.success('RAP generated from Schedule')
+  }, [projectId, getTasks, getRabItems])
 
   /**
    * Change selected preset (doesn't auto-generate)
@@ -397,6 +470,7 @@ export default function RAP(): JSX.Element {
         targetTotal={targetTotal}
         setTargetTotal={setTargetTotal}
         onGenerate={() => handleGenerate()}
+        onGenerateFromSchedule={handleGenerateFromSchedule}
         onPreset={handlePreset}
         onNormalize={handleNormalize}
         onSmooth={handleSmooth}

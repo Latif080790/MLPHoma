@@ -4,47 +4,126 @@
  * Provides a clean layout and ensures all JSX tags are properly closed.
  */
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Calculator } from 'lucide-react'
+import { Calculator, CloudUpload } from 'lucide-react'
+import { useRabStore } from '../../store/rabStore'
+import { useProjectStore } from '../../store/projectStore'
+import { toast } from 'sonner'
+import { RABTable } from '../../components/rab/RABTable'
+import { formatIDR } from '../../lib/utils'
+import { AppShell } from '../../components/layout/AppShell'
+import { ModuleHeader } from '../../components/modules/ModuleHeader'
 
 /** RAB module component */
 export default function RAB() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">RAB Builder</h1>
-        <Button className="gap-2">
-          <Calculator className="h-4 w-4" />
-          New Calculation
-        </Button>
-      </div>
+  const syncProjectToSupabase = useRabStore(s => s.syncProjectToSupabase)
+  const currentProject = useProjectStore(s => s.getActiveProject())
+  const items = useRabStore(s => currentProject ? s.getItems(currentProject.id) : [])
+  const [syncing, setSyncing] = React.useState(false)
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Overview</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-lg border p-4 dark:border-neutral-800">
-              <div className="text-sm text-neutral-500">Total Items</div>
-              <div className="text-xl font-semibold">0</div>
-            </div>
-            <div className="rounded-lg border p-4 dark:border-neutral-800">
-              <div className="text-sm text-neutral-500">Subtotal</div>
-              <div className="text-xl font-semibold">Rp 0</div>
-            </div>
-            <div className="rounded-lg border p-4 dark:border-neutral-800">
-              <div className="text-sm text-neutral-500">Final Total</div>
-              <div className="text-xl font-semibold">Rp 0</div>
-            </div>
-          </div>
-          <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-400">
-            Start by importing AHSP and adding RAB items linked to WBS. Calculations will account for overhead, profit, and tax.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+  const handleSync = async () => {
+    if (!currentProject?.id) {
+      toast.error('No project selected')
+      return
+    }
+    if (!syncProjectToSupabase) {
+      toast.error('Supabase sync not configured')
+      return
+    }
+    setSyncing(true)
+    try {
+      await syncProjectToSupabase(currentProject.id)
+      toast.success('RAB items synced to Supabase')
+    } catch (err: any) {
+      toast.error(err?.message || 'Sync failed')
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  const summary = useMemo(() => {
+    const subtotal = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
+    // Simple overhead/profit/tax logic for now - can be enhanced later
+    const overhead = subtotal * 0.0 // 0% default
+    const tax = (subtotal + overhead) * 0.11 // 11% PPN
+    const total = subtotal + overhead + tax
+    return { subtotal, overhead, tax, total }
+  }, [items])
+
+  if (!currentProject) {
+    return (
+      <AppShell>
+        <ModuleHeader
+          icon={<Calculator size={18} />}
+          title="RAB Builder"
+          description="Manage budget items and calculations"
+        />
+        <div className="p-8 text-center">
+          <h2 className="text-lg font-semibold">No Project Selected</h2>
+          <p className="text-muted-foreground">Please select a project to view RAB.</p>
+        </div>
+      </AppShell>
+    )
+  }
+
+  return (
+    <AppShell projectName={currentProject.name}>
+      <ModuleHeader
+        icon={<Calculator size={18} />}
+        title="RAB Builder"
+        description="Manage budget items and calculations"
+        actions={
+          <Button onClick={handleSync} disabled={syncing} variant="outline" className="gap-2">
+            <CloudUpload className="h-4 w-4" />
+            {syncing ? 'Syncing...' : 'Sync to Supabase'}
+          </Button>
+        }
+      />
+
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{items.length}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Subtotal</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatIDR(summary.subtotal)}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Tax (11%)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatIDR(summary.tax)}</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-primary/5 border-primary/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-primary">Final Total</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{formatIDR(summary.total)}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardContent className="p-6">
+            <RABTable projectId={currentProject.id} />
+          </CardContent>
+        </Card>
+      </div>
+    </AppShell>
   )
 }

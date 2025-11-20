@@ -54,8 +54,8 @@ export interface WBSTreeProps {
 function WBSTreeItem({
   item,
   level = 0,
-  isSelected,
-  isExpanded,
+  selectedId,
+  expandedIds,
   onToggleExpand,
   onSelect,
   onAdd,
@@ -70,13 +70,13 @@ function WBSTreeItem({
 }: {
   item: WBSItem
   level?: number
-  isSelected: boolean
-  isExpanded: boolean
-  onToggleExpand: () => void
-  onSelect: () => void
+  selectedId?: string | null
+  expandedIds?: Set<string>
+  onToggleExpand: (id: string) => void
+  onSelect: (item: WBSItem) => void
   onAdd: (parentId: string | null) => void
-  onEdit: () => void
-  onDelete: () => void
+  onEdit: (item: WBSItem) => void
+  onDelete: (item: WBSItem) => void
   onDragStart: () => void
   onDragEnd: () => void
   onDragOver: (e: React.DragEvent) => void
@@ -87,6 +87,9 @@ function WBSTreeItem({
   const [showMenu, setShowMenu] = React.useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const itemRef = useRef<HTMLDivElement>(null)
+
+  const isSelected = item.id === selectedId
+  const isExpanded = expandedIds?.has(item.id) ?? false
 
   // Close menu on click outside
   React.useEffect(() => {
@@ -161,7 +164,7 @@ function WBSTreeItem({
 
         {/* Expand/Collapse button */}
         <button
-          onClick={onToggleExpand}
+          onClick={() => onToggleExpand(item.id)}
           className="flex h-4 w-4 items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700"
         >
           {(hasChildren || isExpanded) && (
@@ -172,7 +175,7 @@ function WBSTreeItem({
         {/* Item content */}
         <div 
           className="flex-1 min-w-0"
-          onClick={onSelect}
+          onClick={() => onSelect(item)}
         >
           {renderItem ? renderItem(item) : (
             <div className="flex items-center gap-2">
@@ -213,7 +216,7 @@ function WBSTreeItem({
               </button>
               <button
                 onClick={() => {
-                  onEdit()
+                  onEdit(item)
                   setShowMenu(false)
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800"
@@ -223,7 +226,7 @@ function WBSTreeItem({
               </button>
               <button
                 onClick={() => {
-                  onDelete()
+                  onDelete(item)
                   setShowMenu(false)
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -244,15 +247,15 @@ function WBSTreeItem({
               key={child.id}
               item={child}
               level={level + 1}
-              isSelected={child.id === (child.id)} // Will be updated by parent
-              isExpanded={false} // Will be updated by parent
-              onToggleExpand={() => {}} // Will be handled by parent
-              onSelect={() => {}} // Will be handled by parent
+              selectedId={selectedId}
+              expandedIds={expandedIds}
+              onToggleExpand={onToggleExpand}
+              onSelect={onSelect}
               onAdd={onAdd}
               onEdit={onEdit}
               onDelete={onDelete}
-              onDragStart={() => {}} // Will be handled by parent
-              onDragEnd={() => {}} // Will be handled by parent
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
               onDragOver={onDragOver}
               onDrop={onDrop}
               renderItem={renderItem}
@@ -412,13 +415,13 @@ export function WBSTree({
           <WBSTreeItem
             key={item.id}
             item={item}
-            isSelected={selectedId === item.id}
-            isExpanded={expandedIds.has(item.id) || expandAll}
-            onToggleExpand={() => onToggleExpand?.(item.id)}
-            onSelect={() => onItemClick?.(item)}
+            selectedId={selectedId}
+            expandedIds={expandedIds}
+            onToggleExpand={(id) => onToggleExpand?.(id)}
+            onSelect={(item) => onItemClick?.(item)}
             onAdd={(parentId) => onAddItem?.(parentId)}
-            onEdit={() => onEditItem?.(item)}
-            onDelete={() => onDeleteItem?.(item)}
+            onEdit={(item) => onEditItem?.(item)}
+            onDelete={(item) => onDeleteItem?.(item)}
             onDragStart={() => handleDragStart(item.id)}
             onDragEnd={handleDragEnd}
             onDragOver={(e) => handleDragOver(e, item.id)}

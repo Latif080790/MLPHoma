@@ -177,14 +177,16 @@ export const useWBSStore = create<WBSStore>()(
       moveItem: (projectId, itemId, newParentId, newIndex) => {
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
-          const updatedItems = [...currentItems]
+          // Deep copy to avoid mutation issues
+          let updatedItems = currentItems.map(item => ({ ...item }))
 
           // Find the item to move
           const itemIndex = updatedItems.findIndex(i => i.id === itemId)
           if (itemIndex === -1) return state
 
           const item = updatedItems[itemIndex]
-          
+          const oldParentId = item.parentId
+
           // Prevent moving item into its own descendant
           let current = newParentId
           while (current) {
@@ -193,32 +195,47 @@ export const useWBSStore = create<WBSStore>()(
             current = parent?.parentId || null
           }
 
-          // Remove item from old position
+          // 1. Remove item from the array temporarily
           updatedItems.splice(itemIndex, 1)
-          
-          // Update parent
           item.parentId = newParentId
+
+          // 2. Get siblings in the new parent (excluding the moved item)
+          // Sort them by current sortOrder to ensure stable insertion
+          const newSiblings = updatedItems
+            .filter(i => i.parentId === newParentId)
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+
+          // 3. Insert item at the correct position in the siblings array
+          // Clamp index to valid range
+          const targetIndex = Math.max(0, Math.min(newIndex, newSiblings.length))
+          newSiblings.splice(targetIndex, 0, item)
+
+          // 4. Update sortOrder for all new siblings
+          newSiblings.forEach((sibling, index) => {
+            sibling.sortOrder = index
+          })
+
+          // 5. Re-integrate siblings into the main array
+          // We removed the item, now we need to update the siblings in the main array
+          // Since we have references in newSiblings, the objects in updatedItems (which are the same references) are updated?
+          // No, we mapped at the start. newSiblings contains references to objects in updatedItems.
+          // So modifying sibling.sortOrder updates the object in updatedItems.
           
-          // Insert at new position
-          const siblings = updatedItems.filter(i => i.parentId === newParentId)
-          const actualIndex = Math.min(newIndex, siblings.length)
-          
-          // Find insert position
-          let insertPos = 0
-          for (let i = 0; i < updatedItems.length; i++) {
-            if (updatedItems[i].parentId === newParentId) {
-              if (insertPos === actualIndex) {
-                updatedItems.splice(i, 0, item)
-                break
-              }
-              insertPos++
-            }
-          }
-          if (insertPos === actualIndex) {
-            updatedItems.push(item)
+          // However, we need to put 'item' back into updatedItems array.
+          updatedItems.push(item)
+
+          // 6. Also update sortOrder for old siblings to close gaps (optional but good for cleanliness)
+          if (oldParentId !== newParentId) {
+             const oldSiblings = updatedItems
+                .filter(i => i.parentId === oldParentId)
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+             
+             oldSiblings.forEach((sibling, index) => {
+                sibling.sortOrder = index
+             })
           }
 
-          // Update sort orders and codes
+          // 7. Generate codes
           const finalItems = generateCodesForProject(updatedItems)
 
           return {

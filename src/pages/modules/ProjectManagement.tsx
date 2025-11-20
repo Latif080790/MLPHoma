@@ -7,61 +7,121 @@
 import React, { useMemo, useState } from 'react'
 import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
-import { FolderKanban, Plus, CheckCircle2, DollarSign } from 'lucide-react'
-import { useProjectStore } from '../../store/projectStore'
+import { FolderKanban, Plus, CheckCircle2, DollarSign, Calendar, MapPin, MoreVertical, Edit, Trash2 } from 'lucide-react'
+import { useProjectStore, type Project } from '../../store/projectStore'
+import { ProjectDialog } from '../../components/project/ProjectDialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu'
+import { formatIDR } from '../../lib/utils'
 
 /**
  * Project card menampilkan KPI ringkas dan tombol set aktif.
  */
 function ProjectCard({
-  id,
-  name,
-  budget,
-  status,
+  project,
   isActive,
   onActivate,
+  onEdit,
+  onDelete,
 }: {
-  id: string
-  name: string
-  budget: number
-  status: string
+  project: Project
   isActive: boolean
   onActivate: () => void
+  onEdit: () => void
+  onDelete: () => void
 }) {
   return (
-    <Card className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="truncate">{name}</span>
-          {isActive ? (
-            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 inline-flex items-center gap-1">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Active
-            </Badge>
-          ) : (
-            <Badge variant="outline">{status || '—'}</Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between rounded-md border p-3 text-sm dark:border-neutral-800">
-          <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-emerald-600" />
-            <span>Budget</span>
+    <Card className={`overflow-hidden flex flex-col ${isActive ? 'border-blue-500 ring-1 ring-blue-500' : ''}`}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-base font-semibold leading-none">
+              {project.name}
+            </CardTitle>
+            <div className="text-sm text-muted-foreground">
+              {project.id}
+            </div>
           </div>
-          <strong>Rp {Number(budget || 0).toLocaleString('id-ID')}</strong>
+          <div className="flex items-center gap-2">
+            {isActive && (
+              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 hover:bg-blue-100">
+                Active
+              </Badge>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onEdit}>
+                  <Edit className="mr-2 h-4 w-4" /> Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onDelete} className="text-red-600 focus:text-red-600">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-        <div className="flex items-center justify-between text-xs text-neutral-500">
-          <span>ID</span>
-          <span>{id}</span>
+      </CardHeader>
+      <CardContent className="flex-1 space-y-3 pb-3">
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <DollarSign className="h-3 w-3" /> Budget
+            </span>
+            <span className="font-medium">{formatIDR(project.budget || 0)}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" /> Status
+            </span>
+            <Badge variant="outline" className="w-fit font-normal">
+              {project.status || 'Planning'}
+            </Badge>
+          </div>
+          {project.startDate && (
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Calendar className="h-3 w-3" /> Start
+              </span>
+              <span className="font-medium">{project.startDate}</span>
+            </div>
+          )}
+          {project.location && (
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <MapPin className="h-3 w-3" /> Location
+              </span>
+              <span className="font-medium truncate">{project.location}</span>
+            </div>
+          )}
         </div>
-        <Button className="w-full" variant={isActive ? 'outline' : 'default'} onClick={onActivate} disabled={isActive}>
+        {project.meta?.description && (
+          <p className="text-xs text-muted-foreground line-clamp-2 mt-2">
+            {project.meta.description}
+          </p>
+        )}
+      </CardContent>
+      <CardFooter className="pt-0">
+        <Button 
+          className="w-full" 
+          variant={isActive ? 'secondary' : 'default'} 
+          onClick={onActivate} 
+          disabled={isActive}
+        >
           {isActive ? 'Currently Active' : 'Set Active'}
         </Button>
-      </CardContent>
+      </CardFooter>
     </Card>
   )
 }
@@ -80,14 +140,12 @@ export default function ProjectManagement() {
   const activeId = useProjectStore((s) => s.activeProjectId)
   const setActive = useProjectStore((s) => s.setActiveProject)
   const addProject = useProjectStore((s) => s.addProject)
+  const updateProject = useProjectStore((s) => s.updateProject)
+  const removeProject = useProjectStore((s) => s.removeProject)
 
-  // Form tambah proyek
-  const [form, setForm] = useState({
-    name: '',
-    id: '',
-    budget: '',
-    status: 'Planning',
-  })
+  // Dialog state
+  const [showDialog, setShowDialog] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
 
   // Ringkasan portfolio
   const summary = useMemo(() => {
@@ -97,16 +155,31 @@ export default function ProjectManagement() {
     return { totalBudget, activeCount, planningCount, total: projects.length }
   }, [projects])
 
-  // Handler tambah proyek
-  const onAdd = () => {
-    if (!form.id || !form.name) return
-    addProject({
-      id: form.id,
-      name: form.name,
-      budget: Number(form.budget || 0),
-      status: form.status,
-    } as any)
-    setForm({ name: '', id: '', budget: '', status: 'Planning' })
+  // Handlers
+  const handleAdd = () => {
+    setEditingProject(null)
+    setShowDialog(true)
+  }
+
+  const handleEdit = (project: Project) => {
+    setEditingProject(project)
+    setShowDialog(true)
+  }
+
+  const handleDelete = (project: Project) => {
+    if (window.confirm(`Are you sure you want to delete project "${project.name}"?`)) {
+      removeProject(project.id)
+    }
+  }
+
+  const handleSave = (data: Partial<Project>) => {
+    if (editingProject) {
+      updateProject(editingProject.id, data)
+    } else {
+      if (data.id && data.name) {
+        addProject(data as Project)
+      }
+    }
   }
 
   return (
@@ -115,115 +188,81 @@ export default function ProjectManagement() {
         icon={<FolderKanban size={18} />}
         title="Project Management"
         description="Kelola portofolio proyek, pilih aktif, dan tambah proyek baru."
+        actions={
+          <Button onClick={handleAdd} size="sm">
+            <Plus className="mr-2 h-4 w-4" />
+            New Project
+          </Button>
+        }
       />
 
       {/* Portfolio summary */}
       <div className="mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Total Projects</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Projects</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary.total}</div>
-            <div className="mt-1 text-xs text-neutral-500">Projects in portfolio</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Active</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Active Projects</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary.activeCount}</div>
-            <div className="mt-1 text-xs text-neutral-500">Currently running</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Planning</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Planning Phase</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summary.planningCount}</div>
-            <div className="mt-1 text-xs text-neutral-500">Upcoming</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Total Budget</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Portfolio Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Rp {summary.totalBudget.toLocaleString('id-ID')}</div>
-            <div className="mt-1 text-xs text-neutral-500">Across all projects</div>
+            <div className="text-2xl font-bold">{formatIDR(summary.totalBudget)}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Grid projects */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((p) => (
-          <ProjectCard
-            key={p.id}
-            id={p.id}
-            name={p.name}
-            budget={(p as any).budget || 0}
-            status={(p as any).status || '—'}
-            isActive={p.id === activeId}
-            onActivate={() => setActive(p.id)}
-          />
-        ))}
-      </div>
+      {projects.length === 0 ? (
+        <div className="text-center py-12 border rounded-xl bg-muted/10">
+          <h3 className="text-lg font-medium">No Projects Found</h3>
+          <p className="text-muted-foreground mb-4">Create your first project to get started.</p>
+          <Button onClick={handleAdd}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Project
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {projects.map((p) => (
+            <ProjectCard
+              key={p.id}
+              project={p}
+              isActive={p.id === activeId}
+              onActivate={() => setActive(p.id)}
+              onEdit={() => handleEdit(p)}
+              onDelete={() => handleDelete(p)}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Add new project */}
-      <div className="mt-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add New Project
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-4">
-            <div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400">Project ID</div>
-              <Input
-                placeholder="P-004"
-                value={form.id}
-                onChange={(e) => setForm({ ...form, id: e.target.value })}
-              />
-            </div>
-            <div className="md:col-span-2">
-              <div className="text-sm text-neutral-600 dark:text-neutral-400">Project Name</div>
-              <Input
-                placeholder="Proyek Baru"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div>
-              <div className="text-sm text-neutral-600 dark:text-neutral-400">Budget (IDR)</div>
-              <Input
-                type="number"
-                min={0}
-                placeholder="0"
-                value={form.budget}
-                onChange={(e) => setForm({ ...form, budget: e.target.value })}
-              />
-            </div>
-            <div className="md:col-span-3">
-              <div className="text-sm text-neutral-600 dark:text-neutral-400">Status</div>
-              <Input
-                placeholder="Active / Planning / Hold"
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-              />
-            </div>
-            <div className="md:col-span-1 flex items-end">
-              <Button className="w-full" onClick={onAdd}>
-                Add Project
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <ProjectDialog 
+        open={showDialog} 
+        onOpenChange={setShowDialog}
+        project={editingProject}
+        onSave={handleSave}
+      />
     </AppShell>
   )
 }

@@ -84,6 +84,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
       }
       addSavedScenario(projectId, scenario)
       setLastSavedOk(true)
+      notify.success('Scenario saved')
       // keep scenario name for quick save multiple times
     } catch (e) {
       // eslint-disable-next-line no-console

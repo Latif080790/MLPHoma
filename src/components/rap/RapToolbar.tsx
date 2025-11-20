@@ -17,6 +17,7 @@ export interface RapToolbarProps {
   targetTotal: number
   setTargetTotal: (v: number) => void
   onGenerate: () => void
+  onGenerateFromSchedule?: () => void
   onPreset: (kind: PresetKind) => void
   onNormalize: () => void
   onSmooth: () => void
@@ -33,6 +34,7 @@ export const RapToolbar: React.FC<RapToolbarProps> = ({
   targetTotal,
   setTargetTotal,
   onGenerate,
+  onGenerateFromSchedule,
   onPreset,
   onNormalize,
   onSmooth,
@@ -71,7 +73,7 @@ export const RapToolbar: React.FC<RapToolbarProps> = ({
               className="mt-1 w-full rounded-md border bg-transparent px-3 py-1.5 text-sm dark:border-neutral-700"
             />
           </div>
-          <div className="sm:col-span-3">
+          <div className="sm:col-span-3 flex gap-2">
             <button
               onClick={onGenerate}
               disabled={disabled}
@@ -80,6 +82,16 @@ export const RapToolbar: React.FC<RapToolbarProps> = ({
             >
               <Wand2 size={16} /> Generate
             </button>
+            {onGenerateFromSchedule && (
+              <button
+                onClick={onGenerateFromSchedule}
+                disabled={disabled}
+                className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                title="Generate RAP berdasarkan jadwal Timeline dan biaya RAB"
+              >
+                <Wand2 size={16} /> From Schedule
+              </button>
+            )}
           </div>
         </div>
 
