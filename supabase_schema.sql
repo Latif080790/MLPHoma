@@ -85,3 +85,86 @@ create policy "Allow public select ahsp_components" on public.ahsp_components fo
 create policy "Allow public insert ahsp_components" on public.ahsp_components for insert with check (true);
 create policy "Allow public update ahsp_components" on public.ahsp_components for update using (true);
 create policy "Allow public delete ahsp_components" on public.ahsp_components for delete using (true);
+
+-- 5. Projects Table
+create table if not exists public.projects (
+  id text primary key,
+  code text,
+  name text not null,
+  client_name text,
+  location text,
+  start_date date,
+  end_date date,
+  budget numeric default 0,
+  status text default 'draft',
+  payment_terms jsonb default '{}'::jsonb,
+  meta jsonb default '{}'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 6. WBS Items Table
+create table if not exists public.wbs_items (
+  id text primary key,
+  project_id text references public.projects(id) on delete cascade,
+  code text,
+  name text not null,
+  level integer default 1,
+  parent_id text references public.wbs_items(id) on delete cascade,
+  sort_order integer default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 7. Timeline Tasks Table
+create table if not exists public.timeline_tasks (
+  id text primary key,
+  project_id text references public.projects(id) on delete cascade,
+  name text not null,
+  description text,
+  start_date date,
+  end_date date,
+  duration integer default 1,
+  progress numeric default 0,
+  status text default 'not_started',
+  priority text default 'medium',
+  wbs_id text references public.wbs_items(id) on delete set null,
+  rab_id text references public.rab_items(id) on delete set null,
+  baseline_start_date date,
+  baseline_end_date date,
+  assigned_resources jsonb default '[]'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 8. Task Dependencies Table
+create table if not exists public.task_dependencies (
+  id text primary key,
+  project_id text references public.projects(id) on delete cascade,
+  predecessor_id text references public.timeline_tasks(id) on delete cascade,
+  successor_id text references public.timeline_tasks(id) on delete cascade,
+  type text default 'FS',
+  lag integer default 0,
+  created_at timestamptz default now()
+);
+
+-- 9. RAP Data Table (Financial Plan)
+create table if not exists public.rap_data (
+  project_id text primary key references public.projects(id) on delete cascade,
+  plan_data jsonb default '[]'::jsonb, -- Stores the RapPoint[] array
+  updated_at timestamptz default now()
+);
+
+-- Enable RLS for new tables
+alter table public.projects enable row level security;
+alter table public.wbs_items enable row level security;
+alter table public.timeline_tasks enable row level security;
+alter table public.task_dependencies enable row level security;
+alter table public.rap_data enable row level security;
+
+-- Public policies for new tables (Dev only)
+create policy "Allow public all projects" on public.projects for all using (true);
+create policy "Allow public all wbs_items" on public.wbs_items for all using (true);
+create policy "Allow public all timeline_tasks" on public.timeline_tasks for all using (true);
+create policy "Allow public all task_dependencies" on public.task_dependencies for all using (true);
+create policy "Allow public all rap_data" on public.rap_data for all using (true);
