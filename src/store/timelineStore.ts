@@ -9,7 +9,11 @@
  */
 
 import { create } from 'zustand'
+import { toast } from 'sonner'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
+import { validate, formatZodErrors } from '../lib/validationMiddleware'
+import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/validationSchemas'
+import { syncTimelineTask, syncDelete } from '../lib/supabaseSyncService'
 
 /**
  * Task status
@@ -191,12 +195,12 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
     },
 
     addTask: (projectId, data) => {
-      const id = rid('task')
-      const now = new Date().toISOString()
+      // Calculate end date if not provided
       const dur = Math.max(1, Number(data.duration || 1))
       const endDate = data.endDate ?? addDays(data.startDate, dur - 1)
-      const task: TimelineTask = {
-        id,
+
+      // Prepare task data for validation
+      const taskData = {
         projectId,
         name: data.name,
         description: data.description || '',
@@ -210,6 +214,21 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
         rabId: data.rabId,
         dependencies: data.dependencies || [],
         assignedResources: data.assignedResources || [],
+      }
+
+      // Validate input
+      const validation = validate(timelineTaskInputSchema, taskData)
+      if (!validation.success) {
+        const errorMsg = formatZodErrors(validation.errors)
+        toast.error('Failed to add task', { description: errorMsg })
+        return ''
+      }
+
+      const id = rid('task')
+      const now = new Date().toISOString()
+      const task: TimelineTask = {
+        ...validation.data,
+        id,
         createdAt: now,
         updatedAt: now,
       }
@@ -219,20 +238,39 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
         return { tasksByProject: { ...s.tasksByProject, [projectId]: [...arr, task] } }
       })
 
+      // Sync to Supabase
+      syncTimelineTask(task)
+
       return id
     },
 
     updateTask: (projectId, id, patch) => {
+      // Validate updates
+      const validation = validate(timelineTaskUpdateSchema, patch)
+      if (!validation.success) {
+        const errorMsg = formatZodErrors(validation.errors)
+        toast.error('Failed to update task', { description: errorMsg })
+        return
+      }
+
+      let updatedTask: TimelineTask | null = null
+
       set((s) => {
         const arr = s.tasksByProject[projectId] || []
         const next = arr.map((t) => {
           if (t.id !== id) return t
-          const start = patch.startDate ?? t.startDate
-          const end = patch.endDate ?? t.endDate
-          return { ...t, ...patch, duration: inclusiveDays(start, end), updatedAt: new Date().toISOString() }
+          const start = validation.data.startDate ?? t.startDate
+          const end = validation.data.endDate ?? t.endDate
+          updatedTask = { ...t, ...validation.data, duration: inclusiveDays(start, end), updatedAt: new Date().toISOString() }
+          return updatedTask
         })
         return { tasksByProject: { ...s.tasksByProject, [projectId]: next } }
       })
+
+      // Sync to Supabase
+      if (updatedTask) {
+        syncTimelineTask(updatedTask)
+      }
     },
 
     updateTaskDates: (projectId, id, dates) => {
@@ -247,6 +285,9 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
         const cleaned = filtered.map((t) => ({ ...t, dependencies: (t.dependencies || []).filter((d) => d.predecessorId !== id && d.successorId !== id) }))
         return { tasksByProject: { ...s.tasksByProject, [projectId]: cleaned } }
       })
+
+      // Sync deletion to Supabase
+      syncDelete('timeline_tasks', id)
     },
 
     setBaseline: (projectId, overwrite = true) => {

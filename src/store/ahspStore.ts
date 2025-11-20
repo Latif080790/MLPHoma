@@ -4,16 +4,20 @@
  */
 
 import { create } from 'zustand'
-import { 
-  batchUpsertAhsp, 
-  supabase, 
-  deleteAhspItem,
-  batchUpsertResources,
-  batchUpsertAhspComponents,
-  deleteAhspComponent, // Need to add this to client
-  deleteResource // Need to add this to client
-} from '../lib/supabaseClient'
+import { supabase } from '../lib/supabaseClient'
 import { devtools } from 'zustand/middleware'
+import { calculateAHSPPrice as calcAHSPPrice } from '../lib/calculationService'
+import { syncAHSPItem, syncResource, syncAHSPComponent, syncDelete } from '../lib/supabaseSyncService'
+import { validate } from '../lib/validationMiddleware'
+import { 
+  resourceInputSchema, 
+  resourceUpdateSchema,
+  ahspItemInputSchema,
+  ahspItemUpdateSchema,
+  ahspComponentInputSchema,
+  ahspComponentUpdateSchema
+} from '../lib/validationSchemas'
+import { toast } from 'sonner'
 import type { 
   AHSPStore, 
   Resource, 
@@ -62,36 +66,59 @@ export const useAHSPStore = create<AHSPStore>()(
 
       // Resource actions
       addResource: (resource) => {
+        // Validate input
+        const validation = validate(resourceInputSchema, resource)
+        if (!validation.success) {
+          const errors = validation.errors || []
+          const errorMsg = errors[0]?.message || 'Validation failed'
+          toast.error('Failed to add resource', {
+            description: errorMsg
+          })
+          set((state) => ({
+            errors: {
+              ...state.errors,
+              resources: errorMsg,
+            },
+          }))
+          return
+        }
+
         const newResource: Resource = {
-          ...resource,
+          ...validation.data!,
           id: generateId('res'),
+          isActive: validation.data!.isActive ?? true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         }
 
         set((state) => ({
           resources: [...state.resources, newResource],
+          errors: {
+            ...state.errors,
+            resources: null,
+          },
         }))
 
-        if (supabase) {
-          batchUpsertResources([{
-            id: newResource.id,
-            code: newResource.code,
-            name: newResource.name,
-            type: newResource.type,
-            unit: newResource.unit,
-            unit_price: newResource.unitPrice,
-            created_at: newResource.createdAt,
-            updated_at: newResource.updatedAt
-          }])
-        }
+        // Queue-based sync with retry logic
+        syncResource(newResource)
       },
 
       updateResource: (id, updates) => {
+        // Validate updates
+        const validation = validate(resourceUpdateSchema, updates)
+        if (!validation.success) {
+          const errors = validation.errors || []
+          const errorMsg = errors[0]?.message || 'Validation failed'
+          toast.error('Failed to update resource', {
+            description: errorMsg
+          })
+          return
+        }
+
         set((state) => ({
           resources: state.resources.map(resource =>
             resource.id === id
-              ? { ...resource, ...updates, updatedAt: new Date().toISOString() }
+              ? { ...resource, ...validation.data!, updatedAt: new Date().toISOString() }
               : resource
           ),
         }))
@@ -142,14 +169,34 @@ export const useAHSPStore = create<AHSPStore>()(
 
       // AHSP item actions
       addAHSPItem: (item) => {
+        // Validate input
+        const validation = validate(ahspItemInputSchema, item)
+        if (!validation.success) {
+          const errors = validation.errors || []
+          const errorMsg = errors[0]?.message || 'Validation failed'
+          toast.error('Failed to add AHSP item', {
+            description: errorMsg
+          })
+          set((state) => ({
+            errors: {
+              ...state.errors,
+              ahspItems: errorMsg,
+            },
+          }))
+          return ''
+        }
+
         const id = item.id || generateId('ahsp')
         const newItem: AHSPItem = {
-          ...item,
+          ...validation.data!,
           id,
+          basePrice: validation.data!.basePrice ?? 0,
+          finalPrice: validation.data!.finalPrice ?? 0,
+          isActive: validation.data!.isActive ?? true,
+          overheadPercentage: validation.data!.overheadPercentage ?? 0,
+          profitPercentage: validation.data!.profitPercentage ?? 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          basePrice: item.basePrice || 0,
-          finalPrice: item.finalPrice || 0,
         }
 
         set((state) => ({
@@ -158,60 +205,41 @@ export const useAHSPStore = create<AHSPStore>()(
             ...state.componentsByAHSP,
             [newItem.id]: [],
           },
+          errors: {
+            ...state.errors,
+            ahspItems: null,
+          },
         }))
 
-        // Fire-and-forget remote sync (ignore if supabase not configured)
-        if (supabase) {
-          batchUpsertAhsp([
-            {
-              id: newItem.id,
-              code: newItem.code,
-              name: newItem.name,
-              description: newItem.description,
-              unit: newItem.unit,
-              category: newItem.category,
-              base_price: newItem.basePrice,
-              final_price: newItem.finalPrice,
-              overhead_percentage: newItem.overheadPercentage,
-              profit_percentage: newItem.profitPercentage,
-              created_at: newItem.createdAt,
-              updated_at: newItem.updatedAt,
-            },
-          ])
-        }
+        // Queue-based sync with retry logic
+        syncAHSPItem(newItem)
         return id
       },
 
       updateAHSPItem: (id, updates) => {
+        // Validate updates
+        const validation = validate(ahspItemUpdateSchema, updates)
+        if (!validation.success) {
+          const errors = validation.errors || []
+          const errorMsg = errors[0]?.message || 'Validation failed'
+          toast.error('Failed to update AHSP item', {
+            description: errorMsg
+          })
+          return
+        }
+
         set((state) => ({
           ahspItems: state.ahspItems.map(item =>
             item.id === id
-              ? { ...item, ...updates, updatedAt: new Date().toISOString() }
+              ? { ...item, ...validation.data!, updatedAt: new Date().toISOString() }
               : item
           ),
         }))
 
-        if (supabase) {
-          const state = get()
-          const updated = state.ahspItems.find(i => i.id === id)
-          if (updated) {
-            batchUpsertAhsp([
-              {
-                id: updated.id,
-                code: updated.code,
-                name: updated.name,
-                description: updated.description,
-                unit: updated.unit,
-                category: updated.category,
-                base_price: updated.basePrice,
-                final_price: updated.finalPrice,
-                overhead_percentage: updated.overheadPercentage,
-                profit_percentage: updated.profitPercentage,
-                created_at: updated.createdAt,
-                updated_at: updated.updatedAt,
-              },
-            ])
-          }
+        const state = get()
+        const updated = state.ahspItems.find(i => i.id === id)
+        if (updated) {
+          syncAHSPItem(updated)
         }
       },
 
@@ -225,9 +253,7 @@ export const useAHSPStore = create<AHSPStore>()(
             componentsByAHSP: newComponentsByAHSP,
           }
         })
-        if (supabase) {
-          deleteAhspItem(id).catch(err => console.warn('Failed to delete AHSP item from Supabase:', err))
-        }
+        syncDelete('ahsp_items', id)
       },
 
       importAHSPItems: (items) => {
@@ -256,8 +282,25 @@ export const useAHSPStore = create<AHSPStore>()(
 
       // Component actions
       addComponent: (ahspId, component) => {
+        // Validate input
+        const validation = validate(ahspComponentInputSchema, component)
+        if (!validation.success) {
+          const errors = validation.errors || []
+          const errorMsg = errors[0]?.message || 'Validation failed'
+          toast.error('Failed to add component', {
+            description: errorMsg
+          })
+          set((prevState) => ({
+            errors: {
+              ...prevState.errors,
+              components: errorMsg,
+            },
+          }))
+          return
+        }
+
         const state = get()
-        const resource = state.resources.find(r => r.id === component.resourceId)
+        const resource = state.resources.find(r => r.id === validation.data!.resourceId)
         
         if (!resource) {
           set((prevState) => ({
@@ -270,12 +313,12 @@ export const useAHSPStore = create<AHSPStore>()(
         }
 
         const newComponent: AHSPComponent = {
-          ...component,
+          ...validation.data!,
           id: generateId('comp'),
           ahspId,
           unit: resource.unit,
           unitPrice: resource.unitPrice,
-          subtotal: component.coefficient * resource.unitPrice,
+          subtotal: validation.data!.coefficient * resource.unitPrice,
           resource,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -292,20 +335,7 @@ export const useAHSPStore = create<AHSPStore>()(
           },
         }))
 
-        if (supabase) {
-          batchUpsertAhspComponents([{
-            id: newComponent.id,
-            ahsp_id: newComponent.ahspId,
-            resource_id: newComponent.resourceId,
-            type: newComponent.type,
-            coefficient: newComponent.coefficient,
-            unit: newComponent.unit,
-            unit_price: newComponent.unitPrice,
-            subtotal: newComponent.subtotal,
-            created_at: newComponent.createdAt,
-            updated_at: newComponent.updatedAt
-          }])
-        }
+        syncAHSPComponent(newComponent)
 
         // Recalculate AHSP price
         get().calculateAHSPPrice(ahspId)
@@ -435,29 +465,26 @@ export const useAHSPStore = create<AHSPStore>()(
       calculateAHSPPrice: (ahspId) => {
         set((state) => {
           const components = state.componentsByAHSP[ahspId] || []
-          const basePrice = components.reduce((sum, component) => sum + component.subtotal, 0)
-          
           const ahspItem = state.ahspItems.find(item => item.id === ahspId)
           if (!ahspItem) return state
 
-          const overhead = ahspItem.overheadPercentage || 0
-          const profit = ahspItem.profitPercentage || 0
-          
-          let finalPrice = basePrice
-          if (overhead > 0) {
-            finalPrice *= (1 + overhead / 100)
-          }
-          if (profit > 0) {
-            finalPrice *= (1 + profit / 100)
-          }
+          // Use centralized calculation service with validation
+          const result = calcAHSPPrice({
+            components: components.map(c => ({
+              coefficient: c.coefficient,
+              unitPrice: c.unitPrice
+            })),
+            overheadPercent: ahspItem.overheadPercentage,
+            profitPercent: ahspItem.profitPercentage
+          })
 
           return {
             ahspItems: state.ahspItems.map(item =>
               item.id === ahspId
                 ? { 
                     ...item, 
-                    basePrice, 
-                    finalPrice,
+                    basePrice: result.priceBreakdown.basePrice, 
+                    finalPrice: result.priceBreakdown.finalPrice,
                     updatedAt: new Date().toISOString(),
                   }
                 : item
@@ -465,27 +492,10 @@ export const useAHSPStore = create<AHSPStore>()(
           }
         })
 
-        // Sync recalculated price
-        if (supabase) {
-          const item = get().ahspItems.find(i => i.id === ahspId)
-          if (item) {
-            batchUpsertAhsp([
-              {
-                id: item.id,
-                code: item.code,
-                name: item.name,
-                description: item.description,
-                unit: item.unit,
-                category: item.category,
-                base_price: item.basePrice,
-                final_price: item.finalPrice,
-                overhead_percentage: item.overheadPercentage,
-                profit_percentage: item.profitPercentage,
-                created_at: item.createdAt,
-                updated_at: item.updatedAt,
-              },
-            ])
-          }
+        // Queue-based sync with retry
+        const item = get().ahspItems.find(i => i.id === ahspId)
+        if (item) {
+          syncAHSPItem(item)
         }
       },
 
