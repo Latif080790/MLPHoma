@@ -6,6 +6,7 @@
 
 import React from "react"
 import { ThemeToggle } from "../shared/ThemeToggle"
+import { Home } from "lucide-react"
 
 /**
  * Props for AppHeader component.
@@ -25,6 +26,15 @@ export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-30 border-b bg-white/80 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/80">
       <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-3">
+        {/* Home Link */}
+        <a
+          href="#/"
+          className="flex items-center justify-center rounded-md p-1.5 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
+          title="Back to Home"
+        >
+          <Home size={18} />
+        </a>
+
         {/* Brand */}
         <div
           className="select-none whitespace-nowrap text-sm font-semibold tracking-wide"

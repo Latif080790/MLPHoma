@@ -98,3 +98,36 @@ export async function deleteRabItemsByProject(projectId: string) {
   return client.from('rab_items').delete().eq('project_id', projectId)
 }
 
+// Projects
+export async function fetchProjects() {
+  const client = assertSupabase()
+  return client.from('projects').select('*').order('updated_at', { ascending: false })
+}
+
+export async function upsertProject(project: any) {
+  const client = assertSupabase()
+  // Map camelCase to snake_case if needed, or assume table uses snake_case
+  // For now, let's assume the table columns match the object keys or we map them here.
+  // But to be safe, let's map common fields.
+  const row = {
+    id: project.id,
+    name: project.name,
+    code: project.code,
+    client_name: project.clientName,
+    location: project.location,
+    start_date: project.startDate,
+    end_date: project.endDate,
+    budget: project.budget,
+    status: project.status,
+    payment_terms: project.paymentTerms,
+    meta: project.meta,
+    updated_at: new Date().toISOString(),
+  }
+  return client.from('projects').upsert(row, { onConflict: 'id' })
+}
+
+export async function deleteProject(id: string) {
+  const client = assertSupabase()
+  return client.from('projects').delete().eq('id', id)
+}
+

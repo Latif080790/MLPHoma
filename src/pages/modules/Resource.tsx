@@ -8,34 +8,94 @@
 import React, { useMemo, useRef } from "react"
 import { AppShell } from "../../components/layout/AppShell"
 import { ModuleHeader } from "../../components/modules/ModuleHeader"
-import { Boxes, CalendarDays, Package, Receipt, TrendingUp, Download, FileSpreadsheet, FileText } from "lucide-react"
+import { Boxes, CalendarDays, Package, Receipt, TrendingUp, Download, FileSpreadsheet, FileText, HardHat, Hammer, Truck } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { useProjectStore } from "../../store/projectStore"
 import { useRapStore } from "../../store/rapStore"
 import { useRabStore } from "../../store/rabStore"
-import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar } from "recharts"
+import { useAHSPStore } from "../../store/ahspStore"
+import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, Legend } from "recharts"
 import { EmptyState } from "../../components/common/EmptyState"
 import * as XLSX from "xlsx"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
+const EMPTY_ARRAY: any[] = []
+
 /**
- * Merge RAP schedule to a per-period histogram
+ * Merge RAP schedule to a per-period histogram with Resource Type breakdown
  */
 function useHistogram(projectId: string) {
-  const rap = useRapStore((s: any) => s.getSchedule?.(projectId) ?? [])
+  const rap = useRapStore((s: any) => s.getPlan?.(projectId) ?? EMPTY_ARRAY)
+  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? EMPTY_ARRAY)
+  const ahspItems = useAHSPStore((s) => s.ahspItems)
+  const componentsByAHSP = useAHSPStore((s) => s.componentsByAHSP)
+
   const points = useMemo(() => {
     if (!rap || rap.length === 0) return []
+
+    // Index RAB items for quick lookup
+    const rabMap = new Map(rabItems.map((i: any) => [i.id, i]))
+    
+    // Index AHSP items by code (assuming RAB item_code matches AHSP code)
+    const ahspMap = new Map(ahspItems.map((i) => [i.code, i]))
+
     return rap.map((p: any) => {
-      const cost = (p.items || []).reduce((sum: number, it: any) => sum + (it.plannedCost || 0), 0)
+      let totalCost = 0
+      let materialCost = 0
+      let laborCost = 0
+      let equipmentCost = 0
+      let otherCost = 0
+
+      const items = p.items || []
+      items.forEach((it: any) => {
+        const plannedCost = it.plannedCost || 0
+        totalCost += plannedCost
+
+        // Try to find linked RAB item
+        const rabItem = rabMap.get(it.rabId)
+        if (rabItem) {
+          // Try to find linked AHSP item
+          const ahspItem = ahspMap.get(rabItem.item_code || rabItem.code)
+          if (ahspItem) {
+            const components = componentsByAHSP[ahspItem.id] || []
+            if (components.length > 0) {
+              // Calculate breakdown ratios
+              const basePrice = components.reduce((sum, c) => sum + c.subtotal, 0)
+              if (basePrice > 0) {
+                const matRatio = components.filter(c => c.type === 'material').reduce((sum, c) => sum + c.subtotal, 0) / basePrice
+                const labRatio = components.filter(c => c.type === 'labor').reduce((sum, c) => sum + c.subtotal, 0) / basePrice
+                const eqRatio = components.filter(c => c.type === 'equipment').reduce((sum, c) => sum + c.subtotal, 0) / basePrice
+                
+                materialCost += plannedCost * matRatio
+                laborCost += plannedCost * labRatio
+                equipmentCost += plannedCost * eqRatio
+                // Remaining goes to overhead/profit/others implicitly or we can track it
+                otherCost += plannedCost * (1 - matRatio - labRatio - eqRatio)
+                return // Done with this item
+              }
+            }
+          }
+        }
+        
+        // Fallback if no AHSP data: Assign to "Other" or guess based on name?
+        // For now, assign to "Other" to highlight missing data
+        otherCost += plannedCost
+      })
+
       return {
         period: p.period ?? p.startDate ?? "—",
         startDate: p.startDate,
-        cost,
+        cost: totalCost,
+        material: materialCost,
+        labor: laborCost,
+        equipment: equipmentCost,
+        other: otherCost
       }
     })
-  }, [rap])
+  }, [rap, rabItems, ahspItems, componentsByAHSP])
+  
   return points
 }
 
@@ -43,8 +103,8 @@ function useHistogram(projectId: string) {
  * Top consuming items across all schedule
  */
 function useTopItems(projectId: string) {
-  const rap = useRapStore((s: any) => s.getSchedule?.(projectId) ?? [])
-  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? [])
+  const rap = useRapStore((s: any) => s.getPlan?.(projectId) ?? EMPTY_ARRAY)
+  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? EMPTY_ARRAY)
   const byId: Record<string, any> = {}
   rabItems.forEach((ri: any) => (byId[ri.id ?? ri.rab_id ?? ri.rabId ?? ri.item_code] = ri))
 
@@ -69,10 +129,17 @@ function useTopItems(projectId: string) {
 /**
  * Export histogram rows to CSV
  */
-function exportHistogramCSV(rows: { period: string; cost: number }[]) {
-  const headers = ["Period", "PlannedCost"]
+function exportHistogramCSV(rows: any[]) {
+  const headers = ["Period", "TotalCost", "Material", "Labor", "Equipment", "Other"]
   const lines = [headers.join(",")]
-  rows.forEach((r) => lines.push([r.period, r.cost].join(",")))
+  rows.forEach((r) => lines.push([
+    r.period, 
+    r.cost,
+    r.material || 0,
+    r.labor || 0,
+    r.equipment || 0,
+    r.other || 0
+  ].join(",")))
   const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" })
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
@@ -85,13 +152,13 @@ function exportHistogramCSV(rows: { period: string; cost: number }[]) {
 /**
  * Export histogram + top items to Excel
  */
-function exportResourceExcel(histogram: { period: string; cost: number }[], top: { key: string; name: string; total: number }[]) {
+function exportResourceExcel(histogram: any[], top: { key: string; name: string; total: number }[]) {
   const ws1 = XLSX.utils.aoa_to_sheet([
-    ["Resource Histogram (Cost Proxy)"],
+    ["Resource Histogram (Cost Breakdown)"],
     ["GeneratedAt", new Date().toISOString()],
     [],
-    ["Period", "PlannedCost"],
-    ...histogram.map((h) => [h.period, h.cost]),
+    ["Period", "TotalCost", "Material", "Labor", "Equipment", "Other"],
+    ...histogram.map((h) => [h.period, h.cost, h.material, h.labor, h.equipment, h.other]),
   ])
   const ws2 = XLSX.utils.aoa_to_sheet([
     ["Top Items"],
@@ -124,7 +191,7 @@ async function exportPDF(element: HTMLElement | null, filename = "Resource.pdf")
  * Resource Planning page
  */
 export default function Resource() {
-  const project = useProjectStore((s: any) => s.getActiveProject?.() ?? null)
+  const project = useProjectStore((s: any) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectName = project?.name ?? "—"
   const projectId = project?.id ?? "demo"
 
@@ -175,7 +242,7 @@ export default function Resource() {
           <div className="lg:col-span-2 space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Resource Histogram (Cost Proxy)</CardTitle>
+                <CardTitle>Resource Histogram (Cost Breakdown)</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={320}>
@@ -184,17 +251,21 @@ export default function Resource() {
                     <XAxis dataKey="period" tick={{ fontSize: 12 }} />
                     <YAxis
                       tick={{ fontSize: 12 }}
-                      tickFormatter={(v) => v.toLocaleString("id-ID")}
+                      tickFormatter={(v) => v.toLocaleString("id-ID", { notation: "compact" })}
                     />
                     <Tooltip
                       formatter={(v: any) => v.toLocaleString("id-ID")}
                       labelFormatter={(l: any) => `Period: ${l}`}
                     />
-                    <Bar dataKey="cost" name="Planned Cost" fill="#10b981" />
+                    <Legend />
+                    <Bar dataKey="material" name="Material" stackId="a" fill="#3b82f6" />
+                    <Bar dataKey="labor" name="Labor" stackId="a" fill="#f59e0b" />
+                    <Bar dataKey="equipment" name="Equipment" stackId="a" fill="#ef4444" />
+                    <Bar dataKey="other" name="Other/Overhead" stackId="a" fill="#94a3b8" />
                   </BarChart>
                 </ResponsiveContainer>
                 <div className="mt-3 text-sm text-neutral-500">
-                  Catatan: Histogram menggunakan biaya terencana sebagai proksi kebutuhan resource.
+                  Catatan: Breakdown berdasarkan koefisien AHSP. Jika AHSP tidak ditemukan, biaya masuk ke "Other".
                 </div>
               </CardContent>
             </Card>
@@ -240,17 +311,37 @@ export default function Resource() {
                 </div>
                 <div className="flex items-center justify-between rounded-md border p-3 dark:border-neutral-800">
                   <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-blue-500" />
+                    <span>Material Cost</span>
+                  </div>
+                  <span className="font-semibold">
+                    Rp {histogram.reduce((s, p) => s + (p.material || 0), 0).toLocaleString("id-ID")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-md border p-3 dark:border-neutral-800">
+                  <div className="flex items-center gap-2">
+                    <HardHat className="h-4 w-4 text-amber-500" />
+                    <span>Labor Cost</span>
+                  </div>
+                  <span className="font-semibold">
+                    Rp {histogram.reduce((s, p) => s + (p.labor || 0), 0).toLocaleString("id-ID")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-md border p-3 dark:border-neutral-800">
+                  <div className="flex items-center gap-2">
+                    <Truck className="h-4 w-4 text-red-500" />
+                    <span>Equipment Cost</span>
+                  </div>
+                  <span className="font-semibold">
+                    Rp {histogram.reduce((s, p) => s + (p.equipment || 0), 0).toLocaleString("id-ID")}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-md border p-3 dark:border-neutral-800">
+                  <div className="flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 text-emerald-600" />
                     <span>Periods</span>
                   </div>
                   <span className="font-semibold">{histogram.length}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-md border p-3 dark:border-neutral-800">
-                  <div className="flex items-center gap-2">
-                    <Receipt className="h-4 w-4 text-rose-600" />
-                    <span>Top Items Tracked</span>
-                  </div>
-                  <span className="font-semibold">{topItems.length}</span>
                 </div>
               </CardContent>
             </Card>

@@ -57,6 +57,8 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
   const [whatIfDpPct, setWhatIfDpPct] = useState<number>(10)
   const [whatIfBillingPct, setWhatIfBillingPct] = useState<number>(30)
   const [retentionRate, setRetentionRate] = useState<number>(0.05)
+  const [loanInterestRate, setLoanInterestRate] = useState<number>(0)
+  const [taxRate, setTaxRate] = useState<number>(0)
   const [scenarioName, setScenarioName] = useState<string>('')
   const [lastSavedOk, setLastSavedOk] = useState<boolean | null>(null)
 
@@ -105,6 +107,8 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
         downPaymentPercent: whatIfDpPct / 100,
         billingPercent: whatIfBillingPct / 100,
         retentionRate: retentionRate,
+        loanInterestRate: loanInterestRate / 100,
+        taxRate: taxRate / 100,
       })
       notify.success('Payment terms applied to project')
     } catch (e) {
@@ -187,6 +191,40 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
           className="w-full"
         />
         <div className="mt-1 text-xs text-neutral-500">Retention held from billing (0–20%)</div>
+      </div>
+
+      <div>
+        <div className="mb-1 flex items-center justify-between text-sm">
+          <span>Loan Interest (Annual %)</span>
+          <strong>{loanInterestRate}%</strong>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={20}
+          step={0.5}
+          value={loanInterestRate}
+          onChange={(e) => setLoanInterestRate(Number(e.target.value))}
+          className="w-full"
+        />
+        <div className="mt-1 text-xs text-neutral-500">Interest on negative balance (0–20%)</div>
+      </div>
+
+      <div>
+        <div className="mb-1 flex items-center justify-between text-sm">
+          <span>Tax Rate (%)</span>
+          <strong>{taxRate}%</strong>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={15}
+          step={0.5}
+          value={taxRate}
+          onChange={(e) => setTaxRate(Number(e.target.value))}
+          className="w-full"
+        />
+        <div className="mt-1 text-xs text-neutral-500">Tax on billing (e.g. PPN/PPH)</div>
       </div>
 
       <div className="space-y-2">

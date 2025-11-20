@@ -77,6 +77,7 @@ function generateId(prefix = 'rab') {
 }
 
 const STORAGE_KEY = 'rabStore:v2'
+const EMPTY_ITEMS: RABItem[] = []
 
 /**
  * Helper load from localStorage
@@ -100,9 +101,9 @@ export const useRabStore = create<RabState>((set, get) => {
   const getItemsCached = createCachedGetterWithKey<RABItem[] | undefined, RABItem[]>(
     (projectId?: string) => {
       const pid = projectId || ''
-      return get().itemsByProject[pid] || []
+      return get().itemsByProject[pid] || EMPTY_ITEMS
     },
-    (src) => src || []
+    (src) => src || EMPTY_ITEMS
   )
 
   // initialize from storage if available
