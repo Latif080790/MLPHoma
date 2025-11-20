@@ -23,6 +23,7 @@ import {
 import { useAHSPStore } from '../../store/ahspStore'
 import { formatIDR } from '../../lib/utils'
 import type { AHSPItem, AHSPComponent, ResourceType } from '../../types/ahsp'
+import { validateAHSPItem } from '../../lib/validationSchemas'
 
 /** Props for AHSPItemEditor component */
 export interface AHSPItemEditorProps {
@@ -144,26 +145,17 @@ export function AHSPItemEditor({
    * Validate form data
    */
   const validate = (): boolean => {
+    const result = validateAHSPItem(formData)
     const newErrors: Record<string, string> = {}
 
-    // Required fields
-    if (!formData.code.trim()) {
-      newErrors.code = 'Code is required'
-    } else if (!/^[0-9\.]+$/.test(formData.code)) {
-      newErrors.code = 'Code must contain only numbers and dots'
+    if (!result.success) {
+      result.error.issues.forEach(issue => {
+        const pathKey = issue.path[0] as string
+        newErrors[pathKey] = issue.message
+      })
     }
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
-    } else if (formData.name.length > 200) {
-      newErrors.name = 'Name must be less than 200 characters'
-    }
-
-    if (!formData.category.trim()) {
-      newErrors.category = 'Category is required'
-    }
-
-    // Component validation
+    // Component validation stays custom
     if (components.length === 0) {
       newErrors.components = 'At least one component is required'
     }
