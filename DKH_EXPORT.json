@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "source": "DKH.txt",
+    "description": "Daftar Kuantitas & Harga - Construction Material Price List",
+    "totalResources": 1383,
+    "types": {
+      "material": 1316,
+      "labor": 66,
+      "equipment": 0,
+      "subcontractor": 1
+    }
+  },
+  "instructions": "Use ResourceManager in AHSP module to import this data, or run seed_dkh.mjs script"
+}
