@@ -1,0 +1,2521 @@
+Kode	Uraian	Satuan	 Harga 
+L.01.01	Pekerja	OH	 Rp152,900 
+L.02.01	Tukang	OH	 Rp178,600 
+L.02.02	Tukang Alumunium	OH	 Rp178,600 
+L.02.03	Tukang Batu	OH	 Rp178,600 
+L.02.04	Tukang Kayu	OH	 Rp178,600 
+L.02.05	Tukang Besi	OH	 Rp178,600 
+L.02.06	Tukang Besi Konstruksi	OH	 Rp178,600 
+L.02.07	Tukang Besi Profil	OH	 Rp178,600 
+L.02.08	Tukang Cat	OH	 Rp178,600 
+L.02.09	Tukang Ereksi	OH	 Rp178,600 
+L.02.10	Tukang Las Konstruksi	OH	 Rp178,600 
+L.02.11	Tukang Las	OH	 Rp178,600 
+L.02.12	Tukang Listrik	OH	 Rp178,600 
+L.02.13	Tukang Pipa	OH	 Rp178,600 
+L.02.14	Tukang Vibrator	OH	 Rp178,600 
+L.02.15	Tukang Tanam	OH	 Rp191,400 
+L.02.16	Tukang Tembok	OH	 Rp178,600 
+L.02.17	Tukang Pemelihara Taman	OH	 Rp176,300 
+L.03.01	Kepala Tukang	OH	 Rp204,300 
+L.04.01	Mandor	OH	 Rp230,000 
+L.05.01	Juru Ukur	OH	 Rp223,000 
+L.06.01	Pembantu Juru Ukur	OH	 Rp191,400 
+L.08.01	Operator Alat Berat	OH	 Rp191,400 
+L.08.02	Supir Truk	OH	 Rp223,000 
+L.09.01	Pembantu Operator Alat Berat	OH	 Rp191,400 
+L.09.02	Kenek Truk	OH	 Rp191,400 
+L.10.01	Operator Crane	OH	 Rp191,400 
+L.10.02	Pembantu Operator Crane	OH	 Rp191,400 
+L.11.01	Operator Alat Pipa	OH	 Rp191,400 
+L.11.02	Pembantu Operator Alat Pipa	OH	 Rp191,400 
+L.12.04	Tenaga Ahli Pratama	OH	 Rp255,600 
+L.13	Operator Alat Elektronik	OH	 Rp191,400 
+L.14.02	Tenaga Terampil Operator	OH	 Rp255,600 
+	Penjaga Malam	OH	 Rp152,900 
+	Tukang Pasang Keramik	OH	 Rp178,600 
+L.01.01	Pekerja	OJ	 Rp23,800 
+L.02.01	Tukang	OJ	 Rp27,800 
+L.02.02	Tukang Alumunium	OJ	 Rp27,800 
+L.02.03	Tukang Batu	OJ	 Rp27,800 
+L.02.04	Tukang Kayu	OJ	 Rp27,800 
+L.02.05	Tukang Besi	OJ	 Rp27,800 
+L.02.06	Tukang Besi Konstruksi	OJ	 Rp27,800 
+L.02.07	Tukang Besi Profil	OJ	 Rp27,800 
+L.02.08	Tukang Cat	OJ	 Rp27,800 
+L.02.09	Tukang Ereksi	OJ	 Rp27,800 
+L.02.10	Tukang Las Konstruksi	OJ	 Rp27,800 
+L.02.11	Tukang Las	OJ	 Rp27,800 
+L.02.12	Tukang Listrik	OJ	 Rp27,800 
+L.02.13	Tukang Pipa	OJ	 Rp27,800 
+L.02.14	Tukang Vibrator	OJ	 Rp27,800 
+L.02.15	Tukang Tanam	OJ	 Rp29,800 
+L.02.16	Tukang Tembok	OJ	 Rp27,800 
+L.02.17	Tukang Pemelihara Taman	OJ	 Rp27,500 
+L.03.01	Kepala Tukang	OJ	 Rp31,900 
+L.04.01	Mandor	OJ	 Rp35,900 
+L.05.01	Juru Ukur	OJ	 Rp34,900 
+L.06.01	Pembantu Juru Ukur	OJ	 Rp29,800 
+L.08.01	Operator Alat Berat	OJ	 Rp29,800 
+L.08.02	Supir Truk	OJ	 Rp34,900 
+L.09.01	Pembantu Operator Alat Berat	OJ	 Rp29,800 
+L.09.02	Kenek Truk	OJ	 Rp29,800 
+L.10.01	Operator Crane	OJ	 Rp29,800 
+L.10.02	Pembantu Operator Crane	OJ	 Rp29,800 
+L.11.01	Operator Alat Pipa	OJ	 Rp29,800 
+L.11.02	Pembantu Operator Alat Pipa	OJ	 Rp29,800 
+L.12.04	Tenaga Ahli Pratama	OH	 Rp39,900 
+L.13	Operator Alat Elektronik	OJ	 Rp29,800 
+L.14.02	Tenaga Terampil Operator	OH	 Rp39,900 
+	Penjaga Malam	OJ	 Rp23,800 
+	Tukang Pasang Keramik	OJ	 Rp27,800 
+	 HARGA BAHAN DASAR		 Rp- 
+M.1	Air	Ltr	 Rp200 
+M.2	Agregat Kasar Uk. 38mm	m3	 Rp547,100 
+M.3	Agregat Kasar Uk. 38mm	Kg	 Rp400 
+M.4	Agregat Pokok	m3	 Rp547,100 
+M.5	Agregat Pengunci	m3	 Rp547,100 
+M.6	Aggregat Penutup	Kg	 Rp547,100 
+M.7	Aspal	Kg	 Rp16,800 
+M.8	Ampelas	Lbr	 Rp14,100 
+M.9	Anyaman Bambu (Geribig)	Lbr	 Rp956,500 
+M.10	Bambu Panjang 2m	Btg	 Rp26,700 
+M.11	Bambu Panjang 4m	Btg	 Rp33,200 
+M.12	Bambu Panjang 4.5m	Btg	 Rp38,300 
+M.13	Bambu Panjang 5m	Btg	 Rp42,100 
+M.14	Batu Uk. 12 - 25cm	m3	 Rp610,800 
+M.15	Dolken Kayu 8/10cm Panjang 4m	Btg	 Rp34,300 
+M.16	Batu Belah	m3	 Rp419,500 
+M.17	Ijuk	Kg	 Rp62,900 
+M.18	Kerikil	m3	 Rp387,500 
+M.19	Kerikil (Maks 19mm)	m3	 Rp387,500 
+M.20	Kerikil (Maks 30mm)	m3	 Rp387,500 
+M.21	Kerikil (Maks 19mm)	Kg	 Rp200 
+M.22	Kerikil (Maks 30mm)	Kg	 Rp200 
+M.23	Kuas	Buah	 Rp28,200 
+M.24	Pasir Beton	m3	 Rp311,700 
+M.25	Pasir Beton	Kg	 Rp200 
+M.26	Pasir Filler	m3	 Rp380,100 
+M.27	Pasir Urug	m3	 Rp194,700 
+M.28	Pasir Pasang	m3	 Rp149,200 
+M.29	Pasir Pasang	Kg	 Rp100 
+M.30	Pondasi Pasangan Batu (Rollag Bata)	m3	 Rp1,721,700 
+M.31	Semen Grout Non Shrink	Kg	 Rp1,900 
+M.32	Semen Portland	Sak	 Rp81,700 
+M.33	Semen Portland	Kg	 Rp1,600 
+M.34	Semen Warna	Kg	 Rp1,500 
+M.35	Bata Merah	Buah	 Rp1,200 
+M.36	Bata Merah	m3	 Rp1,147,800 
+M.37	Bata Pelapis	Buah	 Rp1,200 
+M.38	Bata Ringan Tebal 7.5cm	Buah	 Rp14,200 
+M.39	Bata Ringan Tebal 10cm	Buah	 Rp16,600 
+M.40	Bata Ringan Tebal 20cm	Buah	 Rp21,700 
+M.41	Bata Rooster	Buah	 Rp21,000 
+M.42	Batako	Buah	 Rp14,000 
+M.43	Cat Antara	Kg	 Rp73,400 
+M.44	Cat Besi	Kg	 Rp77,600 
+M.45	Cat Dasar	Kg	 Rp88,100 
+M.46	Cat Epoxy	Kg	 Rp325,200 
+M.47	Cat Kayu	Kg	 Rp88,100 
+M.48	Cat Penutup Interior	Kg	 Rp49,700 
+M.49	Cat Plafond	Kg	 Rp88,100 
+M.50	Cat Thermoplast	Kg	 Rp136,000 
+M.51	Cat Zyncromate	Kg	 Rp57,100 
+M.52	Fondasi Pasangan Batu (Rollag Bata)	m3	 Rp1,721,700 
+M.53	Glass Beads	Kg	 Rp48,200 
+M.54	Paku	Kg	 Rp31,100 
+M.55	Paku 1 - 2.5cm	Kg	 Rp31,100 
+M.56	Paku 2 - 5cm	Kg	 Rp31,100 
+M.57	Paku 5 - 7cm	Kg	 Rp31,100 
+M.58	Paku 5 - 10cm	Kg	 Rp31,100 
+M.59	Paku 5 - 12cm	Kg	 Rp31,100 
+M.60	Paku Asbes	Kg	 Rp35,700 
+M.61	Paku Pancing	Kg	 Rp42,100 
+M.62	Paku Pancing 6x23	Kg	 Rp42,100 
+M.63	Paku Payung	Kg	 Rp42,100 
+M.64	Paku Payung	Buah	 Rp100 
+M.65	Paku Rivet	Buah	 Rp900 
+M.66	Paku Sekrup	Kg	 Rp44,100 
+M.67	Paku Sekrup	Buah	 Rp200 
+M.68	Paku Sekrup Fixer	Buah	 Rp200 
+M.69	Paku Sekrup 2"	Kg	 Rp44,100 
+M.70	Paku Sekrup 3.5”	Buah	 Rp400 
+M.71	Paku Seng	Kg	 Rp47,200 
+M.72	Paku Tripleks	Kg	 Rp49,700 
+M.73	Pen Kuningan Titik Acuan	Buah	 Rp9,600 
+M.74	Plastik Aerator	Buah	 Rp45,900 
+M.75	Lem Epoxy	Kg	 Rp1,025,700 
+M.76	Lem Karet	Kg	 Rp183,400 
+M.77	Lem Kayu	Kg	 Rp25,900 
+M.78	Makadam (Batu Pecah)	m3	 Rp324,200 
+M.79	Menie Besi	Kg	 Rp84,600 
+M.80	Menie Kayu	Kg	 Rp84,600 
+M.81	Minyak Bekisting	Ltr	 Rp15,900 
+M.82	Mortar Perekat Bata Ringan	Kg	 Rp9,200 
+M.83	Mortar Siap Pakai	Kg	 Rp9,200 
+M.84	Penjaga Jarak Bekisting/Spacer	Buah	 Rp48,200 
+M.85	Tinner	Ltr	 Rp32,500 
+M.86	Pengencer	Ltr	 Rp43,400 
+M.87	Plywood 6mm	Lbr	 Rp133,900 
+M.88	Plywood Tebal 4mm	Lbr	 Rp235,200 
+M.89	Plywood Tebal 9mm	Lbr	 Rp307,000 
+M.90	Plywood Tebal 12mm	Lbr	 Rp409,300 
+M.91	Plywood Tebal 18mm	Lbr	 Rp613,900 
+M.92	Triplek 4mm	Lbr	 Rp124,100 
+M.93	Hollow Galvanis 4x4 (Plafond)	Btg	 Rp44,800 
+M.94	Hollow Galvanis 4x4 (Plafond)	m1	 Rp11,200 
+M.95	Residu atau Ter	Ltr	 Rp11,600 
+M.96	Sirtu	m3	 Rp504,200 
+M.97	Plamur Kayu	Kg	 Rp10,900 
+M.98	Tanah Liat (Lempung)	m3	 Rp210,500 
+M.99	Tanah Timbunan	m3	 Rp103,000 
+M.100	Soda Api	Kg	 Rp44,600 
+M.101	Teak Oil	Ltr	 Rp108,400 
+M.102	Politur	Ltr	 Rp70,000 
+M.103	Politur Jadi	Ltr	 Rp77,000 
+M.104	Vernis	Ltr	 Rp63,000 
+M.105	Dempul	Kg	 Rp46,700 
+M.106	Alang-alang	Ikat	 Rp82,900 
+M.107	Wallpaper	m2	 Rp598,500 
+M.108	Kanstin Uk. 10x20x40cm Beton f'c 20 MPa	Buah	 Rp81,500 
+M.109	Kanstin Uk. 15x40x60cm Beton f'c 25 MPa	Buah	 Rp178,200 
+	 HARGA BAHAN ARSITEKTURAL		 Rp- 
+M.110	Akrilik	m2	 Rp1,913,000 
+M.111	Akustik Uk. 30x30cm	Lbr	 Rp30,800 
+M.112	Akustik Uk. 30x60cm	Lbr	 Rp68,100 
+M.113	Akustik Uk. 60x120cm	Lbr	 Rp312,500 
+M.114	Alumunium Foil	m2	 Rp55,000 
+M.115	Alumunium Foil Double Side	m2	 Rp60,100 
+M.116	Aluminium Gelombang Uk. 95x180cm	Lbr	 Rp197,600 
+M.117	Aluminium Spandrel 0.1m x 6m	Lbr	 Rp273,000 
+M.118	Aluminium Strip	m1	 Rp57,400 
+M.119	Asbes Gelombang	Lbr	 Rp85,400 
+M.120	Atap Metal Berpasir	m2	 Rp366,100 
+M.121	Atap Metal Menerus Tebal 0.4mm	m2	 Rp410,000 
+M.122	Atap UPVC Uk. 86x1190cm	Lbr	 Rp272,900 
+M.123	Batu Paras	m2	 Rp146,300 
+M.124	Banner Plastik 0.6x0.8 m2	m2	 Rp255,100 
+M.125	Batu Tempel Hitam	m2	 Rp198,300 
+M.126	Block Board Tebal 2x18mm	m2	 Rp301,600 
+M.127	Bubuk Poles	Kg	 Rp203,800 
+M.128	Bubung Setel Gelombang 92cm	Lbr	 Rp71,400 
+M.129	Bubung Setel Gelombang 105cm	Lbr	 Rp86,400 
+M.130	Bubung Setel Gelombang 108cm	Lbr	 Rp104,600 
+M.131	Cutting Stiker	Set	 Rp127,600 
+M.132	Cutting Stiker	m2	 Rp510,100 
+M.133	Cairan Primer	Kg	 Rp31,900 
+M.134	Formika Uk. 120x240cm	Lbr	 Rp328,800 
+M.135	Engineering Wood	m2	 Rp202,400 
+M.136	Genteng Aspal Uk. 0.8x1m	Buah	 Rp225,100 
+M.137	Genteng Beton	Buah	 Rp18,100 
+M.138	Genteng Bubung	Buah	 Rp41,800 
+M.139	Genteng Kodok	Buah	 Rp6,000 
+M.140	Genteng Palentong	Buah	 Rp6,100 
+M.141	Genteng Palentong Besar (Morando)	Buah	 Rp19,700 
+M.142	Glasswool Tebal 8cm	m2	 Rp237,900 
+M.143	GRC Pelat. t=4mm. Uk 122x244cm	Lbr	 Rp100,200 
+M.144	HB-10	Buah	 Rp29,300 
+M.145	HB-15	Buah	 Rp33,200 
+M.146	HB-20	Buah	 Rp37,000 
+M.147	Jendela Nako (Rangka + Kaca 5mm. Lebar 15cm)	Buah	 Rp245,400 
+M.148	Jendela Nako Rangka Aluminium (Rangka + Kaca 5mm)	m2	 Rp525,100 
+M.149	Karpet	m2	 Rp423,000 
+M.150	Keramik Artistik Uk. 8x8cm	Buah	 Rp1,600 
+M.151	Keramik Artistik Uk. 10x10cm	Buah	 Rp2,900 
+M.152	Keramik Artistik Uk. 10x20cm	Buah	 Rp5,400 
+M.153	Keramik Artistik Uk. 20x20cm	Buah	 Rp8,900 
+M.154	Keramik Artistik Uk. 30x30cm	Buah	 Rp25,000 
+M.155	Keramik Artistik Uk. 40x40cm	Buah	 Rp55,600 
+M.156	Keramik Uk. 10x20cm	Buah	 Rp4,600 
+M.157	Keramik Uk. 20x20cm	Buah	 Rp8,300 
+M.158	Keramik Uk. 30x30cm	Buah	 Rp20,300 
+M.159	Keramik Uk. 40x40cm	Buah	 Rp41,900 
+M.160	Lantai UPVC Decking	m2	 Rp491,600 
+M.161	List kayu 2x4cm	m3	 Rp4,081,000 
+M.162	List Kayu Profil	m1	 Rp52,300 
+M.163	List Gypsum	m1	 Rp32,000 
+M.164	Marmer Uk. 100x100cm	Buah	 Rp364,700 
+M.165	Marmer Graphir Uk. 10x10cm	Buah	 Rp58,700 
+M.166	Marmer Graphir Uk. 12x12cm	Buah	 Rp71,400 
+M.167	Material Insulasi Foam	m2	 Rp172,300 
+M.168	Melamic	Kg	 Rp57,400 
+M.169	Nok Genteng Aspal	Buah	 Rp84,900 
+M.170	Nok Genteng Beton	Buah	 Rp70,900 
+M.171	Nok Genteng Metal Panjang 100cm	Buah	 Rp125,400 
+M.172	Nok Paten 92cm	Lbr	 Rp104,900 
+M.173	Nok Paten 105cm	Lbr	 Rp127,000 
+M.174	Nok Paten 108cm	Lbr	 Rp153,600 
+M.175	Nok Setel rata 92cm	Lbr	 Rp147,400 
+M.176	Nok Setel Rata 105cm	Lbr	 Rp178,400 
+M.177	Nok Setel Rata 108cm	Lbr	 Rp215,800 
+M.178	Nok Standar	 Buah 	 Rp57,400 
+M.179	Nok Standar	Lbr	 Rp57,400 
+M.180	Parquet Kayu	m2	 Rp353,100 
+M.181	Paving Block Tebal 6cm f'c 20 MPa	m2	 Rp117,500 
+M.182	Paving Block Tebal 6cm f'c 25 MPa	m2	 Rp130,400 
+M.183	Paving Block Tebal 8cm f'c 20 MPa	m2	 Rp139,600 
+M.184	Paving Block Tebal 8cm f'c 25 MPa	m2	 Rp152,300 
+M.185	Pen Akrilik dan Baut	Buah	 Rp21,000 
+M.186	Pintu Double Teakwood Rangka Kayu	m2	 Rp542,000 
+M.187	Pintu Lipat	m2	 Rp621,700 
+M.188	Plint Homogeneous Tile Uk. 10 sd 15cm x 30cm	Buah	 Rp20,200 
+M.189	Plint Homogeneous Tile Uk. 10 sd 15cm x 40cm	Buah	 Rp42,300 
+M.190	Plint Homogeneous Tile Uk. 10 sd 15cm x 60cm	Buah	 Rp111,400 
+M.191	Plint Internal Cove	Buah	 Rp25,300 
+M.192	Plint Keramik Uk. 20cm	Buah	 Rp2,200 
+M.193	Plint Keramik Uk. 30cm	Buah	 Rp4,100 
+M.194	Plint Keramik Uk. 40cm	Buah	 Rp10,200 
+M.195	Plint Keramik Uk. 60cm	Buah	 Rp20,900 
+M.196	Plint Teralux Marmer Uk. 30cm	Buah	 Rp16,900 
+M.197	Plint Teralux Marmer Uk. 40cm	Buah	 Rp40,500 
+M.198	Plint Teralux Marmer Uk. 60cm	Buah	 Rp104,500 
+M.199	Plint Ubin Granit Uk. 30cm	Buah	 Rp27,900 
+M.200	Plint Ubin Granit Uk. 40cm	Buah	 Rp46,600 
+M.201	Plint Ubin Granit Uk. 60cm	Buah	 Rp74,100 
+M.202	Plint Ubin PC Abu-abu Uk. 20cm	Buah	 Rp4,800 
+M.203	Plint Ubin PC Abu-abu Uk. 30cm	Buah	 Rp7,200 
+M.204	Plint Ubin PC Abu-abu Uk. 40cm	Buah	 Rp10,700 
+M.205	Plint Ubin PC Abu-abu Uk. 60cm	Buah	 Rp20,700 
+M.206	Plint Ubin Teraso Uk. 30cm	Buah	 Rp41,400 
+M.207	Plint Ubin Teraso Uk. 40cm	Buah	 Rp62,900 
+M.208	Profil Alum ”T”	m1	 Rp30,800 
+M.209	Ubin Abu-abu Uk. 20x20cm	Buah	 Rp9,500 
+M.210	Ubin Abu-abu Uk. 30x30cm	Buah	 Rp14,600 
+M.211	Ubin Abu-abu Uk. 40x40cm	Buah	 Rp21,500 
+M.212	Ubin Abu-abu Uk. 60x60cm	Buah	 Rp41,300 
+M.213	Ubin Granit Uk. 30x30cm	Buah	 Rp55,800 
+M.214	Ubin Granit Uk. 40x40cm	Buah	 Rp67,600 
+M.215	Ubin Granit Uk. 60x60cm	Buah	 Rp81,700 
+M.216	Ubin Warna Uk. 20x20cm	Buah	 Rp17,300 
+M.217	Ubin Warna Uk. 30x30cm	Buah	 Rp43,200 
+M.218	Ubin Warna Uk. 40x40cm	Buah	 Rp93,900 
+M.219	Ubin Warna Uk. 60x60cm	Buah	 Rp275,900 
+M.220	Plint Ubin Warna Uk. 20cm	Buah	 Rp4,800 
+M.221	Plint Ubin Warna Uk. 30cm	Buah	 Rp7,200 
+M.222	Plint Ubin Warna Uk. 40cm	Buah	 Rp10,700 
+M.223	Plint Ubin Warna Uk. 60cm	Buah	 Rp20,400 
+M.224	Ubin Porselen 20x20cm	Buah	 Rp4,100 
+M.225	Ubin Teralux Kerang Uk. 30cm	Buah	 Rp20,800 
+M.226	Ubin Teralux Kerang Uk. 40cm	Buah	 Rp43,100 
+M.227	Ubin Teralux Kerang Uk. 60cm	Buah	 Rp107,000 
+M.228	Ubin Teralux Marmer Uk. 30x30cm	Buah	 Rp33,900 
+M.229	Ubin Teralux Marmer Uk. 40x40cm	Buah	 Rp81,100 
+M.230	Ubin Teralux Marmer Uk. 60x60cm	Buah	 Rp208,800 
+M.231	Ubin Teraso Uk. 30x30cm	Buah	 Rp45,200 
+M.232	Ubin Teraso Uk. 40x40cm	Buah	 Rp96,800 
+M.233	Ramset	Buah	 Rp65,300 
+M.234	Rangka Aluminium	m1	 Rp23,900 
+M.235	Rooflight Uk. 90x180cm	Lbr	 Rp380,500 
+M.236	Seng Gel 3”x6”	Lbr	 Rp78,800 
+M.237	Seng Gelombang	Lbr	 Rp78,800 
+M.238	Seng Gelombang BJLS-30 (t=0.05)0.9mx1.8 m1	Lbr	 Rp78,800 
+M.239	Sanding	Kg	 Rp31,300 
+M.240	Seng Pelat	m1	 Rp77,900 
+M.241	Seng Pelat	Lbr	 Rp58,400 
+M.242	Seng pelat 3’x6’ 90x180cm	Lbr	 Rp70,600 
+M.243	Seng Pelat 3”x6” BJLS28	Lbr	 Rp85,400 
+M.244	Serat Semen	m2	 Rp99,500 
+M.245	Serat Semen Lebar 20cm	m1	 Rp84,200 
+M.246	Serat Semen Lebar 30cm	m1	 Rp95,600 
+M.247	Serat Semen Gel 105x150	Lbr	 Rp83,100 
+M.248	Serat Semen Gel 105x210	Lbr	 Rp87,300 
+M.249	Serat Semen Gel 105x240	Lbr	 Rp91,600 
+M.250	Serat Semen Gel 105x270	Lbr	 Rp96,200 
+M.251	Serat Semen Gel 105x300	Lbr	 Rp101,100 
+M.252	Serat Semen Gel 108x180	Lbr	 Rp106,100 
+M.253	Serat Semen Gel 108x210	Lbr	 Rp111,400 
+M.254	Serat Semen Gel 108x240	Lbr	 Rp117,000 
+M.255	Serat Semen Gel 108x270	Lbr	 Rp122,800 
+M.256	Serat Semen Gel 108x300	Lbr	 Rp129,000 
+M.257	Serat Semen Gel 92x180	Lbr	 Rp135,400 
+M.258	Serat Semen Gel 92x200	 Lbr 	 Rp142,200 
+M.259	Serat Semen Gel 92x225	Lbr	 Rp149,300 
+M.260	Serat Semen Gel 92x250	Lbr	 Rp156,800 
+M.261	Serbuk Batu Granit	Kg	 Rp57,400 
+M.262	Serbuk Batu Traso	Kg	 Rp74,000 
+M.263	Sunscreen Aluminium	m2	 Rp324,200 
+M.264	Underlayer	m2	 Rp71,400 
+M.265	Venetions Blinds dan Vertical Blinds (Tirai)	m2	 Rp361,200 
+M.266	Vynil	Buah	 Rp19,600 
+M.267	Wallpaper	m1	 Rp109,300 
+M.268	Teraso Cor	m3	 Rp2,484,000 
+M.269	Homogeneous Tile Uk. 30x30cm	Buah	 Rp40,500 
+M.270	Homogeneous Tile Uk. 40x40cm	Buah	 Rp84,600 
+M.271	Homogeneous Tile Uk. 60x60cm	Buah	 Rp222,600 
+M.272	Dynabolt	Buah	 Rp7,800 
+M.273	Porselen Uk. 11x11cm	Buah	 Rp1,400 
+M.274	Porselen Uk. 11x11cm	Dus	 Rp112,800 
+M.275	Porselen Uk. 10x20cm	Buah	 Rp4,400 
+M.276	Porselen Uk. 20x20cm	Buah	 Rp19,000 
+M.277	Veeneer Urat Kayu Tebal 2mm	m2	 Rp452,400 
+M.278	Waterproofing Acrylic Base	Kg	 Rp124,300 
+M.279	Waterproofing Cristalin	Kg	 Rp114,700 
+M.280	Waterproofing Membran Bakar	m2	 Rp82,900 
+M.281	Waterproofing Semen Base	Kg	 Rp23,000 
+M.282	Wood Filler	Kg	 Rp36,300 
+M.283	Woodstain	Kg	 Rp45,200 
+	 HARGA BAHAN SISTEM MANAJEMEN KESELAMATAN KONSTRUKSI		 Rp- 
+M.284	Topi Pelindung (Safety Helmet)	Buah	 Rp95,600 
+M.285	Pelindung Mata (Goggles,Spectacles)	Buah	 Rp38,300 
+M.286	Pelindung Telinga (Ear Plug, Ear Muff)	Buah	 Rp57,400 
+M.287	Pelindung Pernafasan dan Mulut (Masker, Masker Respirator)	Buah	 Rp146,600 
+M.288	Sepatu Keselamatan (Safety Shoes, Rubber Safety Shoes and Toe Cap)	Buah	 Rp191,300 
+M.289	Penunjang seluruh tubuh (Full Body Harness)	Set	 Rp1,275,300 
+M.290	Rompi keselamatan (Safety Vest)	Buah	 Rp38,300 
+M.291	Kotak P3K	Set	 Rp637,700 
+	 HARGA BAHAN LAIN-LAIN		 Rp- 
+M.292	Sabun	Kg	 Rp42,100 
+M.293	Tali Ijuk	m1	 Rp34,400 
+M.294	Tali Ijuk	m3	 Rp344,400 
+M.295	Beton Ready Mixed	m3	 Rp1,594,200 
+M.296	Beton Ready Mixed f'c 10 Mpa	m3	 Rp1,638,800 
+M.297	Beton Ready Mixed f'c 25 Mpa	m3	 Rp1,728,100 
+M.298	Beton Ready Mixed f'c 35 Mpa	m3	 Rp1,804,500 
+M.299	Kolom Beton Pracetak	Btg	 Rp510,100 
+M.300	Panel Beton Pracetak	Lbr	 Rp293,300 
+M.301	Bentonite	m3	 Rp446,400 
+M.302	Bentonite	Kg	 Rp8,900 
+M.303	Cairan Perontok Karat	Kg	 Rp39,600 
+M.304	Cuka Bibit	Ltr	 Rp47,200 
+M.305	Fly Ash	Kg	 Rp3,200 
+M.306	Lolos Screen 2 Uk. (9.5-19.0)	m3	 Rp828,900 
+M.307	Lolos Screen 2 Uk. (0-5)	m3	 Rp828,900 
+M.308	Bilik Bambu	m2	 Rp332,900 
+M.309	Epoxy Resin Grout	Kg	 Rp88,000 
+M.310	Geomembran t=1.5mm	m2	 Rp33,200 
+M.311	Geosynthetic Clay Liner (GCL)	m2	 Rp956,500 
+M.312	Geotekstil (> 100 s/d 400 gr/m2)	m2	 Rp44,600 
+M.313	Geotekstil (> 400 s/d 800 gr/m2)	m2	 Rp70,200 
+M.314	Geotekstil (> 800 gr/m2)	m2	 Rp95,600 
+M.315	Phenol Film 12mm	Lbr	 Rp574,300 
+M.316	Strorox - 100	Kg	 Rp83,300 
+M.317	Terpal	m2	 Rp312,500 
+M.318	Karung Goni	m2	 Rp34,200 
+M.319	Kapur Padam	m3	 Rp2,100 
+M.320	Kapur Padam	Kg	 Rp103,300 
+M.321	Tanah Liat	m3	 Rp144,200 
+M.322	Kapur	m3	 Rp45,900 
+M.323	Waterstop Lebar 150mm	m1	 Rp289,000 
+M.324	Waterstop Lebar 200mm	m1	 Rp331,600 
+M.325	Waterstop Lebar 230 - 320mm	m1	 Rp348,600 
+M.326	Wax	Kg	 Rp99,500 
+M.327	Joint Sealant	Kg	 Rp117,900 
+M.328	Curing Compound	Ltr	 Rp47,200 
+M.329	Polytene 125 Mikron	Kg	 Rp70,200 
+M.330	Zat Aditif	Kg	 Rp85,400 
+M.331	Strapping Band Lebar 15mm	m1	 Rp5,700 
+M.332	Palet Kayu Uk. 120x120x10cm	Buah	 Rp10,900 
+	BATU KALI Bulat Utuh	m3	 Rp305,000 
+	Batu Belah	m3	 Rp288,400 
+	BATU KALI Pecah 10/15	m3	 Rp385,500 
+	Koral	m3	 Rp302,800 
+	Kerikil	m3	 Rp431,500 
+	Bata merah	buah	 Rp800 
+	PASIR Pasang	Kg	 Rp300 
+	PASIR Beton	Kg	 Rp300 
+	KAPUR Pasang	m3	 Rp280,800 
+	Semen Merah	m3	 Rp1,088,600 
+	Semen Portland	kg	 Rp1,500 
+	Semen warna	kg	 Rp1,500 
+	SIRAP	buah	 Rp2,400 
+	Genteng Beton Warna standard	buah	 Rp6,700 
+	GENTENG TANAH LIAT Vlaam/Plentong	buah	 Rp11,800 
+	GENTENG TANAH LIAT Kodok	buah	 Rp3,100 
+	GENTENG TANAH LIAT Kodok Glasur	buah	 Rp6,200 
+	GENTENG TANAH LIAT Plentong super besar 18 bh/m2	buah	 Rp3,800 
+	ASBES GELOMBANG BESAR 200 cm X 102 cm X 6 mm	buah	 Rp115,000 
+	ASBES GELOMBANG BESAR 250 cm X 102 cm X 6 mm	buah	 Rp113,200 
+	ASBES GELOMBANG KECIL 150 cm X 105 cm X 4 mm	buah	 Rp53,900 
+	ASBES GELOMBANG KECIL 210 cm X 105 cm X 4 mm	buah	 Rp103,200 
+	"	ASBES GELOMBANG KECIL 240 cm X 105 cm X 4 mm"	buah	 Rp109,800 
+	"	ASBES GELOMBANG KECIL 270 cm X 105 cm X 4 mm"	buah	 Rp119,700 
+	ASBES GELOMBANG KECIL 300 cm X 105 cm X 4 mm	buah	 Rp124,600 
+	Seng plat	lembar	 Rp82,200 
+	SENG PLAT BJLS 0,28 lebar 55 cm	lembar	 Rp59,600 
+	"	SENG GELOMBANG BJLS 0,20 panjang 180 cm"	lembar	 Rp112,400 
+	SENG GELOMBANG BJLS 0,30 panjang 180 cm	lembar	 Rp213,000 
+	JATI Papan	m3	 Rp24,521,900 
+	JATI Balok/pesagen	m3	 Rp22,395,700 
+	KAMPER Papan	m3	 Rp11,226,200 
+	KAMPER Balok/pesagen	m3	 Rp9,638,700 
+	Kruing Papan	m3	 Rp7,370,700 
+	Kruing Balok	m3	 Rp7,370,700 
+	MERANTI Papan	m3	 Rp5,805,900 
+	LANAN Balok/pesagen	m3	 Rp12,113,000 
+	Dolken kayu diameter 8 -10 /400 cm	batang	 Rp28,900 
+	Bambu diameter 6-8/600 cm	batang	 Rp22,100 
+	UBIN (TEGEL BIASA) PC polos 30 X 30 cm	buah	 Rp5,500 
+	UBIN (TEGEL BIASA) PC polos 20 X 20 cm	buah	 Rp2,400 
+	UBIN (TEGEL BIASA) PC warna 30 X 30 cm	buah	 Rp13,000 
+	UBIN (TEGEL BIASA) PC warna 20 X 20 cm	buah	 Rp7,700 
+	TEGEL PLINT PC warna 10 X 20 cm	buah	 Rp4,000 
+	TEGEL PLINT PC abu-abu 15 x 20	buah	 Rp3,500 
+	MOZAIK PORSELIN 10 X 20 cm	buah	 Rp2,000 
+	MOZAIK PORSELIN 20 X 20 cm	buah	 Rp2,500 
+	"	KERAMIK 20 X 20 cm"	buah	 Rp2,500 
+	KERAMIK 33 x 33 cm	m2	 Rp115,700 
+	BATU POROS	m2	 Rp164,800 
+	BATU TEMPEL HITAM	m2	 Rp148,000 
+	GRANIT 40 x 40 cm	buah	 Rp26,900 
+	GRANIT 30 x 30 cm	buah	 Rp13,200 
+	Marmer	buah	 Rp481,900 
+	BUIS BETON Ø 30 cm - 100 cm	buah	 Rp110,000 
+	Besi Beton Polos	kg	 Rp13,700 
+	Besi Strip	kg	 Rp17,300 
+	Baja Profil	kg	 Rp18,500 
+	Kawat beton	kg	 Rp22,500 
+	Kawat Nyamuk Nylon	m2	 Rp21,600 
+	Kawat duri	meter	 Rp6,800 
+	AKUSTIK-uk : 30 X 30	lembar	 Rp12,600 
+	AKUSTIK-uk : 30 X 60	lembar	 Rp36,900 
+	"	AKUSTIK-uk : 60 X 120"	lembar	 Rp104,500 
+	List Kayu Profil	m3	 Rp2,543,400 
+	"	Gypsum tebal 9 mm"	lembar	 Rp64,500 
+	"	PLY WOOD Teak Wood 120 X 240 x 3 mm"	lembar	 Rp62,400 
+	PLY WOOD Teak Wood 90 X 210 x 4 mm	lembar	 Rp68,500 
+	Plywood 4mm	lembar	 Rp81,000 
+	PLY WOOD Tripleks 120 X 240 x 6 mm	lembar	 Rp117,600 
+	Plywood 9 mm	lembar	 Rp123,200 
+	PLY WOOD Multipleks 120 X 240 x 18 mm	lembar	 Rp259,700 
+	PLY WOOD Formika ukuran pintu	lembar	 Rp115,900 
+	Cat Menie Kayu	"liter
+"	 Rp48,000 
+	Plamuur	kg	 Rp40,500 
+	Ampelas	lembar	 Rp8,600 
+	Cat Kayu Dasar	kg	 Rp60,300 
+	Politur jadi	liter	 Rp97,600 
+	Kalkarium	kg	 Rp56,700 
+	Kapur sirih	kg	 Rp17,000 
+	Menie Besi	liter	 Rp57,200 
+	Pengencer	"Kg
+"	 Rp31,600 
+	Residu	liter	 Rp17,000 
+	"	Kaca Polos 3 mm"	m2	 Rp103,900 
+	Kaca Polos 5 mm	m2	 Rp126,500 
+	Kunci tanam	buah	 Rp76,500 
+	Kunci tanam KM	buah	 Rp41,700 
+	"	Kunci tanam biasa"	buah	 Rp93,900 
+	Engsel dan Grendel Angin	buah	 Rp26,200 
+	Engsel dan Grendel Kupu-kupu biasa	buah	 Rp28,100 
+	Engsel dan Grendel Nylon kupu-kupu	buah	 Rp86,700 
+	Kait Angin	buah	 Rp12,300 
+	Door Stop	buah	 Rp53,600 
+	Closet duduk	Unit	 Rp2,231,900 
+	Closet Jongkok	Unit	 Rp483,100 
+	Seal tape	"buah
+"	 Rp19,800 
+	Floor drain	Unit	 Rp50,900 
+	Paku biasa 2" - 5"	kg	 Rp29,300 
+	Paku sekrup	kg	 Rp78,800 
+	LEM KAYU	kg	 Rp27,600 
+	Tali Ijuk	kg	 Rp36,300 
+	Rel Pintu sorong	set	 Rp257,200 
+	Jendela nako (rangka+kaca 5 mm)	buah	 Rp72,600 
+	Rolling door Almunium	m2	 Rp673,700 
+	KACA Cermin tebal 5 mm	m2	 Rp204,700 
+	Kawat jaring	lembar	 Rp72,500 
+	Minyak Beton & bekisting	liter	 Rp42,000 
+	Pintu Lipat Besi	m2	 Rp1,006,500 
+	Sunscreen Allumunim	m2	 Rp788,500 
+	Allumunium Foil	m2	 Rp16,000 
+	Soda api	kg	 Rp20,400 
+	Sabun	kg	 Rp15,100 
+	"	Air"	liter	 Rp100 
+	Alang-alang	ikat	 Rp63,500 
+	Solar (Industri)	liter	 Rp19,400 
+	Vynil 30x30 cm	buah	 Rp22,700 
+	Kolom Beton Pracetak	batang	 Rp296,000 
+	Panel Beton Pracetak	lembar	 Rp260,100 
+	Kapur Padam	m3	 Rp201,800 
+	Sirtu	m3	 Rp146,000 
+	Waterstop Lebar 150 mm	m3	 Rp67,000 
+	"	Waterstop Lebar 200 mm"	meter	 Rp113,400 
+	Waterstop Lebar 230-320 mm	meter	 Rp126,800 
+	"	Screening"	kg	 Rp164,400 
+	Semen Grout	kg	 Rp8,000 
+	Papan Cor	m3	 Rp24,800 
+	Besi baja IWF	kg	 Rp16,300 
+	Profil alluminium	meter	 Rp138,100 
+	Skrup fixer	buah	 Rp300 
+	Sealant	tube	 Rp21,000 
+	Alluminium strip	meter	 Rp56,700 
+	Pintu alluminium	meter	 Rp567,000 
+	Profil kaca	meter	 Rp100,500 
+	Bata Rooster	"buah
+"	 Rp13,600 
+	"	Bata Terawang/Berongga"	"buah
+"	 Rp16,900 
+	Karpet	m2	 Rp29,600 
+	"	Underlayer"	m2	 Rp16,700 
+	Parquet	m2	 Rp319,100 
+	"Dinabolt Ø 12 mm (10 s/d 15 cm)	"	buah	 Rp3,800 
+	Phenol film 12 mm	lembar	 Rp237,000 
+	Besi Hollow (50x50x3) mm	kg	 Rp19,100 
+	Kawat las	kg	 Rp46,100 
+	Besi Square tube	meter	 Rp28,500 
+	Besi List Kaca 1 x 1 cm	meter	 Rp54,200 
+	Venetions Blinds dan Vertical Blinds (tirai)	m2	 Rp225,700 
+	Rangka metal hollow 40.40	meter	 Rp20,000 
+	Bata Ringan Tebal 7,5 cm	buah	 Rp9,100 
+	Mortar Siap Pakai	kg	 Rp7,500 
+	Bata Ringan Tebal 10 cm	buah	 Rp10,900 
+	Batu granit	kg	 Rp119,100 
+	Batu traso	kg	 Rp5,900 
+	Ubin abu-abu	buah	 Rp13,400 
+	UBIN (TEGEL BIASA) PC warna 40 X 40 cm	buah	 Rp18,600 
+	UBIN (TEGEL BIASA) Teraso 40 X 40 cm	buah	 Rp31,700 
+	UBIN (TEGEL BIASA) Teraso 30 X 30 cm	buah	 Rp26,600 
+	Ubin Teralux Marmer 40 X 40 cm	buah	 Rp73,700 
+	Ubin teralux 30 X 30 cm	buah	 Rp19,400 
+	Ubin teralux marmer 60 X 60 cm	buah	 Rp113,800 
+	Ubin teralux marmer 30 X 30 cm	buah	 Rp51,000 
+	TEGEL PLINT PC abu-abu 10 x 30	buah	 Rp5,700 
+	TEGEL PLINT PC abu-abu 10 x 40	buah	 Rp8,700 
+	TEGEL PLINT PC warna 10 x 30 cm	buah	 Rp5,800 
+	TEGEL PLINT PC warna 10 X 40 cm	"meter
+"	 Rp9,300 
+	Plint ubin teraso ukuran 10 x 30cm	buah	 Rp10,200 
+	Plint ubin teraso ukuran 10 x 40cm	buah	 Rp13,600 
+	Plint ubin granit ukuran 10 x 40cm	buah	 Rp13,200 
+	Plint ubin teralux kerang ukuran 10cm x 40cm	buah	 Rp11,300 
+	Plint ubin teralux kerang ukuran 10cm x 30cm	buah	 Rp8,500 
+	Plint ubin teralux marmer ukuran 10cm x 40cm	buah	 Rp17,000 
+	Plint ubin teralux marmer ukuran 10cm x 40cm	buah	 Rp11,300 
+	Ubin Keramik	buah	 Rp7,300 
+	Keramik 10 x 20 cm	buah	 Rp2,300 
+	Keramik 10 x 10 cm	buah	 Rp2,200 
+	Plint Keramik 5 x 20 cm	buah	 Rp3,300 
+	Plint internal cove 5 x 5 x 20 cm	buah	 Rp13,600 
+	Keramik artistik 5 x 20 cm	buah	 Rp8,200 
+	Keramik artistik 20 x 20 cm	buah	 Rp2,400 
+	Paku 12 cm	kg	 Rp22,700 
+	Bata pelapis	buah	 Rp2,200 
+	Wallpaper	meter	 Rp35,300 
+	Paving Block Tebal 6 cm	"m2
+"	 Rp105,900 
+	Paving Block berwarna Tebal 6 cm	"m2
+"	 Rp104,200 
+	Paving Block Tebal 8 Cm Natural	"m2
+"	 Rp152,200 
+	Kawat diameter 4 mm	kg	 Rp52,000 
+	Ramset	buah	 Rp13,000 
+	Rooflight 90 x 180	lembar	 Rp172,400 
+	Asbes gelombang	lembar	 Rp118,600 
+	Paku pancing 6 x 23	"kg
+"	 Rp22,700 
+	Bubung stel gelombang	lembar	 Rp51,100 
+	Nok paten 92-108 cm	lembar	 Rp34,400 
+	Genteng aspal	buah	 Rp65,300 
+	Plastic aerotor	buah	 Rp2,300 
+	Genteng metal	buah	 Rp40,700 
+	Nok genteng aspal	buah	 Rp114,500 
+	Nok genteng metal	buah	 Rp25,100 
+	Bilik Bambu	"m2
+"	 Rp43,700 
+	Kunci tanam antik	buah	 Rp150,500 
+	Spring knip	buah	 Rp30,600 
+	Door closer	set	 Rp228,500 
+	Door holder	"buah
+"	 Rp259,300 
+	"	Kunci lemari"	set	 Rp10,800 
+	Kaca buram 12 mm	"m2
+"	 Rp475,800 
+	Kaca cermin 8 mm	"m2
+
+"	 Rp556,100 
+	"	Kaca wireglassed 5 mm"	"m2
+"	 Rp245,200 
+	Kaca patri 5 mm	m2	 Rp2,201,400 
+	Teak Oil	liter	 Rp56,200 
+	Vernis	liter	 Rp78,200 
+	Menie A	liter	 Rp51,900 
+	Menie B	liter	 Rp38,400 
+	"	Cat antara"	kg	 Rp98,900 
+	"	Wood filler"	kg	 Rp28,300 
+	Woodstain	kg	 Rp105,500 
+	Sanding	kg	 Rp90,700 
+	"	Melamic"	kg	 Rp154,200 
+	Urinoir	unit	 Rp754,900 
+	Bak fiberglass	unit	 Rp337,700 
+	"	Baja tulangan"	kg	 Rp16,400 
+	Bak cuci piring	unit	 Rp200,200 
+	Waterdrain	buah	 Rp70,100 
+	"	Pipa Galvanis Medium 0,50"""	"meter
+"	 Rp44,100 
+	Pipa Galvanis 1"	"meter
+"	 Rp45,700 
+	Pipa galvanis 1 1/2"	meter	 Rp95,300 
+	"	Pipa Galvanis 3"""	meter	 Rp219,900 
+	Pipa Galvanis 4"	meter	 Rp343,300 
+	Pipa PVC 2 1/2"	meter	 Rp45,500 
+	Pipa tanah	buah	 Rp30,400 
+	Pipa tanah diameter 15 cm	buah	 Rp579,700 
+	Pipa PVC Ø 150  mm	"meter
+"	 Rp200,200 
+	Pipa PVC Ø 300 mm	"meter
+"	 Rp743,800 
+	Pipa PVC 3/4"	"meter
+"	 Rp11,400 
+	Pipa HDPE Ø 63  mm	buah	 Rp177,200 
+	Pipa HDPE Ø 100  mm	buah	 Rp877,700 
+	Pipa HDPE Ø 125  mm	buah	 Rp682,800 
+	Pipa HDPE Ø 150  mm	buah	 Rp1,040,000 
+	Pipa HDPE Ø 200  mm	buah	 Rp1,744,300 
+	Pipa HDPE Ø 400  mm	buah	 Rp6,939,100 
+	Pipa HDPE Ø 300  mm	buah	 Rp4,150,600 
+	Pipa HDPE Ø 450  mm	buah	 Rp8,791,500 
+	Pipa HDPE Ø 500  mm	buah	 Rp10,832,400 
+	Pipa HDPE Ø 600  mm	buah	 Rp16,545,800 
+	Pipa GIP Ø 63 mm	buah	 Rp819,200 
+	Pipa GIP Ø 100 mm	buah	 Rp1,327,800 
+	"	Pipa GIP Ø 125 mm"	meter	 Rp390,000 
+	Pipa GIP Ø 150 mm	buah	 Rp2,538,400 
+	Pipa GIP Ø 200 mm	buah	 Rp4,964,500 
+	"	Pipa GIP Ø 300 mm"	buah	 Rp8,441,200 
+	Pipa GIP Ø 400 mm	buah	 Rp14,742,600 
+	Pipa GIP Ø 450 mm	buah	 Rp23,119,200 
+	Pipa GIP Ø 500 mm	buah	 Rp25,742,100 
+	Pipa DCI Ø 100 mm	buah	 Rp447,700 
+	Pipa DCI Ø 125 mm	buah	 Rp467,200 
+	Pipa DCI Ø 150 mm	buah	 Rp906,300 
+	Pipa DCI Ø 200 mm	buah	 Rp1,387,300 
+	Pipa DCI Ø 250 mm	buah	 Rp2,205,100 
+	Pipa DCI Ø 300 mm	buah	 Rp3,432,500 
+	Pipa DCI Ø 400 mm	buah	 Rp5,559,000 
+	Pipa DCI Ø 500 mm	buah	 Rp8,647,900 
+	Pipa DCI Ø 600 mm	buah	 Rp14,271,600 
+	Pipa baja Ø 100 mm	buah	 Rp2,451,600 
+	Pipa baja Ø 125 mm	buah	 Rp3,674,000 
+	Pipa baja Ø 150 mm	buah	 Rp4,459,600 
+	Pipa baja Ø 200 mm	buah	 Rp7,212,000 
+	"	Pipa baja Ø 250 mm"	buah	 Rp9,922,200 
+	"	Pipa baja Ø 63 mm"	buah	 Rp1,170,200 
+	"	Kaca Polos 8 mm"	m2	 Rp189,900 
+	Saklar tunggal	buah	 Rp16,400 
+	Pipa GIP Ø 250 mm	buah	 Rp7,614,200 
+	Valve Ø 150 mm	buah	 Rp10,347,400 
+	Valve Ø 200 mm	buah	 Rp16,867,700 
+	Valve Ø 250 mm	buah	 Rp27,640,300 
+	"	Valve Ø 300 mm"	buah	 Rp18,682,000 
+	Tee Ø 150 mm	buah	 Rp206,700 
+	Tee Ø 200 mm	buah	 Rp474,400 
+	Tee Ø 250 mm	buah	 Rp2,045,700 
+	Tee Ø 300 mm	buah	 Rp3,477,900 
+	Tee Ø 400 mm	buah	 Rp4,524,500 
+	Tee Ø 450 mm	buah	 Rp7,705,300 
+	Pipa Ø 80 mm	buah	 Rp254,900 
+	Pipa Ø 100 mm	buah	 Rp397,100 
+	Pipa Ø 150 mm	buah	 Rp858,700 
+	Pipa Ø 200 mm	buah	 Rp1,437,300 
+	Pipa Ø 250 mm	buah	 Rp2,178,700 
+	Pipa Ø 300 mm	buah	 Rp3,066,500 
+	Pipa Ø 400 mm	buah	 Rp4,110,600 
+	Bahan bakar	liter	 Rp18,100 
+	Oli	liter	 Rp64,900 
+	Pipa listrik 5/8	batang	 Rp10,400 
+	T Dus	buah	 Rp1,900 
+	L Bow	buah	 Rp14,200 
+	Las Dop	buah	 Rp600 
+	Klem	buah	 Rp500 
+	Mongkok	buah	 Rp1,600 
+	"	Fitting"	buah	 Rp13,100 
+	MCB	buah	 Rp65,700 
+	Glass Bead	Kg	 Rp22,700 
+	Agregat Pecah Kasar	m3	 Rp432,900 
+	Bahan Tanah Timbunan	m3	 Rp182,200 
+	Kerosen/Minyak Tanah	liter	 Rp17,100 
+	"	Cat Marka (Thermoplastic)"	"kg
+"	 Rp63,500 
+	Kayu Perancah	m3	 Rp2,725,100 
+	Agregat Base Kelas A	m3	 Rp356,600 
+	Agregat Base Kelas B	m3	 Rp351,000 
+	Aspal Emulsi	kg	 Rp16,400 
+	"	Rel Pengaman"	"meter
+"	 Rp1,020,600 
+	"	Baja tulangan (polos)"	kg	 Rp16,300 
+	Urugan Pilihan	m3	 Rp272,900 
+	Beton K.300	m3	 Rp1,530,800 
+	"	Timbunan Porus"	m3	 Rp457,000 
+	Cat Anti Karat	kg	 Rp77,200 
+	Curing Compound	liter	 Rp35,300 
+	Expansion Cap	m2	 Rp20,500 
+	Formwork Plate tebal 6 mm	m2	 Rp56,700 
+	"	Aspal"	kg	 Rp16,500 
+	Agregat Pecah Mesin 0-5 mm	m3	 Rp406,000 
+	Agregat Pecah Mesin 5-10 & 10-15 mm	"	
+m3"	 Rp407,500 
+	Superplastisizer	kg	 Rp37,000 
+	Koral Beton (m3)	m3	 Rp436,700 
+	PASIR Urug	m3	 Rp293,000 
+	"	PASIR Pasang"	m3	 Rp376,700 
+	Air (m3)	m3	 Rp100 
+	"	Pasir Beton"	m3	 Rp387,600 
+	Casing	m2	 Rp26,000 
+	Tanah Liat	"m3
+"	 Rp167,700 
+	Kerikil (Maks 30 mm)	kg	 Rp300 
+	Paku 5-10 cm	kg	 Rp22,500 
+	Paku 5-7 cm	kg	 Rp22,500 
+	Besi siku L 30.30.3	kg	 Rp40,500 
+	"	Besi pelat baja"	kg	 Rp19,900 
+	Paku 1 - 2.5 cm	kg	 Rp22,500 
+	Baja ringan canai dingin C75	kg	 Rp16,500 
+	Besi angkur diameter 8	kg	 Rp51,200 
+	Lem	kg	 Rp131,500 
+	Sealant	kg	 Rp55,900 
+	Papan kayu kelas I	m3	 Rp12,340,300 
+	Paku/Skrup 5 cm	kg	 Rp112,100 
+	Paving Block Tebal 8 cm Berwarna	m2	 Rp182,500 
+	Cat penutup	kg	 Rp87,500 
+	"	Politur"	liter	 Rp111,100 
+	"	Dempul"	kg	 Rp52,600 
+	Perancah kayu	"m3
+"	 Rp2,304,800 
+	Cat	Kg	 Rp55,100 
+	Pengencer	liter	 Rp43,700 
+	"	Thinner"	liter	 Rp55,900 
+	"	Paku tripleks"	Kg	 Rp41,900 
+	Asbes semen	m2	 Rp186,000 
+	Genteng bubung	buah	 Rp13,500 
+	"	Paku 0.5"" - 1"""	kg	 Rp42,800 
+	Paku skrup 3.5"	kg	 Rp80,300 
+	Nok genteng beton	buah	 Rp19,600 
+	Paku 10 cm	kg	 Rp22,500 
+	Kaso-kaso 5x7 cm	m3	 Rp7,847,000 
+	Reng	m3	 Rp2,267,900 
+	Kunci silinder	buah	 Rp85,300 
+	Kunci slot	buah	 Rp19,400 
+	Wastafel	"Unit
+"	 Rp451,300 
+	"Bata merah	"	m3	 Rp708,900 
+	Kayu bekisting	m2	 Rp3,292,200 
+	Kran Air	buah	 Rp48,000 
+	Pipa galvanis 3/4"	meter	 Rp39,400 
+	Pipa PVC 1/2"	meter	 Rp8,400 
+	"	Pipa PVC 1"""	meter	 Rp14,500 
+	"Pipa PVC 1 1/2""	"	meter	 Rp24,800 
+	Pipa PVC 2"	meter	 Rp32,800 
+	Pipa PVC 3"	meter	 Rp57,700 
+	Pipa PVC Ø 63 mm	meter	 Rp38,600 
+	"	Pipa PVC Ø 90 mm"	meter	 Rp67,800 
+	Pipa PVC Ø 110 mm	meter	 Rp92,400 
+	Pipa DCI Ø 100 mm	meter	 Rp74,600 
+	Pipa PVC Ø 200 mm	meter	 Rp338,400 
+	"	Pipa PVC Ø 250 mm"	meter	 Rp529,800 
+	Pipa HDPE Ø 63 mm	meter	 Rp29,500 
+	"	Pipa HDPE Ø 100 mm"	meter	 Rp146,300 
+	Pipa HDPE Ø 125 mm	meter	 Rp113,800 
+	"	Pipa HDPE Ø 150 mm"	meter	 Rp173,300 
+	Pipa HDPE Ø 200 mm	meter	 Rp290,700 
+	"	Pipa HDPE Ø 250 mm"	meter	 Rp452,100 
+	"	Pipa HDPE Ø 300 mm"	meter	 Rp691,800 
+	"	Pipa HDPE Ø 400 mm"	meter	 Rp1,156,500 
+	"	Pipa HDPE Ø 450 mm"	meter	 Rp1,465,200 
+	Pipa HDPE Ø 500 mm	meter	 Rp1,805,400 
+	Pipa HDPE Ø 600 mm	meter	 Rp2,757,600 
+	"	Pipa GIP Ø 63 mm"	meter	 Rp136,500 
+	Pipa GIP Ø 100 mm	meter	 Rp221,300 
+	Pipa GIP Ø 150 mm	meter	 Rp423,100 
+	Pipa  GIP Ø 200 mm	meter	 Rp838,900 
+	Pipa  GIP Ø 250 mm	meter	 Rp1,560,700 
+	Pipa  GIP Ø 300 mm	meter	 Rp1,560,700 
+	Pipa  GIP Ø 400 mm	meter	 Rp2,340,700 
+	Pipa  GIP Ø 450 mm	meter	 Rp3,853,200 
+	"	Pipa  GIP Ø 500 mm"	meter	 Rp4,290,300 
+	Pipa  DCI Ø 125 mm	meter	 Rp71,200 
+	Pipa  DCI Ø 150 mm	meter	 Rp151,000 
+	Pipa  DCI Ø 200 mm	meter	 Rp231,200 
+	Pipa  DCI Ø 250 mm	meter	 Rp367,500 
+	Pipa  DCI Ø 300 mm	meter	 Rp572,100 
+	Pipa  DCI Ø 400 mm	meter	 Rp926,500 
+	Pipa  DCI Ø 500 mm	meter	 Rp1,441,300 
+	"	Pipa  DCI Ø 600 mm"	meter	 Rp2,378,600 
+	Pipa baja Ø 63 mm	meter	 Rp195,000 
+	"	Pipa  Baja Ø 100 mm"	meter	 Rp452,300 
+	Pipa  Baja Ø 125 mm	meter	 Rp612,400 
+	Pipa  Baja Ø 150 mm	meter	 Rp743,300 
+	Pipa  Baja Ø 200 mm	meter	 Rp1,202,000 
+	Pipa  Baja Ø 250 mm	meter	 Rp1,653,700 
+	"	Pipa  Baja Ø 300 mm"	meter	 Rp1,718,000 
+	Pipa  Baja Ø 400 mm	meter	 Rp2,290,600 
+	Pipa  Baja Ø 450 mm	meter	 Rp2,576,900 
+	Pipa  Baja Ø 500 mm	meter	 Rp2,863,300 
+	Pipa  Baja Ø 800 mm	meter	 Rp4,581,200 
+	Pipa  Baja Ø 600 mm	meter	 Rp3,435,900 
+	Pipa  Baja Ø 900 mm	meter	 Rp5,153,900 
+	Paku biasa	kg	 Rp27,400 
+	Kayu papan kelas III	m3	 Rp8,504,700 
+	"Kayu balok 5/7 kelas III	"	m3	 Rp8,504,700 
+	Batu pecah	m3	 Rp418,600 
+	Kerikil (2cm/3cm)	m3	 Rp388,400 
+	Jaring kawat baja dilas	kg	 Rp16,100 
+	Kayu kelas III	m3	 Rp8,504,700 
+	Balok kayu kelas II	m3	 Rp8,504,700 
+	Paku 5-12 cm	kg	 Rp22,500 
+	Kayu kelas III (papan)	m3	 Rp8,504,700 
+	Minyak bekisting	liter	 Rp42,000 
+	Kayu Kaso 5/7 (lebar 5 cm, tinggi 7cm)	m3	 Rp2,653,500 
+	Pipa PVC Ø 63 mm	buah	 Rp154,300 
+	Pipa PVC Ø 90 mm	buah	 Rp271,300 
+	"	Pipa PVC Ø 110 mm"	buah	 Rp369,400 
+	Pipa PVC Ø 150 mm	buah	 Rp526,400 
+	Pipa PVC Ø 200 mm	buah	 Rp893,300 
+	Pipa PVC Ø 250 mm	buah	 Rp1,407,600 
+	Pipa PVC Ø 300 mm	buah	 Rp1,971,900 
+	Baja Strip (0,2x2) cm	kg	 Rp24,700 
+	paku skrup 1 cm - 2,5 cm	buah	 Rp200 
+	"Geotekstile Filter Kelas 2	"	m2	 Rp22,500 
+	Agregat Base Kelas S	m3	 Rp332,800 
+	Agregat Pecah Mesin 20-30 mm	m3	 Rp383,900 
+	Bahan anti pengelupasan	kg	 Rp118,900 
+	Baja Tulangan Polos BjTP 280	kg	 Rp19,300 
+	Baja tulangan sirip BjTS 280	kg	 Rp19,300 
+	Beton fc 20 Mpa	m3	 Rp1,796,700 
+	Beton 15 Mpa	m3	 Rp1,247,400 
+	Paku jalan tidak memantul	"buah
+"	 Rp64,500 
+	Paku jalan memantul bujur sangkar	buah	 Rp51,000 
+	"Paku jalan memantul persegi panjang	"	m3	 Rp113,400 
+	Mata kucing	kg	 Rp139,800 
+	Polytene 125 mikron	kg	 Rp219,100 
+	Alat Penghampar Beton	Jam	 Rp249,500 
+	Besi Strip	meter	 Rp14,600 
+	Bahan Pracetak Saluran U Type DS 1	m2	 Rp634,500 
+	Bahan Penutup Type DS 1	m2	 Rp187,000 
+	Bahan Pracetak Saluran U Type DS 2	m2	 Rp837,400 
+	"	Bahan Penutup Type DS 2"	m2	 Rp239,000 
+	Bahan Pracetak Saluran U Type DS 3	m2	 Rp1,111,700 
+	Bahan Penutup Type DS 3	m2	 Rp290,600 
+	Asbuton	kg	 Rp2,400 
+	Modifier Aspal	kg	 Rp19,100 
+	Agregat Halus	m3	 Rp384,100 
+	Kawat benrad	kg	 Rp25,000 
+	Jaring Anyaman Tulangan Tunggal M6-M8	kg	 Rp11,300 
+	Bak Teraso	Unit	 Rp792,600 
+	Bathtub	Unit	 Rp3,628,700 
+	Pipa Galvanis  1/2"	meter	 Rp35,200 
+	"	Kabel"	meter	 Rp9,900 
+	MCCB (Boks MCB)	buah	 Rp559,200 
+	Timbunan Pilihan	m3	 Rp227,700 
+	"	Pasir"	m3	 Rp396,500 
+	Agregat Pokok	m3	 Rp340,200 
+	"	Agregat Pengunci"	m3	 Rp340,200 
+	Agregat Penutup	m3	 Rp340,200 
+	Wiremesh M6	kg	 Rp11,300 
+	Menie Besi (Zinc Chromate)	kg	 Rp46,500 
+	"	Tiang Pancang Beton Bertulang Pracetak Ukuran 350 mm x 350 mm"	meter	 Rp760,900 
+	Geotekstil non-woven	m2	 Rp17,000 
+	Epoxy resin grout	kg	 Rp396,900 
+	Aspal Penetrasi 60/70	kg	 Rp18,300 
+	Balok Kayu Meranti	m3	 Rp3,098,000 
+	Downlight 5 Inch 14,5 Watt LED dan aksesoris	bh	 Rp149,700 
+	Isolasi	bh	 Rp9,600 
+	Kabel NYM Supreme 2×2,5 mm²	m'	 Rp18,100 
+	Kabel NYM Supreme 3×2,5 mm²	m'	 Rp23,600 
+	Outlet Telepon dan aksesoris	Unit	 Rp56,700 
+	Pintu Spandril uk. 70x200 cm (komplit aksesories)	bh	 Rp1,003,600 
+	List Gypsum	m'	 Rp13,600 
+	Plint ubin granit ukuran 10 x 30cm	buah	 Rp8,500 
+	Cetakan diameter 20 cm	buah/meter	 Rp5,700 
+	Cetakan diameter 40 cm	buah/meter	 Rp37,600 
+	Cetakan ukuran 100 x 100	buah/meter	 Rp130,400 
+	"	Lapis Drainase"	m3	 Rp218,400 
+	Aspal Emulsi	Liter	 Rp18,400 
+	Geotekstil Separator	m2	 Rp20,400 
+	Cold Paving Hot Mix Asbuton (CPHMA)	m3	 Rp2,285,900 
+	Anchorage	buah	 Rp2,799,800 
+	"	Tiang pancang baja"	m	 Rp763,700 
+	Elastomer bearing pad	buah	 Rp60,300 
+	"	Roof Drain; Dia 3"" (80 mm) + Material Bantu"	bh	 Rp42,500 
+	Tangki Toren Kapasitas 5 m3 + Material Bantu / Aksesoris	Unit	 Rp1,075,000 
+	Multipleks 12 mm	Lembar	 Rp307,800 
+	Joint Sealant	kg	 Rp59,200 
+	Zat Aditif	kg	 Rp95,300 
+	"	Ball Valve ; Dia. 1“ (25 mm) + Material Bantu"	unit	 Rp153,100 
+	Outlet Data dan aksesoris	unit	 Rp38,600 
+	Cat Marka (bukan thermoplastic)	kg	 Rp51,000 
+	Pelat Rambu	buah	 Rp507,300 
+	Lampu LED E27 100 watt merk philips	buah	 Rp198,400 
+	Asbuton 50/30	"kg
+"	 Rp2,600 
+	Acuan, Multipleks	m3	 Rp141,700 
+	Asphaltic Plug	m3	 Rp4,989,400 
+	"	Elastomer karet alam berlapis baja"	buah	 Rp60,300 
+	Pipa Baja	M241	 Rp22,700 
+	Semen (50 Kg)	zak	 Rp77,700 
+	Terentang Balok Kelas IV	m3	 Rp2,381,300 
+	Handle Pintu	buah	 Rp68,000 
+	"	Shower Set"	unit	 Rp666,000 
+	Tempat Sabun	buah	 Rp96,400 
+	Kran Zink	buah	 Rp518,200 
+	"	Rangka Plafond Metal Furing"	m2	 Rp32,900 
+	"	Klep diameter 3/4"""	"buah
+"	 Rp102,100 
+	Tangki Air 1000 liter	"buah
+"	 Rp1,871,000 
+	Pelampung Otomatis	"buah
+"	 Rp34,700 
+	Mesin Jet Pump kap.250 watt	unit	 Rp2,225,400 
+	Mesin Pompa tekan kap. 150 watt	unit	 Rp1,530,800 
+	Kabel telephone 4 x 0.5 mm	meter	 Rp4,800 
+	Lampu TL 2 x 18 watt grille	"buah
+"	 Rp66,300 
+	"	Lampu TL 2 x 36 watt grille"	"buah
+"	 Rp85,000 
+	"	Besi Tempa"	m2	 Rp441,700 
+	Rangka atap baja ringan	m2	 Rp141,700 
+	IMB	m2	 Rp28,300 
+	 HARGA BAHAN BESI DAN ALUMINIUM		 Rp- 
+M.333	Angkur	Kg	 Rp37,000 
+M.334	Baut	Kg	 Rp14,000 
+M.335	Baja Profil	Kg	 Rp25,600 
+M.336	Baja Ringan Canai Dingin C75	Btg	 Rp214,500 
+M.337	Baja Ringan Canai Dingin C75	Kg	 Rp27,500 
+M.338	Baja Ringan 75.100 Tebal 1mm	m1	 Rp214,500 
+M.339	Baja Strip 0.2x2cm	Kg	 Rp22,500 
+M.340	Baja Strip 0.2x2cm	m1	 Rp22,500 
+M.341	Baja Tulangan	Kg	 Rp20,700 
+M.342	Baja Tulangan Polos (BjTP)	Kg	 Rp20,700 
+M.343	Baja Tulangan Sirip (BjTS)	Kg	 Rp20,700 
+M.344	Dinabolt Ø12mm Uk. 10 - 15cm	Buah	 Rp22,400 
+M.345	Besi Angker Diameter 8	Kg	 Rp65,700 
+M.346	Besi Angkur Dia=16mm Pjg=50cm	Buah	 Rp31,900 
+M.347	Besi Hollow 50x50x3mm	Kg	 Rp18,300 
+M.348	Besi Strip	Kg	 Rp13,100 
+M.349	Besi Strip	m1	 Rp109,400 
+M.350	Besi Strip Tebal 5mm	Kg	 Rp13,100 
+M.351	Gantungan/Hanger Panjang 2.5m	Buah	 Rp51,000 
+M.352	Wiremesh M6	Kg	 Rp16,800 
+M.353	Kawat Bendrat	Kg	 Rp28,200 
+M.354	Kawat Bronjong Ø 2 - 4mm	Kg	 Rp38,100 
+M.355	Kawat Duri	m1	 Rp14,500 
+M.356	Kawat Harmonika	m2	 Rp73,400 
+M.357	Kawat Jaring Panjang 2.4m dan Aksesories	Lbr	 Rp445,400 
+M.358	Kawat Las	 Kg 	 Rp60,300 
+M.359	Kawat Las Listrik	 Kg 	 Rp60,300 
+M.360	Kawat Nyamuk	m2	 Rp34,700 
+M.361	Kawat Seng 3mm	 Kg 	 Rp31,100 
+M.362	Kawat Ø 4mm	Kg	 Rp31,100 
+M.363	Pengelasan	cm	 Rp7,700 
+M.364	Pipa Besi Hitam Dia. 1 Inch	m1	 Rp127,000 
+M.365	Pipa Besi Hitam Dia. 1.5 Inch	m1	 Rp158,600 
+M.366	Pipa Besi Hitam Dia. 2 Inch	m1	 Rp198,300 
+M.367	Pipa Besi Hitam Dia. 3 Inch	m1	 Rp247,900 
+M.368	Besi Siku 40.40	Kg	 Rp12,800 
+M.369	Besi Siku 40.40.4	Kg	 Rp12,800 
+M.370	Besi Siku L 30.30.3	Kg	 Rp12,800 
+M.371	Besi Siku L 40.40.4	Kg	 Rp12,800 
+M.372	Mur Baut	Buah	 Rp3,200 
+M.373	Rangka Metal Hollow 40.40mm	m1	 Rp17,400 
+M.374	Plat Baja Tebal 2mm	Kg	 Rp25,300 
+M.375	Plat Besi Tebal 3mm	Kg	 Rp25,300 
+	 HARGA BAHAN STRUKTUR RISHA		 Rp- 
+M.376	Baut dan Mur f12 L=4". ASTM A307	Buah	 Rp- 
+M.377	Baut dan Mur f12 L=6". ASTM A307	Buah	 Rp- 
+M.378	Baut dan Mur f12 L=7". ASTM A307	Buah	 Rp- 
+M.379	Ring Pelat	Buah	 Rp- 
+M.380	Pelat Strip t=2.6 mm L=12 cm	Buah	 Rp81,700 
+M.381	Pelat Strip t=2.6 mm L=14 cm	Buah	 Rp- 
+M.382	Pelat Strip t=2.6 mm L=17 cm	Buah	 Rp- 
+M.383	Pelat Strip t=2.6 mm L=34 cm	Buah	 Rp81,700 
+M.384	Angkur Baja Full Drat ASTM 307 Ø 10mm Panjang 35cm	Buah	 Rp37,400 
+M.385	Angkur Baja Full Drat ASTM 307 Ø 10mm Panjang 65cm	Buah	 Rp105,100 
+	 HARGA BAHAN KAYU DAN PAPAN		 Rp- 
+M.386	Balok Kayu	m3	 Rp4,291,300 
+M.387	Balok Kayu Kelas I	m3	 Rp6,866,100 
+M.388	Balok Kayu Kelas II	m3	 Rp4,291,300 
+M.389	Balok Kayu Kelas III	m3	 Rp3,433,000 
+M.390	Balok Kayu Kelas IV	m3	 Rp3,089,700 
+M.391	Balok Kayu. 6 x 12	m3	 Rp4,291,300 
+M.392	Kaso-kaso 5 x 7cm	m3	 Rp4,291,300 
+M.393	Kayu Kaso 5x7cm Kelas II	m3	 Rp4,291,300 
+M.394	Kayu Kaso 5x7cm Kelas III	m3	 Rp3,433,000 
+M.395	Kayu Balok Borneo	m3	 Rp6,866,100 
+M.396	Kayu Bekisting	m2	 Rp402,300 
+M.397	Kayu Kelas I	m3	 Rp6,866,100 
+M.398	Kayu Kelas II	m3	 Rp4,291,300 
+M.399	Kayu Kelas III	m3	 Rp3,433,000 
+M.400	Kayu Kelas IV	m3	 Rp3,089,700 
+M.401	Kayu Lapis	Lbr	 Rp688,700 
+M.402	Kayu Lapis 4mm	Lembar	 Rp688,700 
+M.403	Kayu Papan	m3	 Rp3,433,000 
+M.404	Papan Cor	m3	 Rp3,089,700 
+M.405	Papan Gipsum 120x240cm	Lbr	 Rp111,500 
+M.406	Papan Kayu	m3	 Rp3,433,000 
+M.407	Papan Kayu Kelas I	m3	 Rp6,866,100 
+M.408	Papan Kayu Kelas II	m3	 Rp4,291,300 
+M.409	Papan Kayu Kelas III	m3	 Rp3,433,000 
+M.410	Patok Ukur Kayu 5/7 Kelas II	m3	 Rp4,291,300 
+M.411	Perancah Kayu	m3	 Rp3,089,700 
+M.412	Reng (3 x 4) cm	m3	 Rp3,433,000 
+M.413	Reng 2 x 3 cm	m3	 Rp3,433,000 
+M.414	Teakwood 4mm 90x220cm	Lembar	 Rp688,700 
+M.415	Atap Sirap Kayu Ulin	Ikat	 Rp748,600 
+M.416	Atap Sirap Kayu Ulin	m2	 Rp748,600 
+M.417	Sirap Kayu	Buah	 Rp25,000 
+	 HARGA BAHAN TANAMAN & LANDSCAPE		 Rp- 
+M.418	Rumput Gajah Mini	m2	 Rp73,300 
+M.419	Pohon Ketapang Mini	Btg	 Rp529,300 
+M.420	Sambang Dara	Rumpun	 Rp25,600 
+M.421	Beringin (Ficus Benjamina) Dia. 15-20cm Tinggi Diatas 6 Meter	Btg	 Rp1,594,200 
+M.422	Bibit Vegetasi (Biji Rumput)	Kg	 Rp127,600 
+M.423	Anti Rayap Pada Tanah	Kg	 Rp191,300 
+M.424	Anggur Terompet (Tecoma stans) Dia. 1-2cm	Btg	 Rp63,700 
+M.425	Fungisida/Insektisida	Kg	 Rp95,600 
+M.426	Kacang Hias (Arachis Pintoi)	Buah	 Rp38,300 
+M.427	Kamboja (Plumeria Sp.) Dia. 7-15cm Tinggi Diatas 6 Meter	Btg	 Rp637,700 
+M.428	Kapur	Kg	 Rp38,300 
+M.429	Ketapang Kencana (Terminalia Mantaly) Dia. 3-5cm	Btg	 Rp153,000 
+M.430	Material Organik	m3	 Rp127,600 
+M.431	Matras Tipe I Termasuk Angkur/Penguat Matras	m2	 Rp146,600 
+M.432	Matras Tipe II Termasuk Angkur/Penguat Matras	m2	 Rp159,500 
+M.433	Matras Tipe III Termasuk Angkur/Penguat Matras	m2	 Rp172,200 
+M.434	Mulsa	Kg	 Rp57,400 
+M.435	Rumput	Buah	 Rp6,400 
+M.436	Sedang Tabebuya (Tabebuia Rosea) Dia. 5-7cm	Btg	 Rp191,300 
+M.437	Semak Pacing (Costus Sp.)	Buah	 Rp9,600 
+M.438	Semak Capit Udang (Heliconia Psittacorum)	Buah	 Rp19,100 
+M.439	Semak Bunga Kertas (Bougenvillea Sp.)	Buah	 Rp37,600 
+M.440	Sulfur	Kg	 Rp70,200 
+M.441	Tanah Subur: 75%	m3	 Rp172,200 
+M.442	Tanah Subur: 90%	m3	 Rp235,900 
+M.443	Palem Kecil Palem Wregu (Raphis excelsa) Dia. sd 5 cm Tinggi Maks. 1.5 Meter	Btg	 Rp95,600 
+M.444	Palem Kecil Palem Kuning (Dypsus Lutescens) Dia. 5-15cm Tinggi Maks. 1.5 Meter	Btg	 Rp127,600 
+M.445	Palem Besar Palem Ekor Tupai (Woedyetia Bifurcata) Dia. 15cm Tinggi Diatas 1.5 Meter	Btg	 Rp159,500 
+M.446	Palem Besar Kelapa (Cocos Nucifera) Dia. 15 -20cm Tinggi Diatas 1.5 Meter	Btg	 Rp191,300 
+M.447	Palem Besar Palem Botol (Hyophorbe Lagenicaulis) Dia. 20-25cm Tinggi Diatas 1.5 Meter	Btg	 Rp223,200 
+M.448	Palem Besar Palem Sadeng (Saribus Rotundifolius) Dia. 25-30cm. Tinggi Diatas 1.5 Meter	Btg	 Rp255,100 
+M.449	Perekat Campuran Hydroseeding	Kg	 Rp127,600 
+M.450	Perekat Matras Perkuatan (Lem)	Kg	 Rp127,600 
+M.451	Pupuk Anorganik	Kg	 Rp38,300 
+M.452	Pupuk Anorganik (Ex : NPK)	m3	 Rp255,100 
+M.453	Pupuk Organik	Kg	 Rp25,600 
+M.454	Pupuk Organik	m3	 Rp255,100 
+M.455	Pupuk Organik: 20%	m3	 Rp267,800 
+M.456	Pasir	m3	 Rp165,800 
+M.457	Pasir/Kompos/Material Perbaikan Tanah: 5%	m3	 Rp178,600 
+M.458	Pasir/Kompos/Material Perbaikan Tanah: 10%	m3	 Rp191,300 
+M.459	Pucuk Merah (Syzigium Oleina) Dia. 2-3cm	Btg	 Rp95,600 
+M.460	Pulai (Alstonia Scholaris) Dia. 20-25cm Tinggi Diatas 6	Btg	 Rp637,700 
+M.461	Trembesi (Samanea Saman) Dia. 25-30cm. Tinggi Diatas 6 Meter	Btg	 Rp637,700 
+	 HARGA BAHAN PINTU KUSEN DAN JENDELA		 Rp- 
+M.462	Door Closer	Set	 Rp95,600 
+M.463	Door Closer	Buah	 Rp95,600 
+M.464	Door Holder	Buah	 Rp114,700 
+M.465	Door Stop	Buah	 Rp191,300 
+M.466	Engsel	Buah	 Rp44,600 
+M.467	Engsel Angin	Buah	 Rp38,300 
+M.468	Engsel Casement 8 Inch	Set	 Rp82,900 
+M.469	Engsel Casement 10 Inch	Set	 Rp95,600 
+M.470	Engsel Casement 12 Inch	Set	 Rp121,200 
+M.471	Engsel Casement 14 Inch	Set	 Rp159,500 
+M.472	Engsel Casement 16 Inch	Set	 Rp233,300 
+M.473	Engsel Casement 20 Inch	Set	 Rp286,900 
+M.474	Engsel Kupu-kupu 3 Inch	Buah	 Rp25,700 
+M.475	Engsel Kupu-kupu 4 Inch	Buah	 Rp34,300 
+M.476	Engsel Pintu	Buah	 Rp31,900 
+M.477	Floor Hinge	Buah	 Rp1,211,500 
+M.478	Folding Door PVC	m2	 Rp542,000 
+M.479	Grendel	Buah	 Rp70,200 
+M.480	Grendel Tanam	Buah	 Rp95,600 
+M.481	Jalusi Aluminium	m2	 Rp446,400 
+M.482	Kaca Buram 12mm	m2	 Rp395,400 
+M.483	Kaca Cermin 5mm	m2	 Rp95,600 
+M.484	Kaca Cermin 8mm	m2	 Rp127,600 
+M.485	Kaca Laminated 8mm	m2	 Rp191,300 
+M.486	Kaca Laminated 12mm	m2	 Rp223,200 
+M.487	Kaca Patri 5mm	m2	 Rp223,200 
+M.488	Kaca Polos 3mm	m2	 Rp98,200 
+M.489	Kaca Polos 5mm	m2	 Rp136,300 
+M.490	Kaca Polos 6mm	m2	 Rp192,600 
+M.491	Kaca Polos 8mm	m2	 Rp282,400 
+M.492	Kaca Tebal 3mm	m2	 Rp121,200 
+M.493	Kaca Tebal 5mm	m2	 Rp159,500 
+M.494	Kaca Tebal 8mm	m2	 Rp191,300 
+M.495	Kaca Tempered 8mm	m2	 Rp1,512,900 
+M.496	Kaca Tempered 12mm	m2	 Rp1,929,000 
+M.497	Kaca Wireglassed 5mm	m2	 Rp223,200 
+M.498	Kait Angin	Buah	 Rp45,900 
+M.499	Kunci Lemari	Set	 Rp127,600 
+M.500	Kunci Silinder	Buah	 Rp191,300 
+M.501	Kunci Slot	Buah	 Rp17,900 
+M.502	Kunci Tanam Antik	Buah	 Rp223,200 
+M.503	Kunci Tanam Biasa	Buah	 Rp275,100 
+M.504	Kunci Tanam KM	Buah	 Rp223,200 
+M.505	Kusen Aluminium 3 Inch	m1	 Rp254,900 
+M.506	Kusen Aluminium 4 Inch	m1	 Rp281,100 
+M.507	Profil Aluminium	m1	 Rp249,600 
+M.508	Profil Aluminium 4 Inch	m1	 Rp377,500 
+M.509	Profil Kaca	m1	 Rp325,200 
+M.510	Profil Kaca Tebal 6mm	m2	 Rp573,800 
+M.511	Profil Selimar Aluminium	m1	 Rp146,600 
+M.512	Rel Pintu Dorong	Set	 Rp272,900 
+M.513	Rel Pintu Sorong	Set	 Rp272,900 
+M.514	Rolling Door Aluminium	m2	 Rp892,800 
+M.515	Rolling Door Besi	m2	 Rp956,500 
+M.516	Sealant	Tube	 Rp45,800 
+M.517	Sealtape	Buah	 Rp12,700 
+M.518	Silicone Sealant 300 ml	Tube	 Rp48,400 
+M.519	Skrup Fixer	Buah	 Rp900 
+M.520	Spring knip	Buah	 Rp9,600 
+M.521	Frame Aluminium	m1	 Rp234,600 
+M.522	Frame Alluminium L.10.1	Kg	 Rp31,300 
+M.523	Frame Besi Kaca Naco	Daun	 Rp95,600 
+M.524	Pintu Panel Kayu Lampis Timbal Uk. 1x2m	Unit	 Rp1,020,200 
+M.525	Pintu Tahan Api	Unit	 Rp1,530,300 
+M.526	Pintu Kubikel	Set	 Rp242,300 
+	 HARGA BAHAN ELEKTRIKAL		 Rp- 
+M.527	Klem	Buah	 Rp100 
+M.528	Klem 20mm	Buah	 Rp25,600 
+M.529	L Bow	Buah	 Rp3,900 
+M.530	Las Dop	Buah	 Rp1,400 
+M.531	T Dus	Buah	 Rp5,700 
+M.532	Fischer S6 + Sekrup	Buah	 Rp400 
+M.533	Isolasi	m1	 Rp200 
+M.534	Saklar Tunggal dan Aksesoris	Buah	 Rp28,000 
+M.535	Saklar Ganda dan Aksesoris	Buah	 Rp33,400 
+M.536	Saklar Triple dan Aksesoris	Buah	 Rp49,000 
+M.537	5/8" Driving Stud dan Aksesoris	Unit	 Rp105,100 
+M.538	5/8" Rod Coupling dan Aksesoris	Btg	 Rp39,700 
+M.539	Air Terminal @ 1.000 mm dan Aksesoris	Unit	 Rp- 
+M.540	Base Air Terminal dan Aksesoris	Unit	 Rp583,700 
+M.541	Batang Tembaga Pembumian Dia. 5/8 Inch (Kedalaman Min. 12 m)	Btg	 Rp2,801,500 
+M.542	Bimetallic Connector dan Aksesoris	Unit	 Rp58,400 
+M.543	Clamp BC L Uk. BC 70mm2 dan Aksesoris	Unit	 Rp9,300 
+M.544	Clamp PVC 1" dan Aksesoris	Unit	 Rp1,400 
+M.545	Coupling Bonding Grounded Rod 70 mm2 dan Aksesoris	Unit	 Rp116,700 
+M.546	Cooper Air Terminal Base 15mm (Dudukan) dan Aksesoris	Unit	 Rp291,800 
+M.547	DC Clip Non Metalic Clamp dan Aksesoris	Unit	 Rp17,500 
+M.548	Downlight 5 Inch 14.5 Watt LED dan Aksesoris	Buah	 Rp128,400 
+			 Rp- 
+M.549	Kabel BCC		 Rp- 
+M.550	BCC 4 mm2 (0.04 Kg/m1) dan Aksesoris	m1	 Rp8,200 
+M.551	BCC 6 mm2 (0.06 Kg/m1) dan Aksesoris	m1	 Rp10,500 
+M.552	BCC 10 mm2 (0.10 Kg/m1) dan Aksesoris	m1	 Rp26,800 
+M.553	BCC 16 mm2 (0.16 Kg/m1) dan Aksesoris	m1	 Rp42,000 
+M.554	BCC 25 mm2 (0.25 Kg/m1) dan Aksesoris	m1	 Rp116,700 
+M.555	BCC 35 mm2 (0.35 Kg/m1) dan Aksesoris	m1	 Rp140,100 
+M.556	BCC 50 mm2 (0.50 Kg/m1) dan Aksesoris	m1	 Rp145,900 
+M.557	BCC 70 mm2 (0.70 Kg/m1) dan Aksesoris	m1	 Rp151,700 
+M.558	BCC 95 mm2 (0.95 Kg/m1) dan Aksesoris	m1	 Rp210,100 
+			 Rp- 
+M.559	Kabel Coaxial		 Rp- 
+M.560	Coaxial	m1	 Rp2,900 
+M.561	Coaxial 7C-2V dan Aksesoris	m1	 Rp22,600 
+M.562	Conduit 20mm	m1	 Rp5,800 
+M.563	Conduit HI 20 mm	m1	 Rp8,200 
+M.564	Fitting E27 dan Aksesoris	Buah	 Rp19,800 
+M.565	Flexible Conduit 20mm	m1	 Rp6,700 
+M.566	Flexible Conduit 20mm	Buah	 Rp332,700 
+			 Rp- 
+M.567	Kabel FRC		 Rp- 
+M.568	FRC 1 x 150 mm2 dan Aksesoris	m1	 Rp350,200 
+M.569	FRC 2 x 1.5 mm2 dan Aksesoris	m1	 Rp29,200 
+M.570	FRC 2 x 1.5 mm2 + PVC Conduit HI 20 mm2 dan Aksesoris	m1	 Rp35,000 
+M.571	FRC 2 x 2.5 mm2 + PVC Conduit HI 20 mm2 dan Aksesoris	m1	 Rp40,900 
+M.572	FRC 3 x 2.5 mm2 dan Aksesoris	m1	 Rp42,000 
+M.573	FRC 4 x 4 mm2 dan Aksesoris	m1	 Rp105,100 
+M.574	FRC 4 x 6 mm2 dan Aksesoris	m1	 Rp154,100 
+M.575	FRC 4 x 150 mm2 dan Aksesoris	m1	 Rp1,400,800 
+M.576	Genset Kap : 75 kVA Silent Type dan Aksesoris	Buah	 Rp105,057,000 
+M.577	Genset Kap : 100 kVA Silent Type dan Aksesoris	Buah	 Rp426,064,500 
+M.578	Genset Kap : 400 kVA Silent Type dan Aksesoris	Buah	 Rp992,205,000 
+M.579	Grid Switch 2 x 2 dan Aksesoris	Buah	 Rp93,400 
+M.580	Grid Switch 2 x 12 dan Aksesoris	Buah	 Rp309,300 
+M.581	Grid Switch 2 x 14 dan Aksesoris	Buah	 Rp787,900 
+M.582	Grid Switch 2 x 24 dan Aksesoris	Buah	 Rp1,167,300 
+M.583	Grid Switch 4 x 2 Gang dan Aksesoris	Buah	 Rp175,100 
+M.584	Grounding Test Box dan Aksesoris	Unit	 Rp817,100 
+M.585	Hand Pump Solar dan Aksesoris	Buah	 Rp23,300 
+M.586	Kabel Skun 95 mm2	m1	 Rp17,500 
+M.587	kWh Meter Token 1 Phase dan Aksesoris	Unit	 Rp700,400 
+M.588	kWh Meter Token 3 Phase dan Aksesoris	Unit	 Rp1,167,300 
+			 Rp- 
+M.589	Kabel ITC		 Rp- 
+M.590	ITC 2 x 2 x 0.6 mm2	m1	 Rp64,200 
+M.591	ITC 2 x 2 x 0.6 mm2 + PVC Conduit HI 20 mm2 dan Aksesoris	m1	 Rp70,000 
+			 Rp- 
+M.592	Kabel Ladder		 Rp- 
+M.593	Ladder 500 x 100 mm dan Aksesoris	m1	 Rp324,100 
+M.594	Ladder 600 x 100 mm dan Aksesoris	m1	 Rp350,200 
+M.595	Ladder 800 x 100 mm dan Aksesoris	m1	 Rp450,600 
+M.596	Lampu LED E27 10 Watt dan Aksesoris	Buah	 Rp58,400 
+M.597	Lampu LED E27 19 Watt dan Aksesoris	Buah	 Rp99,200 
+M.598	Lampu Sorot LED 100 Watt dan Aksesoris	Unit	 Rp70,000 
+M.599	Lampu Sorot RGB 30 Watt untuk Outdoor dan Aksesoris	Unit	 Rp93,400 
+M.600	Lampu High Bay 100 Watt dan Aksesoris	Unit	 Rp204,300 
+M.601	Lampu Eksit LED 3 Watt c/w Battery dan Aksesoris	Unit	 Rp116,700 
+M.602	Lampu TLED 1 x 14 Watt 2.100 Lumen (Dust Proof) dan Aksesoris	Unit	 Rp321,000 
+M.603	Lampu TLED 1 x 24 Watt 2.100 Lumen (Balk) dan Aksesoris	Unit	 Rp- 
+M.604	Lampu TLED 2 x 24 Watt 2.100 Lumen (Balk) dan Aksesoris	Unit	 Rp- 
+M.605	Lampu PJU LED 50 Watt dan Aksesoris	Unit	 Rp866,100 
+M.606	Lampu PJU LED 50 Watt + Solar Cell dan Aksesoris	Unit	 Rp3,326,800 
+M.607	Lampu Taman 25 Watt + Tiang 1 M	Unit	 Rp321,000 
+M.608	Material Bantu Pembumian Sistem Elektrikal	Lot	 Rp- 
+M.609	MCB Box dan Aksesoris	Unit	 Rp116,700 
+M.610	MDP Floor Standing Termasuk Material Bantu/Aksesoris	Unit	 Rp6,070,000 
+M.611	MDP Wall Mounted Termasuk Material Bantu/Aksesoris	Unit	 Rp22,178,700 
+M.612	Nicad Battery dan Aksesoris	Buah	 Rp175,100 
+			 Rp- 
+M.613	Kabel NYA		 Rp- 
+M.614	NYA 1 x 1.5 mm2 dan Aksesoris	m1	 Rp3,700 
+M.615	NYA 1 x 2.5 mm2 dan Aksesoris	m1	 Rp5,500 
+M.616	NYA 1 x 4 mm2 dan Aksesoris	m1	 Rp9,700 
+M.617	NYA 1 x 6 mm2 dan Aksesoris	m1	 Rp17,500 
+M.618	NYA 1 x 10 mm2 dan Aksesoris	m1	 Rp24,500 
+M.619	NYA 1 x 16 mm2 dan Aksesoris	m1	 Rp46,700 
+M.620	NYA 2 x 1.5 mm2	m1	 Rp14,000 
+M.621	NYA 2 x 1.5 mm2 dan Aksesoris	m1	 Rp- 
+M.622	NYA 2 x 1.5 mm2 + PVC Conduit HI 20 mm2 dan Aksesoris	m1	 Rp- 
+M.623	NYA 3 x 1.5 mm2 + PVC Conduit HI 20 mm2 dan Aksesoris	m1	 Rp30,300 
+			 Rp- 
+M.624	Kabel NYFGBY		 Rp- 
+M.625	NYFGBY 2 x 1.5 mm2 dan Aksesoris	m1	 Rp35,000 
+M.626	NYFGBY 2 x 2.5 mm2 dan Aksesoris	m1	 Rp46,700 
+M.627	NYFGBY 2 x 4 mm2 dan Aksesoris	m1	 Rp54,900 
+M.628	NYFGBY 2 x 6 mm2 dan Aksesoris	m1	 Rp70,000 
+M.629	NYFGBY 2 x 10 mm2 dan Aksesoris	m1	 Rp99,200 
+M.630	NYFGBY 2 x 16 mm2 dan Aksesoris	m1	 Rp122,600 
+M.631	NYFGBY 3 x 1.5 mm2 dan Aksesoris	m1	 Rp40,900 
+M.632	NYFGBY 3 x 2.5 mm2 dan Aksesoris	m1	 Rp46,700 
+M.633	NYFGBY 3 x 4 mm2 dan Aksesoris	m1	 Rp60,700 
+M.634	NYFGBY 3 x 6 mm2 dan Aksesoris	m1	 Rp81,700 
+M.635	NYFGBY 3 x 10 mm2 dan Aksesoris	m1	 Rp115,600 
+M.636	NYFGBY 3 x 16 mm2 dan Aksesoris	m1	 Rp186,800 
+M.637	NYFGBY 4 x 1.5 mm2 dan Aksesoris	m1	 Rp46,700 
+M.638	NYFGBY 4 x 2.5 mm2 dan Aksesoris	m1	 Rp50,200 
+M.639	NYFGBY 4 x 4 mm2 dan Aksesoris	m1	 Rp74,700 
+M.640	NYFGBY 4 x 6 mm2 dan Aksesoris	m1	 Rp100,400 
+M.641	NYFGBY 4 x 10 mm2 dan Aksesoris	m1	 Rp140,100 
+M.642	NYFGBY 4 x 16 mm2 dan Aksesoris	m1	 Rp241,600 
+M.643	NYFGBY 4 x 25 mm2 dan Aksesoris	m1	 Rp347,900 
+M.644	NYFGBY 4 x 35 mm2 dan Aksesoris	m1	 Rp471,600 
+M.645	NYFGBY 4 x 50 mm2 dan Aksesoris	m1	 Rp700,400 
+M.646	NYFGBY 4 x 70 mm2 dan Aksesoris	m1	 Rp805,400 
+M.647	NYFGBY 4 x 95 mm2 dan Aksesoris	m1	 Rp1,062,200 
+M.648	NYFGBY 4 x 120 mm2 dan Aksesoris	m1	 Rp1,473,100 
+M.649	NYFGBY 4 x 150 mm2 dan Aksesoris	m1	 Rp1,803,500 
+M.650	NYFGBY 4 x 185 mm2 dan Aksesoris	m1	 Rp2,241,200 
+M.651	NYFGBY 4 x 240 mm2 dan Aksesoris	m1	 Rp2,918,300 
+M.652	NYFGBY 4 x 300 mm2 dan Aksesoris	m1	 Rp3,636,100 
+M.653	NYFGBY 4 x 400 mm2 dan Aksesoris	m1	 Rp- 
+			 Rp- 
+M.654	Kabel NYM		 Rp- 
+M.655	NYM 2 x 1.5 mm2 dan Aksesoris	m1	 Rp13,000 
+M.656	NYM 2 x 2.5 mm2 dan Aksesoris	m1	 Rp17,900 
+M.657	NYM 2 x 4 mm2 dan Aksesoris	m1	 Rp27,400 
+M.658	NYM 2 x 6 mm2 dan Aksesoris	m1	 Rp30,300 
+M.659	NYM 2 x 10 mm2 dan Aksesoris	m1	 Rp56,000 
+M.660	NYM 3 x 1.5 mm2 dan Aksesoris	m1	 Rp16,300 
+M.661	NYM 3 x 2.5 mm2 dan Aksesoris	m1	 Rp23,300 
+M.662	NYM 3 x 2.5 mm2 (LSOH) dan Aksesoris	m1	 Rp24,500 
+M.663	NYM 3 x 4 mm2 dan Aksesoris	m1	 Rp37,900 
+M.664	NYM 3 x 6 mm2 dan Aksesoris	m1	 Rp58,400 
+M.665	NYM 3 x 10 mm2 dan Aksesoris	m1	 Rp81,700 
+M.666	NYM 4 x 1.5 mm2 dan Aksesoris	m1	 Rp25,100 
+M.667	NYM 4 x 2.5 mm2 dan Aksesoris	m1	 Rp35,000 
+M.668	NYM 4 x 4 mm2 dan Aksesoris	m1	 Rp51,400 
+M.669	NYM 4 x 6 mm2 dan Aksesoris	m1	 Rp77,400 
+M.670	NYM 4 x 10 mm2 dan Aksesoris	m1	 Rp145,900 
+M.671	NYM 4 x 16 mm2 dan Aksesoris	m1	 Rp201,900 
+			 Rp- 
+M.672	Kabel NYMHY		 Rp- 
+M.673	NYMHY 2 x 1.5 mm2	m1	 Rp12,800 
+M.674	NYMHY 2 x 1.5 mm2 dan Aksesoris	m1	 Rp12,800 
+M.675	NYMHY 2 x 2.5 mm2 dan Aksesoris	m1	 Rp20,400 
+M.676	NYMHY 3 x 1.5 mm2 dan Aksesoris	m1	 Rp19,400 
+M.677	NYMHY 3 x 2.5 mm2 dan Aksesoris	m1	 Rp28,000 
+M.678	NYMHY 3 x 1.5 mm2 + PVC Conduit HI 20 mm2 dan Aksesoris	m1	 Rp30,300 
+M.679	NYMHY 2 (3 x 1.5 mm2) + PVC Conduit HI 20 mm2 dan Aksesoris	m1	 Rp30,300 
+M.680	NYMHY 4 x 2.5 mm2 dan Aksesoris	m1	 Rp38,800 
+			 Rp- 
+M.681	Kabel NYY		 Rp- 
+M.682	NYY 1 x 4 mm2 dan Aksesoris	m1	 Rp9,900 
+M.683	NYY 1 x 6 mm2 dan Aksesoris	m1	 Rp15,600 
+M.684	NYY 1 x 10 mm2 dan Aksesoris	m1	 Rp29,200 
+M.685	NYY 1 x 16 mm2 dan Aksesoris	m1	 Rp52,500 
+M.686	NYY 1 x 25 mm2 dan Aksesoris	m1	 Rp81,700 
+M.687	NYY 1 x 35 mm2 dan Aksesoris	m1	 Rp105,100 
+M.688	NYY 1 x 50 mm2 dan Aksesoris	m1	 Rp140,100 
+M.689	NYY 1 x 70 mm2 dan Aksesoris	m1	 Rp198,400 
+M.690	NYY 1 x 95 mm2 dan Aksesoris	m1	 Rp268,500 
+M.691	NYY 1 x 120 mm2 dan Aksesoris	m1	 Rp338,500 
+M.692	NYY 1 x 150 mm2 dan Aksesoris	m1	 Rp420,200 
+M.693	NYY 1 x 185 mm2 dan Aksesoris	m1	 Rp466,900 
+M.694	NYY 1 x 250 mm2 dan Aksesoris	m1	 Rp677,000 
+M.695	NYY 1 x 300 mm2 dan Aksesoris	m1	 Rp875,500 
+M.696	NYY 1 x 400 mm2 dan Aksesoris	m1	 Rp1,085,600 
+M.697	NYY 1 x 500 mm2 dan Aksesoris	m1	 Rp1,400,800 
+M.698	NYY 1 x 630 mm2 dan Aksesoris	m1	 Rp1,546,700 
+M.699	NYY 2 x 1.5 mm2 dan Aksesoris	m1	 Rp16,200 
+M.700	NYY 2 x 2.5 mm2 dan Aksesoris	m1	 Rp23,300 
+M.701	NYY 2 x 4 mm2 dan Aksesoris	m1	 Rp29,200 
+M.702	NYY 2 x 6 mm2 dan Aksesoris	m1	 Rp44,400 
+M.703	NYY 2 x 10 mm2 dan Aksesoris	m1	 Rp87,500 
+M.704	NYY 2 x 16 mm2 dan Aksesoris	m1	 Rp105,100 
+M.705	NYY 3 x 1.5 mm2 dan Aksesoris	m1	 Rp32,700 
+M.706	NYY 3 x 2.5 mm2 dan Aksesoris	m1	 Rp40,900 
+M.707	NYY 3 x 4 mm2 dan Aksesoris	m1	 Rp58,400 
+M.708	NYY 3 x 6 mm2 dan Aksesoris	m1	 Rp75,900 
+M.709	NYY 3 x 10 mm2 dan Aksesoris	m1	 Rp169,300 
+M.710	NYY 3 x 16 mm2 dan Aksesoris	m1	 Rp256,800 
+M.711	NYY 3 x 25 mm2 dan Aksesoris	m1	 Rp303,500 
+M.712	NYY 3 x 35 mm2 dan Aksesoris	m1	 Rp321,000 
+M.713	NYY 3 x 50 mm2 dan Aksesoris	m1	 Rp361,900 
+M.714	NYY 4 x 1.5 mm2 dan Aksesoris	m1	 Rp29,200 
+M.715	NYY 4 x 2.5 mm2 dan Aksesoris	m1	 Rp42,000 
+M.716	NYY 4 x 4 mm2 dan Aksesoris	m1	 Rp53,700 
+M.717	NYY 4 x 6 mm2 dan Aksesoris	m1	 Rp89,900 
+M.718	NYY 4 x 10 mm2 dan Aksesoris	m1	 Rp137,700 
+M.719	NYY 4 x 16 mm2 dan Aksesoris	m1	 Rp204,300 
+M.720	NYY 4 x 25 mm2 dan Aksesoris	m1	 Rp265,000 
+M.721	NYY 4 x 35 mm2 dan Aksesoris	m1	 Rp343,200 
+M.722	NYY 4 x 50 mm2 dan Aksesoris	m1	 Rp484,400 
+M.723	NYY 4 x 70 mm2 dan Aksesoris	m1	 Rp642,000 
+M.724	NYY 4 x 95 mm2 dan Aksesoris	m1	 Rp980,500 
+M.725	NYY 4 x 120 mm2 dan Aksesoris	m1	 Rp1,470,800 
+M.726	NYY 4 x 150 mm2 dan Aksesoris	m1	 Rp1,715,900 
+M.727	NYY 4 x 185 mm2 dan Aksesoris	m1	 Rp2,206,200 
+M.728	NYY 4 x 240 mm2 dan Aksesoris	m1	 Rp2,941,600 
+M.729	NYY 4 x 300 mm2 dan Aksesoris	m1	 Rp3,677,000 
+M.730	NYY 4 x 400 mm2 dan Aksesoris	m1	 Rp4,669,200 
+			 Rp- 
+M.731	PC Server Termasuk OS Windows Server, Monitor, Keyboard, Mouse dan Aksesoris	Buah	 Rp9,338,400 
+M.732	PC Komputer dan Aksesoris	Unit	 Rp9,338,400 
+M.733	"Panel Kontrol Panel Kontrol Fan
+Presurisasi Termasuk Material Bantu/Aksesoris"	Unit	 Rp- 
+M.734	Panel Kontrol IPAL Termasuk Material Bantu/Aksesoris	Unit	 Rp7,003,800 
+M.735	Panel Kontrol Pompa Chiller Termasuk Material Bantu/Aksesoris	Unit	 Rp4,669,200 
+M.736	Panel Kontrol Pompa Cooling Tower Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.737	Panel Kontrol Pompa Kolam Renang Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.738	Panel Kontrol Pompa Transfer Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.739	Panel Kontrol WTP Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.740	Panel kWh Meter Rermasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.741	Panel Lantai Wall Mounted Uk. 600x400x200mm Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.742	Panel Lantai Wall Mounted Uk. 800x600x200mm Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.743	Panel Penerangan Luar Outdoor Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.744	Panel Power AC (VRF/DX System) Termasuk Material Bantu/Aksesoris	Unit	 Rp32,684,400 
+M.745	Panel Power Chiller Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.746	Panel Power AHU Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.747	Panel Power Elektronik Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.748	Panel Power Gondola Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.749	Panel Power Lift Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.750	Pantek (Kedalaman Min. 12m)	Lot	 Rp- 
+M.751	Pelindung Lampu	Unit	 Rp- 
+M.752	Polymer Inspection Pit dan Aksesoris	Unit	 Rp- 
+M.753	RM TKI 2 x 16 Watt LED dan Aksesoris	Unit	 Rp466,900 
+M.754	Rod Coupling	Buah	 Rp105,100 
+M.755	Rod to Cable Clamp (Type GUV) dan Aksesoris	Unit	 Rp315,200 
+M.756	Sensor Cahaya dan Aksesoris	Unit	 Rp- 
+M.757	Sensor Gerak dan Aksesoris	Unit	 Rp- 
+M.758	Square Tape Clamp dan Aksesoris	Unit	 Rp- 
+			 Rp- 
+M.759	Kabel STP		 Rp- 
+M.760	Kabel STP AWG 18 1 Pair	m1	 Rp14,100 
+M.761	STP AWG 18 + PVC Conduit HI 20 mm2 (Dari MCFA ke TB) dan Aksesoris	m1	 Rp23,500 
+M.762	SDP Floor Standing Termasuk Material Bantu/Aksesoris	Unit	 Rp145,900 
+M.763	SDP Wall Mounted Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.764	Socket Conduit 20mm	Buah	 Rp1,200 
+M.765	Software Sistem Offline/Online untuk kWh Meter Swakelola Prabayar	Buah	 Rp- 
+M.766	Stop Kontak 1 P. 10 A. 200 W dan Aksesoris	Buah	 Rp- 
+M.767	Stop Kontak 1 P. 10 A. 200 W + Cover dan Aksesoris	Buah	 Rp- 
+M.768	Stop Kontak AC dan Aksesoris	Buah	 Rp116,700 
+M.769	Stop Kontak Hand Dryer 1 Ph 1.000 W dan Aksesoris	Buah	 Rp- 
+M.770	Tangki Solar Harian 500 Liter dan Aksesoris	Buah	 Rp- 
+M.771	Terminal Busbar Uk. 300x50x5mm	Buah	 Rp- 
+M.772	Trafo Kap : 500 KVA ; Synthetic Oil Ester (Termasuk Terminasi Instalasi Trafo) dan Aksesoris	Unit	 Rp- 
+M.773	Tiang PJU Kawasan 6-7 M (Hexagonal Ketebalan Plat 3 mm) + Pondasi dan Aksesoris	Unit	 Rp- 
+			 Rp- 
+M.774	Kabel Tray		 Rp- 
+M.775	Tray (Horizontal) 600 x 100 mm dan Aksesoris	m1	 Rp466,900 
+M.776	Tray (Horizontal) 500 x 100 mm dan Aksesoris	m1	 Rp324,300 
+M.777	Tray (Horizontal) 400 x 100 mm dan Aksesoris	m1	 Rp215,200 
+M.778	Tray (Horizontal) 300 x 100 mm dan Aksesoris	m1	 Rp182,100 
+M.779	Tray (Horizontal) 200 x 100 mm dan Aksesoris	m1	 Rp143,600 
+M.780	Tray (Vertikal) 600 x 100 mm dan Aksesoris	m1	 Rp466,900 
+M.781	Tray (Vertikal) 500 x 100 mm dan Aksesoris	m1	 Rp324,300 
+M.782	Tray (Vertikal) 400 x 100 mm dan Aksesoris	m1	 Rp215,200 
+M.783	Tray (Vertikal) 300 x 100 mm dan Aksesoris	m1	 Rp182,100 
+M.784	Tray (Vertikal) 200 x 100 mm dan Aksesoris	m1	 Rp143,600 
+M.785	UPS 5 KVA/3P Tipe Online Back Up Battery 15 Menit dan Aksesoris	Unit	 Rp70,038,000 
+			 Rp- 
+M.786	Kabel UTP		 Rp- 
+M.787	UTP CAT 6	m1	 Rp8,700 
+M.788	UTP CAT 6 + PVC Conduit HI 20 mm2 dan Aksesoris	m1	 Rp14,600 
+M.789	PUTM Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+M.790	PUTR per Kubikal Termasuk Material Bantu/Aksesoris	Unit	 Rp- 
+ HARGA BAHAN SISTEM ALARM KEBAKARAN, CCTV, TATA SUARA, TELEPON, DATA DAN INTERNET, MATV			 Rp- 
+M.791	MCP-FA (Semi Addressable 1 Loop) dan A	Unit	 Rp- 
+M.792	"Programming, Testing
+& Commisioning"	Lot	 Rp- 
+M.793	Alarm Bell dan Aksesoris	Unit	 Rp- 
+M.794	Alarm Printer dan Aksesoris	Unit	 Rp- 
+M.795	Report Printer dan Aksesoris	Unit	 Rp- 
+M.796	Announciator dan Aksesoris	Unit	 Rp- 
+M.797	Terminal Box Fire Alarm (Lengkap dengan Modul) dan Aksesoris	Unit	 Rp210,100 
+M.798	Smoke Detector Addressable dan Aksesoris	Unit	 Rp642,000 
+M.799	Smoke Detector Konvensional dan Aksesoris	Unit	 Rp350,200 
+M.800	Rate of Rise Detector Addressable dan Aksesoris	Unit	 Rp350,200 
+M.801	Fix Heat Detector Addressable dan Aksesoris	Unit	 Rp350,200 
+M.802	Rate of Rise Detector Konvensional dan Aksesoris	Unit	 Rp116,700 
+M.803	Fix Heat Detector Konvensional dan Aksesoris	Unit	 Rp116,700 
+M.804	Lamp Indicator dan Aksesoris	Unit	 Rp- 
+M.805	Manual Break Glass dan Aksesoris	Unit	 Rp116,700 
+M.806	Horn Strobe dan Aksesoris	Unit	 Rp233,500 
+M.807	Fire Fighting Telepon dan Aksesoris	Unit	 Rp256,800 
+			 Rp- 
+M.808	Patch Panel UTP Cat 6 4 Port dan Aksesoris	Unit	 Rp- 
+M.809	Wiring Management dan Aksesoris	Unit	 Rp140,100 
+M.810	PoE Switch HUB dan Aksesoris	Unit	 Rp350,200 
+M.811	Network Video Recorder (NVR) Kapasitas 32 Channel dan Aksesoris	Unit	 Rp3,501,900 
+M.812	Rak 19" 12 U Lengkap dengan Power Outlet dan Aksesoris	Unit	 Rp- 
+M.813	LCD Monitor 32 Inch dan Aksesoris	Unit	 Rp2,918,300 
+M.814	LED Monitor 50 Inch dan Aksesoris	Unit	 Rp5,836,500 
+M.815	Bracket	Unit	 Rp583,700 
+M.816	Keyboard + Mouse dan Aksesoris	Unit	 Rp233,500 
+M.817	Indoor Fix Dome IP Camera dan Aksesoris	Unit	 Rp700,400 
+M.818	Outdoor Fix Dome IP Camera dan Aksesoris	Unit	 Rp933,800 
+			 Rp- 
+M.819	MDF-SS dan Aksesoris	Unit	 Rp1,751,000 
+M.820	Selector Switch c/w Control Panel dan Aksesoris	Unit	 Rp- 
+M.821	Power Amplifier 360 Watt dan Aksesoris	Unit	 Rp5,252,900 
+M.822	Power Amplifier 240 Watt dan Aksesoris	Unit	 Rp4,085,600 
+M.823	Power Amplifier 120 Watt dan Aksesoris	Unit	 Rp2,918,300 
+M.824	System Controller (Mixer Pre Amp + Equalizer) dan Aksesoris	Unit	 Rp350,200 
+M.825	VCD/DVD/MP3/Mp4 dan Aksesoris	Unit	 Rp233,500 
+M.826	Sound Source dan Aksesoris	Unit	 Rp- 
+M.827	Automatic Alarm System dan Aksesoris	Unit	 Rp- 
+M.828	Paging Mic Keypad dan Aksesoris	Unit	 Rp1,167,300 
+M.829	UPS 1 KVA (Inverter, Rectifier, Battery Backup 4 Jam) dan Aksesoris	Unit	 Rp9,338,400 
+M.830	Rack Cabinet dan Aksesoris	Unit	 Rp- 
+M.831	Terminal Box Tata Suara (TBTS) dan Aksesoris	Unit	 Rp1,050,600 
+M.832	Ceilling Speaker dan Aksesoris	Unit	 Rp875,500 
+M.833	Wall Speaker dan Aksesoris	Unit	 Rp817,100 
+M.834	Horn Speaker dan Aksesoris	Unit	 Rp933,800 
+M.835	Tiang Horn Speaker	m1	 Rp- 
+			 Rp- 
+M.836	MDF 2 x 8 Pair dan Aksesoris	Unit	 Rp- 
+M.837	MDF 2 x 10 Pair dan Aksesoris	Unit	 Rp- 
+M.838	Pemasangan 1 Unit PABX Kap: 1 Line 10 Extension (Lengkap Dengan Pemrograman dan aksesoris)	Unit	 Rp- 
+M.839	Pemasangan 1 Unit PABX Kap: 1 Line 8 Extension (Lengkap Dengan Pemrograman dan Aksesoris)	Unit	 Rp- 
+M.840	Terminal Box Telepon dan Aksesoris	Unit	 Rp- 
+M.841	Outlet Telepon dan Aksesoris	Unit	 Rp- 
+			 Rp- 
+M.842	Server/Gateway c/w PC, Monitor, Keyboard, Mouse dan Aksesoris	Unit	 Rp17,509,500 
+M.843	Main Switch HUB 24 Port dan Aksesoris	Unit	 Rp2,334,600 
+M.844	Main Switch HUB 12 Port dan Aksesoris	Unit	 Rp583,700 
+M.845	Router Broadband dan Aksesoris	Unit	 Rp233,500 
+M.846	Fire Wall + Anti Virus dan Aksesoris	Unit	 Rp233,500 
+M.847	Outlet Data dan Aksesoris	Unit	 Rp105,100 
+M.848	Patch Cord dan Aksesoris	Unit	 Rp35,000 
+M.849	Patch Panel 24 Port dan Aksesoris	Unit	 Rp583,700 
+M.850	Wifi Access Point (Wifi 6 Radius 50 M) dan Aksesoris	Unit	 Rp583,700 
+			 Rp- 
+M.851	Connector	Buah	 Rp- 
+M.852	Splitter TV 6 Port dan Aksesoris	Unit	 Rp192,600 
+M.853	Splitter TV 7 Port dan Aksesoris	Unit	 Rp210,100 
+M.854	Terminal Box TV dan Aksesoris	Unit	 Rp116,700 
+M.855	Antena UHF dan Aksesoris	Unit	 Rp175,100 
+M.856	Antena VHF dan Aksesoris	Unit	 Rp175,100 
+M.857	Tiang Antena	Buah	 Rp116,700 
+	 HARGA BAHAN SISTEM TATA UDARA		 Rp- 
+M.858	AC Wall Mounted Kap : 5.000 BTUH dan Aksesoris	Unit	 Rp4,085,600 
+M.859	AC Wall Mounted Kap : 6.500 BTUH dan Aksesoris	Unit	 Rp4,377,400 
+M.860	AC Wall Mounted Kap : 7.000 BTUH dan Aksesoris	Unit	 Rp4,669,200 
+M.861	AC Wall Mounted Kap : 9.000 BTUH dan Aksesoris	Unit	 Rp5,252,900 
+M.862	AC Wall Mounted Kap : 12.000 BTUH dan Aksesoris	Unit	 Rp6,128,300 
+M.863	AC Wall Mounted Kap : 24.000 BTUH dan Aksesoris	Unit	 Rp- 
+M.864	AC Wall Mounted Kap : 35.000 BTUH dan Aksesoris	Unit	 Rp- 
+M.865	PVC Conduit HI 20mm dan Aksesoris	m1	 Rp8,200 
+M.866	Ceilling Fan. 50 CFM dan Aksesoris	Unit	 Rp233,500 
+M.867	Ceilling Fan. 75 CFM dan Aksesoris	Unit	 Rp408,600 
+M.868	Ceilling Fan. 100 CFM dan Aksesoris	Unit	 Rp525,300 
+M.869	Ceilling Fan. 200 CFM dan Aksesoris	Unit	 Rp583,700 
+M.870	Inline Fan ; 500 CFM dan Aksesoris	Unit	 Rp817,100 
+M.871	Inline Fan ; 700 CFM dan Aksesoris	Unit	 Rp1,050,600 
+M.872	Axial Fan ; 2.600 CFM dan Aksesoris	Unit	 Rp4,610,800 
+M.873	Axial Fan ; 2.800 CFM dan Aksesoris	Unit	 Rp4,961,000 
+M.874	Axial Fan ; 3.200 CFM dan Aksesoris	Unit	 Rp4,961,000 
+M.875	Axial Fan ; 3.500 CFM dan Aksesoris	Unit	 Rp4,961,000 
+M.876	Axial Fan ; 4.000 CFM dan Aksesoris	Unit	 Rp5,661,400 
+M.877	Axial Fan ; 5.500 CFM dan Aksesoris	Unit	 Rp5,661,400 
+M.878	Rotary Fan dan Aksesoris	Unit	 Rp17,500 
+M.879	Ceilling Fan Rotary dan Aksesoris	Unit	 Rp- 
+M.880	Bifurcated; 1.500 CFM dan Aksesoris	Unit	 Rp- 
+M.881	Propeller 75 CFM dan Aksesoris	Unit	 Rp- 
+M.882	Propeller 100 CFM dan Aksesoris	Unit	 Rp- 
+M.883	Propeller 150 CFM dan Aksesoris	Unit	 Rp- 
+M.884	Propeller 375 CFM dan Aksesoris	Unit	 Rp- 
+M.885	Propeller 500 CFM dan Aksesoris	Unit	 Rp- 
+M.886	Propeller 600 CFM dan Aksesoris	Unit	 Rp- 
+M.887	Propeller 150 CFM dan Aksesoris	Unit	 Rp- 
+M.888	Intake Grille 600 x 300 mm dan Aksesoris	Unit	 Rp- 
+M.889	Intake Grille 650 x 350 mm dan Aksesoris	Unit	 Rp- 
+M.890	Intake Grille 800 x 350 mm dan Aksesoris	Unit	 Rp- 
+M.891	Intake Grille 800 x 400 mm dan Aksesoris	Unit	 Rp- 
+M.892	Intake Louvre 700 x 400 mm dan Aksesoris	Unit	 Rp- 
+M.893	Fan Louvre 750 x 400 mm dan Aksesoris	Unit	 Rp- 
+M.894	Fan Louvre 900 x 500 mm dan Aksesoris	Unit	 Rp- 
+M.895	Fan Louvre 1000 x 400 mm dan Aksesoris	Unit	 Rp- 
+M.896	Fan Louvre 1000 x 450 mm dan Aksesoris	Unit	 Rp- 
+M.897	Exhaust Grille 150 x 150 mm dan Aksesoris	Unit	 Rp163,400 
+M.898	Exhaust Grille 200 x 200 mm dan Aksesoris	Unit	 Rp268,500 
+M.899	Exhaust Grille 600 x 300 mm dan Aksesoris	Unit	 Rp- 
+M.900	Exhaust Grille 650 x 350 mm dan Aksesoris	Unit	 Rp- 
+M.901	Exhaust Grille 900 x 400 mm dan Aksesoris	Unit	 Rp- 
+M.902	Exhaust Louvre 200 x 200 mm dan Aksesoris	Unit	 Rp- 
+M.903	Exhaust Louvre 450 x 250 mm dan Aksesoris	Unit	 Rp- 
+M.904	Exhaust Louvre 400 x 300 mm dan Aksesoris	Unit	 Rp- 
+M.905	Exhaust Louvre 750 x 350 mm dan Aksesoris	Unit	 Rp- 
+M.906	Exhaust Louvre 800 x 400 mm dan Aksesoris	Unit	 Rp- 
+M.907	Exhaust Louvre 850 x 400 mm dan Aksesoris	Unit	 Rp- 
+M.908	Exhaust Louvre 900 x 500 mm dan Aksesoris	Unit	 Rp- 
+M.909	Exhaust Louvre 1000 x 400 mm dan Aksesoris	Unit	 Rp- 
+M.910	Exhaust Louvre 1000 x 450 mm dan Aksesoris	Unit	 Rp- 
+	 HARGA BAHAN DUCTING		 Rp- 
+M.911	BJLS 50 (Tanpa Isolasi)	m2	 Rp- 
+M.912	BJLS 60 (Tanpa Isolasi)	m2	 Rp- 
+M.913	BJLS 70 (Tanpa Isolasi)	m2	 Rp- 
+M.914	BJLS 80 (Tanpa Isolasi)	m2	 Rp- 
+M.915	BJLS 100 (Tanpa Isolasi)	m2	 Rp- 
+M.916	BJLS 50 (Isolasi Luar)	m2	 Rp- 
+M.917	BJLS 60 (Isolasi Luar)	m2	 Rp- 
+M.918	BJLS 70 (Isolasi Luar)	m2	 Rp- 
+M.919	BJLS 80 (Isolasi Luar)	m2	 Rp- 
+M.920	BJLS 100 (Isolasi Luar)	m2	 Rp- 
+M.921	BJLS 50 (Isolasi Luar Dalam)	m2	 Rp- 
+M.922	BJLS 60 (Isolasi Luar Dalam)	m2	 Rp- 
+M.923	BJLS 70 (Isolasi Luar Dalam)	m2	 Rp- 
+M.924	BJLS 80 (Isolasi Luar Dalam)	m2	 Rp- 
+M.925	BJLS 100 (Isolasi Luar Dalam)	m2	 Rp- 
+M.926	Flinkote	Lot	 Rp- 
+M.927	Finish Cat	Lot	 Rp- 
+M.928	Hanger + Support	Lot	 Rp- 
+M.929	Duct Tape	Roll	 Rp- 
+M.930	Pipa Tembaga B280 Dia. 6.4 mm (1/4") dan Aksesoris	m1	 Rp35,000 
+M.931	Pipa Tembaga B280 Dia. 9.5 mm (3/8") dan Aksesoris	m1	 Rp49,500 
+M.932	Pipa Tembaga B280 Dia. 12.7 mm (1/2") dan Aksesoris	m1	 Rp98,400 
+M.933	Pipa Tembaga B280 Dia. 15.9 mm (5/8") dan Aksesoris	m1	 Rp161,000 
+M.934	Pipa Tembaga B280 Dia. 19.1 mm (3/4") dan Aksesoris	m1	 Rp181,100 
+M.935	Pipa Tembaga B280 Dia. 22.2 mm (7/8") dan Aksesoris	m1	 Rp190,000 
+M.936	Pipa Tembaga B280 Dia. 25.4 mm (1") dan Aksesoris	m1	 Rp229,600 
+M.937	Pipa Tembaga B280 Dia. 28.6 mm (1-1/8") dan Aksesoris	m1	 Rp274,100 
+M.938	Pipa Tembaga B280 Dia. 34.9 mm (1-3/8") dan Aksesoris	m1	 Rp322,000 
+M.939	Pipa Tembaga B280 Dia. 41.3 mm (1-5/8") dan Aksesoris	m1	 Rp342,100 
+M.940	PIPA PVC AW ; Dia. 1/2" ; (15 mm) dan Aksesoris	m1	 Rp19,100 
+M.941	PIPA PVC AW ; Dia. 3/4" ; (20 mm) dan Aksesoris	m1	 Rp23,100 
+M.942	PIPA PVC AW ; Dia. 1" ; (25 mm) dan Aksesoris	m1	 Rp28,000 
+M.943	PIPA PVC AW ; Dia. 1-1/4" ; (32 mm) dan Aksesoris	m1	 Rp33,900 
+M.944	PIPA PVC AW ; Dia. 1-1/2" ; (40 mm) dan Aksesoris	m1	 Rp41,000 
+M.945	PIPA PVC AW ; Dia. 2" ; (50 mm) dan Aksesoris	m1	 Rp49,600 
+M.946	PIPA PVC AW ; Dia. 2-1/2" ; (65 mm) dan Aksesoris	m1	 Rp60,000 
+M.947	PIPA PVC AW ; Dia. 3" (80 mm) dan Aksesoris	m1	 Rp78,700 
+M.948	PIPA PVC AW ; Dia. 4" ; (100 mm) dan Aksesoris	m1	 Rp103,100 
+	 HARGA BAHAN SISTEM PROTEKSI KEBAKARAN		 Rp- 
+M.949	PRV SET Dia. 50 mm dan Aksesoris	Unit	 Rp- 
+M.950	PRV SET Dia. 65 mm dan Aksesoris	Unit	 Rp- 
+M.951	PRV SET Dia. 80 mm dan Aksesoris	Unit	 Rp- 
+M.952	PRV SET Dia. 100 mm dan Aksesoris	Unit	 Rp- 
+M.953	PRV SET Dia. 150 mm dan Aksesoris	Unit	 Rp- 
+M.954	PRV SET Dia. 200 mm dan Aksesoris	Unit	 Rp- 
+M.955	MCV Set dia. 80 mm dan Aksesoris	Unit	 Rp- 
+M.956	MCV Set dia. 100 mm dan Aksesoris	Unit	 Rp- 
+M.957	MCV Set dia. 150 mm dan Aksesoris	Unit	 Rp- 
+M.958	BCV Set dia. 50mm	Set	 Rp- 
+M.959	BCV Set dia. 65mm	Set	 Rp- 
+M.960	BCV Set dia. 80mm	Set	 Rp- 
+M.961	BCV Set dia. 100mm	Set	 Rp- 
+M.962	BCV Set dia. 150mm	Set	 Rp- 
+M.963	Butterfly Valve w/Temper Switch 50mm	Buah	 Rp- 
+M.964	Butterfly Valve w/Temper Switch 65mm	Buah	 Rp- 
+M.965	Butterfly Valve w/Temper Switch 80mm	Buah	 Rp- 
+M.966	Butterfly Valve w/Temper Switch 100mm	Buah	 Rp- 
+M.967	Butterfly Valve w/Temper Switch 150mm	Buah	 Rp- 
+M.968	Flow Switch dia. 50mm	Buah	 Rp- 
+M.969	Flow Switch dia. 65mm	Buah	 Rp- 
+M.970	Flow Switch dia. 80mm	Buah	 Rp- 
+M.971	Flow Switch dia. 100mm	Buah	 Rp- 
+M.972	Flow Switch dia. 150mm	Buah	 Rp- 
+M.973	Sigh Glass	Buah	 Rp- 
+M.974	Test Drain Valve	Buah	 Rp- 
+M.975	Coupling 1 Set	Set	 Rp- 
+M.976	Automatic Air Vent dia. 50 mm dan Aksesoris	Unit	 Rp- 
+M.977	Automatic Air Vent dia. 80 mm dan Aksesoris	Unit	 Rp- 
+M.978	Safety Valve dia. 100mm dan Aksesoris	Unit	 Rp- 
+M.979	Safety Valve dia. 150mm dan Aksesoris	Unit	 Rp- 
+M.980	Flow Meter Analog dia. 100mm dan Aksesoris	Unit	 Rp- 
+M.981	Flow Meter Analog dia. 200mm dan Aksesoris	Unit	 Rp- 
+M.982	Landing Valve 2.5" dan Aksesoris	Unit	 Rp- 
+M.983	Orifice Plate dia. 25mm dan Aksesoris	Unit	 Rp- 
+M.984	Sprinkler Head Pendant dan Aksesoris	Unit	 Rp- 
+M.985	Sprinkler Head Upright dan Aksesoris	Unit	 Rp- 
+M.986	Hydrant Pillar dan Aksesoris	Unit	 Rp- 
+M.987	Indoor Hydrant Box (IHB) dan Aksesoris	Unit	 Rp- 
+M.988	Outdoor Hydrant Box (OHB) dan Aksesoris	Unit	 Rp- 
+M.989	Siamesse Connection dan Aksesoris	Unit	 Rp- 
+M.990	Fire Extinguisher 3 Kg dan Aksesoris	Unit	 Rp- 
+M.991	Fire Extinguisher 5 Kg dan Aksesoris	Unit	 Rp- 
+M.992	Fire Extinguisher 25 Kg dan Aksesoris	Unit	 Rp- 
+M.993	Pompa Kebakaran	Unit	 Rp- 
+M.994	Jockey Fire Pump Vertical Multi Stage. 25 USGPM dan Aksesoris	Unit	 Rp- 
+M.995	Main Fire Pump Centrifugal End Suction. 1.000 USGPM dan Aksesoris	Unit	 Rp- 
+M.996	Diesel Fire Pump Centrifugal End Suction. 1.000 USGPM dan Aksesoris	Unit	 Rp- 
+M.997	Main Fire Pump Centrifugal End Suction. 1.250 USGPM dan Aksesoris	Unit	 Rp- 
+M.998	Diesel Fire Pump Centrifugal End Suction. 1.250 USGPM dan Aksesoris	Unit	 Rp- 
+	 HARGA BAHAN DRAINASE		 Rp- 
+M.999	U-Ditch Uk. 30x30x120cm	Buah	 Rp1,135,100 
+M.1000	U-Ditch Uk. 30x40x120cm	Buah	 Rp1,311,000 
+M.1001	U-Ditch Uk. 40x40x120cm	Buah	 Rp1,591,400 
+M.1002	U-Ditch Uk. 40x50x120cm	Buah	 Rp1,655,300 
+M.1003	U-Ditch Uk. 40x60x120cm	Buah	 Rp1,689,800 
+M.1004	U-Ditch Uk. 50x50x120cm	Buah	 Rp1,782,900 
+M.1005	U-Ditch Uk. 50x60x120cm	Buah	 Rp1,817,400 
+M.1006	U-Ditch Uk. 50x70x120cm	Buah	 Rp1,881,100 
+M.1007	U-Ditch Uk. 60x60x120cm	Buah	 Rp1,944,800 
+M.1008	U-Ditch Uk. 60x70x120cm	Buah	 Rp2,008,600 
+M.1009	U-Ditch Uk. 60x80x120cm	Buah	 Rp2,209,500 
+M.1010	U-Ditch Uk. 80x60x120cm	Buah	 Rp2,430,400 
+M.1011	U-Ditch Uk. 80x80x120cm	Buah	 Rp2,673,500 
+M.1012	U-Ditch Uk. 80x100x120cm	Buah	 Rp2,940,800 
+M.1013	U-Ditch Uk. 100x100x120cm	Buah	 Rp3,234,900 
+M.1014	U-Ditch Uk. 100x120x120cm	Buah	 Rp3,558,400 
+M.1015	U-Ditch Uk. 120x120x120cm	Buah	 Rp3,914,200 
+M.1016	U-Ditch Uk. 120x140x120cm	Buah	 Rp4,305,700 
+M.1017	U-Ditch Uk. 140x140x120cm	Buah	 Rp4,736,200 
+M.1018	U-Ditch Uk. 150x100x120cm	Buah	 Rp5,209,900 
+M.1019	U-Ditch Uk. 150x150x120cm	Buah	 Rp5,730,900 
+M.1020	U-Ditch Uk. 150x170x120cm	Buah	 Rp6,303,900 
+M.1021	U-Ditch Uk. 160x160x120cm	Buah	 Rp6,934,300 
+M.1022	U-Ditch Uk. 160x180x120cm	Buah	 Rp7,627,700 
+M.1023	U-Ditch Uk. 180x180x120cm	Buah	 Rp8,390,600 
+M.1024	U-Ditch Uk. 180x200x120cm	Buah	 Rp9,229,600 
+M.1025	U-Ditch Uk. 200x200x120cm	Buah	 Rp10,152,600 
+M.1026	Tutup U-Ditch Uk. 39x60x6cm (Tipe LD)	Buah	 Rp95,600 
+M.1027	Tutup U-Ditch Uk. 51x60x7cm (Tipe LD)	Buah	 Rp105,200 
+M.1028	Tutup U-Ditch Uk. 62x60x7.5cm (Tipe LD)	Buah	 Rp115,700 
+M.1029	Tutup U-Ditch Uk. 73x60x8cm (Tipe LD)	Buah	 Rp127,400 
+M.1030	Tutup U-Ditch Uk. 94x60x10cm (Tipe LD)	Buah	 Rp140,100 
+M.1031	Tutup U-Ditch Uk. 39x60x9cm (Tipe HD)	Buah	 Rp154,100 
+M.1032	Tutup U-Ditch Uk. 51x60x10cm (Tipe HD)	Buah	 Rp169,500 
+M.1033	Tutup U-Ditch Uk. 62x60x13cm (Tipe HD)	Buah	 Rp186,400 
+M.1034	Tutup U-Ditch Uk. 73x60x14cm (Tipe HD)	Buah	 Rp205,000 
+M.1035	Tutup U-Ditch Uk. 94x60x15cm (Tipe HD)	Buah	 Rp225,500 
+M.1036	Buis Beton 1/2 D 30 - 100cm	Buah	 Rp109,700 
+M.1037	Buis Beton 1/2 D 40 - 100cm	Buah	 Rp120,700 
+M.1038	Buis Beton 1/2 D 50 - 100cm	Buah	 Rp132,700 
+M.1039	Buis Beton 1/2 D 60 - 100cm	Buah	 Rp146,000 
+M.1040	Buis Beton 1/2 D 80 - 100cm	Buah	 Rp160,600 
+M.1041	Buis Beton 1/2 D 100 - 100cm	Buah	 Rp176,600 
+M.1042	Buis Beton D 30 - 100cm	Buah	 Rp194,400 
+M.1043	Buis Beton D 40 - 100cm	Buah	 Rp213,700 
+M.1044	Buis Beton D 50 - 100cm	Buah	 Rp235,100 
+M.1045	Buis Beton D 60 - 100cm	Buah	 Rp258,600 
+M.1046	Buis Beton D 80 - 100cm	Buah	 Rp284,500 
+M.1047	Buis Beton D 100 - 100cm	Buah	 Rp313,000 
+M.1048	Box Culvert Uk. 40x40x100cm	Buah	 Rp1,729,400 
+M.1049	Box Culvert Uk. 50x50x100cm	Buah	 Rp1,885,000 
+M.1050	Box Culvert Uk. 60x60x100cm	Buah	 Rp2,054,600 
+M.1051	Box Culvert Uk. 80x80x100cm	Buah	 Rp2,239,600 
+M.1052	Box Culvert Uk. 100x100x100cm	Buah	 Rp2,441,100 
+M.1053	Box Culvert Uk. 150x150x100cm	Buah	 Rp2,660,700 
+M.1054	Box Culvert Uk. 200x200x100cm	Buah	 Rp2,900,300 
+M.1055	Box Culvert Uk. 300x300x100cm	Buah	 Rp3,161,300 
+	 HARGA BAHAN PERPIPAAN DILUAR GEDUNG		 Rp- 
+M.1056	Pipa PVC Ø 63mm	m1	 Rp31,500 
+M.1057	Pipa PVC Ø 90mm	m1	 Rp65,100 
+M.1058	Pipa PVC Ø 110mm	m1	 Rp108,000 
+M.1059	Pipa PVC Ø 150mm	m1	 Rp172,200 
+M.1060	Pipa PVC Ø 200mm	m1	 Rp402,700 
+M.1061	Pipa PVC Ø 250mm	m1	 Rp622,500 
+M.1062	Pipa PVC Ø 300mm	m1	 Rp875,500 
+M.1063	Pipa PVC Ø 400mm	m1	 Rp1,313,200 
+M.1064	Pipa PVC Ø 450mm	m1	 Rp- 
+M.1065	Pipa PVC Ø 500mm	m1	 Rp- 
+M.1066	Pipa PVC Ø 600mm	m1	 Rp- 
+M.1067	Pipa PVC Ø 800mm	m1	 Rp- 
+M.1068	Pipa PVC Ø 900mm	m1	 Rp- 
+M.1069	Pipa PVC Ø 1000mm	m1	 Rp- 
+M.1070	Pipa PVC Ø 1100mm	m1	 Rp- 
+M.1071	Pipa PVC Ø 1200mm	m1	 Rp- 
+M.1072	Pipa Galvanis Ø 63mm	m1	 Rp173,500 
+M.1073	Pipa Galvanis Ø 100mm	m1	 Rp323,000 
+M.1074	Pipa Galvanis Ø 125mm	m1	 Rp466,900 
+M.1075	Pipa Galvanis Ø 150mm	m1	 Rp525,300 
+M.1076	Pipa Galvanis Ø 200mm	m1	 Rp918,300 
+M.1077	Pipa Galvanis Ø 250mm	m1	 Rp1,556,400 
+M.1078	Pipa Galvanis Ø 300mm	m1	 Rp1,867,700 
+M.1079	Pipa Galvanis Ø 400mm	m1	 Rp2,373,500 
+M.1080	Pipa Galvanis Ø 450mm	m1	 Rp3,891,000 
+M.1081	Pipa Galvanis Ø 500mm	m1	 Rp4,377,400 
+M.1082	Pipa Galvanis Ø 600mm	m1	 Rp5,252,900 
+M.1083	Pipa Galvanis Ø 800mm	m1	 Rp- 
+M.1084	Pipa Galvanis Ø 900mm	m1	 Rp- 
+M.1085	Pipa Galvanis Ø 1000mm	m1	 Rp- 
+M.1086	Pipa Galvanis Ø 1100mm	m1	 Rp- 
+M.1087	Pipa Galvanis Ø 1200mm	m1	 Rp- 
+M.1088	Pipa HDPE Ø 63mm	m1	 Rp50,200 
+M.1089	Pipa HDPE Ø 100mm	m1	 Rp150,600 
+M.1090	Pipa HDPE Ø 125mm	m1	 Rp191,400 
+M.1091	Pipa HDPE Ø 150mm	m1	 Rp314,000 
+M.1092	Pipa HDPE Ø 200mm	m1	 Rp490,300 
+M.1093	Pipa HDPE Ø 250mm	m1	 Rp763,400 
+M.1094	Pipa HDPE Ø 300mm	m1	 Rp1,167,300 
+M.1095	Pipa HDPE Ø 400mm	m1	 Rp1,949,400 
+M.1096	Pipa HDPE Ø 450mm	m1	 Rp2,474,700 
+M.1097	Pipa HDPE Ø 500mm	m1	 Rp3,035,000 
+M.1098	Pipa HDPE Ø 600mm	m1	 Rp4,839,600 
+M.1099	Pipa HDPE Ø 800mm	m1	 Rp- 
+M.1100	Pipa HDPE Ø 900mm	m1	 Rp- 
+M.1101	Pipa HDPE Ø 1000mm	m1	 Rp- 
+M.1102	Pipa HDPE Ø 1100mm	m1	 Rp- 
+M.1103	Pipa HDPE Ø 1200mm	m1	 Rp- 
+M.1104	Pipa DCI Ø 100mm	m1	 Rp642,000 
+M.1105	Pipa DCI Ø 125mm	m1	 Rp- 
+M.1106	Pipa DCI Ø 150mm	m1	 Rp- 
+M.1107	Pipa DCI Ø 200mm	m1	 Rp- 
+M.1108	Pipa DCI Ø 250mm	m1	 Rp- 
+M.1109	Pipa DCI Ø 300mm	m1	 Rp- 
+M.1110	Pipa DCI Ø 400mm	m1	 Rp- 
+M.1111	Pipa DCI Ø 450mm	m1	 Rp- 
+M.1112	Pipa DCI Ø 500mm	m1	 Rp- 
+M.1113	Pipa DCI Ø 600mm	m1	 Rp- 
+M.1114	Pipa DCI Ø 800mm	m1	 Rp- 
+M.1115	Pipa DCI Ø 900mm	m1	 Rp- 
+M.1116	Pipa DCI Ø 1000mm	m1	 Rp- 
+M.1117	Pipa DCI Ø 1100mm	m1	 Rp- 
+M.1118	Pipa DCI Ø 1200mm	m1	 Rp- 
+M.1119	Pipa Baja Karbon Ø 63mm	m1	 Rp214,000 
+M.1120	Pipa Baja Karbon Ø 100mm	m1	 Rp389,100 
+M.1121	Pipa Baja Karbon Ø 125mm	m1	 Rp544,700 
+M.1122	Pipa Baja Karbon Ø 150mm	m1	 Rp700,400 
+M.1123	Pipa Baja Karbon Ø 200mm	m1	 Rp1,070,000 
+M.1124	Pipa Baja Karbon Ø 250mm	m1	 Rp1,498,000 
+M.1125	Pipa Baja Karbon Ø 300mm	m1	 Rp1,945,500 
+M.1126	Pipa Baja Karbon Ø 400mm	m1	 Rp- 
+M.1127	Pipa Baja Karbon Ø 450mm	m1	 Rp- 
+M.1128	Pipa Baja Karbon Ø 500mm	m1	 Rp- 
+M.1129	Pipa Baja Karbon Ø 600mm	m1	 Rp- 
+M.1130	Pipa Baja Karbon Ø 800mm	m1	 Rp- 
+M.1131	Pipa Baja Karbon Ø 900mm	m1	 Rp- 
+M.1132	Pipa Baja Karbon Ø 1000mm	m1	 Rp- 
+M.1133	Pipa Baja Karbon Ø 1100mm	m1	 Rp- 
+M.1134	Pipa Baja Karbon Ø 1200mm	m1	 Rp- 
+M.1135	Pipa Tanah Dia. 15 - 20cm	Buah	 Rp- 
+M.1136	Pipa Tanah Dia. 30 - 100cm	Buah	 Rp- 
+M.1137	Valve Ø 150mm	Buah	 Rp3,035,000 
+M.1138	Valve Ø 200mm	Buah	 Rp7,003,800 
+M.1139	Valve Ø 250mm	Buah	 Rp- 
+M.1140	Valve Ø 300mm	Buah	 Rp- 
+M.1141	Valve Ø 400mm	Buah	 Rp- 
+M.1142	Valve Ø 450mm	Buah	 Rp- 
+M.1143	Valve Ø 500mm	Buah	 Rp- 
+M.1144	Valve Ø 600mm	Buah	 Rp- 
+M.1145	Valve Ø 700mm	Buah	 Rp- 
+M.1146	Valve Ø 800mm	Buah	 Rp- 
+M.1147	Valve Ø 900mm	Buah	 Rp- 
+M.1148	Valve Ø 1000mm	Buah	 Rp- 
+M.1149	Valve Ø 1100mm	Buah	 Rp- 
+M.1150	Valve Ø 1200mm	Buah	 Rp- 
+M.1151	Tee Ø 150mm	Buah	 Rp151,700 
+M.1152	Tee Ø 200mm	Buah	 Rp- 
+M.1153	Tee Ø 250mm	Buah	 Rp- 
+M.1154	Tee Ø 450mm	Buah	 Rp- 
+M.1155	Tee Ø 500mm	Buah	 Rp- 
+M.1156	Tee Ø 600mm	Buah	 Rp- 
+M.1157	Tee Ø 700mm	Buah	 Rp- 
+M.1158	Tee Ø 800mm	Buah	 Rp- 
+M.1159	Tee Ø 900mm	Buah	 Rp- 
+M.1160	Tee Ø 1000mm	Buah	 Rp- 
+M.1161	Tee Ø 1100mm	Buah	 Rp- 
+M.1162	Tee Ø 1200mm	Buah	 Rp- 
+	 HARGA BAHAN MEKANIKAL & PLUMBING		 Rp- 
+M.1163	Bak Air Fibreglass 0.3 m3	Unit	 Rp931,000 
+M.1164	Bak Air Fibreglass 1 m3	Unit	 Rp1,823,700 
+M.1165	Bak Cuci Piring Stainless Steel	Unit	 Rp860,900 
+M.1166	Bak Cuci Piring Teraso	Unit	 Rp1,592,900 
+M.1167	Bak Teraso	Unit	 Rp828,900 
+M.1168	Bathtub	Unit	 Rp3,806,800 
+M.1169	Clean Out	Buah	 Rp286,900 
+M.1170	Closet Duduk	Unit	 Rp1,587,800 
+M.1171	Closet Jongkok	Unit	 Rp1,239,600 
+M.1172	Flexible Hose	Unit	 Rp107,200 
+M.1173	Floor Drain	Unit	 Rp49,700 
+M.1174	Floor Harderner	Kg	 Rp40,000 
+M.1175	Floor Harderner	Buah	 Rp40,000 
+M.1176	Grab Bar	Buah	 Rp804,700 
+M.1177	Jet Washer	Buah	 Rp418,400 
+M.1178	Kran Air	Buah	 Rp54,900 
+M.1179	Wastafel Lengkap	Unit	 Rp1,258,700 
+M.1180	Waterdrain	Buah	 Rp96,900 
+M.1181	Robe Hook	Unit	 Rp80,300 
+M.1182	Sekat Kubikel + Aksesoris	m2	 Rp413,200 
+M.1183	Sekat Urinoir	Buah	 Rp1,105,700 
+M.1184	Soap Holder	Buah	 Rp61,200 
+M.1185	Stop Kran PVC 1/2 Inch	Buah	 Rp39,600 
+M.1186	Stop Kran PVC 3/4 Inch	Buah	 Rp49,700 
+M.1187	Tissue/Paper Holder	Buah	 Rp98,200 
+M.1188	Towel Bar	Unit	 Rp170,900 
+M.1189	Urinoir Lengkap	Unit	 Rp1,446,200 
+M.1190	Tandon Air Kap. 1200L	Unit	 Rp2,359,300 
+M.1191	Tandon Air Kap. 2000L	Hari	 Rp3,417,900 
+M.1192	Septictank Bio Tank Kap. 800 Liter	Unit	 Rp3,048,100 
+			 Rp- 
+M.1193	Roof Tank Fiberglass Kapasitas 2 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1194	Roof Tank Fiberglass Kapasitas 4 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1195	Roof Tank Fiberglass Kapasitas 12 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1196	Roof Tank Stainless Kapasitas 2 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1197	Roof Tank Stainless Kapasitas 4 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1198	Roof Tank Stainless Kapasitas 12 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1199	Tangki Toren Kapasitas 0.7 m3 + Material Bantu/Aksesoris	Buah	 Rp1,605,000 
+M.1200	Tangki Toren Kapasitas 1.5 m3 + Material Bantu/Aksesoris	Buah	 Rp3,595,300 
+M.1201	Tangki Toren Kapasitas 2.5 m3 + Material Bantu/Aksesoris	Buah	 Rp- 
+M.1202	Tangki Toren Kapasitas 3 m3 + Material Bantu/Aksesoris	Buah	 Rp- 
+M.1203	Tangki Toren Kapasitas 4 m3 + Material Bantu/Aksesoris	Buah	 Rp- 
+M.1204	Tangki Toren Kapasitas 5 m3 + Material Bantu/Aksesoris	Buah	 Rp- 
+M.1205	Tangki Toren Kapasitas 5.5 m3 + Material Bantu/Aksesoris	Buah	 Rp- 
+M.1206	Tangki Toren Kapasitas 6 m3 + Material Bantu/Aksesoris	Buah	 Rp- 
+M.1207	Tangki Panel FRP Kapasitas 12 m3 + Material Bantu/Aksesoris	Buah	 Rp- 
+			 Rp- 
+M.1208	Pompa Transfer 150 lpm (Centrifugal End Suction) + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1209	Pompa Booster 450 lpm (Centrifugal End Suction) + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1210	Pompa Booster 150 lpm (Vertical in Line - Packaged) + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1211	Pompa Jet 27 lpm + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1212	Pompa Jet 34 lpm + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1213	Pompa Jet 100 lpm + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1214	Pompa Lift 80 lpm + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1215	Pompa Lift 250 lpm + Material Bantu/Aksesoris	Unit	 Rp- 
+			 Rp- 
+M.1216	Sand Filter Kapasitas 0.1 m3/hari + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1217	Sand Filter Kapasitas 14 m3/hari + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1218	Carbon Filter Kapasitas 0.1 m3/hari + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1219	Carbon Filter Kapasitas 0.6 m3/hari + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1220	Silika Filter Kapasitas 0.1 m3/hari + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1221	Priming Tank Fiber 500 Liter + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1222	Priming Tank Fiber 800 Liter + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1223	Priming Tank Fiber 1000 Liter + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1224	Priming Tank Fiber 2000 Liter + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1225	Pressure Tank 1.000 Liter + Material Bantu/Aksesoris	Unit	 Rp- 
+			 Rp- 
+M.1226	Sewage Treatment Plant (STP) (Fiberglass) Kap. 2 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1227	Sewage Treatment Plant (STP) (Fiberglass) Kap. 5 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1228	Sewage Treatment Plant (STP) (Fiberglass) Kap. 10 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1229	Sewage Treatment Plant (STP) (Fiberglass) Kap. 30 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+			 Rp- 
+M.1230	Sewage Treatment Plant (STP) (Precast) Kap. 30 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+			 Rp- 
+M.1231	Pompa Sump Pit (Submersible Cutter Pump) Kapasitas 100 Liter/menit + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1232	Grease Trap Portable (Fiberglass) Kap. 30 Liter + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1233	Grease Trap Portable (Stainless) Kap. 30 Liter + Material Bantu/Aksesoris	Unit	 Rp- 
+M.1234	Grease Trap Central (Fiberglass) Kap. 5 m3 + Material Bantu/Aksesoris	Unit	 Rp- 
+			 Rp- 
+	Pipa PVC		 Rp- 
+M.1235	Pipa PVC AW ; Dia. 1/2" ; (15 mm) + Fitting & Aksesoris	m1	 Rp13,800 
+M.1236	Pipa PVC AW ; Dia. 3/4" ; (20 mm) + Fitting & Aksesoris	m1	 Rp15,300 
+M.1237	Pipa PVC AW ; Dia. 1" ; (25 mm) + Fitting & Aksesoris	m1	 Rp18,300 
+M.1238	Pipa PVC AW ; Dia. 1-1/4" ; (32 mm) + Fitting & Aksesoris	m1	 Rp20,200 
+M.1239	Pipa PVC AW ; Dia. 1-1/2" ; (40 mm) + Fitting & Aksesoris	m1	 Rp22,400 
+M.1240	Pipa PVC AW ; Dia. 2" ; (50 mm) + Fitting & Aksesoris	m1	 Rp34,000 
+M.1241	Pipa PVC AW ; Dia. 2-1/2" ; (65 mm) + Fitting & Aksesoris	m1	 Rp42,700 
+M.1242	Pipa PVC AW ; Dia. 3" ; (80 mm) + Fitting & Aksesoris	m1	 Rp72,700 
+M.1243	Pipa PVC AW ; Dia. 4" ; (100 mm) + Fitting & Aksesoris	m1	 Rp126,800 
+M.1244	Pipa PVC AW ; Dia. 5" ; (125 mm) + Fitting & Aksesoris	m1	 Rp239,200 
+M.1245	Pipa PVC AW ; Dia. 6" ; (150 mm) + Fitting & Aksesoris	m1	 Rp305,600 
+M.1246	Pipa PVC AW ; Dia. 8" ; (200 mm) + Fitting & Aksesoris	m1	 Rp431,000 
+M.1247	Pipa PVC AW ; Dia. 10" ; (250 mm) + Fitting & Aksesoris	m1	 Rp607,600 
+M.1248	Pipa PVC AW ; Dia. 12" (300 mm) + Fitting & Aksesoris	m1	 Rp856,700 
+M.1249	Pipa PVC AW ; Dia. 14" ; (350 mm) + Fitting & Aksesoris	m1	 Rp1,208,000 
+M.1250	Pipa PVC AW ; Dia. 16" ; (400 mm) + Fitting & Aksesoris	m1	 Rp1,703,300 
+			 Rp- 
+M.1251	Pipa PVC D ; Dia. 1-1/4" ; (32 mm) + Fitting & Aksesoris	m1	 Rp75,600 
+M.1252	Pipa PVC D ; Dia. 1-1/2" ; (40 mm) + Fitting & Aksesoris	m1	 Rp89,800 
+M.1253	Pipa PVC D ; Dia. 2" ; (50 mm) + Fitting & Aksesoris	m1	 Rp112,500 
+M.1254	Pipa PVC D ; Dia. 2-1/2" ; (65 mm) + Fitting & Aksesoris	m1	 Rp148,200 
+M.1255	Pipa PVC D ; Dia. 3" ; (80 mm) + Fitting & Aksesoris	m1	 Rp194,900 
+M.1256	Pipa PVC D ; Dia. 4" ; (100 mm) + Fitting & Aksesoris	m1	 Rp295,300 
+M.1257	Pipa PVC D ; Dia. 5" ; (125 mm) + Fitting & Aksesoris	m1	 Rp459,900 
+M.1258	Pipa PVC D ; Dia. 6" ; (150 mm) + Fitting & Aksesoris	m1	 Rp611,700 
+M.1259	Pipa PVC D ; Dia. 8" ; (200 mm) + Fitting & Aksesoris	m1	 Rp1,048,200 
+M.1260	Pipa PVC D ; Dia. 10" ; (250 mm) + Fitting & Aksesoris	m1	 Rp1,710,100 
+M.1261	Pipa PVC D ; Dia. 12" (300 mm) + Fitting & Aksesoris	m1	 Rp2,388,300 
+M.1262	Pipa PVC D ; Dia. 14" ; (350 mm) + Fitting & Aksesoris	m1	 Rp- 
+M.1263	Pipa PVC D ; Dia. 16" ; (400 mm) + Fitting & Aksesoris	m1	 Rp- 
+			 Rp- 
+M.1264	Pipa Galvanis MED CLASS ; Dia. 1/2" ; (15 mm) + Fitting & Aksesoris	m1	 Rp37,700 
+M.1265	Pipa Galvanis MED CLASS ; Dia. 3/4" ; (20 mm) + Fitting & Aksesoris	m1	 Rp49,000 
+M.1266	Pipa Galvanis MED CLASS ; Dia. 1" ; (25 mm) + Fitting & Aksesoris	m1	 Rp72,800 
+M.1267	Pipa Galvanis MED CLASS ; Dia. 1-1/4" ; (32 mm) + Fitting & Aksesoris	m1	 Rp96,500 
+M.1268	Pipa Galvanis MED CLASS ; Dia. 1-1/2" ; (40 mm) + Fitting & Aksesoris	m1	 Rp109,900 
+M.1269	Pipa Galvanis MED CLASS ; Dia. 2" ; (50 mm) + Fitting & Aksesoris	m1	 Rp149,800 
+M.1270	Pipa Galvanis MED CLASS ; Dia. 2-1/2" ; (65 mm) + Fitting & Aksesoris	m1	 Rp192,600 
+M.1271	Pipa Galvanis MED CLASS ; Dia. 3" ; (80 mm) + Fitting & Aksesoris	m1	 Rp256,800 
+M.1272	Pipa Galvanis MED CLASS ; Dia. 4" ; (100 mm) + Fitting & Aksesoris	m1	 Rp363,800 
+M.1273	Pipa Galvanis MED CLASS ; Dia. 5" ; (125 mm) + Fitting & Aksesoris	m1	 Rp466,900 
+M.1274	Pipa Galvanis MED CLASS ; Dia. 6" ; (150 mm) + Fitting & Aksesoris	m1	 Rp577,800 
+M.1275	Pipa Galvanis MED CLASS ; Dia. 8" ; (200 mm) + Fitting & Aksesoris	m1	 Rp933,800 
+M.1276	Pipa Galvanis MED CLASS ; Dia. 10" ; (250 mm) + Fitting & Aksesoris	m1	 Rp1,614,800 
+M.1277	Pipa Galvanis MED CLASS ; Dia. 12" ; (300 mm) + Fitting & Aksesoris	m1	 Rp2,042,800 
+M.1278	Pipa Galvanis MED CLASS ; Dia. 14" ; (350 mm) + Fitting & Aksesoris	m1	 Rp2,237,300 
+M.1279	Pipa Galvanis MED CLASS ; Dia. 16" ; (400 mm) + Fitting & Aksesoris	m1	 Rp2,431,900 
+			 Rp- 
+M.1280	Pipa Galvanis SCH 40 ; Dia. 1/2" ; (15 mm) + Fitting & Aksesoris	m1	 Rp39,100 
+M.1281	Pipa Galvanis SCH 40 ; Dia. 3/4" ; (20 mm) + Fitting & Aksesoris	m1	 Rp51,900 
+M.1282	Pipa Galvanis SCH 40 ; Dia. 1" ; (25 mm) + Fitting & Aksesoris	m1	 Rp75,100 
+M.1283	Pipa Galvanis SCH 40 ; Dia. 1-1/4" ; (32 mm) + Fitting & Aksesoris	m1	 Rp102,300 
+M.1284	Pipa Galvanis SCH 40 ; Dia. 1-1/2" ; (40 mm) + Fitting & Aksesoris	m1	 Rp121,400 
+M.1285	Pipa Galvanis SCH 40 ; Dia. 2" ; (50 mm) + Fitting & Aksesoris	m1	 Rp161,900 
+M.1286	Pipa Galvanis SCH 40 ; Dia. 2-1/2" ; (65 mm) + Fitting & Aksesoris	m1	 Rp258,000 
+M.1287	Pipa Galvanis SCH 40 ; Dia. 3" ; (80 mm) + Fitting & Aksesoris	m1	 Rp325,500 
+M.1288	Pipa Galvanis SCH 40 ; Dia. 4" ; (100 mm) + Fitting & Aksesoris	m1	 Rp463,800 
+M.1289	Pipa Galvanis SCH 40 ; Dia. 5" ; (125 mm) + Fitting & Aksesoris	m1	 Rp591,800 
+M.1290	Pipa Galvanis SCH 40 ; Dia. 6" ; (150 mm) + Fitting & Aksesoris	m1	 Rp807,400 
+M.1291	Pipa Galvanis SCH 40 ; Dia. 8" ; (200 mm) + Fitting & Aksesoris	m1	 Rp1,169,200 
+M.1292	Pipa Galvanis SCH 40 ; Dia. 10" ; (250 mm) + Fitting & Aksesoris	m1	 Rp2,259,100 
+M.1293	Pipa Galvanis SCH 40 ; Dia. 12" ; (300 mm) + Fitting & Aksesoris	m1	 Rp2,970,000 
+M.1294	Pipa Galvanis SCH 40 ; Dia. 14" ; (350 mm) + Fitting & Aksesoris	m1	 Rp3,529,100 
+M.1295	Pipa Galvanis SCH 40 ; Dia. 16" ; (400 mm) + Fitting & Aksesoris	m1	 Rp4,579,300 
+			 Rp- 
+M.1296	Pipa PPR PN 10 ; Dia. 1/2" ; (15 mm) + Fitting & Aksesoris	m1	 Rp14,600 
+M.1297	Pipa PPR PN 10 ; Dia. 3/4" ; (20 mm) + Fitting & Aksesoris	m1	 Rp19,300 
+M.1298	Pipa PPR PN 10 ; Dia. 1" ; (25 mm) + Fitting & Aksesoris	m1	 Rp32,100 
+M.1299	Pipa PPR PN 10 ; Dia. 1-1/4" ; (32 mm) + Fitting & Aksesoris	m1	 Rp48,200 
+M.1300	Pipa PPR PN 10 ; Dia. 1-1/2" ; (40 mm) + Fitting & Aksesoris	m1	 Rp73,800 
+M.1301	Pipa PPR PN 10 ; Dia. 2" ; (50 mm) + Fitting & Aksesoris	m1	 Rp115,600 
+M.1302	Pipa PPR PN 10 ; Dia. 2-1/2" ; (65 mm) + Fitting & Aksesoris	m1	 Rp166,900 
+M.1303	Pipa PPR PN 10 ; Dia. 3" ; (80 mm) + Fitting & Aksesoris	m1	 Rp244,000 
+M.1304	Pipa PPR PN 10 ; Dia. 4" ; (100 mm) + Fitting & Aksesoris	m1	 Rp316,600 
+M.1305	Pipa PPR PN 10 ; Dia. 6" ; (150 mm) + Fitting & Aksesoris	m1	 Rp1,108,900 
+M.1306	Pipa PPR PN 20 ; Dia. 1/2" ; (15 mm) + Fitting & Aksesoris	m1	 Rp19,300 
+M.1307	Pipa PPR PN 20 ; Dia. 3/4" ; (20 mm) + Fitting & Aksesoris	m1	 Rp32,100 
+M.1308	Pipa PPR PN 20 ; Dia. 1" ; (25 mm) + Fitting & Aksesoris	m1	 Rp51,400 
+M.1309	Pipa PPR PN 20 ; Dia. 1-1/4" ; (32 mm) + Fitting & Aksesoris	m1	 Rp80,300 
+M.1310	Pipa PPR PN 20 ; Dia. 1-1/2" ; (40 mm) + Fitting & Aksesoris	m1	 Rp122,000 
+M.1311	Pipa PPR PN 20 ; Dia. 2" ; (50 mm) + Fitting & Aksesoris	m1	 Rp192,600 
+M.1312	Pipa PPR PN 20 ; Dia. 2-1/2" ; (65 mm) + Fitting & Aksesoris	m1	 Rp276,100 
+M.1313	Pipa PPR PN 20 ; Dia. 3" ; (80 mm) + Fitting & Aksesoris	m1	 Rp385,200 
+M.1314	Pipa PPR PN 20 ; Dia. 4" ; (100 mm) + Fitting & Aksesoris	m1	 Rp577,800 
+M.1315	Pipa PPR PN 20 ; Dia. 6" ; (150 mm) + Fitting & Aksesoris	m1	 Rp- 
+		m1	 Rp- 
+M.1316	Pipa BS MED CLASS ; Dia. 1/2" ; (15 mm) + Fitting & Aksesoris	m1	 Rp29,400 
+M.1317	Pipa BS MED CLASS ; Dia. 3/4" ; (20 mm) + Fitting & Aksesoris	m1	 Rp37,700 
+M.1318	Pipa BS MED CLASS ; Dia. 1" ; (25 mm) + Fitting & Aksesoris	m1	 Rp56,200 
+M.1319	Pipa BS MED CLASS ; Dia. 1-1/4" ; (32 mm) + Fitting & Aksesoris	m1	 Rp74,100 
+M.1320	Pipa BS MED CLASS ; Dia. 1-1/2" ; (40 mm) + Fitting & Aksesoris	m1	 Rp85,000 
+M.1321	Pipa BS MED CLASS ; Dia. 2" ; (50 mm) + Fitting & Aksesoris	m1	 Rp115,800 
+M.1322	Pipa BS MED CLASS ; Dia. 2-1/2" ; (65 mm) + Fitting & Aksesoris	m1	 Rp147,900 
+M.1323	Pipa BS MED CLASS ; Dia. 3" ; (80 mm) + Fitting & Aksesoris	m1	 Rp173,300 
+M.1324	Pipa BS MED CLASS ; Dia. 4" ; (100 mm) + Fitting & Aksesoris	m1	 Rp250,800 
+M.1325	Pipa BS MED CLASS ; Dia. 5" ; (125 mm) + Fitting & Aksesoris	m1	 Rp337,300 
+M.1326	Pipa BS MED CLASS ; Dia. 6" ; (150 mm) + Fitting & Aksesoris	m1	 Rp401,600 
+M.1327	Pipa BS MED CLASS ; Dia. 8" ; (200 mm) + Fitting & Aksesoris	m1	 Rp710,900 
+M.1328	Pipa BS MED CLASS ; Dia. 10" ; (250 mm) + Fitting & Aksesoris	m1	 Rp986,400 
+M.1329	Pipa BS MED CLASS ; Dia. 12" ; (300 mm) + Fitting & Aksesoris	m1	 Rp1,173,700 
+M.1330	Pipa BS MED CLASS ; Dia. 14" ; (350 mm) + Fitting & Aksesoris	m1	 Rp1,291,400 
+M.1331	Pipa BS MED CLASS ; Dia. 16" ; (400 mm) + Fitting & Aksesoris	m1	 Rp1,478,600 
+M.1332	Pipa Tanah Dia. 15cm	m1	 Rp- 
+M.1333	Pipa Tanah Dia. 20cm	m1	 Rp- 
+M.1334	Pipa BS SCH 40 ; Dia. 1/2" ; (15 mm) + Fitting & Aksesoris	m1	 Rp30,700 
+M.1335	Pipa BS SCH 40 ; Dia. 3/4" ; (20 mm) + Fitting & Aksesoris	m1	 Rp40,700 
+M.1336	Pipa BS SCH 40 ; Dia. 1" ; (25 mm) + Fitting & Aksesoris	m1	 Rp58,600 
+M.1337	Pipa BS SCH 40 ; Dia. 1-1/4" ; (32 mm) + Fitting & Aksesoris	m1	 Rp79,600 
+M.1338	Pipa BS SCH 40 ; Dia. 1-1/2" ; (40 mm) + Fitting & Aksesoris	m1	 Rp94,400 
+M.1339	Pipa BS SCH 40 ; Dia. 2" ; (50 mm) + Fitting & Aksesoris	m1	 Rp126,300 
+M.1340	Pipa BS SCH 40 ; Dia. 2-1/2" ; (65 mm) + Fitting & Aksesoris	m1	 Rp200,400 
+M.1341	Pipa BS SCH 40 ; Dia. 3" ; (80 mm) + Fitting & Aksesoris	m1	 Rp261,100 
+M.1342	Pipa BS SCH 40 ; Dia. 4" ; (100 mm) + Fitting & Aksesoris	m1	 Rp371,000 
+M.1343	Pipa BS SCH 40 ; Dia. 5" ; (125 mm) + Fitting & Aksesoris	m1	 Rp501,700 
+M.1344	Pipa BS SCH 40 ; Dia. 6" ; (150 mm) + Fitting & Aksesoris	m1	 Rp649,000 
+M.1345	Pipa BS SCH 40 ; Dia. 8" ; (200 mm) + Fitting & Aksesoris	m1	 Rp950,000 
+M.1346	Pipa BS SCH 40 ; Dia. 10" ; (250 mm) + Fitting & Aksesoris	m1	 Rp1,501,700 
+M.1347	Pipa BS SCH 40 ; Dia. 12" ; (300 mm) + Fitting & Aksesoris	m1	 Rp1,945,500 
+M.1348	Pipa BS SCH 40 ; Dia. 14" ; (350 mm) + Fitting & Aksesoris	m1	 Rp2,286,400 
+M.1349	Pipa BS SCH 40 ; Dia. 16" ; (400 mm) + Fitting & Aksesoris	m1	 Rp2,946,100 
+			 Rp- 
+M.1308	Gate Valve Dia. 1/2“ (15 mm)	Buah	 Rp116,700 
+M.1350	Gate Valve Dia. 3/4“ (20 mm)	Buah	 Rp233,500 
+M.1351	Gate Valve Dia. 1“ (25 mm)	Buah	 Rp350,200 
+M.1352	Gate Valve Dia. 1-1/4“ (32 mm)	Buah	 Rp- 
+M.1353	Gate Valve Dia. 1-1/2“ (40 mm)	Buah	 Rp- 
+M.1354	Gate Valve Dia. 2“ (50 mm)	Buah	 Rp- 
+M.1355	Gate Valve Dia. 2-1/2“ (65 mm)	Buah	 Rp- 
+M.1356	Gate Valve Dia. 3“ (80 mm)	Buah	 Rp- 
+M.1357	Gate Valve Dia. 4“ (100 mm)	Buah	 Rp- 
+M.1316	Gate Valve 10 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp70,000 
+M.1358	Gate Valve 10 K ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp140,100 
+M.1359	Gate Valve 10 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1360	Gate Valve 10 K ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1361	Gate Valve 10 K ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1362	Gate Valve 10 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1363	Gate Valve 10 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1364	Gate Valve 10 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1365	Gate Valve 10 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1366	Gate Valve 10 K ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1367	Gate Valve 10 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1368	Gate Valve 10 K ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1369	Gate Valve 10 K ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1370	Gate Valve 10 K ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+M.1371	Gate Valve 12 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1331	Gate Valve 16 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1372	Gate Valve 16 K ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp- 
+M.1373	Gate Valve 16 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1374	Gate Valve 16 K ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1375	Gate Valve 16 K ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1376	Gate Valve 16 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1377	Gate Valve 16 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1378	Gate Valve 16 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1379	Gate Valve 16 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1380	Gate Valve 16 K ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1381	Gate Valve 16 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1382	Gate Valve 16 K ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1383	Gate Valve 16 K ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1372	Gate Valve 16 K ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+M.1384	Gate Valve 20 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1385	Gate Valve 20 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1386	Gate Valve 20 K ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1387	Gate Valve 20 K ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1388	Gate Valve 20 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1389	Gate Valve 20 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1390	Gate Valve 20 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1391	Gate Valve 20 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1392	Gate Valve 20 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1361	Ball Valve ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp14,000 
+M.1393	Ball Valve ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp17,500 
+M.1394	Ball Valve ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp21,000 
+M.1395	Ball Valve ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp58,400 
+M.1396	Ball Valve ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp75,900 
+M.1397	Ball Valve ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp93,400 
+M.1398	Ball Valve ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp140,100 
+M.1399	Ball Valve ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp233,500 
+M.1400	Ball Valve ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1371	Check Valve 10 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp46,700 
+M.1401	Check Valve 10 K ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp35,000 
+M.1402	Check Valve 10 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp75,900 
+M.1403	Check Valve 10 K ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp116,700 
+M.1404	Check Valve 10 K ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp175,100 
+M.1405	Check Valve 10 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp256,800 
+M.1406	Check Valve 10 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1407	Check Valve 10 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1408	Check Valve 10 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1409	Check Valve 10 K ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1410	Check Valve 10 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1411	Check Valve 10 K ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1412	Check Valve 10 K ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1401	Check Valve 10 K ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1413	Check Valve 16 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1414	Check Valve 16 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1415	Check Valve 16 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1416	Check Valve 16 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1417	Check Valve 16 K ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1418	Check Valve 16 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1419	Check Valve 16 K ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1420	Check Valve 16 K ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1410	Check Valve 16 K ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1393	Strainer 10 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1421	Strainer 10 K ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp- 
+M.1422	Strainer 10 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1423	Strainer 10 K ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1424	Strainer 10 K ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1425	Strainer 10 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1426	Strainer 10 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1427	Strainer 10 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1428	Strainer 10 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1429	Strainer 10 K ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1430	Strainer 10 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1431	Strainer 10 K ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1432	Strainer 10 K ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1433	Strainer 10 K ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+M.1297	Strainer 10 K ; Dia. 14“ (350 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1434	Strainer 16 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1435	Strainer 16 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1436	Strainer 16 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1437	Strainer 16 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1438	Strainer 16 K ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1439	Strainer 16 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1440	Strainer 16 K ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1441	Strainer 16 K ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1442	Strainer 16 K ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+M.1443	Strainer 16 K ; Dia. 14“ (350 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1444	Floater Valve ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1445	Floater Valve ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp- 
+M.1446	Floater Valve ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1447	Floater Valve ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1448	Floater Valve ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1449	Floater Valve ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1450	Floater Valve ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1451	Floater Valve ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1452	Floater Valve ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1453	Floater Valve ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1454	Floater Valve ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1455	Floater Valve ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1456	Floater Valve ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1457	Floater Valve ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1458	Foot Valve ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1459	Foot Valve ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp- 
+M.1460	Foot Valve ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1461	Foot Valve ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1462	Foot Valve ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1463	Foot Valve ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1464	Foot Valve ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1465	Foot Valve ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1466	Foot Valve ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1467	Foot Valve ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1468	Foot Valve ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1469	Foot Valve ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1470	Foot Valve ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1471	Foot Valve ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+M.1472	Foot Valve ; Dia. 14“ (350 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1473	Flexible Joint 10 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1474	Flexible Joint 10 K ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp- 
+M.1475	Flexible Joint 10 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1476	Flexible Joint 10 K ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1477	Flexible Joint 10 K ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1478	Flexible Joint 10 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1479	Flexible Joint 10 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1480	Flexible Joint 10 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1481	Flexible Joint 10 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1482	Flexible Joint 10 K ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1483	Flexible Joint 10 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1484	Flexible Joint 10 K ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1485	Flexible Joint 10 K ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1486	Flexible Joint 10 K ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1487	Flexible Joint 20 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1488	Flexible Joint 20 K ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp- 
+M.1489	Flexible Joint 20 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1490	Flexible Joint 20 K ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1491	Flexible Joint 20 K ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1492	Flexible Joint 20 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1493	Flexible Joint 20 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1494	Flexible Joint 20 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1495	Flexible Joint 20 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1496	Flexible Joint 20 K ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1497	Flexible Joint 20 K ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1498	Flexible Joint 20 K ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1499	Flexible Joint 20 K ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1500	Flexible Joint 20 K ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+M.1501	Flexible Joint 20 K ; Dia. 14“ (350 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1502	Butterfly Valve ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1503	Butterfly Valve ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1504	Butterfly Valve ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1505	Butterfly Valve ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1506	Butterfly Valve ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1507	Butterfly Valve ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1508	Butterfly Valve ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1509	Butterfly Valve ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1510	Butterfly Valve ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+M.1511	Butterfly Valve ; Dia. 14“ (350 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1512	Globe Valve ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp116,700 
+M.1513	Globe Valve ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp128,400 
+M.1514	Globe Valve ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp151,700 
+M.1515	Globe Valve ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp210,100 
+M.1516	Globe Valve ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1517	Globe Valve ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1518	Globe Valve ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1519	Globe Valve ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1520	Globe Valve ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1521	Globe Valve ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1522	Globe Valve ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1523	Globe Valve ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1524	Pressure Gauge 16 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1525	Pressure Gauge 16 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1526	Pressure Gauge 16 K ; Dia. 1-1/4“ (32 mm) + Material Bantu	Buah	 Rp- 
+M.1527	Pressure Gauge 16 K ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1528	Pressure Gauge 16 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1529	Pressure Gauge 16 K ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1530	Pressure Gauge 16 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1531	Pressure Gauge 16 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1532	Pressure Gauge 25 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1533	Pressure Gauge 25 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1534	Pressure Gauge 25 K ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1535	Pressure Gauge 25 K ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1536	Pressure Gauge 25 K ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1537	Pressure Gauge 40 K ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1538	Pressure Gauge 40 K ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1539	Water Meter ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp233,500 
+M.1540	Water Meter ; Dia. 3/4“ (20 mm) + Material Bantu	Buah	 Rp1,021,400 
+M.1541	Water Meter ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp1,517,500 
+M.1542	Water Meter ; Dia. 1-1/2“ (40 mm) + Material Bantu	Buah	 Rp- 
+M.1543	Water Meter ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1544	Water Meter ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1545	Water Meter ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1546	Water Meter ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1547	Water Meter ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+M.1548	Water Meter ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1549	Water Meter ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+M.1550	Water Meter ; Dia. 16“ (400 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1551	Flow Meter Analog 10 K; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1552	Clean Out ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp93,400 
+M.1553	Clean Out ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp128,400 
+M.1554	Clean Out ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp151,700 
+M.1555	Clean Out ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp256,800 
+M.1556	Clean Out ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp- 
+M.1557	Clean Out ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1558	Clean Out ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+		Buah	 Rp- 
+M.1559	Roof Drain ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp64,200 
+M.1560	Roof Drain ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp75,900 
+M.1561	Roof Drain ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp87,500 
+M.1562	Roof Drain ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp93,400 
+M.1563	Roof Drain ; Dia. 5“ (125 mm) + Material Bantu	Buah	 Rp163,400 
+M.1564	Roof Drain ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp210,100 
+M.1565	Roof Drain ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp350,200 
+M.1566	Roof Drain ; Dia. 10“ (250 mm) + Material Bantu	Buah	 Rp- 
+M.1567	Roof Drain ; Dia. 12“ (300 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1568	Floor Clean Out ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1569	Floor Clean Out ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1570	Floor Clean Out ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1571	Floor Clean Out ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1572	Floor Clean Out ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1573	Floor Clean Out ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1574	Vent Cap ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp93,400 
+M.1575	Vent Cap ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp116,700 
+M.1576	Vent Cap ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1577	PRV SET ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1578	PRV SET ; Dia. 2-1/2“ (65 mm) + Material Bantu	Buah	 Rp- 
+M.1579	PRV SET ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1580	PRV SET ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1581	PRV SET ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+M.1582	PRV SET ; Dia. 8“ (200 mm) + Material Bantu	Buah	 Rp- 
+		Buah	 Rp- 
+M.1583	Automatic Air Vent ; Dia. 1/2“ (15 mm) + Material Bantu	Buah	 Rp- 
+M.1584	Automatic Air Vent ; Dia. 1“ (25 mm) + Material Bantu	Buah	 Rp- 
+M.1585	Automatic Air Vent ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+M.1586	Automatic Air Vent ; Dia. 3“ (80 mm) + Material Bantu	Buah	 Rp- 
+M.1587	Automatic Air Vent ; Dia. 4“ (100 mm) + Material Bantu	Buah	 Rp- 
+M.1588	Automatic Air Vent ; Dia. 6“ (150 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1589	Vent Out ; Dia. 2“ (50 mm) + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1590	WLC dan Pengkabelan + Material Bantu	Buah	 Rp- 
+M.1591	Pressure Switch + Material Bantu	Buah	 Rp- 
+			 Rp- 
+M.1592	Header Pipa PVC AW Dia. 4” (100 mm) + Material Bantu	m1	 Rp- 
+M.1593	Header Pipa Galvanis MED CLASS Dia. 4” (100 mm) + Material Bantu	m1	 Rp- 
+M.1594	Header Pipa BS SCH 40 Dia. 8” (200 mm) + Material Bantu	m1	 Rp- 
+M.1595	Header Pipa BS SCH 40 Dia. 10” (250 mm) + Material Bantu	m1	 Rp- 
+			 Rp- 
+M.1596	Dop PVC Dia. 3” (80 mm) + Material Bantu	Buah	 Rp46,700 
+M.1597	Dop PVC Dia. 4” (100 mm) + Material Bantu	Buah	 Rp75,900 
+M.1598	Dop PVC Dia. 6” (150 mm) + Material Bantu	Buah	 Rp140,100 
+	HARGA SEWA ALAT		 Rp- 
+M.1599	Sewa Pipe Support	Hari	 Rp803,500 
+M.1600	Sewa Crane	Hari	 Rp1,895,100 
+M.1601	Sewa Crane Kap. 1 Ton	Jam	 Rp270,700 
+M.1602	Asphalt Distributor	Jam	 Rp4,606,400 
+M.1603	Asphalt Finisher	Jam	 Rp693,700 
+M.1604	Asphalt Mixing Plan	Jam	 Rp587,000 
+M.1605	Alat Las Listrik	Jam	 Rp99,500 
+M.1606	Alat Penyambung Balok Δ 28cm	Buah	 Rp97,400 
+M.1607	Alat Pancang Hidraulik Pile Driver 2 Ton	Jam	 Rp452,600 
+M.1608	Alat Pancang Hidraulik Pile Driver 3 Ton	Jam	 Rp543,000 
+M.1609	Alat Pancang Mini Pile Driver (Vibratory) Hammer 50Kg (1 HP)	Hari	 Rp871,300 
+M.1610	Alat Pancang Mini Pile Driver (Vibratory) Hammer 500Kg (10 HP)	Hari	 Rp1,190,800 
+M.1611	Alat Penyambung Balok Δ 28cm	Buah	 Rp96,500 
+M.1612	Alat Penyambung Balok Δ 32cm	Buah	 Rp107,200 
+M.1613	Alat Penyambung Beton Uk. 20x20cm	Buah	 Rp118,900 
+M.1614	Alat Penyambung Beton Uk. 25x25cm	Buah	 Rp132,000 
+M.1615	Alat Penyambung Beton Uk. 30x30cm	Buah	 Rp146,500 
+M.1616	Alat Penyambung Beton Uk. 35x35cm	Buah	 Rp162,600 
+M.1617	Alat Penyambung Beton Uk. 40x40cm	Buah	 Rp180,500 
+M.1618	Alat Penyambung Beton Uk. 45x45cm	Buah	 Rp200,300 
+M.1619	Alat Penyambung Beton Uk. 50x50cm	Buah	 Rp222,400 
+M.1620	Alat Penyambung Beton Uk. Ø 30cm	Buah	 Rp246,900 
+M.1621	Alat Penyambung Beton Uk. Ø 35cm	Buah	 Rp274,000 
+M.1622	Alat Penyambung Beton Uk. Ø 40cm	Buah	 Rp304,200 
+M.1623	Alat Penyambung Beton Uk. Ø 45cm	Buah	 Rp337,600 
+M.1624	Alat Penyambung Beton Uk. Ø 50cm	Buah	 Rp374,700 
+M.1625	Alat Penyambung Beton Uk. Ø 60cm	Buah	 Rp416,000 
+M.1626	Alat Sambung Dolken Ø 6-8cm	Buah	 Rp42,100 
+M.1627	Alat Sambung Kayu Terbuat dari Baja Ø 18 - 20cm	Buah	 Rp192,600 
+M.1628	Sewa Scaffolding	Hari	 Rp95,600 
+M.1629	Bor: Auger ∅ 20cm	Hari	 Rp1,129,900 
+M.1630	Bor: Auger ∅ 30cm	Hari	 Rp1,186,400 
+M.1631	Bor: Auger ∅ 40cm	Hari	 Rp1,245,700 
+M.1632	Bor: Auger ∅ 50cm	Hari	 Rp1,308,100 
+M.1633	Bore Pile Machine	Jam	 Rp1,101,300 
+M.1634	Bored Pile Machine (Hidraulik) Auger ø 60cm	Jam	 Rp551,100 
+M.1635	Bored Pile Machine (Hidraulik) Auger ø 80cm	Jam	 Rp666,800 
+M.1636	Bored Pile Machine (Hidraulik) Auger ø 100cm	Jam	 Rp806,800 
+M.1637	Bored Pile Machine (Hidraulik) Auger ø 120cm	Jam	 Rp976,200 
+M.1638	Bender Baja Beton	Hari	 Rp765,200 
+M.1639	Chainsaw 20”; 5.5HP	Hari	 Rp812,300 
+M.1640	Chainsaw 30”; 7.5HP	Hari	 Rp874,900 
+M.1641	Concrete Cutter	Hari	 Rp419,200 
+M.1642	Concrete Pump	Jam	 Rp337,900 
+M.1643	Concrete Vibrator	Hari	 Rp328,700 
+M.1644	Crane Mobile 7 Ton	Jam	 Rp619,800 
+M.1645	Crane Truck 3 T	Hari	 Rp946,300 
+M.1646	Crane Truck 3 Ton Winch 5 Ton	Jam	 Rp563,800 
+M.1647	Crawler Crane 10 Ton + Ladder 14 Ton	Jam	 Rp4,691,100 
+M.1648	Crawler Crane 20 Ton + Ladder 14 Ton	Jam	 Rp6,239,200 
+M.1649	Cutter Baja Beton	Hari	 Rp446,400 
+M.1650	Driver Hammer 1 Ton	Jam	 Rp492,600 
+M.1651	Driver Hammer 2 Ton	Jam	 Rp596,000 
+M.1652	Driver Hammer 3 Ton	Jam	 Rp721,300 
+M.1653	Excavator (Std.); Bucket 0.55 m3; 95 HP	Jam	 Rp366,800 
+M.1654	Alat Bantu Borepile	Ls	 Rp6,400 
+M.1655	Kunci Momen	Hari	 Rp112,200 
+M.1656	Genset	Jam	 Rp210,200 
+M.1657	Mesin Bor	Jam	 Rp49,700 
+M.1658	Mobile Crane  3 ton	Hari	 Rp3,553,000 
+M.1659	Molen/Beton Mixer 0.35 m3	Hari	 Rp758,900 
+M.1660	Molen/Beton Mixer 0.35 m3 Automatic Feeder	Hari	 Rp758,900 
+M.1661	Molen Kap. 1 m3	Hari	 Rp1,008,800 
+M.1662	Gergaji Besi (Baja Keras)	Hari	 Rp191,300 
+M.1663	Palu/Godam (Baja Keras)	Hari	 Rp191,300 
+M.1664	Pahat Beton (Baja Keras)	Hari	 Rp191,300 
+M.1665	Linggis (Baja Keras)	Hari	 Rp191,300 
+M.1666	Peralatan Potong Pipa T2/Mekanik/Cilinder Saw	Hari	 Rp- 
+M.1667	Peralatan Potong Pipa T1/Manual (Gergaji)/Saw	Hari	 Rp- 
+M.1668	Sewa Casing PVC Diameter 20cm	m1	 Rp280,600 
+M.1669	Sewa Casing PVC Diameter 30cm	m1	 Rp294,600 
+M.1670	Sewa Casing PVC Diameter 40cm	m1	 Rp309,300 
+M.1671	Sewa Casing PVC Diameter 50cm	m1	 Rp324,700 
+M.1672	Sewa Excavator Type 225 Kap. 0.5 - 1.0 m3	Hari	 Rp- 
+M.1673	Sewa Mesin Hydroseeding 2000 L	Hari	 Rp3,440,600 
+M.1674	Sewa Pompa 3 Submersible 3m /h	Hari	 Rp- 
+M.1675	Sewa Tripot/Tackel	Hari	 Rp- 
+M.1676	Sewa Tripot/Tackel & Handle Crane 2 T	Hari	 Rp- 
+M.1677	Sewa Genset 5 KW	Hari	 Rp- 
+M.1678	Sewa Genset 1500 watt	Hari	 Rp- 
+M.1679	Sewa Jack Hammer	Jam	 Rp- 
+M.1680	Sewa Pompa Sedot Ø 5 Inch	Hari	 Rp- 
+M.1681	Sepatu Pancang Beton Δ 28cm	Buah	 Rp82,800 
+M.1682	Sepatu Pancang Beton Δ 32cm	Buah	 Rp91,900 
+M.1683	Sepatu Pancang Uk. 20x20cm	Buah	 Rp101,900 
+M.1684	Sepatu Pancang Uk. 25x25cm	Buah	 Rp113,100 
+M.1685	Sepatu Pancang Uk. 30x30cm	Buah	 Rp125,600 
+M.1686	Sepatu Pancang Uk. 35x35cm	Buah	 Rp139,400 
+M.1687	Sepatu Pancang Uk. 40x40cm	Buah	 Rp154,800 
+M.1688	Sepatu Pancang Uk. 45x45cm	Buah	 Rp171,800 
+M.1689	Sepatu Pancang Uk. 50x50cm	Buah	 Rp190,600 
+M.1690	Sepatu Pancang Uk. Ø 30cm	Buah	 Rp211,600 
+M.1691	Sepatu Pancang Uk. Ø 35cm	Buah	 Rp235,000 
+M.1692	Sepatu Pancang Uk. Ø 40cm	Buah	 Rp260,800 
+M.1693	Sepatu Pancang Uk. Ø 45cm	Buah	 Rp289,500 
+M.1694	Sepatu Pancang Uk. Ø 50cm	Buah	 Rp321,200 
+M.1695	Sepatu Pancang Uk. Ø 60cm	Buah	 Rp356,600 
+M.1696	Sepatu Pancang Dolken Ø 6-8cm	Buah	 Rp65,000 
+M.1697	Sepatu Pancang Kayu Ø 18 - 20cm	Buah	 Rp99,500 
+M.1698	Jack Hammer (5 KW) + Genset (12 HP)	Hari	 Rp417,100 
+M.1699	Excavator 80-140 HP	Jam	 Rp494,200 
+M.1700	Stamper D-Drum 550Kg	Hari	 Rp1,084,100 
+M.1701	Stamper Kodok 150Kg	Hari	 Rp573,800 
+M.1702	Stamper Kuda 70Kg	Hari	 Rp446,400 
+M.1703	Stamper Smoot Drum 1.5Ton	Hari	 Rp1,721,700 
+M.1704	Stang Bor Batang Bor Diameter 1 1/4"	Hari	 Rp1,721,700 
+M.1705	Dump Truck	Jam	 Rp300,600 
+M.1706	Dump Truck 3.5 TON	Jam	 Rp300,600 
+M.1707	Flat Deck Truck Kap. 7 Ton	Hari	 Rp482,800 
+M.1708	Jack Hammer Drill - 1.5 KW + Genset 3 KWH	Hari	 Rp1,749,800 
+M.1709	Jack Hammer Drill - 2.5 KW + Genset 5 KWH	Hari	 Rp2,106,900 
+M.1710	Alat Bantu Galian Tanah	Ls	 Rp1,300 
+M.1711	Wheel Loader	Jam	 Rp4,427,900 
+M.1712	Wheel Loader 1.0-1.6 m3	Jam	 Rp834,000 
+M.1713	Pompa Beton ∅ 1.5"; 5 KW; 8 Bar; T = 5 m1	Hari	 Rp1,849,200 
+M.1714	Pompa Beton ∅ 2.5"; 20KW; 20 Bar. T = 18 m1	Hari	 Rp1,957,600 
+M.1715	Pompa Beton ∅ 2.5"; 75KW; 120 Bar. T= 50 m1 / H = 80 m1	Hari	 Rp2,066,000 
+M.1716	Pompa Beton ∅ 3”. 140 KW; 180 Bar. T = 75 m1 /H = 150 m1	Hari	 Rp2,174,400 
+M.1717	Pompa Lumpur Diesel 7.5 KW; 4"	Hari	 Rp956,500 
+M.1718	Pompa Lumpur Diesel 10 KW; 5"	Hari	 Rp1,084,100 
+M.1719	Pompa Sedot Pasir Diesel 7.5 KW; 5"	Hari	 Rp956,500 
+M.1720	Pressure Grout Machine 30 KW; 60 - 75 Bar (D)	Jam	 Rp252,500 
+M.1721	P. Tyre Roller	Jam	 Rp481,400 
+M.1722	Three Wheel Roller	Jam	 Rp602,100 
+M.1723	Tower Crane Arm 30m	Hari	 Rp3,861,900 
+M.1724	Tripod Tinggi 7m Kap. 2 Ton	Hari	 Rp4,752,000 
+M.1725	Mesin Las Geotekstil	Hari	 Rp2,072,000 
+M.1726	Mesin Las Listrik 150 A	Jam	 Rp284,700 
+M.1727	Mesin Las Listrik 250 A	Jam	 Rp329,300 
+M.1728	Mesin Las Listrik 350 A	Jam	 Rp373,900 
+M.1729	Mesin Las Listrik 500 A	Jam	 Rp418,600 
+M.1730	Mesin Poles	Hari	 Rp428,300 
+M.1731	Mobil Sedot Lumpur Kap. 3 m3	Jam	 Rp701,400 
+M.1732	Motor Grader >100 HP	Jam	 Rp720,600 
+M.1733	Tandem Roller	Jam	 Rp727,700 
+M.1734	Tandem Roller 6-8 T.	Jam	 Rp735,000 
+M.1735	Theodolit	Hari	 Rp961,600 
+M.1736	Water Tanker 3000-4500 L.	Jam	 Rp281,700 
+M.1737	Water Truck	Hari	 Rp1,972,000 
+M.1738	Waterpass	Hari	 Rp828,900 
+M.1739	Tiang Pancang Uk. 30x30cm Mutu K450	m1	 Rp- 
+M.1740	Biaya Pengiriman Tiang Pancang	m1	 Rp- 
+M.1741	Cutting Beton	Jam	 Rp- 
+M.1742	Alat Bantu Pemotongan Tiang Pancang	Ls	 Rp- 
+M.1743	Upah Cutting Laser ACP	Ls	 Rp- 
+M.1744	Upah Las ACP	Ls	 Rp- 
+M.1745	Vibrator	Hari	 Rp373,000 
+	Dump Truck	Jam	 Rp381,000 
+	Truk Tanki Air	Jam	 Rp226,800 
+	Bulldozer 100 - 150 hp	Jam	 Rp572,700 
+	Motor Grader	Jam	 Rp396,900 
+	Wheel Loader	Jam	 Rp340,200 
+	Excavator	Jam	 Rp425,200 
+	Flat Bed Truck	Jam	 Rp170,100 
+	P.Tire Roller 8 - 10 ton	Jam	 Rp396,900 
+	Vibrator Roller self 7 ton	Jam	 Rp272,100 
+	Pile Driver / Hammer	Jam	 Rp51,000 
+	AMP (Asphalt Mixing Plant)	Jam	 Rp6,236,800 
+	Asphalt Finisher	Jam	 Rp317,500 
+	Concrete Vibrator	Jam	 Rp51,000 
+	Compressor	Jam	 Rp136,100 
+	Concrete Mixer	Jam	 Rp90,700 
+	Concrete Cutter	Jam	 Rp43,100 
+	Stamper	Jam	 Rp45,400 
+	Genset 5-25kva+bbm	Jam	 Rp189,300 
+	Mesin Las	Jam	 Rp45,400 
+	Sewa Pipe Support	buah hari	 Rp2,100 
+	Sewa Scaffolding	unit hari	 Rp15,600 
+	Kwas	buah	 Rp18,300 
+	Sewa Tripot/Tackel & handle crane 2 T	hari	 Rp391,200 
+	Mobile crane <=3 ton	hari	 Rp1,381,100 
+	Genset 1500 watt	hari	 Rp396,900 
+	Jack Hammer	Jam	 Rp51,000 
+	Tandem Roller	Jam	 Rp396,900 
+	Batching Plant	Jam	 Rp850,500 
+	Truck Mixer	Jam	 Rp396,900 
+	Conc. Paver (Slipform paver)	Jam	 Rp2,267,900 
+	Asp. Distributor	Jam	 Rp226,800 
+	Asp. Finisher	Jam	 Rp317,500 
+	Concrete pump	Jam	 Rp453,600 
+	Welding set	Jam	 Rp56,700 
+	Chainsaw	Jam	 Rp56,700 
+	Tronton	Jam	 Rp453,600 
+	Bore Pile	Jam	 Rp623,700 
+	Sewa excavator type 225 kapasitas 0.5 - 1.0 m3	hari	 Rp4,309,100 
+	sewa crane	unit hari	 Rp5,102,900 
+	Rock Drill Breaker	"	Jam"	 Rp453,600 
+	Cold milling	"	Jam"	 Rp1,258,700 
+	Sheepfoot Roller	"	Jam"	 Rp725,700 
+	Power Broom	"	Jam"	 Rp68,100 
+	Thermoplastic spreading machine	"	Jam"	 Rp68,100 
+	Mini Excavator	"	Jam"	 Rp249,500 
+	Mesin pemotong rumput	hari	 Rp56,700 
+	Concrete Mixing Plant	"	Jam"	 Rp850,500 
+	CRANE ON TRACK 75-100 TON	"	Jam"	 Rp1,133,900 
+	Crane 10-15 Ton	"	Jam"	 Rp637,800 
+	Truck Crane 3 Ton	Jam	 Rp170,100 
+	Track Loader	Jam	 Rp340,200 
+	Stang bor, batang bor dan mata bor diameter 1,25"	hari	 Rp17,000 
+	hermoplastic Road Marking Machine	"	Jam"	 Rp65,700 
+	Asphalt Cutter	"	Jam"	 Rp43,100 
+	Genset	"	Jam"	 Rp283,500 
+	Baby Vibratory Rollerv	"	Jam"	 Rp90,700 
+	Mobil pick up	"	Jam"	 Rp31,800 

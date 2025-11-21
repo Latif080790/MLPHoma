@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand'
-import { supabase } from '../lib/supabaseClient'
+import { assertSupabase } from '../lib/supabaseClient'
 import { devtools } from 'zustand/middleware'
 import { calculateAHSPPrice as calcAHSPPrice } from '../lib/calculationService'
 import { syncAHSPItem, syncResource, syncAHSPComponent, syncDelete } from '../lib/supabaseSyncService'
@@ -62,6 +62,143 @@ export const useAHSPStore = create<AHSPStore>()(
         resources: null,
         ahspItems: null,
         components: null,
+      },
+
+      // Data fetching actions
+      fetchResources: async () => {
+        set((state) => ({
+          loading: { ...state.loading, resources: true },
+          errors: { ...state.errors, resources: null },
+        }))
+
+        try {
+          const client = assertSupabase()
+          const { data, error } = await client
+            .from('resources')
+            .select('*')
+            .order('updated_at', { ascending: false })
+
+          if (error) throw error
+
+          set((state) => ({
+            resources: data || [],
+            loading: { ...state.loading, resources: false },
+          }))
+        } catch (error: any) {
+          const errorMsg = error.message || 'Failed to fetch resources'
+          set((state) => ({
+            loading: { ...state.loading, resources: false },
+            errors: { ...state.errors, resources: errorMsg },
+          }))
+          toast.error('Failed to load resources', {
+            description: errorMsg
+          })
+        }
+      },
+
+      fetchAHSPItems: async () => {
+        set((state) => ({
+          loading: { ...state.loading, ahspItems: true },
+          errors: { ...state.errors, ahspItems: null },
+        }))
+
+        try {
+          const client = assertSupabase()
+          const { data, error } = await client
+            .from('ahsp_items')
+            .select('*')
+            .order('updated_at', { ascending: false })
+
+          if (error) throw error
+
+          set((state) => ({
+            ahspItems: data || [],
+            loading: { ...state.loading, ahspItems: false },
+          }))
+        } catch (error: any) {
+          const errorMsg = error.message || 'Failed to fetch AHSP items'
+          set((state) => ({
+            loading: { ...state.loading, ahspItems: false },
+            errors: { ...state.errors, ahspItems: errorMsg },
+          }))
+          toast.error('Failed to load AHSP items', {
+            description: errorMsg
+          })
+        }
+      },
+
+      fetchComponents: async (ahspId?: string) => {
+        set((state) => ({
+          loading: { ...state.loading, components: true },
+          errors: { ...state.errors, components: null },
+        }))
+
+        try {
+          const client = assertSupabase()
+          let query = client
+            .from('ahsp_components')
+            .select(`
+              *,
+              resource:resources(*)
+            `)
+            .order('created_at', { ascending: true })
+
+          if (ahspId) {
+            query = query.eq('ahsp_id', ahspId)
+          }
+
+          const { data, error } = await query
+
+          if (error) throw error
+
+          // Group components by AHSP ID
+          const componentsByAHSP: Record<string, AHSPComponent[]> = {}
+          
+          data?.forEach((comp: any) => {
+            const component: AHSPComponent = {
+              id: comp.id,
+              ahspId: comp.ahsp_id,
+              type: comp.type || 'material',
+              resourceId: comp.resource_id,
+              coefficient: comp.coefficient,
+              unit: comp.unit,
+              unitPrice: comp.unit_price,
+              subtotal: comp.subtotal,
+              resource: comp.resource,
+              createdAt: comp.created_at,
+              updatedAt: comp.updated_at,
+            }
+
+            if (!componentsByAHSP[comp.ahsp_id]) {
+              componentsByAHSP[comp.ahsp_id] = []
+            }
+            componentsByAHSP[comp.ahsp_id].push(component)
+          })
+
+          set((state) => ({
+            componentsByAHSP: ahspId
+              ? { ...state.componentsByAHSP, [ahspId]: componentsByAHSP[ahspId] || [] }
+              : componentsByAHSP,
+            loading: { ...state.loading, components: false },
+          }))
+        } catch (error: any) {
+          const errorMsg = error.message || 'Failed to fetch components'
+          set((state) => ({
+            loading: { ...state.loading, components: false },
+            errors: { ...state.errors, components: errorMsg },
+          }))
+          toast.error('Failed to load components', {
+            description: errorMsg
+          })
+        }
+      },
+
+      fetchAll: async () => {
+        await Promise.all([
+          get().fetchResources(),
+          get().fetchAHSPItems(),
+          get().fetchComponents(),
+        ])
       },
 
       // Resource actions

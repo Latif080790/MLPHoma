@@ -87,9 +87,15 @@ export default function Home() {
   
   const totalBudget = useMemo(() => {
     if (!activeProject) return 0
-    // Prefer RAB total if available, else project budget
-    const rabTotal = rabItems.reduce((sum, item) => sum + (item.finalTotal || 0), 0)
-    return rabTotal > 0 ? rabTotal : (activeProject.budget || 0)
+    // Calculate RAB total using same logic as RAB.tsx
+    const rabTotal = rabItems.reduce((sum, item) => {
+      const volume = item.volume || 0
+      const unitPrice = item.unit_price || item.unitPrice || 0
+      return sum + (volume * unitPrice)
+    }, 0)
+    // Add 11% tax like in RAB module
+    const withTax = rabTotal * 1.11
+    return withTax > 0 ? withTax : (activeProject.budget || 0)
   }, [activeProject, rabItems])
 
   return (

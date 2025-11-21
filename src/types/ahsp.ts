@@ -118,6 +118,12 @@ export interface AHSPState {
 
 /** AHSP Actions */
 export interface AHSPActions {
+  // Data fetching actions
+  fetchResources: () => Promise<void>
+  fetchAHSPItems: () => Promise<void>
+  fetchComponents: (ahspId?: string) => Promise<void>
+  fetchAll: () => Promise<void>
+  
   // Resource actions
   addResource: (resource: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => void
   updateResource: (id: string, updates: Partial<Resource>) => void

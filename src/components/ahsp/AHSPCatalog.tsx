@@ -383,10 +383,11 @@ export function AHSPCatalog({
         onSave={(data) => {
           if (editingItem) {
             updateAHSPItem(editingItem.id, data)
+            return editingItem.id
           } else {
-            addAHSPItem(data)
+            const newId = addAHSPItem(data)
+            return newId
           }
-          setShowEditor(false)
         }}
       />
     </div>
