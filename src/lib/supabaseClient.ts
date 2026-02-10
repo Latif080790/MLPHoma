@@ -9,9 +9,9 @@ import { createClient } from '@supabase/supabase-js'
 // Do NOT expose the service role secret in client-side code.
 // Use only the anon public key here. Service role belongs on a secure backend.
 
-// Attempt to load from Node process env (injected by esbuild define)
-const url = process.env.VITE_SUPABASE_URL || ''
-const anonKey = process.env.VITE_SUPABASE_ANON_KEY || ''
+// Load from Vite environment variables (prefixed with VITE_)
+const url = import.meta.env.VITE_SUPABASE_URL || ''
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
 export const supabase = (url && anonKey) ? createClient(url, anonKey) : undefined
 
