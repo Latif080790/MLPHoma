@@ -117,7 +117,7 @@ export function generateDefaultFeatureConfig(projectId: string): FeatureConfig {
       exports: { enableExcelExport: true, enablePdfExport: true, defaultPaperSize: 'A4' },
       retention: { keepReportHistoryDays: 365, archivedReportsOn: 'monthly' },
       access: { readRoles: ['admin', 'pm', 'reporting'], writeRoles: ['admin'] },
-      notifications: { enabled: true, channels: ['inapp'] },
+      notifications: { enabled: true, channels: ['inapp'], thresholds: {} },
     },
   }
 }

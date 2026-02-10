@@ -146,15 +146,20 @@ export function AHSPCatalog({
         }
 
         validItems.forEach(item => {
+          const basePrice = item.basePrice || 0
+          const overhead = item.overheadPercentage || 0
+          const profit = item.profitPercentage || 0
+          const finalPrice = basePrice * (1 + overhead / 100 + profit / 100)
           addAHSPItem({
             code: item.code,
             name: item.name,
             unit: item.unit,
             category: item.category,
             description: item.description,
-            basePrice: item.basePrice || 0,
-            overheadPercentage: item.overheadPercentage || 0,
-            profitPercentage: item.profitPercentage || 0,
+            basePrice,
+            overheadPercentage: overhead,
+            profitPercentage: profit,
+            finalPrice,
             isActive: item.isActive !== false,
           })
         })

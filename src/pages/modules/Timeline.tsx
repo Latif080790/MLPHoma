@@ -572,7 +572,7 @@ export default function Timeline() {
       {/* Editor modal */}
       <TaskEditor
         projectId={projectId}
-        task={editingTask}
+        task={editingTask as any}
         isOpen={editorOpen}
         onClose={() => setEditorOpen(false)}
         onSave={(saved) => {

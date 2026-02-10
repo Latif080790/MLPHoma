@@ -24,9 +24,9 @@ interface AuthState {
   // Actions
   initialize: () => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, fullName?: string) => Promise<void>
+  signUp: (email: string, password: string, fullName?: string) => Promise<boolean>
   signOut: () => Promise<void>
-  resetPassword: (email: string) => Promise<void>
+  resetPassword: (email: string) => Promise<boolean>
   refreshProfile: () => Promise<void>
   clearError: () => void
 }

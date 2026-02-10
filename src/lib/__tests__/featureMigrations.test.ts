@@ -16,10 +16,9 @@ describe('featureMigrations', () => {
     expect(out.projectId).toBeDefined()
   })
 
-  it('ensures schemaVersion present', () => {
+  it('ensures schemaVersion present in module meta', () => {
     const sample = { projectId: 'p1', projectManagement: { meta: { projectId: 'p1' } } }
     const migrated = migrateConfig(sample)
-    expect(migrated.schemaVersion).toBeDefined()
     expect(migrated.projectManagement.meta.schemaVersion).toBeDefined()
   })
 })

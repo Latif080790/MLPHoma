@@ -336,8 +336,8 @@ export default function GanttChart({
     if (!el) return
     setVisibleWidthPx(el.clientWidth)
     function onScroll() {
-      const st = el.scrollTop
-      const sl = el.scrollLeft
+      const st = el!.scrollTop
+      const sl = el!.scrollLeft
       setIsInteracting(true)
       if (interactionTimeoutRef.current) {
         clearTimeout(interactionTimeoutRef.current)
@@ -352,8 +352,8 @@ export default function GanttChart({
     function onResize() {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
       rafRef.current = requestAnimationFrame(() => {
-        setVisibleHeight(el.clientHeight)
-        setVisibleWidthPx(el.clientWidth)
+        setVisibleHeight(el!.clientHeight)
+        setVisibleWidthPx(el!.clientWidth)
       })
     }
     el.addEventListener('scroll', onScroll, { passive: true })
@@ -418,7 +418,7 @@ export default function GanttChart({
         const collapsed = collapsedGroups[r.groupId]
         // collect its children
         let j = i + 1
-        while (j < rows.length && rows[j].type === 'task' && (rows[j] as Row).taskIndex != null && rows[j].taskId) {
+        while (j < rows.length && rows[j].type === 'task') {
           if (!collapsed) out.push(rows[j])
           j++
         }
@@ -480,8 +480,8 @@ export default function GanttChart({
       const row = effectiveRows[rIdx]
       if (row.type !== 'task') continue
       const succTask = tasks[row.taskIndex]
-      const deps = (succTask.dependencies || []).filter((d: TaskDependency) => !d.type || d.type === 'FS')
-      deps.forEach((d: TaskDependency) => {
+      const deps = (succTask.dependencies || []).filter((d) => !d.type || d.type === 'FS')
+      deps.forEach((d) => {
         const predIndex = tasks.findIndex((t) => t.id === d.predecessorId)
         if (predIndex === -1) return
         const predRow = taskIndexToRow[predIndex]
