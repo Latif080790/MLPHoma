@@ -52,7 +52,6 @@ export const notify = {
     return sonnerToast.success(options.title || 'Berhasil', {
       description: message,
       duration: options.duration,
-      important: options.important,
       action: options.action
         ? {
             label: options.action.label,
@@ -71,7 +70,6 @@ export const notify = {
     return sonnerToast.error(options.title || 'Terjadi Kesalahan', {
       description: message,
       duration: options.duration || 5000,
-      important: options.important ?? true,
       action: options.action
         ? {
             label: options.action.label,
@@ -90,7 +88,6 @@ export const notify = {
     return sonnerToast.warning(options.title || 'Peringatan', {
       description: message,
       duration: options.duration,
-      important: options.important,
       action: options.action
         ? {
             label: options.action.label,
@@ -109,7 +106,6 @@ export const notify = {
     return sonnerToast.info(options.title || 'Informasi', {
       description: message,
       duration: options.duration,
-      important: options.important,
       action: options.action
         ? {
             label: options.action.label,
@@ -128,7 +124,6 @@ export const notify = {
     return sonnerToast.loading(options.title || 'Memproses...', {
       description: message,
       duration: Infinity,
-      important: options.important,
     })
   },
 
@@ -160,7 +155,6 @@ export const notify = {
 
     return method(message, {
       duration: Infinity,
-      important: true,
     })
   },
 
@@ -175,7 +169,6 @@ export const notify = {
     return sonnerToast.success(options.title || 'Tindakan Berhasil', {
       description: message,
       duration: options.duration || 5000,
-      important: options.important ?? true,
       action: {
         label: 'Undo',
         onClick: onUndo,
@@ -187,10 +180,9 @@ export const notify = {
   /**
    * Custom notification
    */
-  custom(content: React.ReactNode, options: { duration?: number; important?: boolean } = {}) {
-    return sonnerToast.custom(content, {
+  custom(content: React.ReactNode, options: { duration?: number } = {}) {
+    return sonnerToast(content as string, {
       duration: options.duration,
-      important: options.important,
     })
   },
 

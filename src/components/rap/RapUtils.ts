@@ -14,6 +14,8 @@ export interface RapPlanItem {
   period: string
   /** Planned cost for the period (Rp) */
   planned: number
+  /** Actual cost for the period (Rp) */
+  actual?: number
 }
 
 /** Build YYYY-MM from year and month (1..12) */

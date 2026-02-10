@@ -51,6 +51,8 @@ export interface Project {
   endDate?: string
   budget?: number
   status?: string
+  /** User ID (owner of the project) */
+  userId?: string
   /** Optional payment terms attached to the project */
   paymentTerms?: PaymentTerms
   /** Misc free-form metadata */
@@ -111,6 +113,15 @@ export const useProjectStore = create<ProjectState>((set, get) => {
      */
     addProject: (project: Project) => {
       if (!project || !project.id) return
+      
+      // Auto-populate userId from auth store if not provided
+      if (!project.userId) {
+        const { useAuthStore } = require('./authStore')
+        const userId = useAuthStore.getState().user?.id
+        if (userId) {
+          project = { ...project, userId }
+        }
+      }
       
       // Validate input (skip id field)
       const { id, ...projectData } = project
@@ -270,6 +281,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
               endDate: row.end_date,
               budget: row.budget,
               status: row.status,
+              userId: row.user_id,
               paymentTerms: row.payment_terms,
               meta: row.meta,
             }

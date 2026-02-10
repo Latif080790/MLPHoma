@@ -9,9 +9,9 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Input } from '../../components/ui/input'
-import { Label } from '../../components/ui/label'
-import { Button } from '../../components/ui/button'
+import { Input } from '../../ui/input'
+import { Label } from '../../ui/label'
+import { Button } from '../../ui/button'
 import { RefreshCw, Save } from 'lucide-react'
 
 /**

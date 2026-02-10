@@ -6,7 +6,7 @@
  */
 
 import React, { useMemo, useRef } from 'react'
-import useRabStore from '../../store/rabStore'
+import { useRabStore } from '../../store/rabStore'
 import { mockProject } from '../../lib/mockData'
 import { computeItemTotals } from '../../lib/rabUtils'
 import notify from '../../lib/toast'
@@ -39,10 +39,8 @@ export default function RABTable() {
     () =>
       (items || []).map((it) => {
         const { subtotal, finalTotal } = computeItemTotals({
-          item_name: it.item_name || it.name || 'Item',
-          unit: it.unit || '',
           volume: it.volume || 0,
-          unit_price: it.unit_price || 0,
+          unitPrice: it.unit_price || 0,
         })
         return { it, subtotal, finalTotal }
       }),
@@ -73,11 +71,11 @@ export default function RABTable() {
     <div className="bg-white rounded-lg shadow p-4" ref={tableRef}>
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="text-lg font-semibold">RAB Summary — {mockProject.project_name}</h3>
+          <h3 className="text-lg font-semibold">RAB Summary — {mockProject.name}</h3>
           <div className="text-xs text-neutral-500">Edit volume & unit price inline. Perubahan akan tersimpan otomatis.</div>
         </div>
         <div className="flex items-center gap-2">
-          <RABExport tableId="rab-table" />
+          <RABExport projectId={projectId} />
         </div>
       </div>
 

@@ -6,7 +6,7 @@
  * quick impact preview when configuration values (overhead/profit/tax) change.
  */
 
-import type { FeatureConfig } from '../config/featureSchema'
+import type { FeatureConfig } from '../../config/featureSchema'
 
 /**
  * Minimal RAB item representation for sample calculations.

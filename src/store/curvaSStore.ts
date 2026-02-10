@@ -195,6 +195,7 @@ function computeAnalysis(
       vac: Math.round(vac),
     },
     status,
+    trend: spi > 1.01 || cpi > 1.01 ? 'improving' : spi < 0.99 || cpi < 0.99 ? 'declining' : 'stable',
     forecastCompletionDate: daysToGo > 0 ? forecastDate.toISOString().split('T')[0] : undefined,
     forecastTotalCost: Math.round(eac),
     analysisDate,
