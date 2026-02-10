@@ -6,9 +6,8 @@
  * Supports dark mode and Indonesian language.
  */
 
-import React, { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router'
-import { useAuthStore } from '../../store/authStore'
+import React, { useState } from 'react'
+import { Link } from 'react-router'
 import { authService } from '../../lib/authService'
 
 export default function ResetPassword() {
@@ -18,8 +17,6 @@ export default function ResetPassword() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  
-  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
