@@ -22,7 +22,7 @@ interface ProtectedRouteProps {
  * Wraps routes that require authentication
  */
 export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, loading, initialized, profile, error } = useSession()
+  const { isAuthenticated, loading, initialized, profile } = useSession()
   const location = useLocation()
 
   // Show loading skeleton while auth is initializing or loading
@@ -46,7 +46,11 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
   }
 
   // Check role-based access if required
-  if (requiredRoles && requiredRoles.length > 0 && profile) {
+  if (requiredRoles && requiredRoles.length > 0) {
+    if (!profile) {
+      // Profile not loaded yet or failed to load, keep showing loading
+      return <PageSkeleton />
+    }
     const userRole = profile.role || 'user'
     if (!requiredRoles.includes(userRole)) {
       // User doesn't have required role, redirect to home

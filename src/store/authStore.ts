@@ -154,7 +154,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   /**
    * Sign up with email, password, and optional full name
    */
-  signUp: async (email: string, password: string, fullName?: string) => {
+  signUp: async (email: string, password: string, fullName?: string): Promise<boolean> => {
     try {
       set({ loading: true, error: null })
 
@@ -165,7 +165,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           loading: false,
           error: error.message || 'Sign up failed',
         })
-        return
+        return false
       }
 
       // Fetch profile (will be auto-created by trigger)
@@ -182,11 +182,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         loading: false,
         error: null,
       })
+      return true
     } catch (err) {
       set({
         loading: false,
         error: err instanceof Error ? err.message : 'Sign up failed',
       })
+      return false
     }
   },
 
@@ -225,7 +227,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   /**
    * Send password reset email
    */
-  resetPassword: async (email: string) => {
+  resetPassword: async (email: string): Promise<boolean> => {
     try {
       set({ loading: true, error: null })
 
@@ -236,18 +238,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           loading: false,
           error: error.message || 'Password reset failed',
         })
-        return
+        return false
       }
 
       set({
         loading: false,
         error: null,
       })
+      return true
     } catch (err) {
       set({
         loading: false,
         error: err instanceof Error ? err.message : 'Password reset failed',
       })
+      return false
     }
   },
 

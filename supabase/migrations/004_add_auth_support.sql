@@ -16,6 +16,9 @@ BEGIN
   END IF;
 END $$;
 
+-- Create index on user_id for RLS performance
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON public.projects(user_id);
+
 -- 2. Create profiles table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -51,10 +54,11 @@ BEGIN
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
     NOW()
-  );
+  )
+  ON CONFLICT (id) DO NOTHING;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth;
 
 -- Create trigger on auth.users
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -69,21 +73,23 @@ DROP POLICY IF EXISTS "Allow public all wbs_items" ON public.wbs_items;
 DROP POLICY IF EXISTS "Allow public all timeline_tasks" ON public.timeline_tasks;
 DROP POLICY IF EXISTS "Allow public all task_dependencies" ON public.task_dependencies;
 DROP POLICY IF EXISTS "Allow public all rap_data" ON public.rap_data;
-DROP POLICY IF EXISTS "Allow public select resources" ON public.rab_items;
-DROP POLICY IF EXISTS "Allow public insert resources" ON public.rab_items;
-DROP POLICY IF EXISTS "Allow public update resources" ON public.rab_items;
-DROP POLICY IF EXISTS "Allow public delete resources" ON public.rab_items;
+
+-- Note: Keep dev policies on rab_items for now until backfill strategy is in place
+-- These will be replaced with proper RLS policies below
 
 -- 5. Create production RLS policies for projects
 DROP POLICY IF EXISTS "Users can view own projects" ON public.projects;
 CREATE POLICY "Users can view own projects" ON public.projects
   FOR SELECT USING (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "Users can insert own projects" ON public.projects
+DROP POLICY IF EXISTS "Users can insert own projects" ON public.projects;
+CREATE POLICY "Users can insert own projects" ON public.projects
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "Users can update own projects" ON public.projects
-  FOR UPDATE USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update own projects" ON public.projects;
+CREATE POLICY "Users can update own projects" ON public.projects
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Users can delete own projects" ON public.projects
   FOR DELETE USING (auth.uid() = user_id);
@@ -112,6 +118,13 @@ CREATE POLICY "Users can insert own wbs_items" ON public.wbs_items
 DROP POLICY IF EXISTS "Users can update own wbs_items" ON public.wbs_items;
 CREATE POLICY "Users can update own wbs_items" ON public.wbs_items
   FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.projects
+      WHERE projects.id = wbs_items.project_id
+      AND projects.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.projects
       WHERE projects.id = wbs_items.project_id
@@ -158,6 +171,13 @@ CREATE POLICY "Users can update own timeline_tasks" ON public.timeline_tasks
       WHERE projects.id = timeline_tasks.project_id
       AND projects.user_id = auth.uid()
     )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.projects
+      WHERE projects.id = timeline_tasks.project_id
+      AND projects.user_id = auth.uid()
+    )
   );
 
 DROP POLICY IF EXISTS "Users can delete own timeline_tasks" ON public.timeline_tasks;
@@ -194,6 +214,13 @@ CREATE POLICY "Users can insert own task_dependencies" ON public.task_dependenci
 DROP POLICY IF EXISTS "Users can update own task_dependencies" ON public.task_dependencies;
 CREATE POLICY "Users can update own task_dependencies" ON public.task_dependencies
   FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.projects
+      WHERE projects.id = task_dependencies.project_id
+      AND projects.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.projects
       WHERE projects.id = task_dependencies.project_id
@@ -240,6 +267,13 @@ CREATE POLICY "Users can update own rap_data" ON public.rap_data
       WHERE projects.id = rap_data.project_id
       AND projects.user_id = auth.uid()
     )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.projects
+      WHERE projects.id = rap_data.project_id
+      AND projects.user_id = auth.uid()
+    )
   );
 
 DROP POLICY IF EXISTS "Users can delete own rap_data" ON public.rap_data;
@@ -276,6 +310,13 @@ CREATE POLICY "Users can insert own rab_items" ON public.rab_items
 DROP POLICY IF EXISTS "Users can update own rab_items" ON public.rab_items;
 CREATE POLICY "Users can update own rab_items" ON public.rab_items
   FOR UPDATE USING (
+    EXISTS (
+      SELECT 1 FROM public.projects
+      WHERE projects.id = rab_items.project_id
+      AND projects.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.projects
       WHERE projects.id = rab_items.project_id

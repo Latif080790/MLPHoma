@@ -38,10 +38,10 @@ export default function ForgotPassword() {
       return
     }
 
-    await resetPassword(email)
+    const success = await resetPassword(email)
 
-    // Show success message if no error
-    if (!error) {
+    // Show success message if reset succeeded
+    if (success) {
       setSuccess(true)
     }
   }
