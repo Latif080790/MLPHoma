@@ -167,6 +167,7 @@ export async function upsertProject(project: any) {
     end_date: project.endDate,
     budget: project.budget,
     status: project.status,
+    user_id: project.userId,
     payment_terms: project.paymentTerms,
     meta: project.meta,
     updated_at: new Date().toISOString(),
