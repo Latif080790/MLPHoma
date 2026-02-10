@@ -19,28 +19,11 @@ import { syncRABItem, syncDelete } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import { rabItemInputSchema, rabItemUpdateSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
+import { generateId } from '../lib/idGenerator'
+import type { RABItem } from '../types/rab'
 
-/**
- * RABItem
- * Minimal shape used by UI and stores.
- */
-export interface RABItem {
-  id: string
-  projectId: string
-  item_code?: string
-  item_name?: string
-  name?: string
-  unit?: string
-  volume?: number
-  unit_price?: number
-  finalTotal?: number
-  final_total?: number
-  finalPrice?: number
-  taskId?: string // Link to Timeline Task (WBS)
-  createdAt?: string
-  updatedAt?: string
-  [key: string]: any
-}
+// Re-export RABItem for backward compatibility
+export type { RABItem }
 
 /**
  * Simple audit entry for actions affecting RAB
@@ -75,10 +58,6 @@ interface RabState {
   getHistory: (projectId: string) => { past: number; future: number }
   clearHistory: (projectId: string) => void
   syncProjectToSupabase?: (projectId: string) => Promise<void>
-}
-
-function generateId(prefix = 'rab') {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}-${Date.now().toString(36)}`
 }
 
 const STORAGE_KEY = 'rabStore:v2'
@@ -150,7 +129,7 @@ export const useRabStore = create<RabState>((set, get) => {
       }
 
       snapshotForHistory(projectId)
-      const id = generateId('item')
+      const id = generateId('rab-item')
       const now = new Date().toISOString()
       const newItem: RABItem = {
         id,
@@ -215,7 +194,7 @@ export const useRabStore = create<RabState>((set, get) => {
       const now = new Date().toISOString()
       const normalized = (items || []).map((it) => ({
         ...it,
-        id: it.id || generateId('imp'),
+        id: it.id || generateId('rab-imp'),
         projectId,
         createdAt: it.createdAt || now,
         updatedAt: it.updatedAt || now,
@@ -292,7 +271,7 @@ export const useRabStore = create<RabState>((set, get) => {
     logAction: (entry) => {
       const now = new Date().toISOString()
       const e: AuditEntry = {
-        id: generateId('audit'),
+        id: generateId('rab-audit'),
         timestamp: now,
         ...entry,
       }

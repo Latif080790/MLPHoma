@@ -5,7 +5,8 @@
 
 /**
  * RABItem
- * Minimal fields required by current modules.
+ * Unified type definition - single source of truth.
+ * Includes all field variations used across the codebase.
  */
 export interface RABItem {
   /** Unique identifier */
@@ -22,7 +23,7 @@ export interface RABItem {
   /** Unit */
   unit?: string
   /** Quantities and prices */
-  volume: number
+  volume?: number
   unit_price?: number
   unitPrice?: number
   /** Computed totals */
@@ -31,7 +32,11 @@ export interface RABItem {
   finalPrice?: number
   /** Optional WBS link */
   wbsId?: string
+  /** Optional Timeline Task link */
+  taskId?: string
   /** Optional metadata */
   createdAt?: string
   updatedAt?: string
+  /** @deprecated Avoid using index signature. Use explicit fields instead. */
+  [key: string]: any
 }

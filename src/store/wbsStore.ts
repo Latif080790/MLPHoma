@@ -11,13 +11,7 @@ import type { WBSStore, WBSItem } from '../types/wbs'
 import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { wbsItemInputSchema, wbsItemUpdateSchema } from '../lib/validationSchemas'
 import { syncWBSItem, syncDelete } from '../lib/supabaseSyncService'
-
-/**
- * Generate unique ID
- */
-function generateId(): string {
-  return `wbs-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
+import { generateId } from '../lib/idGenerator'
 
 /**
  * Generate WBS code based on hierarchy
@@ -94,7 +88,7 @@ export const useWBSStore = create<WBSStore>()(
 
         const newItem: WBSItem = {
           ...validation.data,
-          id: generateId(),
+          id: generateId('wbs'),
           projectId,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -352,7 +346,7 @@ export const useWBSStore = create<WBSStore>()(
         const now = new Date().toISOString()
         const newItems: WBSItem[] = items.map((item, index) => ({
           ...item,
-          id: item.id || generateId(),
+          id: item.id || generateId('wbs'),
           projectId,
           createdAt: now,
           updatedAt: now,
