@@ -102,7 +102,7 @@ export function calculateUnifiedSchedule(
 
     // Find AHSP components
     const ahspCode = item.item_code || item.code
-    const ahsp = ahspMap.get(ahspCode)
+    const ahsp = ahspCode ? ahspMap.get(ahspCode) : undefined
     
     if (ahsp) {
       const components = componentsByAHSP[ahsp.id] || []

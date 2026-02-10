@@ -35,7 +35,7 @@ describe('WhatIfPanel actions', () => {
   beforeEach(() => {
     // Reset stores to known state
     act(() => {
-      useCurvaSStore.setState({ savedScenarios: {}, baselineCache: {}, curvaSData: {} })
+      useCurvaSStore.setState({ savedScenarios: {}, curvaSData: {} } as any)
       useProjectStore.setState({
         projects: {
           [projectId]: { id: projectId, name: 'Test Project', budget: 1000000, status: 'Active' },

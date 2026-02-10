@@ -294,7 +294,7 @@ export default function WBS() {
           selectedId={selectedId}
           expandedIds={expandedIds}
           loading={loading}
-          onItemClick={selectItem}
+          onItemClick={(item) => selectItem(item.id)}
           onToggleExpand={toggleExpanded}
           onAddItem={handleAddItem}
           onEditItem={handleEditItem}

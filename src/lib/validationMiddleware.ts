@@ -405,7 +405,8 @@ export function createPartialSchema<T extends z.ZodObject<any>>(
 /**
  * Merge multiple validation errors into a single message
  */
-export function mergeErrorMessages(errors: ValidationError[]): string {
+export function mergeErrorMessages(errors: ValidationError[] | undefined): string {
+  if (!errors || errors.length === 0) return 'Validation failed'
   return errors.map(e => `${e.field}: ${e.message}`).join('; ')
 }
 

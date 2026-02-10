@@ -10,9 +10,23 @@ import { z } from 'zod'
 
 /**
  * Gabungkan className secara aman.
+ * Supports strings, booleans, null/undefined, and object syntax { className: condition }.
  */
-export function cn(...parts: Array<string | false | null | undefined>) {
-  return parts.filter(Boolean).join(' ')
+type ClassValue = string | false | null | undefined | Record<string, boolean | undefined>
+
+export function cn(...parts: ClassValue[]) {
+  const result: string[] = []
+  for (const part of parts) {
+    if (!part) continue
+    if (typeof part === 'string') {
+      result.push(part)
+    } else if (typeof part === 'object') {
+      for (const [key, value] of Object.entries(part)) {
+        if (value) result.push(key)
+      }
+    }
+  }
+  return result.join(' ')
 }
 
 /**

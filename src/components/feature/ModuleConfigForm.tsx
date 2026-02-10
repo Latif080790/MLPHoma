@@ -39,13 +39,13 @@ interface ModuleConfigFormProps<T> {
  * numeric thresholds and names.
  */
 export function ModuleConfigForm<T = any>({ title, initialValue, schema, onSubmit, compact = false }: ModuleConfigFormProps<T>) {
-  const methods = useForm<Partial<T>>({
+  const methods = useForm({
     resolver: zodResolver(schema),
-    defaultValues: initialValue as Partial<T>,
+    defaultValues: initialValue as any,
     mode: 'onSubmit',
   })
 
-  return <ModuleConfigFormInner title={title} methods={methods} onSubmit={onSubmit} compact={compact} />
+  return <ModuleConfigFormInner title={title} methods={methods as any} onSubmit={onSubmit} compact={compact} />
 }
 
 /**

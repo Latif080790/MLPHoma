@@ -57,6 +57,7 @@ export interface TimelineTask {
   status: TaskStatus
   priority: TaskPriority
   wbsId?: string
+  wbsCode?: string
   rabId?: string
   dependencies?: TaskDependency[]
   assignedResources?: string[]
@@ -217,12 +218,13 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
 
       const id = generateId('task')
       const now = new Date().toISOString()
-      const task: TimelineTask = {
+      const task = {
+        ...taskData,
         ...validation.data,
         id,
         createdAt: now,
         updatedAt: now,
-      }
+      } as TimelineTask
 
       set((s) => {
         const arr = s.tasksByProject[projectId] || []
@@ -250,8 +252,8 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
         const arr = s.tasksByProject[projectId] || []
         const next = arr.map((t) => {
           if (t.id !== id) return t
-          const start = validation.data.startDate ?? t.startDate
-          const end = validation.data.endDate ?? t.endDate
+          const start = validation.data?.startDate ?? t.startDate
+          const end = validation.data?.endDate ?? t.endDate
           updatedTask = { ...t, ...validation.data, duration: inclusiveDays(start, end), updatedAt: new Date().toISOString() }
           return updatedTask
         })

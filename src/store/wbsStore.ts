@@ -81,18 +81,23 @@ export const useWBSStore = create<WBSStore>()(
         const validation = validate(wbsItemInputSchema, { ...item, projectId })
         if (!validation.success) {
           const errorMsg = mergeErrorMessages(validation.errors)
-          toast.error('Failed to add WBS item', { description: errorMsg })
+          toast.error('Failed to add WBS item', errorMsg)
           set({ error: errorMsg })
           return
         }
 
-        const newItem: WBSItem = {
+        const newItem = {
           ...validation.data,
           id: generateId('wbs'),
           projectId,
+          code: validation.data?.code ?? '',
+          name: validation.data?.name ?? '',
+          level: validation.data?.level ?? 1,
+          parentId: validation.data?.parentId ?? null,
+          sortOrder: validation.data?.sortOrder ?? 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-        }
+        } as WBSItem
 
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
@@ -129,7 +134,7 @@ export const useWBSStore = create<WBSStore>()(
           const validation = validate(wbsItemUpdateSchema, updates)
           if (!validation.success) {
             const errorMsg = mergeErrorMessages(validation.errors)
-            toast.error('Failed to update WBS item', { description: errorMsg })
+            toast.error('Failed to update WBS item', errorMsg)
           set({ error: errorMsg })
           return
         }
@@ -346,7 +351,7 @@ export const useWBSStore = create<WBSStore>()(
         const now = new Date().toISOString()
         const newItems: WBSItem[] = items.map((item, index) => ({
           ...item,
-          id: item.id || generateId('wbs'),
+          id: (item as any).id || generateId('wbs'),
           projectId,
           createdAt: now,
           updatedAt: now,
@@ -444,7 +449,7 @@ function generateCodesForProject(items: WBSItem[]): WBSItem[] {
  * Get tree structure for rendering
  */
 export function getWBSTree(items: WBSItem[]): WBSItem[] {
-  const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] }]))
+  const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] as WBSItem[] }]))
   const rootItems: WBSItem[] = []
 
   items.forEach(item => {

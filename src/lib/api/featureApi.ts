@@ -8,8 +8,8 @@
  * Note: backend endpoints are placeholders; backend integration required to make persistent.
  */
 
-import type { FeatureConfig } from '../../src/config/featureSchema'
-import { useFeatureStore } from '../store/featureStore'
+import type { FeatureConfig } from '../../config/featureSchema'
+import { useFeatureStore } from '../../store/featureStore'
 
 const BASE = '/api/v1' // expected backend base (placeholder)
 
