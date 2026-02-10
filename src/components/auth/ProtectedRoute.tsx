@@ -22,7 +22,7 @@ interface ProtectedRouteProps {
  * Wraps routes that require authentication
  */
 export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, loading, initialized, profile } = useSession()
+  const { isAuthenticated, loading, initialized, profile, error } = useSession()
   const location = useLocation()
 
   // Show loading skeleton while auth is initializing or loading
@@ -30,13 +30,18 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
     return <PageSkeleton />
   }
 
+  // Fail-open approach: If auth initialization failed or Supabase not configured,
+  // allow access for development purposes
+  // Check if supabase is not configured by attempting to import it
+  const { supabase } = require('../../lib/supabaseClient')
+  if (!supabase) {
+    // Supabase not configured, allow access (dev mode)
+    return <>{children}</>
+  }
+
   // If auth is initialized but user is not authenticated, redirect to login
   // Pass current location in state so we can redirect back after login
   if (!isAuthenticated) {
-    // Fail-open approach: If auth initialization failed or Supabase not configured,
-    // allow access for development purposes
-    // This is detected by checking if initialized is true but no error and no user
-    // In production with proper auth setup, this will redirect to login
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
