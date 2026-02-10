@@ -168,3 +168,12 @@ create policy "Allow public all wbs_items" on public.wbs_items for all using (tr
 create policy "Allow public all timeline_tasks" on public.timeline_tasks for all using (true);
 create policy "Allow public all task_dependencies" on public.task_dependencies for all using (true);
 create policy "Allow public all rap_data" on public.rap_data for all using (true);
+
+-- ============================================================
+-- MIGRATION NOTES
+-- After running this schema, apply migrations in order:
+--   1. supabase/migrations/001_fix_foreign_keys.sql
+--   2. supabase/migrations/002_add_indexes.sql
+--   3. supabase/migrations/003_add_updated_at_triggers.sql
+--   4. supabase/migrations/004_add_auth_support.sql
+-- ============================================================
