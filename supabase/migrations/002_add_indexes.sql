@@ -25,6 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_rab_items_ahsp_code ON public.rab_items(ahsp_code
 -- Projects table indexes
 CREATE INDEX IF NOT EXISTS idx_projects_status ON public.projects(status);
 CREATE INDEX IF NOT EXISTS idx_projects_code ON public.projects(code);
+CREATE INDEX IF NOT EXISTS idx_projects_user_id ON public.projects(user_id);
 
 -- WBS items table indexes
 CREATE INDEX IF NOT EXISTS idx_wbs_items_project_id ON public.wbs_items(project_id);
