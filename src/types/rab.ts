@@ -37,6 +37,11 @@ export interface RABItem {
   /** Optional metadata */
   createdAt?: string
   updatedAt?: string
-  /** @deprecated Avoid using index signature. Use explicit fields instead. */
+  /**
+   * @deprecated IMPORTANT: This index signature is for backward compatibility only.
+   * Do NOT use arbitrary properties. Use explicit fields instead.
+   * This will be removed in a future version to enforce type safety.
+   * If you need additional fields, add them explicitly to this interface.
+   */
   [key: string]: any
 }

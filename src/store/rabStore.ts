@@ -129,7 +129,7 @@ export const useRabStore = create<RabState>((set, get) => {
       }
 
       snapshotForHistory(projectId)
-      const id = generateId('rab-item')
+      const id = generateId('rab')
       const now = new Date().toISOString()
       const newItem: RABItem = {
         id,
@@ -194,7 +194,7 @@ export const useRabStore = create<RabState>((set, get) => {
       const now = new Date().toISOString()
       const normalized = (items || []).map((it) => ({
         ...it,
-        id: it.id || generateId('rab-imp'),
+        id: it.id || generateId('rab'),
         projectId,
         createdAt: it.createdAt || now,
         updatedAt: it.updatedAt || now,
@@ -271,7 +271,7 @@ export const useRabStore = create<RabState>((set, get) => {
     logAction: (entry) => {
       const now = new Date().toISOString()
       const e: AuditEntry = {
-        id: generateId('rab-audit'),
+        id: generateId('rab'),
         timestamp: now,
         ...entry,
       }
