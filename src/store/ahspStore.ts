@@ -18,6 +18,7 @@ import {
   ahspComponentUpdateSchema
 } from '../lib/validationSchemas'
 import { toast } from 'sonner'
+import { generateId } from '../lib/idGenerator'
 import type { 
   AHSPStore, 
   Resource, 
@@ -27,13 +28,6 @@ import type {
   ResourceUnit,
   AHSPState
 } from '../types/ahsp'
-
-/**
- * Generate unique ID
- */
-function generateId(prefix: string = 'ahsp'): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
 
 /**
  * Validate unit format
