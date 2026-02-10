@@ -147,10 +147,10 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
     if (task) {
       updateTask(projectId, task.id, data)
       const updated = getTasks(projectId).find(t => t.id === task.id) || null
-      saved = updated
+      saved = updated as TimelineTask | null
     } else {
       const id = addTask(projectId, data)
-      saved = getTasks(projectId).find(t => t.id === id) || null
+      saved = (getTasks(projectId).find(t => t.id === id) || null) as TimelineTask | null
     }
 
     if (saved && onSave) onSave(saved)

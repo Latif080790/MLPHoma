@@ -4,20 +4,18 @@
  */
 
 /** Task dependency types */
-export enum DependencyType {
-  FINISH_TO_START = 'FS', // Task B starts after Task A finishes
-  START_TO_START = 'SS',   // Task B starts when Task A starts
-  FINISH_TO_FINISH = 'FF', // Task B finishes when Task A finishes
-  START_TO_FINISH = 'SF',  // Task B finishes after Task A starts
-}
+export type DependencyType = 'FS' | 'SS' | 'FF' | 'SF'
 
 /** Task status */
-export enum TaskStatus {
-  NOT_STARTED = 'not_started',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  DELAYED = 'delayed',
-}
+export type TaskStatus = 'not_started' | 'in_progress' | 'completed' | 'delayed'
+
+/** TaskStatus enum values for backward compatibility */
+export const TaskStatusValues = {
+  NOT_STARTED: 'not_started' as TaskStatus,
+  IN_PROGRESS: 'in_progress' as TaskStatus,
+  COMPLETED: 'completed' as TaskStatus,
+  DELAYED: 'delayed' as TaskStatus,
+} as const
 
 /** Single task in timeline */
 export interface TimelineTask {

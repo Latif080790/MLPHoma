@@ -207,3 +207,41 @@ export interface AHSPValidationResult {
   errors: string[]
   warnings: string[]
 }
+
+/**
+ * AHSPItemWithRelations
+ * Extended AHSP item type that includes related data (components, price history, etc.)
+ * Used by the detail dialog and other views that need full item data.
+ */
+export interface AHSPItemWithRelations extends AHSPItem {
+  /** Resolved components with resource data */
+  components?: (AHSPComponent & { resource?: Resource })[]
+  /** Material cost subtotal */
+  materialCost?: number
+  /** Labor cost subtotal */
+  laborCost?: number
+  /** Equipment cost subtotal */
+  equipmentCost?: number
+  /** Grand total price (alias for finalPrice with markups) */
+  grandTotalPrice?: number
+  /** AHSP level classification */
+  level?: 'master' | 'custom' | 'project_review' | 'historis'
+  /** Item status */
+  status?: 'active' | 'draft' | 'archived'
+  /** Division category */
+  division?: string
+  /** Tags for categorization */
+  tags?: string[]
+  /** Additional notes */
+  notes?: string
+  /** Price history records */
+  priceHistory?: Array<{
+    id: string
+    oldPrice: number | null
+    newPrice: number
+    changeType: string
+    changeReason?: string
+    changedAt?: string
+    createdAt?: string
+  }>
+}

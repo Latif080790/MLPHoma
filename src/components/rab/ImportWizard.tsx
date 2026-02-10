@@ -14,7 +14,7 @@
 import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import useAHSPStore from '../../store/ahspStore'
+import { useAHSPStore } from '../../store/ahspStore'
 import notify from '../../lib/toast'
 
 /**
@@ -209,7 +209,7 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
       return
     }
 
-    importAHSPItems(toAdd)
+    importAHSPItems(toAdd as any)
     notify.success(`Imported ${toAdd.length} AHSP items`)
     // clear preview
     setFileName(null)

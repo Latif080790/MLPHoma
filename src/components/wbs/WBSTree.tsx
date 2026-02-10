@@ -292,7 +292,7 @@ export function WBSTree({
 
   // Build tree structure
   const tree = React.useMemo(() => {
-    const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] }]))
+    const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] as WBSItem[] }]))
     const rootItems: WBSItem[] = []
 
     items.forEach(item => {
@@ -340,7 +340,7 @@ export function WBSTree({
     setDropTarget({ id: itemId, position })
   }, [draggedItem])
 
-  const handleDrop = useCallback((e: React.DragEvent, targetId: string, index: number) => {
+  const handleDrop = useCallback((e: React.DragEvent, targetId: string | null, index: number) => {
     e.preventDefault()
     
     if (!draggedItem || !onMoveItem) return
