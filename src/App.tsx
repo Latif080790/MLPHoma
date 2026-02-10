@@ -4,6 +4,7 @@
  */
 
 import { HashRouter, Route, Routes } from 'react-router'
+import { lazy, Suspense, useEffect } from 'react'
 import HomePage from './pages/Home'
 import ProjectManagement from './pages/modules/ProjectManagement'
 import WBS from './pages/modules/WBS'
@@ -20,29 +21,136 @@ import NotFound from './pages/NotFound'
 
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import AppToaster from './components/common/Notifications'
+import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { useAuthStore } from './store/authStore'
+import { PageSkeleton } from './components/common/PageSkeleton'
+
+// Lazy load auth pages
+const Login = lazy(() => import('./pages/auth/Login'))
+const Register = lazy(() => import('./pages/auth/Register'))
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'))
 
 export default function App() {
+  const initialize = useAuthStore((state) => state.initialize)
+
+  // Initialize auth on app mount
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
   return (
     <HashRouter>
       {/* Global toaster untuk notifikasi */}
       <AppToaster />
       {/* Error boundary membungkus seluruh routing */}
       <ErrorBoundary>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/projects" element={<ProjectManagement />} />
-          <Route path="/wbs" element={<WBS />} />
-          <Route path="/ahsp" element={<AHSP />} />
-          <Route path="/rab" element={<RAB />} />
-          <Route path="/timeline" element={<Timeline />} />
-          <Route path="/rap" element={<RAP />} />
-          <Route path="/curvas" element={<CurvaS />} />
-          <Route path="/resource" element={<Resource />} />
-          <Route path="/cashflow" element={<CashFlow />} />
-          <Route path="/progress" element={<Progress />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<PageSkeleton />}>
+          <Routes>
+            {/* Public auth routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            {/* Protected routes */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/projects"
+              element={
+                <ProtectedRoute>
+                  <ProjectManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/wbs"
+              element={
+                <ProtectedRoute>
+                  <WBS />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ahsp"
+              element={
+                <ProtectedRoute>
+                  <AHSP />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rab"
+              element={
+                <ProtectedRoute>
+                  <RAB />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/timeline"
+              element={
+                <ProtectedRoute>
+                  <Timeline />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rap"
+              element={
+                <ProtectedRoute>
+                  <RAP />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/curvas"
+              element={
+                <ProtectedRoute>
+                  <CurvaS />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/resource"
+              element={
+                <ProtectedRoute>
+                  <Resource />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cashflow"
+              element={
+                <ProtectedRoute>
+                  <CashFlow />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/progress"
+              element={
+                <ProtectedRoute>
+                  <Progress />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </ErrorBoundary>
     </HashRouter>
   )
