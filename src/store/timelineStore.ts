@@ -14,6 +14,7 @@ import { createCachedGetterWithKey } from '../lib/cachedGetter'
 import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/validationSchemas'
 import { syncTimelineTask, syncDelete } from '../lib/supabaseSyncService'
+import { generateId } from '../lib/idGenerator'
 
 /**
  * Task status
@@ -98,16 +99,6 @@ export interface TimelineState {
 
   /** Snapshot baseline (copy current dates to baseline fields) */
   setBaseline: (projectId: string, overwrite?: boolean) => void
-}
-
-/**
- * Generate reasonably-unique id for tasks
- *
- * @param prefix optional prefix
- * @returns id string
- */
-function rid(prefix = 'task'): string {
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`
 }
 
 /**
@@ -224,7 +215,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
         return ''
       }
 
-      const id = rid('task')
+      const id = generateId('task')
       const now = new Date().toISOString()
       const task: TimelineTask = {
         ...validation.data,
