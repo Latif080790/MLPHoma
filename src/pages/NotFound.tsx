@@ -4,7 +4,6 @@
  */
 
 import React from "react"
-import { AppShell } from "../components/layout/AppShell"
 import { EmptyState } from "../components/common/EmptyState"
 
 /**
@@ -17,7 +16,7 @@ export default function NotFound() {
     window.location.hash = `#${normalized}`
   }
   return (
-    <AppShell projectName="—">
+    <div className="space-y-6">
       <div className="grid gap-4">
         <EmptyState
           title="Page not found"
@@ -33,6 +32,6 @@ export default function NotFound() {
           }
         />
       </div>
-    </AppShell>
+    </div>
   )
 }

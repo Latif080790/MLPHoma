@@ -11,7 +11,6 @@
 
 import React, { useCallback, useRef, useState, useMemo } from 'react'
 import { PlusSquare, Download, RefreshCw } from 'lucide-react'
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Button } from '../../components/ui/button'
 import { useProjectStore } from '../../store/projectStore'
@@ -194,18 +193,18 @@ export default function CashFlow(): JSX.Element {
   // Jika tidak ada project terpilih, tampilkan pesan instruktif
   if (!projectId) {
     return (
-      <AppShell>
+      <div className="space-y-6">
         <ModuleHeader title="Cash Flow" description="Cash Flow projection and simulation" />
         <div className="rounded-xl border p-6 text-center dark:border-neutral-800">
           <p className="text-neutral-600 dark:text-neutral-300">Please select a project to view Cash Flow.</p>
         </div>
-      </AppShell>
+      </div>
     )
   }
 
   // Render halaman utama Cash Flow
   return (
-    <AppShell projectName={projectName}>
+    <div className="space-y-6">
       <ModuleHeader
         title="Cash Flow"
         description="Time-phased cashflow, scenario compare and what-if simulator."
@@ -265,6 +264,6 @@ export default function CashFlow(): JSX.Element {
           <WhatIfPanel projectId={projectId} projectBudget={projectBudget} />
         </div>
       </div>
-    </AppShell>
+    </div>
   )
 }

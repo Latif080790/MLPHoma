@@ -6,7 +6,6 @@
  */
 
 import React, { useMemo, useRef, useCallback } from "react"
-import { AppShell } from "../../components/layout/AppShell"
 import { ModuleHeader } from "../../components/modules/ModuleHeader"
 import { Boxes, CalendarDays, Package, Receipt, TrendingUp, Download, FileSpreadsheet, FileText, HardHat, Hammer, Truck } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
@@ -221,7 +220,7 @@ export default function Resource() {
   const exportRef = useRef<HTMLDivElement | null>(null)
 
   return (
-    <AppShell projectName={projectName}>
+    <div className="space-y-6">
       <ModuleHeader
         icon={<Boxes size={18} />}
         title="Resource Planning"
@@ -428,6 +427,6 @@ export default function Resource() {
           )}
         </TabsContent>
       </Tabs>
-    </AppShell>
+    </div>
   )
 }

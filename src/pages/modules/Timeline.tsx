@@ -35,7 +35,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../../components/ui/dropdown-menu'
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { EmptyState } from '../../components/common/EmptyState'
 
@@ -302,7 +301,7 @@ export default function Timeline() {
 
   if (!projectId) {
     return (
-      <AppShell>
+      <div className="space-y-6">
         <ModuleHeader
           icon={<AlertTriangle size={18} />}
           title="Timeline"
@@ -313,12 +312,12 @@ export default function Timeline() {
           description="Please select a project to view its timeline."
           imageKeyword="gantt chart"
         />
-      </AppShell>
+      </div>
     )
   }
 
   return (
-    <AppShell projectName={projectName}>
+    <div className="space-y-6">
       <ModuleHeader
         icon={<AlertTriangle size={18} />}
         title="Timeline & Gantt"
@@ -586,6 +585,6 @@ export default function Timeline() {
         open={importWBSOpen}
         onOpenChange={setImportWBSOpen}
       />
-    </AppShell>
+    </div>
   )
 }

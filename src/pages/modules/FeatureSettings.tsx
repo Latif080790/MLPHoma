@@ -10,7 +10,6 @@
 
 import React, { useMemo, useState } from 'react'
 import { Download, RefreshCw } from 'lucide-react'
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Button } from '../../components/ui/button'
 import { useProjectStore } from '../../store/projectStore'
@@ -70,17 +69,17 @@ export default function FeatureSettings(): JSX.Element {
 
   if (!projectId) {
     return (
-      <AppShell>
+      <div className="space-y-6">
         <ModuleHeader title="Feature Settings" description="Project feature configuration (admin preview)" />
         <div className="rounded-xl border p-6 text-center dark:border-neutral-800">
           <p className="text-neutral-600 dark:text-neutral-300">Select a project to view or manage feature configuration.</p>
         </div>
-      </AppShell>
+      </div>
     )
   }
 
   return (
-    <AppShell projectName={activeProject?.name ?? undefined}>
+    <div className="space-y-6">
       <ModuleHeader
         title="Feature Settings"
         description="Preview and export per-project feature configuration. Use this as the single source of feature flags and module policies."
@@ -107,6 +106,6 @@ export default function FeatureSettings(): JSX.Element {
           </pre>
         </div>
       </div>
-    </AppShell>
+    </div>
   )
 }

@@ -6,7 +6,6 @@
  */
 
 import React, { useMemo, useRef, useState } from "react"
-import { AppShell } from "../../components/layout/AppShell"
 import { ModuleHeader } from "../../components/modules/ModuleHeader"
 import { BarChart2, Plus, Download, FileSpreadsheet, FileText } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
@@ -154,7 +153,7 @@ export default function Progress() {
   }, [all, form.date])
 
   return (
-    <AppShell projectName={projectName}>
+    <div className="space-y-6">
       <ModuleHeader
         icon={<BarChart2 size={18} />}
         title="Progress Tracking"
@@ -304,6 +303,6 @@ export default function Progress() {
           </div>
         </div>
       )}
-    </AppShell>
+    </div>
   )
 }

@@ -14,7 +14,6 @@
  */
 
 import React, { useState } from 'react'
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { useProjectStore } from '../../store/projectStore'
 import { useCurvaSStore } from '../../store/curvaSStore'
@@ -110,7 +109,7 @@ export default function CurvaSPage() {
   // Empty state when no active project
   if (!projectId) {
     return (
-      <AppShell>
+      <div className="space-y-6">
         <ModuleHeader
           icon={<LineChart size={18} />}
           title="Curva-S"
@@ -119,14 +118,14 @@ export default function CurvaSPage() {
         <div className="rounded-xl border p-6 text-center dark:border-neutral-800">
           <p className="text-neutral-600 dark:text-neutral-300">Please select a project to view Curva-S.</p>
         </div>
-      </AppShell>
+      </div>
     )
   }
 
   const empty = !dataPoints || dataPoints.length === 0
 
   return (
-    <AppShell projectName={projectName}>
+    <div className="space-y-6">
       <ModuleHeader
         icon={<LineChart size={18} />}
         title="Curva-S"
@@ -232,6 +231,6 @@ export default function CurvaSPage() {
           </Card>
         </div>
       )}
-    </AppShell>
+    </div>
   )
 }
