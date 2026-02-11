@@ -5,12 +5,18 @@
 
 import { create } from 'zustand'
 import { assertSupabase } from '../lib/supabaseClient'
-import { devtools } from 'zustand/middleware'
+import type {
+  AhspItemRow,
+  ResourceRow,
+  AhspComponentRow,
+  AhspPriceHistoryRow
+} from '../lib/supabaseClient'
+import { devtools, persist } from 'zustand/middleware'
 import { calculateAHSPPrice as calcAHSPPrice } from '../lib/calculationService'
 import { syncAHSPItem, syncResource, syncAHSPComponent, syncDelete } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
-import { 
-  resourceInputSchema, 
+import {
+  resourceInputSchema,
   resourceUpdateSchema,
   ahspItemInputSchema,
   ahspItemUpdateSchema,
@@ -19,14 +25,15 @@ import {
 } from '../lib/validationSchemas'
 import { toast } from 'sonner'
 import { generateId } from '../lib/idGenerator'
-import type { 
-  AHSPStore, 
-  Resource, 
-  AHSPItem, 
+import type {
+  AHSPStore,
+  Resource,
+  AHSPItem,
   AHSPComponent,
   ResourceType,
   ResourceUnit,
-  AHSPState
+  AHSPState,
+  PriceHistory
 } from '../types/ahsp'
 
 /**
@@ -42,650 +49,755 @@ function validateUnit(unit: string): unit is ResourceUnit {
  */
 export const useAHSPStore = create<AHSPStore>()(
   devtools(
-    (set, get) => ({
-      // Initial state
-      resources: [],
-      ahspItems: [],
-      componentsByAHSP: {},
-      loading: {
-        resources: false,
-        ahspItems: false,
-        components: false,
-      },
-      errors: {
-        resources: null,
-        ahspItems: null,
-        components: null,
-      },
+    persist(
+      (set, get) => ({
+        // Initial state
+        resources: [],
+        ahspItems: [],
+        componentsByAHSP: {},
+        loading: {
+          resources: false,
+          ahspItems: false,
+          components: false,
+          priceHistory: false,
+        },
+        settings: {
+          defaultOverhead: 10,
+          defaultProfit: 10,
+        },
+        errors: {
+          resources: null,
+          ahspItems: null,
+          components: null,
+          priceHistory: null,
+        },
 
-      // Data fetching actions
-      fetchResources: async () => {
-        set((state) => ({
-          loading: { ...state.loading, resources: true },
-          errors: { ...state.errors, resources: null },
-        }))
-
-        try {
-          const client = assertSupabase()
-          const { data, error } = await client
-            .from('resources')
-            .select('*')
-            .order('updated_at', { ascending: false })
-
-          if (error) throw error
-
+        // Data fetching actions
+        fetchResources: async () => {
           set((state) => ({
-            resources: data || [],
-            loading: { ...state.loading, resources: false },
+            loading: { ...state.loading, resources: true },
+            errors: { ...state.errors, resources: null },
           }))
-        } catch (error: any) {
-          const errorMsg = error.message || 'Failed to fetch resources'
+
+          try {
+            const client = assertSupabase()
+            const { data, error } = await client
+              .from('resources')
+              .select('*')
+              .order('updated_at', { ascending: false })
+
+            if (error) throw error
+
+            const rows = (data as ResourceRow[]) || []
+            const resources: Resource[] = rows.map(r => ({
+              id: r.id,
+              code: r.code,
+              name: r.name,
+              type: r.type as ResourceType,
+              unit: r.unit as ResourceUnit,
+              unitPrice: r.unit_price,
+              isActive: r.is_active ?? true,
+              supplier: r.supplier,
+              specifications: r.specifications,
+              createdAt: r.created_at || new Date().toISOString(),
+              updatedAt: r.updated_at || new Date().toISOString()
+            }))
+
+            set((state) => ({
+              resources,
+              loading: { ...state.loading, resources: false },
+            }))
+          } catch (error: any) {
+            const errorMsg = error.message || 'Failed to fetch resources'
+            set((state) => ({
+              loading: { ...state.loading, resources: false },
+              errors: { ...state.errors, resources: errorMsg },
+            }))
+            toast.error('Failed to load resources', {
+              description: errorMsg
+            })
+          }
+        },
+
+        fetchAHSPItems: async () => {
           set((state) => ({
-            loading: { ...state.loading, resources: false },
-            errors: { ...state.errors, resources: errorMsg },
+            loading: { ...state.loading, ahspItems: true },
+            errors: { ...state.errors, ahspItems: null },
           }))
-          toast.error('Failed to load resources', {
-            description: errorMsg
-          })
-        }
-      },
 
-      fetchAHSPItems: async () => {
-        set((state) => ({
-          loading: { ...state.loading, ahspItems: true },
-          errors: { ...state.errors, ahspItems: null },
-        }))
+          try {
+            const client = assertSupabase()
+            const { data, error } = await client
+              .from('ahsp_items')
+              .select('*')
+              .order('updated_at', { ascending: false })
 
-        try {
-          const client = assertSupabase()
-          const { data, error } = await client
-            .from('ahsp_items')
-            .select('*')
-            .order('updated_at', { ascending: false })
+            if (error) throw error
 
-          if (error) throw error
+            const items = (data as AhspItemRow[]) || []
+            set((state) => ({
+              ahspItems: items.map((item) => ({
+                ...item,
+                // Ensure property mapping if names differ, though AhspItemRow mostly matches AHSPItem except for camelCase?
+                // AHSPItem: id, code, name, category, unit, basePrice, finalPrice
+                // AhspItemRow: id, code, name, category, unit, base_price, final_price
+                // We need to map snake_case to camelCase
+                basePrice: item.base_price || 0,
+                finalPrice: item.final_price || 0,
+                overheadPercentage: item.overhead_percentage || 0,
+                profitPercentage: item.profit_percentage || 0,
+                createdAt: item.created_at,
+                updatedAt: item.updated_at
+              })) as AHSPItem[],
+              loading: { ...state.loading, ahspItems: false },
+            }))
+          } catch (error: any) {
+            const errorMsg = error.message || 'Failed to fetch AHSP items'
+            set((state) => ({
+              loading: { ...state.loading, ahspItems: false },
+              errors: { ...state.errors, ahspItems: errorMsg },
+            }))
+            toast.error('Failed to load AHSP items', {
+              description: errorMsg
+            })
+          }
+        },
 
+        fetchComponents: async (ahspId?: string) => {
           set((state) => ({
-            ahspItems: data || [],
-            loading: { ...state.loading, ahspItems: false },
+            loading: { ...state.loading, components: true },
+            errors: { ...state.errors, components: null },
           }))
-        } catch (error: any) {
-          const errorMsg = error.message || 'Failed to fetch AHSP items'
-          set((state) => ({
-            loading: { ...state.loading, ahspItems: false },
-            errors: { ...state.errors, ahspItems: errorMsg },
-          }))
-          toast.error('Failed to load AHSP items', {
-            description: errorMsg
-          })
-        }
-      },
 
-      fetchComponents: async (ahspId?: string) => {
-        set((state) => ({
-          loading: { ...state.loading, components: true },
-          errors: { ...state.errors, components: null },
-        }))
-
-        try {
-          const client = assertSupabase()
-          let query = client
-            .from('ahsp_components')
-            .select(`
+          try {
+            const client = assertSupabase()
+            let query = client
+              .from('ahsp_components')
+              .select(`
               *,
               resource:resources(*)
             `)
-            .order('created_at', { ascending: true })
+              .order('created_at', { ascending: true })
 
-          if (ahspId) {
-            query = query.eq('ahsp_id', ahspId)
+            if (ahspId) {
+              query = query.eq('ahsp_id', ahspId)
+            }
+
+            const { data, error } = await query
+
+            if (error) throw error
+
+            // Group components by AHSP ID
+            const componentsByAHSP: Record<string, AHSPComponent[]> = {}
+
+            const rows = (data as (AhspComponentRow & { resource: ResourceRow | null })[]) || []
+
+            rows.forEach((comp: AhspComponentRow & { resource: ResourceRow | null }) => {
+              const component: AHSPComponent = {
+                id: comp.id,
+                ahspId: comp.ahsp_id,
+                type: comp.type as ResourceType,
+                resourceId: comp.resource_id,
+                coefficient: comp.coefficient,
+                unit: comp.unit as ResourceUnit,
+                unitPrice: comp.unit_price,
+                subtotal: comp.subtotal,
+                resource: comp.resource ? {
+                  id: comp.resource.id,
+                  code: comp.resource.code,
+                  name: comp.resource.name,
+                  type: comp.resource.type as ResourceType,
+                  unit: comp.resource.unit as ResourceUnit,
+                  unitPrice: comp.resource.unit_price,
+                  isActive: comp.resource.is_active ?? true,
+                  supplier: comp.resource.supplier,
+                  specifications: comp.resource.specifications,
+                  createdAt: comp.resource.created_at || new Date().toISOString(),
+                  updatedAt: comp.resource.updated_at || new Date().toISOString()
+                } : undefined,
+                createdAt: comp.created_at || new Date().toISOString(),
+                updatedAt: comp.updated_at || new Date().toISOString(),
+              }
+
+              if (!componentsByAHSP[comp.ahsp_id]) {
+                componentsByAHSP[comp.ahsp_id] = []
+              }
+              componentsByAHSP[comp.ahsp_id].push(component)
+            })
+
+            set((state) => ({
+              componentsByAHSP: ahspId
+                ? { ...state.componentsByAHSP, [ahspId]: componentsByAHSP[ahspId] || [] }
+                : componentsByAHSP,
+              loading: { ...state.loading, components: false },
+            }))
+          } catch (error: any) {
+            const errorMsg = error.message || 'Failed to fetch components'
+            set((state) => ({
+              loading: { ...state.loading, components: false },
+              errors: { ...state.errors, components: errorMsg },
+            }))
+            toast.error('Failed to load components', {
+              description: errorMsg
+            })
           }
+        },
 
-          const { data, error } = await query
+        fetchAll: async () => {
+          await Promise.all([
+            get().fetchResources(),
+            get().fetchAHSPItems(),
+            get().fetchComponents(),
+          ])
+        },
 
-          if (error) throw error
-
-          // Group components by AHSP ID
-          const componentsByAHSP: Record<string, AHSPComponent[]> = {}
-          
-          data?.forEach((comp: any) => {
-            const component: AHSPComponent = {
-              id: comp.id,
-              ahspId: comp.ahsp_id,
-              type: comp.type || 'material',
-              resourceId: comp.resource_id,
-              coefficient: comp.coefficient,
-              unit: comp.unit,
-              unitPrice: comp.unit_price,
-              subtotal: comp.subtotal,
-              resource: comp.resource,
-              createdAt: comp.created_at,
-              updatedAt: comp.updated_at,
-            }
-
-            if (!componentsByAHSP[comp.ahsp_id]) {
-              componentsByAHSP[comp.ahsp_id] = []
-            }
-            componentsByAHSP[comp.ahsp_id].push(component)
-          })
-
-          set((state) => ({
-            componentsByAHSP: ahspId
-              ? { ...state.componentsByAHSP, [ahspId]: componentsByAHSP[ahspId] || [] }
-              : componentsByAHSP,
-            loading: { ...state.loading, components: false },
-          }))
-        } catch (error: any) {
-          const errorMsg = error.message || 'Failed to fetch components'
-          set((state) => ({
-            loading: { ...state.loading, components: false },
-            errors: { ...state.errors, components: errorMsg },
-          }))
-          toast.error('Failed to load components', {
-            description: errorMsg
-          })
-        }
-      },
-
-      fetchAll: async () => {
-        await Promise.all([
-          get().fetchResources(),
-          get().fetchAHSPItems(),
-          get().fetchComponents(),
-        ])
-      },
-
-      // Resource actions
-      addResource: (resource) => {
-        // Validate input
-        const validation = validate(resourceInputSchema, resource)
-        if (!validation.success) {
-          const errors = validation.errors || []
-          const errorMsg = errors[0]?.message || 'Validation failed'
-          toast.error('Failed to add resource', {
-            description: errorMsg
-          })
-          set((state) => ({
-            errors: {
-              ...state.errors,
-              resources: errorMsg,
-            },
-          }))
-          return
-        }
-
-        const newResource: Resource = {
-          ...validation.data!,
-          id: generateId('res'),
-          isActive: validation.data!.isActive ?? true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-
-        set((state) => ({
-          resources: [...state.resources, newResource],
-          errors: {
-            ...state.errors,
-            resources: null,
-          },
-        }))
-
-        // Queue-based sync with retry logic
-        syncResource(newResource)
-      },
-
-      updateResource: (id, updates) => {
-        // Validate updates
-        const validation = validate(resourceUpdateSchema, updates)
-        if (!validation.success) {
-          const errors = validation.errors || []
-          const errorMsg = errors[0]?.message || 'Validation failed'
-          toast.error('Failed to update resource', {
-            description: errorMsg
-          })
-          return
-        }
-
-        set((state) => ({
-          resources: state.resources.map(resource =>
-            resource.id === id
-              ? { ...resource, ...validation.data!, updatedAt: new Date().toISOString() }
-              : resource
-          ),
-        }))
-      },
-
-      deleteResource: (id) => {
-        set((state) => {
-          // Check if resource is used in any component
-          const isUsed = Object.values(state.componentsByAHSP)
-            .flat()
-            .some(component => component.resourceId === id)
-
-          if (isUsed) {
-            return {
+        // Resource actions
+        addResource: (resource) => {
+          // Validate input
+          const validation = validate(resourceInputSchema, resource)
+          if (!validation.success) {
+            const errors = validation.errors || []
+            const errorMsg = errors[0]?.message || 'Validation failed'
+            toast.error('Failed to add resource', {
+              description: errorMsg
+            })
+            set((state) => ({
               errors: {
                 ...state.errors,
-                resources: 'Cannot delete resource that is used in AHSP components',
+                resources: errorMsg,
               },
-            }
+            }))
+            return
           }
 
-          return {
-            resources: state.resources.filter(resource => resource.id !== id),
+          const newResource: Resource = {
+            ...validation.data!,
+            id: generateId('res'),
+            isActive: validation.data!.isActive ?? true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+
+          set((state) => ({
+            resources: [...state.resources, newResource],
             errors: {
               ...state.errors,
               resources: null,
             },
+          }))
+
+          // Queue-based sync with retry logic
+          syncResource(newResource)
+        },
+
+        updateResource: (id, updates) => {
+          // Validate updates
+          const validation = validate(resourceUpdateSchema, updates)
+          if (!validation.success) {
+            const errors = validation.errors || []
+            const errorMsg = errors[0]?.message || 'Validation failed'
+            toast.error('Failed to update resource', {
+              description: errorMsg
+            })
+            return
           }
-        })
-      },
 
-      importResources: (resources) => {
-        const newResources: Resource[] = resources.map(resource => ({
-          ...resource,
-          id: generateId('res'),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }))
-
-        set((state) => ({
-          resources: [...state.resources, ...newResources],
-        }))
-      },
-
-      exportResources: () => {
-        return get().resources
-      },
-
-      // AHSP item actions
-      addAHSPItem: (item) => {
-        // Validate input
-        const validation = validate(ahspItemInputSchema, item)
-        if (!validation.success) {
-          const errors = validation.errors || []
-          const errorMsg = errors[0]?.message || 'Validation failed'
-          toast.error('Failed to add AHSP item', {
-            description: errorMsg
-          })
           set((state) => ({
-            errors: {
-              ...state.errors,
-              ahspItems: errorMsg,
-            },
+            resources: state.resources.map(resource =>
+              resource.id === id
+                ? { ...resource, ...validation.data!, updatedAt: new Date().toISOString() }
+                : resource
+            ),
           }))
-          return ''
-        }
+        },
 
-        const id = item.id || generateId('ahsp')
-        const newItem: AHSPItem = {
-          ...validation.data!,
-          id,
-          basePrice: validation.data!.basePrice ?? 0,
-          finalPrice: validation.data!.finalPrice ?? 0,
-          isActive: validation.data!.isActive ?? true,
-          overheadPercentage: validation.data!.overheadPercentage ?? 0,
-          profitPercentage: validation.data!.profitPercentage ?? 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
+        deleteResource: (id) => {
+          set((state) => {
+            // Check if resource is used in any component
+            const isUsed = Object.values(state.componentsByAHSP)
+              .flat()
+              .some(component => component.resourceId === id)
 
-        set((state) => ({
-          ahspItems: [...state.ahspItems, newItem],
-          componentsByAHSP: {
-            ...state.componentsByAHSP,
-            [newItem.id]: [],
-          },
-          errors: {
-            ...state.errors,
-            ahspItems: null,
-          },
-        }))
-
-        // Queue-based sync with retry logic
-        syncAHSPItem(newItem)
-        return id
-      },
-
-      updateAHSPItem: (id, updates) => {
-        // Validate updates
-        const validation = validate(ahspItemUpdateSchema, updates)
-        if (!validation.success) {
-          const errors = validation.errors || []
-          const errorMsg = errors[0]?.message || 'Validation failed'
-          toast.error('Failed to update AHSP item', {
-            description: errorMsg
-          })
-          return
-        }
-
-        set((state) => ({
-          ahspItems: state.ahspItems.map(item =>
-            item.id === id
-              ? { ...item, ...validation.data!, updatedAt: new Date().toISOString() }
-              : item
-          ),
-        }))
-
-        const state = get()
-        const updated = state.ahspItems.find(i => i.id === id)
-        if (updated) {
-          syncAHSPItem(updated)
-        }
-      },
-
-      deleteAHSPItem: (id) => {
-        set((state) => {
-          const newComponentsByAHSP = { ...state.componentsByAHSP }
-          delete newComponentsByAHSP[id]
-
-          return {
-            ahspItems: state.ahspItems.filter(item => item.id !== id),
-            componentsByAHSP: newComponentsByAHSP,
-          }
-        })
-        syncDelete('ahsp_items', id)
-      },
-
-      importAHSPItems: (items) => {
-        const newItems: AHSPItem[] = items.map(item => ({
-          ...item,
-          id: generateId('ahsp'),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }))
-
-        const componentsByAHSP: Record<string, AHSPComponent[]> = {}
-        
-        newItems.forEach(item => {
-          componentsByAHSP[item.id] = []
-        })
-
-        set((state) => ({
-          ahspItems: [...state.ahspItems, ...newItems],
-          componentsByAHSP: { ...state.componentsByAHSP, ...componentsByAHSP },
-        }))
-      },
-
-      exportAHSPItems: () => {
-        return get().ahspItems
-      },
-
-      // Component actions
-      addComponent: (ahspId, component) => {
-        // Validate input
-        const validation = validate(ahspComponentInputSchema, component)
-        if (!validation.success) {
-          const errors = validation.errors || []
-          const errorMsg = errors[0]?.message || 'Validation failed'
-          toast.error('Failed to add component', {
-            description: errorMsg
-          })
-          set((prevState) => ({
-            errors: {
-              ...prevState.errors,
-              components: errorMsg,
-            },
-          }))
-          return
-        }
-
-        const state = get()
-        const resource = state.resources.find(r => r.id === validation.data!.resourceId)
-        
-        if (!resource) {
-          set((prevState) => ({
-            errors: {
-              ...prevState.errors,
-              components: 'Resource not found',
-            },
-          }))
-          return
-        }
-
-        const newComponent: AHSPComponent = {
-          ...validation.data!,
-          id: generateId('comp'),
-          ahspId,
-          unit: resource.unit,
-          unitPrice: resource.unitPrice,
-          subtotal: validation.data!.coefficient * resource.unitPrice,
-          resource,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-
-        set((state) => ({
-          componentsByAHSP: {
-            ...state.componentsByAHSP,
-            [ahspId]: [...(state.componentsByAHSP[ahspId] || []), newComponent],
-          },
-          errors: {
-            ...state.errors,
-            components: null,
-          },
-        }))
-
-        syncAHSPComponent(newComponent)
-
-        // Recalculate AHSP price
-        get().calculateAHSPPrice(ahspId)
-      },
-
-      updateComponent: (id, updates) => {
-        set((state) => {
-          const newComponentsByAHSP = { ...state.componentsByAHSP }
-          let updatedAHSPId: string | null = null
-
-          // Find and update component
-          Object.keys(newComponentsByAHSP).forEach(ahspId => {
-            const components = newComponentsByAHSP[ahspId]
-            const componentIndex = components.findIndex(c => c.id === id)
-            
-            if (componentIndex !== -1) {
-              const component = components[componentIndex]
-              const updatedComponent = { ...component, ...updates }
-
-              // Update unit price if resource changed
-              if (updates.resourceId) {
-                const resource = state.resources.find(r => r.id === updates.resourceId)
-                if (resource) {
-                  updatedComponent.resource = resource
-                  updatedComponent.unit = resource.unit
-                  updatedComponent.unitPrice = resource.unitPrice
-                }
+            if (isUsed) {
+              return {
+                errors: {
+                  ...state.errors,
+                  resources: 'Cannot delete resource that is used in AHSP components',
+                },
               }
+            }
 
-              // Recalculate subtotal
-              updatedComponent.subtotal = updatedComponent.coefficient * updatedComponent.unitPrice
-              updatedComponent.updatedAt = new Date().toISOString()
-
-              newComponentsByAHSP[ahspId] = [
-                ...components.slice(0, componentIndex),
-                updatedComponent,
-                ...components.slice(componentIndex + 1),
-              ]
-              
-              updatedAHSPId = ahspId
+            return {
+              resources: state.resources.filter(resource => resource.id !== id),
+              errors: {
+                ...state.errors,
+                resources: null,
+              },
             }
           })
+        },
 
-          return {
-            componentsByAHSP: newComponentsByAHSP,
+        importResources: (resources) => {
+          const newResources: Resource[] = resources.map(resource => ({
+            ...resource,
+            id: generateId('res'),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }))
+
+          set((state) => ({
+            resources: [...state.resources, ...newResources],
+          }))
+        },
+
+        exportResources: () => {
+          return get().resources
+        },
+
+        // AHSP item actions
+        addAHSPItem: (item) => {
+          // Validate input
+          const validation = validate(ahspItemInputSchema, item)
+          if (!validation.success) {
+            const errors = validation.errors || []
+            const errorMsg = errors[0]?.message || 'Validation failed'
+            toast.error('Failed to add AHSP item', {
+              description: errorMsg
+            })
+            set((state) => ({
+              errors: {
+                ...state.errors,
+                ahspItems: errorMsg,
+              },
+            }))
+            return ''
           }
-        })
 
-        // Recalculate AHSP price if component was updated
-        setTimeout(() => {
-          const state = get()
-          Object.keys(state.componentsByAHSP).forEach(ahspId => {
-            if (state.componentsByAHSP[ahspId].some(c => c.id === id)) {
-              get().calculateAHSPPrice(ahspId)
-            }
-          })
-        }, 0)
-      },
-
-      deleteComponent: (id) => {
-        set((state) => {
-          const newComponentsByAHSP = { ...state.componentsByAHSP }
-          let deletedAHSPId: string | null = null
-
-          Object.keys(newComponentsByAHSP).forEach(ahspId => {
-            const components = newComponentsByAHSP[ahspId]
-            const filteredComponents = components.filter(c => c.id !== id)
-            
-            if (filteredComponents.length !== components.length) {
-              newComponentsByAHSP[ahspId] = filteredComponents
-              deletedAHSPId = ahspId
-            }
-          })
-
-          return {
-            componentsByAHSP: newComponentsByAHSP,
+          const id = item.id || generateId('ahsp')
+          const newItem: AHSPItem = {
+            ...validation.data!,
+            id,
+            basePrice: validation.data!.basePrice ?? 0,
+            finalPrice: validation.data!.finalPrice ?? 0,
+            isActive: validation.data!.isActive ?? true,
+            overheadPercentage: validation.data!.overheadPercentage ?? get().settings.defaultOverhead,
+            profitPercentage: validation.data!.profitPercentage ?? get().settings.defaultProfit,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           }
-        })
 
-        // Recalculate AHSP price if component was deleted
-        setTimeout(() => {
-          const state = get()
-          Object.keys(state.componentsByAHSP).forEach(ahspId => {
-            if (state.componentsByAHSP[ahspId].some(c => c.id === id)) {
-              get().calculateAHSPPrice(ahspId)
-            }
-          })
-        }, 0)
-      },
-
-      reorderComponents: (ahspId, componentIds) => {
-        set((state) => {
-          const components = state.componentsByAHSP[ahspId] || []
-          const reorderedComponents = componentIds
-            .map(id => components.find(c => c.id === id))
-            .filter(Boolean) as AHSPComponent[]
-
-          return {
+          set((state) => ({
+            ahspItems: [...state.ahspItems, newItem],
             componentsByAHSP: {
               ...state.componentsByAHSP,
-              [ahspId]: reorderedComponents,
+              [newItem.id]: [],
             },
+            errors: {
+              ...state.errors,
+              ahspItems: null,
+            },
+          }))
+
+          // Queue-based sync with retry logic
+          syncAHSPItem(newItem)
+          return id
+        },
+
+        updateAHSPItem: (id, updates) => {
+          // Validate updates
+          const validation = validate(ahspItemUpdateSchema, updates)
+          if (!validation.success) {
+            const errors = validation.errors || []
+            const errorMsg = errors[0]?.message || 'Validation failed'
+            toast.error('Failed to update AHSP item', {
+              description: errorMsg
+            })
+            return
           }
-        })
-      },
 
-      moveComponents: (fromAhspId, toAhspId) => {
-        set((state) => {
-          const components = state.componentsByAHSP[fromAhspId] || []
-          const updatedComponents = components.map(c => ({ ...c, ahspId: toAhspId }))
-          
-          const newComponentsByAHSP = { ...state.componentsByAHSP }
-          delete newComponentsByAHSP[fromAhspId]
-          
-          newComponentsByAHSP[toAhspId] = [
-            ...(newComponentsByAHSP[toAhspId] || []),
-            ...updatedComponents
-          ]
+          set((state) => ({
+            ahspItems: state.ahspItems.map(item =>
+              item.id === id
+                ? { ...item, ...validation.data!, updatedAt: new Date().toISOString() }
+                : item
+            ),
+          }))
 
-          return {
-            componentsByAHSP: newComponentsByAHSP
+          const state = get()
+          const updated = state.ahspItems.find(i => i.id === id)
+          if (updated) {
+            syncAHSPItem(updated)
           }
-        })
-      },
+        },
 
-      // Calculation actions
-      calculateAHSPPrice: (ahspId) => {
-        set((state) => {
-          const components = state.componentsByAHSP[ahspId] || []
-          const ahspItem = state.ahspItems.find(item => item.id === ahspId)
-          if (!ahspItem) return state
+        deleteAHSPItem: (id) => {
+          set((state) => {
+            const newComponentsByAHSP = { ...state.componentsByAHSP }
+            delete newComponentsByAHSP[id]
 
-          // Use centralized calculation service with validation
-          const result = calcAHSPPrice({
-            components: components.map(c => ({
-              coefficient: c.coefficient,
-              unitPrice: c.unitPrice
-            })),
-            overheadPercent: ahspItem.overheadPercentage,
-            profitPercent: ahspItem.profitPercentage
+            return {
+              ahspItems: state.ahspItems.filter(item => item.id !== id),
+              componentsByAHSP: newComponentsByAHSP,
+            }
+          })
+          syncDelete('ahsp_items', id)
+        },
+
+        importAHSPItems: (items) => {
+          const newItems: AHSPItem[] = items.map(item => ({
+            ...item,
+            id: generateId('ahsp'),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }))
+
+          const componentsByAHSP: Record<string, AHSPComponent[]> = {}
+
+          newItems.forEach(item => {
+            componentsByAHSP[item.id] = []
           })
 
-          return {
-            ahspItems: state.ahspItems.map(item =>
-              item.id === ahspId
-                ? { 
-                    ...item, 
-                    basePrice: result.priceBreakdown.basePrice, 
+          set((state) => ({
+            ahspItems: [...state.ahspItems, ...newItems],
+            componentsByAHSP: { ...state.componentsByAHSP, ...componentsByAHSP },
+          }))
+        },
+
+        exportAHSPItems: () => {
+          return get().ahspItems
+        },
+
+        // Component actions
+        addComponent: (ahspId, component) => {
+          // Validate input
+          const validation = validate(ahspComponentInputSchema, component)
+          if (!validation.success) {
+            const errors = validation.errors || []
+            const errorMsg = errors[0]?.message || 'Validation failed'
+            toast.error('Failed to add component', {
+              description: errorMsg
+            })
+            set((prevState) => ({
+              errors: {
+                ...prevState.errors,
+                components: errorMsg,
+              },
+            }))
+            return
+          }
+
+          const state = get()
+          const resource = state.resources.find(r => r.id === validation.data!.resourceId)
+
+          if (!resource) {
+            set((prevState) => ({
+              errors: {
+                ...prevState.errors,
+                components: 'Resource not found',
+              },
+            }))
+            return
+          }
+
+          const newComponent: AHSPComponent = {
+            ...validation.data!,
+            id: generateId('comp'),
+            ahspId,
+            unit: resource.unit,
+            unitPrice: resource.unitPrice,
+            subtotal: validation.data!.coefficient * resource.unitPrice,
+            resource,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+
+          set((state) => ({
+            componentsByAHSP: {
+              ...state.componentsByAHSP,
+              [ahspId]: [...(state.componentsByAHSP[ahspId] || []), newComponent],
+            },
+            errors: {
+              ...state.errors,
+              components: null,
+            },
+          }))
+
+          syncAHSPComponent(newComponent)
+
+          // Recalculate AHSP price
+          get().calculateAHSPPrice(ahspId)
+        },
+
+        updateComponent: (id, updates) => {
+          set((state) => {
+            const newComponentsByAHSP = { ...state.componentsByAHSP }
+            let updatedAHSPId: string | null = null
+
+            // Find and update component
+            Object.keys(newComponentsByAHSP).forEach(ahspId => {
+              const components = newComponentsByAHSP[ahspId]
+              const componentIndex = components.findIndex(c => c.id === id)
+
+              if (componentIndex !== -1) {
+                const component = components[componentIndex]
+                const updatedComponent = { ...component, ...updates }
+
+                // Update unit price if resource changed
+                if (updates.resourceId) {
+                  const resource = state.resources.find(r => r.id === updates.resourceId)
+                  if (resource) {
+                    updatedComponent.resource = resource
+                    updatedComponent.unit = resource.unit
+                    updatedComponent.unitPrice = resource.unitPrice
+                  }
+                }
+
+                // Recalculate subtotal
+                updatedComponent.subtotal = updatedComponent.coefficient * updatedComponent.unitPrice
+                updatedComponent.updatedAt = new Date().toISOString()
+
+                newComponentsByAHSP[ahspId] = [
+                  ...components.slice(0, componentIndex),
+                  updatedComponent,
+                  ...components.slice(componentIndex + 1),
+                ]
+
+                updatedAHSPId = ahspId
+              }
+            })
+
+            return {
+              componentsByAHSP: newComponentsByAHSP,
+            }
+          })
+
+          // Recalculate AHSP price if component was updated
+          setTimeout(() => {
+            const state = get()
+            Object.keys(state.componentsByAHSP).forEach(ahspId => {
+              if (state.componentsByAHSP[ahspId].some(c => c.id === id)) {
+                get().calculateAHSPPrice(ahspId)
+              }
+            })
+          }, 0)
+        },
+
+        deleteComponent: (id) => {
+          set((state) => {
+            const newComponentsByAHSP = { ...state.componentsByAHSP }
+            let deletedAHSPId: string | null = null
+
+            Object.keys(newComponentsByAHSP).forEach(ahspId => {
+              const components = newComponentsByAHSP[ahspId]
+              const filteredComponents = components.filter(c => c.id !== id)
+
+              if (filteredComponents.length !== components.length) {
+                newComponentsByAHSP[ahspId] = filteredComponents
+                deletedAHSPId = ahspId
+              }
+            })
+
+            return {
+              componentsByAHSP: newComponentsByAHSP,
+            }
+          })
+
+          // Recalculate AHSP price if component was deleted
+          setTimeout(() => {
+            const state = get()
+            Object.keys(state.componentsByAHSP).forEach(ahspId => {
+              if (state.componentsByAHSP[ahspId].some(c => c.id === id)) {
+                get().calculateAHSPPrice(ahspId)
+              }
+            })
+          }, 0)
+        },
+
+        reorderComponents: (ahspId, componentIds) => {
+          set((state) => {
+            const components = state.componentsByAHSP[ahspId] || []
+            const reorderedComponents = componentIds
+              .map(id => components.find(c => c.id === id))
+              .filter(Boolean) as AHSPComponent[]
+
+            return {
+              componentsByAHSP: {
+                ...state.componentsByAHSP,
+                [ahspId]: reorderedComponents,
+              },
+            }
+          })
+        },
+
+        moveComponents: (fromAhspId, toAhspId) => {
+          set((state) => {
+            const components = state.componentsByAHSP[fromAhspId] || []
+            const updatedComponents = components.map(c => ({ ...c, ahspId: toAhspId }))
+
+            const newComponentsByAHSP = { ...state.componentsByAHSP }
+            delete newComponentsByAHSP[fromAhspId]
+
+            newComponentsByAHSP[toAhspId] = [
+              ...(newComponentsByAHSP[toAhspId] || []),
+              ...updatedComponents
+            ]
+
+            return {
+              componentsByAHSP: newComponentsByAHSP
+            }
+          })
+        },
+
+        // Calculation actions
+        calculateAHSPPrice: (ahspId) => {
+          set((state) => {
+            const components = state.componentsByAHSP[ahspId] || []
+            const ahspItem = state.ahspItems.find(item => item.id === ahspId)
+            if (!ahspItem) return state
+
+            // Use centralized calculation service with validation
+            const result = calcAHSPPrice({
+              components: components.map(c => ({
+                coefficient: c.coefficient,
+                unitPrice: c.unitPrice
+              })),
+              overheadPercent: ahspItem.overheadPercentage,
+              profitPercent: ahspItem.profitPercentage
+            })
+
+            return {
+              ahspItems: state.ahspItems.map(item =>
+                item.id === ahspId
+                  ? {
+                    ...item,
+                    basePrice: result.priceBreakdown.basePrice,
                     finalPrice: result.priceBreakdown.finalPrice,
                     updatedAt: new Date().toISOString(),
                   }
-                : item
-            ),
+                  : item
+              ),
+            }
+          })
+
+          // Queue-based sync with retry
+          const item = get().ahspItems.find(i => i.id === ahspId)
+          if (item) {
+            syncAHSPItem(item)
           }
-        })
+        },
 
-        // Queue-based sync with retry
-        const item = get().ahspItems.find(i => i.id === ahspId)
-        if (item) {
-          syncAHSPItem(item)
-        }
-      },
+        recalculateAllPrices: () => {
+          const state = get()
+          Object.keys(state.componentsByAHSP).forEach(ahspId => {
+            get().calculateAHSPPrice(ahspId)
+          })
+        },
 
-      recalculateAllPrices: () => {
-        const state = get()
-        Object.keys(state.componentsByAHSP).forEach(ahspId => {
-          get().calculateAHSPPrice(ahspId)
-        })
-      },
-
-      // Bulk actions
-      bulkUpdatePrices: (type, percentage) => {
-        set((state) => ({
-          resources: state.resources.map(resource =>
-            resource.type === type
-              ? { 
-                  ...resource, 
+        // Bulk actions
+        bulkUpdatePrices: (type, percentage) => {
+          set((state) => ({
+            resources: state.resources.map(resource =>
+              resource.type === type
+                ? {
+                  ...resource,
                   unitPrice: Math.round(resource.unitPrice * (1 + percentage / 100)),
                   updatedAt: new Date().toISOString(),
                 }
-              : resource
-          ),
-        }))
+                : resource
+            ),
+          }))
 
-        // Recalculate all AHSP prices
-        setTimeout(() => {
-          get().recalculateAllPrices()
-        }, 100)
-      },
+          // Recalculate all AHSP prices
+          setTimeout(() => {
+            get().recalculateAllPrices()
+          }, 100)
+        },
 
-      // Search and filter
-      searchResources: (query) => {
-        const state = get()
-        const lowerQuery = query.toLowerCase()
-        return state.resources.filter(resource =>
-          resource.name.toLowerCase().includes(lowerQuery) ||
-          resource.code.toLowerCase().includes(lowerQuery) ||
-          resource.specifications?.toLowerCase().includes(lowerQuery)
-        )
-      },
+        // Search and filter
+        searchResources: (query) => {
+          const state = get()
+          const lowerQuery = query.toLowerCase()
+          return state.resources.filter(resource =>
+            resource.name.toLowerCase().includes(lowerQuery) ||
+            resource.code.toLowerCase().includes(lowerQuery) ||
+            resource.specifications?.toLowerCase().includes(lowerQuery)
+          )
+        },
 
-      searchAHSPItems: (query) => {
-        const state = get()
-        const lowerQuery = query.toLowerCase()
-        return state.ahspItems.filter(item =>
-          item.name.toLowerCase().includes(lowerQuery) ||
-          item.code.toLowerCase().includes(lowerQuery) ||
-          item.category.toLowerCase().includes(lowerQuery)
-        )
-      },
+        searchAHSPItems: (query) => {
+          const state = get()
+          const lowerQuery = query.toLowerCase()
+          return state.ahspItems.filter(item =>
+            item.name.toLowerCase().includes(lowerQuery) ||
+            item.code.toLowerCase().includes(lowerQuery) ||
+            item.category.toLowerCase().includes(lowerQuery)
+          )
+        },
 
-      filterByCategory: (category) => {
-        const state = get()
-        return state.ahspItems.filter(item => item.category === category)
-      },
-    }),
-    {
-      name: 'ahsp-store',
-    }
+        filterByCategory: (category) => {
+          const state = get()
+          return state.ahspItems.filter(item => item.category === category)
+        },
+
+        // History actions
+        fetchPriceHistory: async (ahspId: string) => {
+          try {
+            const client = assertSupabase()
+            const { data, error } = await client
+              .from('ahsp_price_history')
+              .select('*')
+              .eq('ahsp_id', ahspId)
+              .order('created_at', { ascending: false })
+
+            if (error) throw error
+
+            const history = (data as AhspPriceHistoryRow[]) || []
+            return history.map((item) => ({
+              id: item.id,
+              ahspId: item.ahsp_id,
+              oldPrice: item.old_price,
+              newPrice: item.new_price,
+              changeType: item.change_type,
+              changeReason: item.change_reason,
+              createdAt: item.created_at || new Date().toISOString()
+            }))
+          } catch (error: any) {
+            console.error('Failed to fetch price history:', error)
+            return []
+          }
+        },
+
+        // Settings actions
+        updateSettings: (newSettings) => {
+          set((state) => ({
+            settings: { ...state.settings, ...newSettings }
+          }))
+        },
+
+        applySettingsToAll: () => {
+          const state = get()
+          const { defaultOverhead, defaultProfit } = state.settings
+
+          set((state) => ({
+            ahspItems: state.ahspItems.map(item => ({
+              ...item,
+              overheadPercentage: defaultOverhead,
+              profitPercentage: defaultProfit,
+              updatedAt: new Date().toISOString()
+            }))
+          }))
+
+          // Recalculate all prices after applying settings
+          setTimeout(() => {
+            get().recalculateAllPrices()
+          }, 0)
+        },
+      }),
+      {
+        name: 'ahsp-store',
+        partialize: (state) => ({ settings: state.settings }),
+      }
+    )
   )
 )
 
@@ -695,7 +807,7 @@ export const useAHSPStore = create<AHSPStore>()(
 export function getAHSPSummary(state: AHSPState) {
   const totalAHSPItems = state.ahspItems.length
   const totalResources = state.resources.length
-  
+
   const averagePrice = totalAHSPItems > 0
     ? state.ahspItems.reduce((sum, item) => sum + item.finalPrice, 0) / totalAHSPItems
     : 0

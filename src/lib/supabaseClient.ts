@@ -45,6 +45,19 @@ export interface ResourceRow {
   unit_price: number
   created_at?: string
   updated_at?: string
+  is_active?: boolean
+  supplier?: string
+  specifications?: string
+}
+
+export interface AhspPriceHistoryRow {
+  id: string
+  ahsp_id: string
+  old_price: number | null
+  new_price: number
+  change_type: string
+  change_reason?: string
+  created_at?: string
 }
 
 export interface AhspComponentRow {

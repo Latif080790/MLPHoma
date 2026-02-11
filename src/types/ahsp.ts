@@ -74,7 +74,6 @@ export interface AHSPItem {
   name: string
   /** Unit of measurement */
   unit: ResourceUnit
-  /** Category/group */
   category: string
   /** Base price calculated from components */
   basePrice: number
@@ -113,7 +112,10 @@ export interface AHSPState {
     resources: string | null
     ahspItems: string | null
     components: string | null
+    priceHistory: string | null
   }
+  /** Global settings */
+  settings: AHSPSettingsType
 }
 
 /** AHSP Actions */
@@ -123,43 +125,49 @@ export interface AHSPActions {
   fetchAHSPItems: () => Promise<void>
   fetchComponents: (ahspId?: string) => Promise<void>
   fetchAll: () => Promise<void>
-  
+
   // Resource actions
   addResource: (resource: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => void
   updateResource: (id: string, updates: Partial<Resource>) => void
   deleteResource: (id: string) => void
   importResources: (resources: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>[]) => void
   exportResources: () => Resource[]
-  
+
   // AHSP item actions
   addAHSPItem: (item: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => string
   updateAHSPItem: (id: string, updates: Partial<AHSPItem>) => void
   deleteAHSPItem: (id: string) => void
   importAHSPItems: (items: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'>[]) => void
   exportAHSPItems: () => AHSPItem[]
-  
+
   // Component actions
   addComponent: (ahspId: string, component: Omit<AHSPComponent, 'id' | 'ahspId' | 'createdAt' | 'updatedAt'>) => void
   updateComponent: (id: string, updates: Partial<AHSPComponent>) => void
   deleteComponent: (id: string) => void
   reorderComponents: (ahspId: string, componentIds: string[]) => void
   moveComponents: (fromAhspId: string, toAhspId: string) => void
-  
+
   // Calculation actions
   calculateAHSPPrice: (ahspId: string) => void
   recalculateAllPrices: () => void
-  
+
   // Bulk actions
   bulkUpdatePrices: (type: ResourceType, percentage: number) => void
-  
+
   // Search and filter
   searchResources: (query: string) => Resource[]
   searchAHSPItems: (query: string) => AHSPItem[]
   filterByCategory: (category: string) => AHSPItem[]
+
+  // Settings
+  updateSettings: (settings: Partial<AHSPSettingsType>) => void
+  applySettingsToAll: () => void
+
+  // History
 }
 
 /** AHSP Store Interface */
-export interface AHSPStore extends AHSPState, AHSPActions {}
+export interface AHSPStore extends AHSPState, AHSPActions { }
 
 /** AHSP Import Template */
 export interface AHSPImportTemplate {
@@ -244,4 +252,22 @@ export interface AHSPItemWithRelations extends AHSPItem {
     changedAt?: string
     createdAt?: string
   }>
+}
+
+/** Global AHSP Settings */
+export interface AHSPSettingsType {
+  defaultOverhead: number
+  defaultProfit: number
+  taxRate?: number
+}
+
+/** Price History Record */
+export interface PriceHistory {
+  id: string
+  ahspId: string
+  oldPrice: number | null
+  newPrice: number
+  changeType: string
+  changeReason?: string
+  createdAt: string
 }
