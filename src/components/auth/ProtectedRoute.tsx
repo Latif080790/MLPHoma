@@ -10,6 +10,7 @@
 import React from 'react'
 import { Navigate, useLocation } from 'react-router'
 import { useSession } from '../../hooks/useSession'
+import { supabase } from '../../lib/supabaseClient'
 import { PageSkeleton } from '../common/PageSkeleton'
 
 interface ProtectedRouteProps {
@@ -30,10 +31,7 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
     return <PageSkeleton />
   }
 
-  // Fail-open approach: If auth initialization failed or Supabase not configured,
-  // allow access for development purposes
-  // Check if supabase is not configured by attempting to import it
-  const { supabase } = require('../../lib/supabaseClient')
+  // Fail-open approach: If Supabase not configured, allow access for development
   if (!supabase) {
     // Supabase not configured, allow access (dev mode)
     return <>{children}</>
