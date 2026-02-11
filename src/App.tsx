@@ -10,7 +10,9 @@ import { ErrorBoundary } from './components/common/ErrorBoundary'
 import AppToaster from './components/common/Notifications'
 import { PageSkeleton } from './components/common/PageSkeleton'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { AppShell } from './components/layout/AppShell'
 import { useAuthStore } from './store/authStore'
+import { useProjectStore } from './store/projectStore'
 
 // Lazy-loaded page components for optimal code splitting
 const HomePage = React.lazy(() => import('./pages/Home'))
@@ -32,6 +34,24 @@ const Login = React.lazy(() => import('./pages/auth/Login'))
 const Register = React.lazy(() => import('./pages/auth/Register'))
 const ForgotPassword = React.lazy(() => import('./pages/auth/ForgotPassword'))
 const ResetPassword = React.lazy(() => import('./pages/auth/ResetPassword'))
+
+/**
+ * ProtectedLayout
+ * Wraps authenticated pages with AppShell (sidebar + header).
+ */
+function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const activeProjectId = useProjectStore((s) => s.activeProjectId)
+  const projects = useProjectStore((s) => s.projects)
+  const activeProject = activeProjectId ? projects[activeProjectId] : null
+
+  return (
+    <ProtectedRoute>
+      <AppShell projectName={activeProject?.name}>
+        {children}
+      </AppShell>
+    </ProtectedRoute>
+  )
+}
 
 export default function App() {
   const initialize = useAuthStore((state) => state.initialize)
@@ -55,19 +75,19 @@ export default function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Protected routes */}
-            <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-            <Route path="/projects" element={<ProtectedRoute><ProjectManagement /></ProtectedRoute>} />
-            <Route path="/wbs" element={<ProtectedRoute><WBS /></ProtectedRoute>} />
-            <Route path="/ahsp" element={<ProtectedRoute><AHSP /></ProtectedRoute>} />
-            <Route path="/rab" element={<ProtectedRoute><RAB /></ProtectedRoute>} />
-            <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
-            <Route path="/rap" element={<ProtectedRoute><RAP /></ProtectedRoute>} />
-            <Route path="/curvas" element={<ProtectedRoute><CurvaS /></ProtectedRoute>} />
-            <Route path="/resource" element={<ProtectedRoute><Resource /></ProtectedRoute>} />
-            <Route path="/cashflow" element={<ProtectedRoute><CashFlow /></ProtectedRoute>} />
-            <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
-            <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+            {/* Protected routes — all wrapped with sidebar layout */}
+            <Route path="/" element={<ProtectedLayout><HomePage /></ProtectedLayout>} />
+            <Route path="/projects" element={<ProtectedLayout><ProjectManagement /></ProtectedLayout>} />
+            <Route path="/wbs" element={<ProtectedLayout><WBS /></ProtectedLayout>} />
+            <Route path="/ahsp" element={<ProtectedLayout><AHSP /></ProtectedLayout>} />
+            <Route path="/rab" element={<ProtectedLayout><RAB /></ProtectedLayout>} />
+            <Route path="/timeline" element={<ProtectedLayout><Timeline /></ProtectedLayout>} />
+            <Route path="/rap" element={<ProtectedLayout><RAP /></ProtectedLayout>} />
+            <Route path="/curvas" element={<ProtectedLayout><CurvaS /></ProtectedLayout>} />
+            <Route path="/resource" element={<ProtectedLayout><Resource /></ProtectedLayout>} />
+            <Route path="/cashflow" element={<ProtectedLayout><CashFlow /></ProtectedLayout>} />
+            <Route path="/progress" element={<ProtectedLayout><Progress /></ProtectedLayout>} />
+            <Route path="/reports" element={<ProtectedLayout><Reports /></ProtectedLayout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

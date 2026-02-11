@@ -5,7 +5,6 @@
  */
 
 import React, { useMemo, useRef } from "react"
-import { AppShell } from "../../components/layout/AppShell"
 import { ModuleHeader } from "../../components/modules/ModuleHeader"
 import { FileBarChart2, Download, Target, DollarSign, Calendar, FileSpreadsheet, FileText } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
@@ -220,7 +219,7 @@ export default function Reports() {
   const exportRef = useRef<HTMLDivElement | null>(null)
 
   return (
-    <AppShell projectName={projectName}>
+    <div className="space-y-6">
       <ModuleHeader
         icon={<FileBarChart2 size={18} />}
         title="Reports"
@@ -376,6 +375,6 @@ export default function Reports() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </div>
   )
 }

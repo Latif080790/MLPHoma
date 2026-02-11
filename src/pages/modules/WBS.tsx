@@ -5,7 +5,6 @@
  */
 
 import React, { useState, useCallback } from 'react'
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { useProjectStore } from '../../store/projectStore'
 import { useWBSStore, getWBSTree, validateWBS } from '../../store/wbsStore'
@@ -184,7 +183,7 @@ export default function WBS() {
   // No project selected
   if (!projectId) {
     return (
-      <AppShell>
+      <div className="space-y-6">
         <ModuleHeader
           icon={<FileText size={18} />}
           title="WBS"
@@ -195,12 +194,12 @@ export default function WBS() {
           description="Please select a project to manage its WBS structure."
           imageKeyword="work breakdown structure"
         />
-      </AppShell>
+      </div>
     )
   }
 
   return (
-    <AppShell projectName={projectName}>
+    <div className="space-y-6">
       <ModuleHeader
         icon={<FileText size={18} />}
         title="WBS"
@@ -314,6 +313,6 @@ export default function WBS() {
         existingItems={items}
         projectId={projectId}
       />
-    </AppShell>
+    </div>
   )
 }

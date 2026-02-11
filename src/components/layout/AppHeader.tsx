@@ -1,72 +1,62 @@
 /**
  * AppHeader.tsx
- * Application top header with brand, active project context, search input, and theme toggle.
- * Keep it lightweight (Tailwind only), no external UI deps.
+ * Modern glassmorphism header with project context and theme toggle.
  */
 
 import React from "react"
 import { ThemeToggle } from "../shared/ThemeToggle"
-import { Home } from "lucide-react"
+import { Bell } from "lucide-react"
 
-/**
- * Props for AppHeader component.
- */
 export interface AppHeaderProps {
-  /** Current project name (context info) */
   projectName?: string
-  /** Optional search handler shown when provided */
   onSearch?: (value: string) => void
 }
 
-/**
- * AppHeader
- * Renders app brand + project context + optional search + theme toggle.
- */
 export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 border-b bg-white/80 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-950/80">
-      <div className="mx-auto flex w-full max-w-7xl items-center gap-3 px-4 py-3">
-        {/* Home Link */}
-        <a
-          href="#/"
-          className="flex items-center justify-center rounded-md p-1.5 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
-          title="Back to Home"
-        >
-          <Home size={18} />
-        </a>
-
-        {/* Brand */}
-        <div
-          className="select-none whitespace-nowrap text-sm font-semibold tracking-wide"
-          title="Construction Estimator Pro"
-        >
-          Construction Estimator Pro
+    <header className="glass sticky top-0 z-30 border-b">
+      <div className="flex items-center gap-4 px-6 py-3">
+        {/* Breadcrumb / Page context */}
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-sm font-medium text-[hsl(var(--foreground))]">
+            {projectName || "Dashboard"}
+          </span>
+          {projectName && projectName !== "Dashboard" && projectName !== "Welcome" && (
+            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+              Active
+            </span>
+          )}
         </div>
 
-        {/* Divider */}
-        <span className="h-5 w-px bg-neutral-200 dark:bg-neutral-800" aria-hidden />
-
-        {/* Project context */}
-        <div className="min-w-0 truncate text-sm text-neutral-600 dark:text-neutral-400">
-          {projectName ? `Project: ${projectName}` : "—"}
-        </div>
-
+        {/* Right actions */}
         <div className="ml-auto flex items-center gap-2">
-          {/* Optional search */}
-          {onSearch ? (
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search…"
-                aria-label="Search"
-                onChange={(e) => onSearch?.(e.target.value)}
-                className="w-48 rounded-md border bg-white px-3 py-1.5 text-sm outline-none ring-0 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-blue-500 dark:border-neutral-700 dark:bg-neutral-900 sm:w-64"
-              />
-            </div>
-          ) : null}
+          {/* Search */}
+          {onSearch && (
+            <input
+              type="text"
+              placeholder="Search…"
+              aria-label="Search"
+              onChange={(e) => onSearch(e.target.value)}
+              className="w-48 rounded-lg border bg-[hsl(var(--background))] px-3 py-1.5 text-sm outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:ring-2 focus:ring-[hsl(var(--ring))] sm:w-56 transition-shadow"
+            />
+          )}
+
+          {/* Notifications */}
+          <button
+            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))] transition-colors"
+            title="Notifications"
+          >
+            <Bell size={18} />
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blue-500" />
+          </button>
 
           {/* Theme toggle */}
           <ThemeToggle />
+
+          {/* User avatar placeholder */}
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-semibold text-white">
+            U
+          </div>
         </div>
       </div>
     </header>

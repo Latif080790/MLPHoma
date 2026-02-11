@@ -13,7 +13,6 @@ import { useProjectStore } from '../../store/projectStore'
 import { toast } from 'sonner'
 import { RABTable } from '../../components/rab/RABTable'
 import { formatIDR } from '../../lib/utils'
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 
 const EMPTY_ARRAY: any[] = []
@@ -57,7 +56,7 @@ export default function RAB() {
 
   if (!currentProject) {
     return (
-      <AppShell>
+      <div className="space-y-6">
         <ModuleHeader
           icon={<Calculator size={18} />}
           title="RAB Builder"
@@ -67,12 +66,12 @@ export default function RAB() {
           <h2 className="text-lg font-semibold">No Project Selected</h2>
           <p className="text-muted-foreground">Please select a project to view RAB.</p>
         </div>
-      </AppShell>
+      </div>
     )
   }
 
   return (
-    <AppShell projectName={currentProject.name}>
+    <div className="space-y-6">
       <ModuleHeader
         icon={<Calculator size={18} />}
         title="RAB Builder"
@@ -127,6 +126,6 @@ export default function RAB() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </div>
   )
 }

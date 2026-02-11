@@ -5,7 +5,6 @@
  */
 
 import React, { useMemo, useState, useEffect } from 'react'
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
@@ -189,7 +188,7 @@ export default function ProjectManagement() {
   }
 
   return (
-    <AppShell projectName="Portfolio">
+    <div className="space-y-6">
       <ModuleHeader
         icon={<FolderKanban size={18} />}
         title="Project Management"
@@ -269,6 +268,6 @@ export default function ProjectManagement() {
         project={editingProject}
         onSave={handleSave}
       />
-    </AppShell>
+    </div>
   )
 }

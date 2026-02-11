@@ -11,7 +11,6 @@ import { CalendarDays } from 'lucide-react'
 /**
  * UI & shared pieces
  */
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { useProjectStore } from '../../store/projectStore'
 import { useRapStore } from '../../store/rapStore'
@@ -452,7 +451,7 @@ export default function RAP(): JSX.Element {
   }, [plan])
 
   return (
-    <AppShell projectName={projectName}>
+    <div className="space-y-6">
       <ModuleHeader
         icon={<CalendarDays size={18} />}
         title="RAP Scheduler"
@@ -524,6 +523,6 @@ export default function RAP(): JSX.Element {
           <div>- Export/Import CSV menggunakan kolom: Period, Planned.</div>
         </CardContent>
       </Card>
-    </AppShell>
+    </div>
   )
 }

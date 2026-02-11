@@ -6,7 +6,6 @@
  */
 
 import React, { useMemo } from 'react'
-import { AppShell } from '../components/layout/AppShell'
 import { Card, CardContent } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import KPICard from '../components/dashboard/KPICard'
@@ -45,14 +44,14 @@ function ModuleLink(props: {
     props.accent === 'emerald'
       ? 'border-emerald-200/70 hover:bg-emerald-50 dark:border-emerald-800/50 dark:hover:bg-emerald-900/30'
       : props.accent === 'violet'
-      ? 'border-violet-200/70 hover:bg-violet-50 dark:border-violet-800/50 dark:hover:bg-violet-900/30'
-      : props.accent === 'amber'
-      ? 'border-amber-200/70 hover:bg-amber-50 dark:border-amber-800/50 dark:hover:bg-amber-900/30'
-      : props.accent === 'rose'
-      ? 'border-rose-200/70 hover:bg-rose-50 dark:border-rose-800/50 dark:hover:bg-rose-900/30'
-      : props.accent === 'slate'
-      ? 'border-slate-200/70 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30'
-      : 'border-blue-200/70 hover:bg-blue-50 dark:border-blue-800/50 dark:hover:bg-blue-900/30'
+        ? 'border-violet-200/70 hover:bg-violet-50 dark:border-violet-800/50 dark:hover:bg-violet-900/30'
+        : props.accent === 'amber'
+          ? 'border-amber-200/70 hover:bg-amber-50 dark:border-amber-800/50 dark:hover:bg-amber-900/30'
+          : props.accent === 'rose'
+            ? 'border-rose-200/70 hover:bg-rose-50 dark:border-rose-800/50 dark:hover:bg-rose-900/30'
+            : props.accent === 'slate'
+              ? 'border-slate-200/70 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30'
+              : 'border-blue-200/70 hover:bg-blue-50 dark:border-blue-800/50 dark:hover:bg-blue-900/30'
 
   return (
     <a href={props.href} className="block">
@@ -80,11 +79,11 @@ export default function Home() {
   const projects = useProjectStore((s) => s.projects)
   const activeProject = activeProjectId ? projects[activeProjectId] : null
   const projectId = activeProject?.id
-  
+
   const analysis = useCurvaSStore((s) => (projectId ? s.getAnalysis(projectId) : null))
   // Use a stable empty array reference to prevent infinite loops if projectId is undefined
   const rabItems = useRabStore((s) => (projectId ? s.getItems(projectId) : EMPTY_ARRAY))
-  
+
   const totalBudget = useMemo(() => {
     if (!activeProject) return 0
     // Calculate RAB total using same logic as RAB.tsx
@@ -99,7 +98,7 @@ export default function Home() {
   }, [activeProject, rabItems])
 
   return (
-    <AppShell projectName={activeProject ? activeProject.name : "Welcome"}>
+    <div className="space-y-6">
       {/* Hero section */}
       <div className="relative overflow-hidden rounded-xl border bg-white dark:border-neutral-800 dark:bg-neutral-950">
         <div className="grid gap-0 md:grid-cols-2">
@@ -109,7 +108,7 @@ export default function Home() {
               {activeProject ? `Project: ${activeProject.name}` : "Plan • Track • Optimize"}
             </h1>
             <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-              {activeProject 
+              {activeProject
                 ? "Pantau status proyek Anda secara real-time. Kelola RAB, jadwal, dan arus kas dalam satu tempat."
                 : "Kelola RAB, jadwal, dan arus kas proyek secara terintegrasi. Mulai dengan membuat proyek baru atau pilih proyek aktif."}
             </p>
@@ -280,6 +279,6 @@ export default function Home() {
           />
         </div>
       </div>
-    </AppShell>
+    </div>
   )
 }
