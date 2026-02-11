@@ -5,10 +5,10 @@
  */
 
 import React from 'react'
-import type { ApiPriceHistory } from '@/lib/backendApi'
+import type { PriceHistory } from '@/types/ahsp'
 
 interface PriceHistoryChartProps {
-  data: ApiPriceHistory[]
+  data: PriceHistory[]
   height?: number
 }
 
