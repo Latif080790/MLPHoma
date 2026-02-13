@@ -34,6 +34,10 @@ export interface WBSItem {
   isDragging?: boolean
   /** Whether item is drop target */
   isDropTarget?: boolean
+  /** Quality Control Status */
+  qc_status?: 'PENDING' | 'PASSED' | 'FAILED' | 'NOT_REQUIRED'
+  /** Progress percentage (0-100) */
+  progress?: number
 }
 
 /** WBS Tree State */
@@ -79,7 +83,7 @@ export interface WBSActions {
 }
 
 /** WBS Store Interface */
-export interface WBSStore extends WBSTreeState, WBSActions {}
+export interface WBSStore extends WBSTreeState, WBSActions { }
 
 /** WBS Validation Result */
 export interface WBSValidationResult {

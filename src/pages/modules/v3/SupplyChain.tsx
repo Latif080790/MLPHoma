@@ -1,11 +1,13 @@
 
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp } from "lucide-react"
+import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, Search, Filter } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useProjectStore } from "@/store/projectStore"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import { format } from "date-fns"
@@ -31,12 +33,10 @@ export default function SupplyChain() {
     const [poOpen, setPoOpen] = useState(false)
     const [invOpen, setInvOpen] = useState(false)
     const [invType, setInvType] = useState<"IN" | "OUT">("IN")
-
-    const [projectId, setProjectId] = useState<string>("")
+    const [searchTerm, setSearchTerm] = useState("")
 
     useEffect(() => {
         if (activeProjectId) {
-            setProjectId(activeProjectId)
             if (activeTab === "requests") fetchMaterialRequests(activeProjectId)
             if (activeTab === "orders") fetchPurchaseOrders(activeProjectId)
             if (activeTab === "inventory") fetchInventory(activeProjectId)
@@ -48,6 +48,17 @@ export default function SupplyChain() {
     const handleInvClick = (type: "IN" | "OUT") => {
         setInvType(type)
         setInvOpen(true)
+    }
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'APPROVED': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+            case 'PENDING': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+            case 'REJECTED': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800'
+            case 'ORDERED': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+            case 'RECEIVED': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800'
+            default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+        }
     }
 
     return (
@@ -73,17 +84,29 @@ export default function SupplyChain() {
             <InventoryTransactionDialog open={invOpen} onOpenChange={setInvOpen} projectId={activeProjectId} defaultType={invType} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-4">
-                    <TabsTrigger value="requests" className="gap-2">
-                        <Package size={14} /> Material Requests
-                    </TabsTrigger>
-                    <TabsTrigger value="orders" className="gap-2">
-                        <ShoppingCart size={14} /> Purchase Orders
-                    </TabsTrigger>
-                    <TabsTrigger value="inventory" className="gap-2">
-                        <Warehouse size={14} /> Inventory
-                    </TabsTrigger>
-                </TabsList>
+                <div className="flex items-center justify-between mb-4">
+                    <TabsList>
+                        <TabsTrigger value="requests" className="gap-2">
+                            <Package size={14} /> Material Requests
+                        </TabsTrigger>
+                        <TabsTrigger value="orders" className="gap-2">
+                            <ShoppingCart size={14} /> Purchase Orders
+                        </TabsTrigger>
+                        <TabsTrigger value="inventory" className="gap-2">
+                            <Warehouse size={14} /> Inventory
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <div className="relative w-64 hidden md:block">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
+                        <Input
+                            placeholder="Search items..."
+                            className="pl-8 h-9 text-sm"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
 
                 {/* --- MATERIAL REQUESTS --- */}
                 <TabsContent value="requests" className="space-y-4">
@@ -94,25 +117,32 @@ export default function SupplyChain() {
                             imageKeyword="request"
                         />
                     ) : (
-                        <div className="grid gap-4">
+                        <div className="grid gap-3">
                             {materialRequests.map(mr => (
-                                <Card key={mr.id} className="cursor-pointer hover:border-blue-500 transition-colors">
-                                    <CardContent className="p-4 flex items-center justify-between">
+                                <div key={mr.id} className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-md transition-all hover:border-blue-200 dark:hover:border-blue-800">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
+                                            <Package size={20} />
+                                        </div>
                                         <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="font-semibold text-lg">{mr.itemName}</span>
-                                                <Badge variant={mr.status === 'PENDING' ? 'outline' : 'secondary'}>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-semibold text-slate-900 dark:text-slate-100">{mr.itemName}</h3>
+                                                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border ${getStatusColor(mr.status)}`}>
                                                     {mr.status}
                                                 </Badge>
                                             </div>
-                                            <div className="text-sm text-neutral-500 flex flex-col sm:flex-row sm:gap-4">
-                                                <span>Qty: {mr.quantityRequested} {mr.unit}</span>
-                                                <span>For: {mr.wbsCode} - {mr.wbsName || 'Unspecified Task'}</span>
-                                                <span>Date Required: {mr.dateRequired || 'ASAP'}</span>
+                                            <div className="text-sm text-slate-500 flex items-center gap-3 mt-0.5">
+                                                <span className="font-medium text-slate-700 dark:text-slate-300">Qty: {mr.quantityRequested} {mr.unit}</span>
+                                                <span className="text-slate-300">•</span>
+                                                <span>{mr.wbsName || 'General Request'}</span>
                                             </div>
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                    <div className="text-right text-xs text-slate-400">
+                                        <div className="font-medium text-slate-600 dark:text-slate-400">Required: {mr.dateRequired || 'ASAP'}</div>
+                                        <div>ID: {mr.id.slice(0, 8)}</div>
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     )}
@@ -127,64 +157,82 @@ export default function SupplyChain() {
                             imageKeyword="purchase order"
                         />
                     ) : (
-                        <div className="rounded-md border">
-                            <table className="w-full text-sm">
-                                <thead className="bg-muted/50 text-left">
-                                    <tr>
-                                        <th className="p-3 font-medium">PO Number</th>
-                                        <th className="p-3 font-medium">Vendor</th>
-                                        <th className="p-3 font-medium">Total Amount</th>
-                                        <th className="p-3 font-medium">Status</th>
-                                        <th className="p-3 font-medium">Created At</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                        <div className="rounded-xl border bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
+                            <Table>
+                                <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
+                                    <TableRow>
+                                        <TableHead className="w-[120px]">PO Number</TableHead>
+                                        <TableHead>Vendor</TableHead>
+                                        <TableHead className="text-right">Amount</TableHead>
+                                        <TableHead className="w-[120px]">Status</TableHead>
+                                        <TableHead className="text-right">Date</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                     {purchaseOrders.map(po => (
-                                        <tr key={po.id} className="border-t hover:bg-muted/50 cursor-pointer">
-                                            <td className="p-3 font-mono">{po.poNumber}</td>
-                                            <td className="p-3">{po.vendorName || '-'}</td>
-                                            <td className="p-3 font-medium">Rp {po.totalAmount.toLocaleString()}</td>
-                                            <td className="p-3">
-                                                <Badge variant="outline">{po.status}</Badge>
-                                            </td>
-                                            <td className="p-3 text-neutral-500">{format(new Date(po.createdAt), 'dd MMM yyyy')}</td>
-                                        </tr>
+                                        <TableRow key={po.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
+                                            <TableCell className="font-mono font-medium text-blue-600">{po.poNumber}</TableCell>
+                                            <TableCell className="font-medium">{po.vendorName || '-'}</TableCell>
+                                            <TableCell className="text-right font-semibold">Rp {po.totalAmount.toLocaleString()}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className={`text-[10px] px-2 border ${getStatusColor(po.status)}`}>
+                                                    {po.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right text-slate-500">{format(new Date(po.createdAt), 'dd MMM yyyy')}</TableCell>
+                                        </TableRow>
                                     ))}
-                                </tbody>
-                            </table>
+                                </TableBody>
+                            </Table>
                         </div>
                     )}
                 </TabsContent>
 
                 {/* --- INVENTORY --- */}
                 <TabsContent value="inventory" className="space-y-6">
-                    <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" className="gap-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleInvClick("IN")}>
-                            <ArrowDown size={16} /> Stock In
-                        </Button>
-                        <Button size="sm" variant="outline" className="gap-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleInvClick("OUT")}>
-                            <ArrowUp size={16} /> Stock Out
-                        </Button>
+                    <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-dashed">
+                        <div className="text-sm text-slate-500 ml-2">Digital Warehouse <span className="text-slate-300">|</span> Real-time Levels</div>
+                        <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="gap-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleInvClick("IN")}>
+                                <ArrowDown size={14} /> Stock In
+                            </Button>
+                            <Button size="sm" variant="outline" className="gap-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleInvClick("OUT")}>
+                                <ArrowUp size={14} /> Stock Out
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {inventoryStock.map((item, idx) => (
-                            <Card key={idx}>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-lg">{item.materialName}</CardTitle>
-                                    <CardDescription>Unit: {item.unit}</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex justify-between items-end">
+                            <Card key={idx} className="overflow-hidden hover:shadow-md transition-all border-l-4 border-l-slate-300 hover:border-l-blue-500">
+                                <CardContent className="p-5">
+                                    <div className="flex justify-between items-start mb-4">
                                         <div>
-                                            <div className="text-sm text-neutral-500">In / Out</div>
-                                            <div className="font-mono text-xs">
-                                                {item.totalIn} / {item.totalOut}
+                                            <h3 className="font-bold text-lg text-slate-900 dark:text-white line-clamp-1">{item.materialName}</h3>
+                                            <p className="text-xs text-slate-500">Unit: {item.unit} • SKU: {generateSku(item.materialName)}</p>
+                                        </div>
+                                        <div className={`p-2 rounded-lg ${item.currentStock > 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-500'}`}>
+                                            <Warehouse size={18} />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-end justify-between">
+                                        <div className="space-y-1">
+                                            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total Movement</div>
+                                            <div className="flex gap-3 text-xs font-mono">
+                                                <span className="text-green-600 flex items-center gap-1">
+                                                    <ArrowDown size={10} /> {item.totalIn}
+                                                </span>
+                                                <span className="text-slate-300">|</span>
+                                                <span className="text-red-500 flex items-center gap-1">
+                                                    <ArrowUp size={10} /> {item.totalOut}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-3xl font-bold text-blue-600">{item.currentStock}</div>
-                                            <div className="text-xs text-neutral-500">Current Stock</div>
+                                            <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                                {item.currentStock}
+                                            </div>
+                                            <div className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Available</div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -205,4 +253,8 @@ export default function SupplyChain() {
             </Tabs>
         </div>
     )
+}
+
+function generateSku(name: string) {
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 4) + '-' + Math.floor(Math.random() * 999)
 }

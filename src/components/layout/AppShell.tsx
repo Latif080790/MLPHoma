@@ -56,7 +56,7 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
     <div className="flex min-h-screen bg-[hsl(var(--background))]">
       {/* Sidebar */}
       <aside
-        className={`sidebar-transition fixed inset-y-0 left-0 z-40 flex flex-col border-r bg-[hsl(var(--sidebar-background))] dark:bg-[hsl(var(--sidebar-background))] ${collapsed ? "w-[68px]" : "w-[260px]"
+        className={`sidebar-transition fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border/40 glass ${collapsed ? "w-[68px]" : "w-[260px]"
           }`}
       >
         {/* Logo area */}

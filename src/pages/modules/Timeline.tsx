@@ -17,7 +17,7 @@ import { Label } from '../../components/ui/label'
 import { Input } from '../../components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
-import { Plus, Trash2, AlertTriangle, Filter, Search, Settings2, Download, Flag, FileText } from 'lucide-react'
+import { Plus, Trash2, AlertTriangle, Filter, Search, Settings2, Download, Flag, FileText, GanttChartSquare } from 'lucide-react'
 import GanttChart from '../../components/timeline/GanttChart'
 import TaskEditor from '../../components/timeline/TaskEditor'
 import { WBSImportDialog } from '../../components/timeline/WBSImportDialog'
@@ -341,26 +341,26 @@ export default function Timeline() {
       />
 
       {/* Toolbar */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Settings2 className="h-4 w-4" /> Display & Controls
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border shadow-sm p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Settings2 className="h-4 w-4 text-blue-600" />
+          <h3 className="font-semibold text-sm">Display & Controls</h3>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <div className="flex items-center gap-3">
-            <Label className="text-xs text-neutral-500">Scale</Label>
+            <Label className="text-xs text-neutral-500 font-medium uppercase tracking-wider">Scale</Label>
             <Tabs value={viewMode} onValueChange={(v: any) => setViewMode(v)}>
-              <TabsList>
-                <TabsTrigger value="day">Day</TabsTrigger>
-                <TabsTrigger value="week">Week</TabsTrigger>
-                <TabsTrigger value="month">Month</TabsTrigger>
+              <TabsList className="h-8">
+                <TabsTrigger value="day" className="text-xs px-2 h-6">Day</TabsTrigger>
+                <TabsTrigger value="week" className="text-xs px-2 h-6">Week</TabsTrigger>
+                <TabsTrigger value="month" className="text-xs px-2 h-6">Month</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
 
           <div className="flex items-center gap-3">
-            <Label className="text-xs text-neutral-500">Zoom</Label>
+            <Label className="text-xs text-neutral-500 font-medium uppercase tracking-wider">Zoom</Label>
             <input
               type="range"
               min={12}
@@ -368,134 +368,117 @@ export default function Timeline() {
               step={1}
               value={pxPerDay}
               onChange={(e) => setPxPerDay(parseInt(e.target.value, 10))}
-              className="w-40 accent-blue-600"
+              className="w-32 accent-blue-600 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700"
             />
-            <span className="w-10 text-xs tabular-nums text-neutral-600">{pxPerDay}px</span>
+            <span className="w-10 text-xs tabular-nums text-neutral-600 font-mono py-1 px-1.5 bg-slate-100 rounded text-center">{pxPerDay}px</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2">
+          <div className="md:col-span-2 xl:col-span-2 flex items-center gap-4 flex-wrap">
+            <label className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-red-600"
+                className="h-4 w-4 accent-red-600 rounded border-slate-300"
                 checked={criticalOnly}
                 onChange={(e) => setCriticalOnly(e.target.checked)}
               />
-              <span className="text-sm">Highlight critical only</span>
+              <span className="text-sm group-hover:text-red-600 transition-colors">Critical Only</span>
             </label>
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-blue-600"
-                checked={showTooltip}
-                onChange={(e) => setShowTooltip(e.target.checked)}
-              />
-              <span className="text-sm">Show CPM tooltip</span>
-            </label>
-          </div>
-
-          <div className="flex items-center gap-4 flex-wrap">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-blue-600"
+                className="h-4 w-4 accent-blue-600 rounded border-slate-300"
                 checked={showDeps}
                 onChange={(e) => setShowDeps(e.target.checked)}
               />
-              <span className="text-sm">Show dependencies</span>
+              <span className="text-sm group-hover:text-blue-600 transition-colors">Dependencies</span>
             </label>
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-blue-600"
-                checked={showTodayLine}
-                onChange={(e) => setShowTodayLine(e.target.checked)}
-              />
-              <span className="text-sm">Show today line</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-blue-600"
+                className="h-4 w-4 accent-emerald-600 rounded border-slate-300"
                 checked={showBaseline}
                 onChange={(e) => setShowBaseline(e.target.checked)}
               />
-              <span className="text-sm">Show baseline</span>
+              <span className="text-sm group-hover:text-emerald-600 transition-colors">Baseline</span>
             </label>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-neutral-500" />
-            <Input placeholder="Search task name or ID..." value={query} onChange={(e) => setQuery(e.target.value)} />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-neutral-500" />
+          <div className="md:col-span-2 xl:col-span-2 flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search tasks..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="pl-9 h-9 text-sm bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+              />
+            </div>
             <Select value={statusFilter} onValueChange={(v: string) => setStatusFilter(v)}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-[140px] h-9 text-sm bg-slate-50 border-slate-200">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="not_started">Not started</SelectItem>
-                <SelectItem value="in_progress">In progress</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="not_started">Not Started</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="delayed">Delayed</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
-          {/* Legend */}
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs">
-              <span className="inline-block h-3 w-3 rounded bg-blue-500 ring-2 ring-red-500" /> Critical
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs">
-              <span className="inline-block h-3 w-3 rounded bg-blue-500" /> Task bar
-            </span>
-            <span className="inline-flex items-center gap-2 rounded-md border px-2 py-1 text-xs">
-              <span className="inline-block h-3 w-3 rounded bg-green-500" /> Progress
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* KPI summary */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="py-3">
-            <div className="text-xs text-neutral-500">Total tasks</div>
-            <div className="text-xl font-semibold">{summary.total}</div>
+        <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-blue-500 shadow-sm relative overflow-hidden">
+          <CardContent className="py-4">
+            <div className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Total Tasks</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white">{summary.total}</div>
+            <div className="absolute right-2 top-2 opacity-10">
+              <FileText size={48} className="text-blue-600" />
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="py-3">
-            <div className="text-xs text-neutral-500">In progress</div>
-            <div className="text-xl font-semibold">{summary.inProgress}</div>
+
+        <Card className="bg-gradient-to-br from-amber-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-amber-500 shadow-sm relative overflow-hidden">
+          <CardContent className="py-4">
+            <div className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">In Progress</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white">{summary.inProgress}</div>
+            <div className="absolute right-2 top-2 opacity-10">
+              <Settings2 size={48} className="text-amber-600" />
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="py-3">
-            <div className="text-xs text-neutral-500">Completed</div>
-            <div className="text-xl font-semibold">{summary.completed}</div>
+
+        <Card className="bg-gradient-to-br from-emerald-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-emerald-500 shadow-sm relative overflow-hidden">
+          <CardContent className="py-4">
+            <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Completed</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-white">{summary.completed}</div>
+            <div className="absolute right-2 top-2 opacity-10">
+              <Filter size={48} className="text-emerald-600" />
+            </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="py-3">
-            <div className="text-xs text-neutral-500">Range</div>
-            <div className="text-sm font-medium">
-              {summary.start} → {summary.end}
+
+        <Card className="bg-gradient-to-br from-purple-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-purple-500 shadow-sm relative overflow-hidden">
+          <CardContent className="py-4">
+            <div className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Schedule Range</div>
+            <div className="text-sm font-bold text-slate-900 dark:text-white mt-1.5 flex flex-col">
+              <span>{summary.start || '-'}</span>
+              <span className="text-slate-400 text-[10px] font-normal">to</span>
+              <span>{summary.end || '-'}</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Chart */}
-      <Card ref={exportRef as any}>
-        <CardHeader className="flex items-center justify-between">
+      <Card ref={exportRef as any} className="border-0 shadow-md">
+        <CardHeader className="flex items-center justify-between bg-slate-50/50 border-b pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            Project Schedule
+            <GanttChartSquare className="h-5 w-5 text-blue-600" />
+            Project Schedule Visualization
           </CardTitle>
 
           {/* Export & Baseline actions */}
@@ -518,7 +501,7 @@ export default function Timeline() {
               variant="outline"
               className="gap-2"
               onClick={() => {
-                ;(useTimelineStore as any).getState?.().setBaseline(projectId, true)
+                ; (useTimelineStore as any).getState?.().setBaseline(projectId, true)
                 toast.success('Baseline captured')
               }}
             >
@@ -580,7 +563,7 @@ export default function Timeline() {
         }}
       />
 
-      <WBSImportDialog 
+      <WBSImportDialog
         projectId={projectId}
         open={importWBSOpen}
         onOpenChange={setImportWBSOpen}

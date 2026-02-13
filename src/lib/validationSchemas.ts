@@ -201,6 +201,7 @@ export const wbsItemInputSchema = z.object({
   level: z.number().int().min(0).max(10).default(0),
   budget: commonValidations.price.optional(),
   progress: commonValidations.percentage.optional().default(0),
+  qc_status: z.enum(['PENDING', 'PASSED', 'FAILED', 'NOT_REQUIRED']).optional().default('NOT_REQUIRED'),
 })
 
 /** WBS Item update schema */

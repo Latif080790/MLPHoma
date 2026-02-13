@@ -10,6 +10,7 @@ import {
     fetchInventoryTransactions,
     fetchRabItems,
     fetchProjects,
+    supabase,
     MaterialRequestRow,
     PurchaseOrderRow,
     PoItemRow,
@@ -58,9 +59,60 @@ export const supplyChainService = {
     // --- Purchase Orders ---
 
     async createPurchaseOrder(data: Omit<PurchaseOrderRow, 'id' | 'created_at'>, items: Omit<PoItemRow, 'id' | 'po_id'>[]) {
+        // 1. Validate Budget (Strict Locking)
+        const rapItemIds = items.map(i => i.rap_item_id).filter(Boolean) as string[]
+        const rapMap = new Map<string, any>()
+
+        if (rapItemIds.length > 0) {
+            // Fetch RAP Items directly using Supabase client
+            const { data: dbRapItems, error: dbError } = await supabase!
+                .from('rap_items')
+                .select(`
+                    id, 
+                    qty_budget, 
+                    unit_price_budget, 
+                    committed_cost, 
+                    ahsp_items ( name ), 
+                    rab_items ( name )
+                `)
+                .in('id', rapItemIds)
+
+            if (dbError) throw new Error("Failed to validate budget: " + dbError.message)
+            if (dbRapItems) {
+                dbRapItems.forEach((r: any) => rapMap.set(r.id, r))
+            }
+        }
+
+        // START VALIDATION
+        if (items.length === 0) throw new Error("PO must have at least one item")
+
+        for (const item of items) {
+            if (!item.rap_item_id) continue
+
+            const rapItem = rapMap.get(item.rap_item_id)
+            if (!rapItem) throw new Error(`RAP Item not found for item: ${item.item_name}`)
+
+            const requestedTotal = item.quantity * item.unit_price
+
+            // Calculate remaining: Budget - Committed
+            const totalBudget = (rapItem.qty_budget || 0) * (rapItem.unit_price_budget || 0)
+            const committed = rapItem.committed_cost || 0
+            const remaining = totalBudget - committed
+
+            if (requestedTotal > remaining) {
+                const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })
+                const itemName = rapItem.ahsp_items?.name || rapItem.rab_items?.name || item.item_name
+                throw new Error(
+                    `Budget Exceeded for ${itemName}!\n` +
+                    `Requested: ${formatter.format(requestedTotal)}\n` +
+                    `Remaining: ${formatter.format(remaining)}`
+                )
+            }
+        }
+
         const poId = generateId()
 
-        // 1. Create Header
+        // 2. Create Header
         const { data: po, error: poError } = await upsertPurchaseOrder({
             id: poId,
             ...data,
@@ -69,8 +121,7 @@ export const supplyChainService = {
 
         if (poError) throw poError
 
-        // 2. Create Items
-        // Use Promise.all for parallel insertion (could be improved with batch insert if available)
+        // 3. Create Items
         try {
             await Promise.all(items.map(item =>
                 upsertPoItem({
@@ -79,9 +130,27 @@ export const supplyChainService = {
                     ...item
                 })
             ))
+
+            // 4. Update Committed Cost in RAP
+            for (const item of items) {
+                if (item.rap_item_id) {
+                    const rapItem = rapMap.get(item.rap_item_id)
+                    if (rapItem) {
+                        const newCommitted = (rapItem.committed_cost || 0) + (item.quantity * item.unit_price)
+                        // Fire and forget update
+                        supabase!
+                            .from('rap_items')
+                            .update({ committed_cost: newCommitted })
+                            .eq('id', rapItem.id)
+                            .then(({ error }) => {
+                                if (error) console.error("Failed to update committed cost", error)
+                            })
+                    }
+                }
+            }
+
         } catch (itemError) {
             console.error("Failed to insert PO items", itemError)
-            // Ideally rollback PO here, but Supabase generic client doesn't support transactions easily without RPC
             throw itemError
         }
 
