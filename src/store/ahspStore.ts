@@ -144,6 +144,13 @@ export const useAHSPStore = create<AHSPStore>()(
                 // We need to map snake_case to camelCase
                 basePrice: item.base_price || 0,
                 finalPrice: item.final_price || 0,
+
+                // Map split cost fields
+                price_material: item.price_material || 0,
+                price_labor: item.price_labor || 0,
+                price_equipment: item.price_equipment || 0,
+                price_subcon: item.price_subcon || 0,
+
                 overheadPercentage: item.overhead_percentage || 0,
                 profitPercentage: item.profit_percentage || 0,
                 createdAt: item.created_at,
@@ -672,6 +679,13 @@ export const useAHSPStore = create<AHSPStore>()(
                     ...item,
                     basePrice: result.priceBreakdown.basePrice,
                     finalPrice: result.priceBreakdown.finalPrice,
+
+                    // Update split costs from breakdown
+                    price_material: result.componentBreakdown.breakdown.material,
+                    price_labor: result.componentBreakdown.breakdown.labor,
+                    price_equipment: result.componentBreakdown.breakdown.equipment,
+                    price_subcon: result.componentBreakdown.breakdown.subcontractor,
+
                     updatedAt: new Date().toISOString(),
                   }
                   : item

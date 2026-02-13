@@ -8,19 +8,16 @@ import React, { useState } from "react"
 import { useLocation } from "react-router"
 import { AppHeader } from "./AppHeader"
 import {
-  Boxes,
-  CalendarDays,
-  ClipboardList,
-  FileBarChart2,
-  Home,
-  Layers,
-  LineChart,
-  Settings,
+  LayoutDashboard,
+  Calculator,
+  CalendarClock,
+  Truck,
   Wallet,
-  Wrench,
+  FileDiff,
+  FolderOpen,
+  Settings,
   ChevronLeft,
   ChevronRight,
-  Gauge,
 } from "lucide-react"
 
 /** Navigation item definition */
@@ -32,17 +29,14 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "#/", icon: <Home size={20} />, label: "Dashboard", color: "text-blue-500" },
-  { href: "#/projects", icon: <ClipboardList size={20} />, label: "Projects", color: "text-slate-500" },
-  { href: "#/wbs", icon: <Layers size={20} />, label: "WBS", color: "text-emerald-500" },
-  { href: "#/ahsp", icon: <Wrench size={20} />, label: "AHSP", color: "text-rose-500" },
-  { href: "#/rab", icon: <Boxes size={20} />, label: "RAB", color: "text-blue-500" },
-  { href: "#/timeline", icon: <CalendarDays size={20} />, label: "Timeline", color: "text-indigo-500" },
-  { href: "#/rap", icon: <Gauge size={20} />, label: "RAP", color: "text-violet-500" },
-  { href: "#/curvas", icon: <LineChart size={20} />, label: "Curva-S", color: "text-amber-500" },
-  { href: "#/resource", icon: <Boxes size={20} />, label: "Resources", color: "text-teal-500" },
-  { href: "#/cashflow", icon: <Wallet size={20} />, label: "Cash Flow", color: "text-cyan-500" },
-  { href: "#/reports", icon: <FileBarChart2 size={20} />, label: "Reports", color: "text-purple-500" },
+  { href: "#/", icon: <LayoutDashboard size={20} />, label: "Command Center", color: "text-blue-500" },
+  { href: "#/costing", icon: <Calculator size={20} />, label: "Project Costing", color: "text-emerald-500" },
+  { href: "#/schedule", icon: <CalendarClock size={20} />, label: "Schedule & Ops", color: "text-indigo-500" },
+  { href: "#/supply-chain", icon: <Truck size={20} />, label: "Supply Chain", color: "text-orange-500" },
+  { href: "#/finance", icon: <Wallet size={20} />, label: "Finance", color: "text-teal-500" },
+  { href: "#/change-management", icon: <FileDiff size={20} />, label: "Change Mgmt", color: "text-rose-500" },
+  { href: "#/documents", icon: <FolderOpen size={20} />, label: "Documents", color: "text-slate-500" },
+  { href: "#/settings", icon: <Settings size={20} />, label: "Settings", color: "text-gray-500" },
 ]
 
 export interface AppShellProps {
@@ -93,8 +87,8 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
                 href={item.href}
                 title={item.label}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${isActive
-                    ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                    : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
+                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                  : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
                   }`}
               >
                 <span className={`flex-shrink-0 ${isActive ? "text-blue-600 dark:text-blue-400" : item.color}`}>

@@ -15,8 +15,21 @@ import { useAuthStore } from './store/authStore'
 import { useProjectStore } from './store/projectStore'
 
 // Lazy-loaded page components for optimal code splitting
+// Lazy-loaded page components for optimal code splitting
 const HomePage = React.lazy(() => import('./pages/Home'))
 const ProjectManagement = React.lazy(() => import('./pages/modules/ProjectManagement'))
+
+// v3 Ultra Modules
+const CommandCenter = React.lazy(() => import('./pages/modules/v3/CommandCenter'))
+const ProjectCosting = React.lazy(() => import('./pages/modules/v3/ProjectCosting'))
+const ScheduleOps = React.lazy(() => import('./pages/modules/v3/ScheduleOps'))
+const SupplyChain = React.lazy(() => import('./pages/modules/v3/SupplyChain'))
+const Finance = React.lazy(() => import('./pages/modules/v3/Finance'))
+const ChangeManagement = React.lazy(() => import('./pages/modules/v3/ChangeManagement'))
+const Documents = React.lazy(() => import('./pages/modules/v3/Documents'))
+const Settings = React.lazy(() => import('./pages/modules/v3/Settings'))
+
+// Legacy Modules (Keep for reference if needed, but routes will be replaced)
 const WBS = React.lazy(() => import('./pages/modules/WBS'))
 const AHSP = React.lazy(() => import('./pages/modules/AHSP'))
 const RAB = React.lazy(() => import('./pages/modules/RAB'))
@@ -76,8 +89,20 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Protected routes — all wrapped with sidebar layout */}
-            <Route path="/" element={<ProtectedLayout><HomePage /></ProtectedLayout>} />
+            {/* Protected routes — all wrapped with sidebar layout */}
+            <Route path="/" element={<ProtectedLayout><CommandCenter /></ProtectedLayout>} />
             <Route path="/projects" element={<ProtectedLayout><ProjectManagement /></ProtectedLayout>} />
+
+            {/* v3 Ultra Routes */}
+            <Route path="/costing" element={<ProtectedLayout><ProjectCosting /></ProtectedLayout>} />
+            <Route path="/schedule" element={<ProtectedLayout><ScheduleOps /></ProtectedLayout>} />
+            <Route path="/supply-chain" element={<ProtectedLayout><SupplyChain /></ProtectedLayout>} />
+            <Route path="/finance" element={<ProtectedLayout><Finance /></ProtectedLayout>} />
+            <Route path="/change-management" element={<ProtectedLayout><ChangeManagement /></ProtectedLayout>} />
+            <Route path="/documents" element={<ProtectedLayout><Documents /></ProtectedLayout>} />
+            <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
+
+            {/* Legacy Routes (redirect or keep active for direct access if needed) */}
             <Route path="/wbs" element={<ProtectedLayout><WBS /></ProtectedLayout>} />
             <Route path="/ahsp" element={<ProtectedLayout><AHSP /></ProtectedLayout>} />
             <Route path="/rab" element={<ProtectedLayout><RAB /></ProtectedLayout>} />

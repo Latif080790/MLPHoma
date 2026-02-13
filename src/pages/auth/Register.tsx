@@ -2,12 +2,18 @@
  * Register.tsx
  * 
  * Registration page for new users.
- * Supports dark mode and Indonesian language.
+ * Uses modern Shadcn UI components.
  */
 
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { useSession } from '../../hooks/useSession'
+import { Button } from '../../components/ui/button'
+import { Input } from '../../components/ui/input'
+import { Label } from '../../components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card'
+import { AlertCircle, CheckCircle2, Loader2, Lock, Mail, User } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert'
 
 export default function Register() {
   const [fullName, setFullName] = useState('')
@@ -20,14 +26,12 @@ export default function Register() {
   const { signUp, isAuthenticated, loading, error, clearError } = useSession()
   const navigate = useNavigate()
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/', { replace: true })
     }
   }, [isAuthenticated, navigate])
 
-  // Clear errors when component unmounts
   useEffect(() => {
     return () => {
       clearError()
@@ -38,7 +42,6 @@ export default function Register() {
     e.preventDefault()
     setValidationError('')
 
-    // Validation
     if (!fullName || !email || !password || !confirmPassword) {
       setValidationError('Semua field harus diisi')
       return
@@ -60,8 +63,7 @@ export default function Register() {
     }
 
     const success = await signUp(email, password, fullName)
-    
-    // Show success message if signup succeeded
+
     if (success) {
       setSuccess(true)
     }
@@ -69,139 +71,142 @@ export default function Register() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 dark:bg-neutral-950 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
-          <div className="rounded-md bg-green-50 p-6 text-center dark:bg-green-900/20">
-            <h2 className="text-2xl font-bold text-green-800 dark:text-green-400">
-              Pendaftaran Berhasil!
-            </h2>
-            <p className="mt-4 text-sm text-green-700 dark:text-green-300">
-              Akun Anda telah berhasil dibuat. Silakan cek email Anda untuk verifikasi.
-            </p>
-            <Link
-              to="/login"
-              className="mt-6 inline-block rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-            >
-              Masuk ke Akun
-            </Link>
-          </div>
+      <div className="flex min-h-screen items-center justify-center bg-neutral-50/50 p-4 dark:bg-neutral-950/50">
+        <div className="w-full max-w-[400px]">
+          <Card className="border-green-200 shadow-xl dark:border-green-900">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <CardTitle className="text-green-700 dark:text-green-400">Pendaftaran Berhasil!</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center text-sm text-neutral-600 dark:text-neutral-400">
+              <p>Akun Anda telah berhasil dibuat. Silakan cek email Anda untuk verifikasi sebelum masuk.</p>
+            </CardContent>
+            <CardFooter className="justify-center">
+              <Button asChild className="w-full bg-green-600 hover:bg-green-700">
+                <Link to="/login">Masuk ke Akun</Link>
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 dark:bg-neutral-950 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-            Daftar Akun Baru
-          </h2>
-          <p className="mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400">
-            Atau{' '}
-            <Link
-              to="/login"
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              masuk ke akun yang sudah ada
-            </Link>
-          </p>
+    <div className="flex min-h-screen items-center justify-center bg-neutral-50/50 p-4 dark:bg-neutral-950/50">
+      <div className="w-full max-w-[400px]">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 shadow-lg shadow-blue-600/20">
+            <Lock className="h-6 w-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">Buat Akun Baru</h1>
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">Gabung untuk manajemen proyek yang lebih baik</p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4 rounded-md shadow-sm">
-            <div>
-              <label htmlFor="fullName" className="sr-only">
-                Nama Lengkap
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                autoComplete="name"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="relative block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder-neutral-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-400 sm:text-sm"
-                placeholder="Nama Lengkap"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Alamat Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="relative block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder-neutral-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-400 sm:text-sm"
-                placeholder="Alamat Email"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="relative block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder-neutral-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-400 sm:text-sm"
-                placeholder="Password (minimal 6 karakter)"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label htmlFor="confirmPassword" className="sr-only">
-                Konfirmasi Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="relative block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder-neutral-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-400 sm:text-sm"
-                placeholder="Konfirmasi Password"
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          {(error || validationError) && (
-            <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/20">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
+        <Card className="border-neutral-200 shadow-xl dark:border-neutral-800">
+          <CardHeader>
+            <CardTitle>Daftar</CardTitle>
+            <CardDescription>Isi formulir di bawah ini untuk membuat akun baru.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {(error || validationError) && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
                     {validationError || error}
-                  </h3>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Nama Lengkap</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="John Doe"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="pl-9"
+                    disabled={loading}
+                    autoFocus
+                  />
                 </div>
               </div>
-            </div>
-          )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-offset-neutral-900"
-            >
-              {loading ? 'Memproses...' : 'Daftar'}
-            </button>
-          </div>
-        </form>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="nama@perusahaan.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-9"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Minimal 6 karakter"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-9"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-neutral-500" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Ulangi password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-9"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Mendaftar...
+                  </>
+                ) : (
+                  'Daftar'
+                )}
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="flex justify-center border-t bg-neutral-50/50 p-6 dark:border-neutral-800 dark:bg-neutral-900/50">
+            <p className="text-sm text-neutral-500">
+              Sudah punya akun?{' '}
+              <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline dark:text-blue-400">
+                Masuk
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
       </div>
     </div>
   )

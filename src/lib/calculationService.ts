@@ -55,6 +55,22 @@ export interface PriceInput {
 export interface ComponentInput {
   coefficient: number
   unitPrice: number
+  type?: string // 'material' | 'labor' | 'equipment' | 'subcontractor'
+}
+
+export interface ComponentCalculationResult {
+  subtotal: number
+  components: Array<{
+    coefficient: number
+    unitPrice: number
+    amount: number
+  }>
+  breakdown: {
+    material: number
+    labor: number
+    equipment: number
+    subcontractor: number
+  }
 }
 
 export interface PriceBreakdown {
@@ -70,15 +86,6 @@ export interface PriceBreakdown {
   finalPrice: number
 }
 
-export interface ComponentCalculationResult {
-  subtotal: number
-  components: Array<{
-    coefficient: number
-    unitPrice: number
-    amount: number
-  }>
-}
-
 /**
  * ===========================
  * CORE CALCULATION FUNCTIONS
@@ -87,33 +94,11 @@ export interface ComponentCalculationResult {
 
 /**
  * Calculate price with overhead, profit, and tax applied sequentially.
- * 
- * Formula:
- * 1. priceWithOverhead = basePrice * (1 + overheadPercent/100)
- * 2. priceWithProfit = priceWithOverhead * (1 + profitPercent/100)
- * 3. finalPrice = priceWithProfit * (1 + taxPercent/100)
- * 
- * @example
- * calculatePriceWithMarkup({
- *   basePrice: 1000,
- *   overheadPercent: 10,
- *   profitPercent: 5,
- *   taxPercent: 11
- * })
- * // Returns: {
- * //   basePrice: 1000,
- * //   overheadAmount: 100,
- * //   priceWithOverhead: 1100,
- * //   profitAmount: 55,
- * //   priceWithProfit: 1155,
- * //   taxAmount: 127.05,
- * //   finalPrice: 1282.05
- * // }
  */
 export function calculatePriceWithMarkup(input: PriceInput): PriceBreakdown {
   // Validate input
   const validated = PriceInputSchema.parse(input)
-  
+
   const basePrice = validated.basePrice
   const overheadPercent = validated.overheadPercent || 0
   const profitPercent = validated.profitPercent || 0
@@ -145,6 +130,8 @@ export function calculatePriceWithMarkup(input: PriceInput): PriceBreakdown {
   }
 }
 
+// ... schemas ...
+
 /**
  * Calculate base price from components (AHSP calculation).
  * 
@@ -152,25 +139,45 @@ export function calculatePriceWithMarkup(input: PriceInput): PriceBreakdown {
  * 
  * @example
  * calculateComponentsTotal([
- *   { coefficient: 0.1, unitPrice: 152900 },  // Labor
- *   { coefficient: 0.005, unitPrice: 230000 } // Supervisor
+ *   { coefficient: 0.1, unitPrice: 152900, type: 'labor' }, 
+ *   { coefficient: 0.005, unitPrice: 230000, type: 'labor' }
  * ])
- * // Returns: {
- * //   subtotal: 16440,
- * //   components: [
- * //     { coefficient: 0.1, unitPrice: 152900, amount: 15290 },
- * //     { coefficient: 0.005, unitPrice: 230000, amount: 1150 }
- * //   ]
- * // }
  */
 export function calculateComponentsTotal(components: ComponentInput[]): ComponentCalculationResult {
   // Validate each component
-  const validated = components.map(c => ComponentSchema.parse(c))
-  
+  const validated = components.map(c => ({
+    ...ComponentSchema.parse(c),
+    type: c.type || 'material' // Default to material if undefined
+  }))
+
   let subtotal = 0
+  const breakdown = {
+    material: 0,
+    labor: 0,
+    equipment: 0,
+    subcontractor: 0
+  }
+
   const detailedComponents = validated.map(comp => {
     const amount = comp.coefficient * comp.unitPrice
     subtotal += amount
+
+    // Accumulate breakdown
+    switch (comp.type?.toLowerCase()) {
+      case 'labor':
+        breakdown.labor += amount
+        break
+      case 'equipment':
+        breakdown.equipment += amount
+        break
+      case 'subcontractor':
+      case 'subcon':
+        breakdown.subcontractor += amount
+        break
+      default:
+        breakdown.material += amount
+    }
+
     return {
       coefficient: comp.coefficient,
       unitPrice: comp.unitPrice,
@@ -181,6 +188,12 @@ export function calculateComponentsTotal(components: ComponentInput[]): Componen
   return {
     subtotal: Number(subtotal.toFixed(2)),
     components: detailedComponents,
+    breakdown: {
+      material: Number(breakdown.material.toFixed(2)),
+      labor: Number(breakdown.labor.toFixed(2)),
+      equipment: Number(breakdown.equipment.toFixed(2)),
+      subcontractor: Number(breakdown.subcontractor.toFixed(2)),
+    }
   }
 }
 
@@ -215,9 +228,9 @@ export function calculateRABItemTotal(input: {
 }) {
   // Validate
   const validated = VolumeCalculationSchema.parse(input)
-  
+
   const subtotal = validated.volume * validated.unitPrice
-  
+
   const breakdown = calculatePriceWithMarkup({
     basePrice: subtotal,
     overheadPercent: validated.overheadPercent,
@@ -262,7 +275,7 @@ export function calculateAHSPPrice(input: {
   profitPercent?: number
 }) {
   const componentResult = calculateComponentsTotal(input.components)
-  
+
   const breakdown = calculatePriceWithMarkup({
     basePrice: componentResult.subtotal,
     overheadPercent: input.overheadPercent,
