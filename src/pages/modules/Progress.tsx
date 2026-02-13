@@ -7,11 +7,13 @@
 
 import React, { useMemo, useRef, useState } from "react"
 import { ModuleHeader } from "../../components/modules/ModuleHeader"
-import { BarChart2, Plus, Download, FileSpreadsheet, FileText } from "lucide-react"
+import { BarChart2, Plus, Download, FileSpreadsheet, FileText, MapPin } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Button } from "../../components/ui/button"
+import { Badge } from "../../components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useProjectStore } from "../../store/projectStore"
 import { useCurvaSStore } from "../../store/curvaSStore"
 import { EmptyState } from "../../components/common/EmptyState"
@@ -102,6 +104,9 @@ export default function Progress() {
     cost: 0,
     notes: "",
     photoUrl: "",
+    volume: 0,
+    weather: 'sunny',
+    delayReason: 'none'
   })
 
   const recent = useMemo(
@@ -117,7 +122,7 @@ export default function Progress() {
 
   const onAdd = () => {
     if (!form.date) return
-    
+
     // Find existing point to preserve planned values if needed, 
     // but actually we should just omit them from the update object 
     // so the store's merge logic keeps the old ones.
@@ -135,15 +140,18 @@ export default function Progress() {
 
     // Only add createdAt if it's likely a new point (though store handles this too)
     // We don't send plannedProgress/plannedCost so they are not overwritten.
-    
+
     addDataPoint(projectId, payload)
-    
+
     setForm({
       date: new Date().toISOString().split("T")[0],
       progress: 0,
       cost: 0,
       notes: "",
       photoUrl: "",
+      volume: 0,
+      weather: 'sunny',
+      delayReason: 'none'
     })
   }
 
@@ -207,23 +215,26 @@ export default function Progress() {
                       value={form.date}
                       onChange={(e) => setForm({ ...form, date: e.target.value })}
                     />
-                    {currentPlanned && (
-                      <div className="mt-1 text-xs text-neutral-500">
-                        Planned: {currentPlanned.progress.toFixed(1)}% / Rp {currentPlanned.cost.toLocaleString('id-ID')}
-                      </div>
-                    )}
+                    <div className="mt-2 text-xs flex gap-2">
+                      <Badge variant="outline" className="cursor-pointer hover:bg-slate-100" onClick={() => setForm({ ...form, weather: 'sunny' })}>Start: ☀️ Sunny</Badge>
+                      <Badge variant="outline" className="cursor-pointer hover:bg-slate-100" onClick={() => setForm({ ...form, weather: 'rain_heavy' })}>🌧️ Heavy Rain</Badge>
+                    </div>
                   </div>
                   <div>
-                    <Label htmlFor="progress">Progress (%)</Label>
+                    <Label htmlFor="volume">Daily Volume (m2/m3)</Label>
                     <Input
-                      id="progress"
+                      id="volume"
                       type="number"
-                      min="0"
-                      max="100"
-                      step="0.1"
-                      value={form.progress}
-                      onChange={(e) => setForm({ ...form, progress: Number(e.target.value) })}
+                      placeholder="Input Volume Terpasang..."
+                      value={form.volume || ''}
+                      onChange={(e) => {
+                        const vol = Number(e.target.value)
+                        // Simple auto-calc % logic (mockup: assuming total vol 100 for demo)
+                        setForm({ ...form, volume: vol, progress: vol / 100 * 100 })
+                      }}
+                      className="border-blue-500"
                     />
+                    <p className="text-[10px] text-muted-foreground mt-1">*Input Volume, Progress % hits auto.</p>
                   </div>
                   <div>
                     <Label htmlFor="cost">Actual Cost (IDR)</Label>
@@ -236,26 +247,37 @@ export default function Progress() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="notes">Notes</Label>
-                    <Input
-                      id="notes"
-                      value={form.notes}
-                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    />
+                    <Label htmlFor="delay">Delay Reason (If Any)</Label>
+                    <Select onValueChange={(val) => setForm({ ...form, delayReason: val })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Reason..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None (On Track)</SelectItem>
+                        <SelectItem value="weather">Weather / Hujan</SelectItem>
+                        <SelectItem value="material">Material Late</SelectItem>
+                        <SelectItem value="equipment">Alat Rusak</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="md:col-span-2">
-                    <Label htmlFor="photo">Photo URL (optional)</Label>
-                    <Input
-                      id="photo"
-                      placeholder="https://..."
-                      value={form.photoUrl}
-                      onChange={(e) => setForm({ ...form, photoUrl: e.target.value })}
-                    />
+                    <Label htmlFor="photo">Evidence / Photo URL (Required for QC)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="photo"
+                        placeholder="https://..."
+                        value={form.photoUrl}
+                        onChange={(e) => setForm({ ...form, photoUrl: e.target.value })}
+                      />
+                      <Button variant="outline" size="icon" title="Get GPS">
+                        <MapPin className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-                <Button onClick={onAdd} className="w-full">
+                <Button onClick={onAdd} className="w-full bg-green-600 hover:bg-green-700">
                   <Plus className="mr-2 h-4 w-4" />
-                  Add Progress
+                  Submit for QC Validation
                 </Button>
               </CardContent>
             </Card>
