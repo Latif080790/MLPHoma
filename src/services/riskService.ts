@@ -1,5 +1,5 @@
 
-import { v4 as uuidv4 } from 'uuid'
+import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
 import { Risk, RiskStatus } from '../types/risk'
 
@@ -43,7 +43,7 @@ export const riskService = {
 
     async createRisk(risk: Partial<Risk>) {
         const client = assertSupabase()
-        const id = uuidv4()
+        const id = generateId()
 
         // Auto calc score (db also does it, but good for optimistic ui)
         const score = (risk.probability || 1) * (risk.impact || 1)

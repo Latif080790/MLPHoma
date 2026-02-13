@@ -1,5 +1,6 @@
 
-import { v4 as uuidv4 } from 'uuid'
+
+import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
 import { Invoice, ClientClaim, FinanceTransaction } from '../types/finance'
 
@@ -19,7 +20,7 @@ export const financeService = {
 
     async createInvoice(invoice: Partial<Invoice>) {
         const client = assertSupabase()
-        const id = uuidv4()
+        const id = generateId()
 
         const { data, error } = await client
             .from('invoices')
@@ -59,7 +60,7 @@ export const financeService = {
 
     async createClaim(claim: Partial<ClientClaim>) {
         const client = assertSupabase()
-        const id = uuidv4()
+        const id = generateId()
 
         const { data, error } = await client
             .from('client_claims')
@@ -89,7 +90,7 @@ export const financeService = {
 
     async recordTransaction(txn: Partial<FinanceTransaction>) {
         const client = assertSupabase()
-        const id = uuidv4()
+        const id = generateId()
 
         const { data, error } = await client
             .from('finance_transactions')

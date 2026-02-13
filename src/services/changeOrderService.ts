@@ -1,5 +1,6 @@
 
-import { v4 as uuidv4 } from 'uuid'
+
+import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
 import { ChangeOrder, ChangeOrderItem } from '../types/change-order'
 
@@ -38,7 +39,7 @@ export const changeOrderService = {
 
     async createChangeOrder(order: Partial<ChangeOrder>, items: Partial<ChangeOrderItem>[]) {
         const client = assertSupabase()
-        const id = uuidv4()
+        const id = generateId()
 
         // 1. Create Header
         const { data: newOrder, error: orderError } = await client
@@ -61,7 +62,7 @@ export const changeOrderService = {
         // 2. Create Items
         if (items.length > 0) {
             const itemsToInsert = items.map(item => ({
-                id: uuidv4(),
+                id: generateId(),
                 change_order_id: id,
                 item_description: item.item_description,
                 volume_delta: item.volume_delta,

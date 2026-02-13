@@ -1,17 +1,14 @@
+
 import React, { useEffect } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../../components/ui/tabs'
-import { Card, CardContent } from '../../../../components/ui/card'
-import WBS from '../../WBS' // Adjust path if needed, assuming relative to this file? 
-// Actually original file imported from '../WBS' which means parent dir. 
-// Let's check imports in original file.
-// Original: import WBS from '../WBS' (in src/pages/modules/v3/ScheduleOps.tsx -> src/pages/modules/WBS)
-// Wait, if ScheduleOps is in v3, then '../WBS' is src/pages/modules/WBS. Correct.
-import Timeline from '../../Timeline'
-import CurvaS from '../../CurvaS'
-import Progress from '../../Progress'
-import RiskRegister from '../../../../components/risk/RiskRegister'
-import { useProjectStore } from '../../../../store/projectStore'
-import { EmptyState } from '../../../../components/common/EmptyState'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent } from '@/components/ui/card'
+import WBS from '../WBS'
+import Timeline from '../Timeline'
+import CurvaS from '../CurvaS'
+import Progress from '../Progress'
+import RiskRegister from '@/components/risk/RiskRegister'
+import { useProjectStore } from '@/store/projectStore'
+import { EmptyState } from '@/components/common/EmptyState'
 
 export default function ScheduleOps() {
     const { activeProjectId } = useProjectStore()
@@ -74,4 +71,3 @@ export default function ScheduleOps() {
         </div>
     )
 }
-

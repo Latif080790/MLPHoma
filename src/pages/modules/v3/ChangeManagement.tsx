@@ -1,16 +1,16 @@
 
 import React, { useEffect, useState } from "react"
-import { ModuleHeader } from "../../../components/modules/ModuleHeader"
+import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { GitPullRequest, DollarSign, Clock, AlertOctagon, Plus, TrendingUp } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/card"
-import { Badge } from "../../../components/ui/badge"
-import { Button } from "../../../components/ui/button"
-import { useProjectStore } from "../../../store/projectStore"
-import { useChangeOrderStore } from "../../../store/changeOrderStore"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { useProjectStore } from "@/store/projectStore"
+import { useChangeOrderStore } from "@/store/changeOrderStore"
 import { format } from "date-fns"
-import { EmptyState } from "../../../components/common/EmptyState"
-import { ChangeOrderDialog } from "../../../components/change-order/ChangeOrderDialog"
+import { EmptyState } from "@/components/common/EmptyState"
+import { ChangeOrderDialog } from "@/components/change-order/ChangeOrderDialog"
 
 export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
