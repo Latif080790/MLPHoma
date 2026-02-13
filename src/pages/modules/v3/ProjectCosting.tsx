@@ -1,7 +1,8 @@
+
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
-import AHSP from '../AHSP'
+import AHSP from '../AHSP' // Sibling in parent modules dir
 import RAB from '../RAB'
 import RAP from '../RAP'
 

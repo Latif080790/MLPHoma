@@ -1,5 +1,6 @@
 
-import { v4 as uuidv4 } from 'uuid'
+
+import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
 
 export interface ProjectDocument {
@@ -28,7 +29,7 @@ export const documentService = {
 
     async uploadDocument(doc: Partial<ProjectDocument>) {
         const client = assertSupabase()
-        const id = uuidv4()
+        const id = generateId()
 
         // In a real app, we would upload to Storage bucket here
         // const { data: uploadData, error: uploadError } = await client.storage.from('files').upload(...)

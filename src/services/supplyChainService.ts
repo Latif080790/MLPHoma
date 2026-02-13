@@ -16,7 +16,7 @@ import {
     InventoryTransactionRow
 } from '../lib/supabaseClient'
 import { MaterialRequest, PurchaseOrder, InventoryTransaction, MrStatus, PoStatus, PoItem } from '../types/supply-chain'
-import { v4 as uuidv4 } from 'uuid'
+import { generateId } from '../lib/idGenerator'
 
 export const supplyChainService = {
 
@@ -24,7 +24,7 @@ export const supplyChainService = {
 
     async createMaterialRequest(data: Omit<MaterialRequestRow, 'id' | 'created_at'>) {
         return upsertMaterialRequest({
-            id: uuidv4(),
+            id: generateId(),
             ...data,
             status: 'PENDING'
         })
@@ -58,7 +58,7 @@ export const supplyChainService = {
     // --- Purchase Orders ---
 
     async createPurchaseOrder(data: Omit<PurchaseOrderRow, 'id' | 'created_at'>, items: Omit<PoItemRow, 'id' | 'po_id'>[]) {
-        const poId = uuidv4()
+        const poId = generateId()
 
         // 1. Create Header
         const { data: po, error: poError } = await upsertPurchaseOrder({
@@ -74,7 +74,7 @@ export const supplyChainService = {
         try {
             await Promise.all(items.map(item =>
                 upsertPoItem({
-                    id: uuidv4(),
+                    id: generateId(),
                     po_id: poId,
                     ...item
                 })
@@ -136,7 +136,7 @@ export const supplyChainService = {
 
     async recordTransaction(data: Omit<InventoryTransactionRow, 'id' | 'created_at'>) {
         return upsertInventoryTransaction({
-            id: uuidv4(),
+            id: generateId(),
             ...data
         })
     },

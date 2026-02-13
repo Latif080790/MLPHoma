@@ -1,12 +1,11 @@
 
 import React, { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Activity, AlertTriangle, TrendingUp, CheckCircle2, DollarSign, Clock } from 'lucide-react'
-import { useProjectStore } from '../../../store/projectStore'
-import { assertSupabase } from '../../../lib/supabaseClient'
+import { useProjectStore } from '@/store/projectStore'
+import { assertSupabase } from '@/lib/supabaseClient'
 import { format } from 'date-fns'
-// Link removed
-import { Button } from '../../../components/ui/button'
+import { Button } from '@/components/ui/button'
 
 interface ActivityItem {
     type: string
@@ -24,7 +23,6 @@ export default function CommandCenter() {
         pendingApprovals: 0,
     })
     const [activities, setActivities] = useState<ActivityItem[]>([])
-    // const [cashflow, setCashflow] = useState<any[]>([]) 
 
     useEffect(() => {
         loadGlobalStats()

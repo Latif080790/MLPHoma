@@ -1,16 +1,16 @@
 
 import React, { useEffect, useState } from "react"
-import { ModuleHeader } from "../../../components/modules/ModuleHeader"
+import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { Settings as SettingsIcon, Save, Users, Database, Globe } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../../components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../components/ui/card"
-import { Input } from "../../../components/ui/input"
-import { Label } from "../../../components/ui/label"
-import { Button } from "../../../components/ui/button"
-import { useProjectStore } from "../../../store/projectStore"
-import { EmptyState } from "../../../components/common/EmptyState"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { useProjectStore } from "@/store/projectStore"
+import { EmptyState } from "@/components/common/EmptyState"
 import { toast } from "sonner"
-import { assertSupabase } from "../../../lib/supabaseClient"
+import { assertSupabase } from "@/lib/supabaseClient"
 
 export default function Settings() {
     const { activeProjectId, projects, updateProject } = useProjectStore()
@@ -36,10 +36,6 @@ export default function Settings() {
         if (!project || !activeProjectId) return
         setLoading(true)
         try {
-            // 1. Update in Supabase (Handled by store sync usually, but here we do manual for double safety or if sync is async)
-            // But since updateProject calls syncProj, we can just use that if we trust it, or use manual update.
-            // Let's use manual update to ensure immediate feedback as in original code, then update store.
-
             const client = assertSupabase()
             const { error } = await client
                 .from('projects')
@@ -57,7 +53,7 @@ export default function Settings() {
 
             toast.success("Project settings saved")
 
-            // 2. Update Store
+            // Update Store
             updateProject(activeProjectId, {
                 name: project.name,
                 location: project.location,

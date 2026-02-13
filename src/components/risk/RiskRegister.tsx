@@ -1,13 +1,13 @@
 
 import React, { useEffect, useState } from "react"
-import { useRiskStore } from "../../store/riskStore"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../ui/card"
-import { Button } from "../../ui/button"
-import { Badge } from "../../ui/badge"
+import { useRiskStore } from "@/store/riskStore"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Plus, Edit, Trash2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { RiskDialog } from "./RiskDialog"
 import { format } from "date-fns"
-import { EmptyState } from "../../components/common/EmptyState"
+import { EmptyState } from "@/components/common/EmptyState"
 
 interface RiskRegisterProps {
     projectId: string
