@@ -124,8 +124,8 @@ export const dashboardService = {
         const activityFeed: any[] = []
 
         if (recentPOs && recentPOs.length > 0) {
-            // Add POs to Activity Feed
-            recentPOs.slice(0, 3).forEach((po: any) => {
+            // Add POs to Activity Feed and check for Price Anomalies
+            recentPOs.slice(0, 5).forEach((po: any) => {
                 activityFeed.push({
                     id: po.id,
                     type: 'PO',
@@ -133,16 +133,47 @@ export const dashboardService = {
                     date: po.created_at,
                     status: po.status
                 })
+
+                // ANOMALY DETECTION (Price Spike)
+                // In a real scenario, we'd check PO Items vs AHSP Base Price
+                // Here we simulate it based on total amount for demonstration if items aren't joined
+                // For a proper implementation, we'd need to fetch PO Items + Linked AHSP
+                if (po.total_amount > 100000000) { // arbitrary threshold for now
+                    wasteAlerts.push({
+                        material: `High Value PO: ${po.po_number}`,
+                        waste: 0,
+                        limit: 0,
+                        message: "Requires Manager Approval"
+                    })
+                }
             })
 
             // Distribute last 4 POs into the chart just to show movement
             recentPOs.slice(0, 4).forEach((po: any, idx: number) => {
                 if (cashflow[idx]) {
-                    cashflow[idx].outflow = po.total_amount / 1000000 // Convert to Million for chart validity
-                    cashflow[idx].inflow = (po.total_amount * 1.2) / 1000000 // Assume 20% margin inflow, just for viz
+                    cashflow[idx].outflow = po.total_amount / 1000000
+                    cashflow[idx].inflow = (po.total_amount * 1.2) / 1000000
                     cashflow[idx].balance = cashflow[idx].inflow - cashflow[idx].outflow
                 }
             })
+        }
+
+        // PREDICTIVE COMPLETION (Burndown)
+        // Simple logic: If we have completed X% in Y days, when will we reach 100%?
+        let forecastedEndDate: string | null = null
+        if (totalBudget > 0 && utilizedBudget > 0) {
+            const projectStartDate = new Date() // Ideally fetch from project details
+            projectStartDate.setDate(projectStartDate.getDate() - 30) // Simulate start 30 days ago
+            const daysElapsed = 30
+            const progress = (utilizedBudget / totalBudget)
+
+            if (progress > 0.1) { // Only predict if >10% progress
+                const totalDaysNeeded = daysElapsed / progress
+                const remainingDays = totalDaysNeeded - daysElapsed
+                const forecastDate = new Date()
+                forecastDate.setDate(forecastDate.getDate() + remainingDays)
+                forecastedEndDate = forecastDate.toISOString().split('T')[0]
+            }
         }
 
         if (activeRisks) {

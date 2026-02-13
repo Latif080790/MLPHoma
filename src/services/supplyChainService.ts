@@ -72,6 +72,7 @@ export const supplyChainService = {
                     qty_budget, 
                     unit_price_budget, 
                     committed_cost, 
+                    actual_cost,
                     ahsp_items ( name ), 
                     rab_items ( name )
                 `)
@@ -94,10 +95,11 @@ export const supplyChainService = {
 
             const requestedTotal = item.quantity * item.unit_price
 
-            // Calculate remaining: Budget - Committed
+            // Calculate remaining: Budget - (Committed + Actual)
             const totalBudget = (rapItem.qty_budget || 0) * (rapItem.unit_price_budget || 0)
             const committed = rapItem.committed_cost || 0
-            const remaining = totalBudget - committed
+            const actual = rapItem.actual_cost || 0
+            const remaining = totalBudget - (committed + actual)
 
             if (requestedTotal > remaining) {
                 const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })
@@ -194,10 +196,41 @@ export const supplyChainService = {
 
     async updatePoStatus(id: string, status: PoStatus, approverId?: string) {
         const updates: Partial<PurchaseOrderRow> = { status }
+
+        // Handle Approval
         if (status === 'APPROVED' && approverId) {
             updates.approved_by = approverId
             updates.approved_at = new Date().toISOString()
         }
+
+        // Handle Completion (Move Committed -> Actual)
+        if (status === 'COMPLETED') {
+            const items = await this.getPoItems(id)
+            for (const item of items) {
+                if (item.rapItemId) {
+                    const { data: rapItem } = await supabase!
+                        .from('rap_items')
+                        .select('committed_cost, actual_cost')
+                        .eq('id', item.rapItemId)
+                        .single()
+
+                    if (rapItem) {
+                        const amount = item.totalPrice
+                        const newCommitted = Math.max(0, (rapItem.committed_cost || 0) - amount)
+                        const newActual = (rapItem.actual_cost || 0) + amount
+
+                        await supabase!
+                            .from('rap_items')
+                            .update({
+                                committed_cost: newCommitted,
+                                actual_cost: newActual
+                            })
+                            .eq('id', item.rapItemId)
+                    }
+                }
+            }
+        }
+
         return upsertPurchaseOrder({ id, ...updates })
     },
 
