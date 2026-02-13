@@ -5,7 +5,7 @@ import { Activity, AlertTriangle, TrendingUp, CheckCircle2, DollarSign, Clock } 
 import { useProjectStore } from '../../../store/projectStore'
 import { assertSupabase } from '../../../lib/supabaseClient'
 import { format } from 'date-fns'
-import { Link } from 'react-router' // Ensure this matches package.json
+// Link removed
 import { Button } from '../../../components/ui/button'
 
 interface ActivityItem {
