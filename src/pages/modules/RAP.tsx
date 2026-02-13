@@ -103,49 +103,70 @@ export default function RAP(): JSX.Element {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Item Name</TableHead>
-                    <TableHead className="text-right">Budget Qty</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
                     <TableHead className="text-right">Total Budget</TableHead>
+                    <TableHead className="text-right">Risk Fund</TableHead>
                     <TableHead className="text-right">Actual Cost</TableHead>
                     <TableHead className="text-right">Remaining</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
+                    <TableHead className="text-center">Traffic Light</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {items.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         No RAP items found. Click "Import from RAB" to start.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    items.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">
-                          {/* @ts-ignore - Supabase join types might be tricky */}
-                          {item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}
-                        </TableCell>
-                        <TableCell className="text-right">{item.qty_budget}</TableCell>
-                        <TableCell className="text-right">
-                          {Math.round(item.unit_price_budget).toLocaleString('id-ID')}
-                        </TableCell>
-                        <TableCell className="text-right font-bold text-blue-600">
-                          {/* Use generated col if avail, else calc */}
-                          {Math.round(item.total_budget ?? (item.qty_budget * item.unit_price_budget)).toLocaleString('id-ID')}
-                        </TableCell>
-                        <TableCell className="text-right text-red-600">
-                          {Math.round(item.actual_cost).toLocaleString('id-ID')}
-                        </TableCell>
-                        <TableCell className="text-right text-green-600">
-                          {Math.round(item.remaining_budget ?? (item.total_budget - item.actual_cost)).toLocaleString('id-ID')}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="outline" className={item.remaining_budget < 0 ? 'border-red-500 text-red-500' : 'border-green-500 text-green-500'}>
-                            {item.remaining_budget < 0 ? 'Over' : 'Safe'}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    items.map((item) => {
+                      // Traffic Light Logic
+                      const progress = item.total_budget > 0 ? (item.actual_cost / item.total_budget) : 0
+                      let statusColor = 'bg-green-500' // Safe
+                      let statusText = 'Safe'
+
+                      if (progress > 1.0) {
+                        statusColor = 'bg-red-600 animate-pulse' // Critical Overbudget
+                        statusText = 'CRITICAL'
+                      } else if (progress > 0.9) {
+                        statusColor = 'bg-red-500' // Danger Zone
+                        statusText = 'Danger'
+                      } else if (progress > 0.75) {
+                        statusColor = 'bg-yellow-500' // Warning
+                        statusText = 'Warning'
+                      }
+
+                      // Dummy Risk Fund calc if 0 (Simulated for v3 Demo)
+                      const riskFund = item.risk_buffer_amount || (item.total_budget * 0.05)
+
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex flex-col">
+                              <span>{/* @ts-ignore */ item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
+                              <span className="text-xs text-muted-foreground">Vol: {item.qty_budget}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-blue-600">
+                            {Math.round(item.total_budget ?? (item.qty_budget * item.unit_price_budget)).toLocaleString('id-ID')}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-purple-600">
+                            {Math.round(riskFund).toLocaleString('id-ID')}
+                          </TableCell>
+                          <TableCell className="text-right text-red-600">
+                            {Math.round(item.actual_cost).toLocaleString('id-ID')}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {Math.round(item.remaining_budget ?? (item.total_budget - item.actual_cost)).toLocaleString('id-ID')}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <div className={`h-3 w-3 rounded-full ${statusColor}`} title={statusText} />
+                              <span className="text-xs font-medium text-muted-foreground">{statusText}</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
                   )}
                 </TableBody>
               </Table>

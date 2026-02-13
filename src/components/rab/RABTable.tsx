@@ -230,6 +230,15 @@ export function RABTable({ projectId }: RABTableProps) {
 
   const total = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
 
+  // PARETO LOGIC: Identify top 20% items by value
+  const sortedItems = [...items].sort((a, b) => {
+    const valA = (a.volume || 0) * (a.unit_price || 0)
+    const valB = (b.volume || 0) * (b.unit_price || 0)
+    return valB - valA
+  })
+  const paretoCount = Math.ceil(items.length * 0.2)
+  const topItemsSet = new Set(sortedItems.slice(0, paretoCount).map(i => i.id))
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -304,11 +313,13 @@ export function RABTable({ projectId }: RABTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">No</TableHead>
               <TableHead className="w-[100px]">Code</TableHead>
-              <TableHead className="min-w-[200px]">Description</TableHead>
+              <TableHead className="min-w-[200px]">Description & Spec</TableHead>
               <TableHead className="w-[150px]">Linked Task</TableHead>
               <TableHead className="w-[80px]">Unit</TableHead>
               <TableHead className="w-[100px] text-right">Volume</TableHead>
+              <TableHead className="w-[80px] text-right">TKDN %</TableHead>
 
               {showDetails && <TableHead className="w-[120px] text-right bg-blue-50 dark:bg-blue-900/10">Material</TableHead>}
               {showDetails && <TableHead className="w-[120px] text-right bg-green-50 dark:bg-green-900/10">Labor</TableHead>}
@@ -323,24 +334,38 @@ export function RABTable({ projectId }: RABTableProps) {
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={showDetails ? 12 : 8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={showDetails ? 13 : 9} className="text-center py-8 text-muted-foreground">
                   No items in RAB. Add items to start calculating.
                 </TableCell>
               </TableRow>
             ) : (
-              items.map((item) => {
+              items.map((item, idx) => {
                 const lineTotal = (item.volume || 0) * (item.unit_price || 0)
+                const isPareto = topItemsSet.has(item.id)
+                // Add pareto highlighting
+                const rowClass = isPareto ? "bg-yellow-50/50 dark:bg-yellow-900/10 border-l-4 border-l-yellow-400" : ""
+
                 return (
-                  <TableRow key={item.id}>
+                  <TableRow key={item.id} className={rowClass}>
+                    <TableCell className="text-center text-xs text-muted-foreground">{idx + 1}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {item.item_code || '-'}
                     </TableCell>
                     <TableCell>
-                      <Input
-                        value={item.name || ''}
-                        onChange={e => updateItem(projectId, item.id, { name: e.target.value })}
-                        className="h-8 border-transparent hover:border-input focus:border-input"
-                      />
+                      <div className="space-y-1">
+                        <Input
+                          value={item.name || ''}
+                          onChange={e => updateItem(projectId, item.id, { name: e.target.value })}
+                          className="h-8 border-transparent hover:border-input focus:border-input font-medium"
+                          placeholder="Item Name"
+                        />
+                        <Input
+                          value={item.notes || ''} // Using notes as 'Brand/Spec' for now
+                          onChange={e => updateItem(projectId, item.id, { notes: e.target.value })}
+                          className="h-6 text-xs text-muted-foreground border-transparent hover:border-input focus:border-input"
+                          placeholder="Merk / Spesifikasi..."
+                        />
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Select
@@ -371,6 +396,15 @@ export function RABTable({ projectId }: RABTableProps) {
                         value={item.volume || ''}
                         onChange={e => handleVolumeChange(item.id, e.target.value)}
                         className="h-8 text-right border-transparent hover:border-input focus:border-input"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        className="h-8 text-right border-transparent hover:border-input focus:border-input text-xs"
+                      // TKDN placeholder logic since field might not exist in type yet
+                      // In real impl, add tkdn to RABItem type
                       />
                     </TableCell>
 
@@ -433,6 +467,10 @@ export function RABTable({ projectId }: RABTableProps) {
       </div>
 
       <div className="flex justify-end gap-8 p-4 bg-muted/20 rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-500 bg-yellow-100 dark:bg-yellow-900/20 px-3 py-1 rounded-full">
+          <span className="h-2 w-2 rounded-full bg-yellow-500" />
+          Pareto Active: Top 20% Cost Items Highlighted
+        </div>
         <div className="text-right">
           <div className="text-sm text-muted-foreground">Subtotal</div>
           <div className="text-2xl font-bold">{formatIDR(total)}</div>
