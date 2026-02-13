@@ -17,6 +17,7 @@ import { syncProject as syncProj, syncDelete } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import { projectInputSchema, projectUpdateSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
+import { useAuthStore } from './authStore'
 
 /**
  * PaymentTerms
@@ -113,16 +114,15 @@ export const useProjectStore = create<ProjectState>((set, get) => {
      */
     addProject: (project: Project) => {
       if (!project || !project.id) return
-      
+
       // Auto-populate userId from auth store if not provided
       if (!project.userId) {
-        const { useAuthStore } = require('./authStore')
         const userId = useAuthStore.getState().user?.id
         if (userId) {
           project = { ...project, userId }
         }
       }
-      
+
       // Validate input (skip id field)
       const { id, ...projectData } = project
       const validation = validate(projectInputSchema, projectData)
@@ -134,7 +134,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         })
         return
       }
-      
+
       set((state) => {
         // If identical object reference exists, keep state unchanged
         const prev = state.projects[project.id]
@@ -153,7 +153,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
      */
     updateProject: (projectId: string, patch: Partial<Project>) => {
       if (!projectId) return
-      
+
       // Validate updates
       const validation = validate(projectUpdateSchema, patch)
       if (!validation.success) {
@@ -164,14 +164,14 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         })
         return
       }
-      
+
       set((state) => {
         const existing = state.projects[projectId]
         if (!existing) return state
         const merged: Project = { ...existing, ...validation.data! }
         // If nothing changed by shallow compare, return same state
         if (Object.is(existing, merged)) return state
-        
+
         return { projects: { ...state.projects, [projectId]: merged } }
       })
       // Queue-based sync with retry

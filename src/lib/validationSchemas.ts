@@ -30,32 +30,32 @@ export const commonValidations = {
   code: z.string()
     .min(1, 'Code is required')
     .regex(/^[A-Za-z0-9\.\-]+$/, 'Code must contain only letters, numbers, dots, and dashes'),
-  
+
   name: z.string()
     .min(1, 'Name is required')
     .max(200, 'Name must be less than 200 characters'),
-  
+
   description: z.string().optional().or(z.literal('')),
-  
+
   percentage: z.number()
     .min(0, 'Minimum 0%')
     .max(100, 'Maximum 100%'),
-  
+
   positiveNumber: z.number()
     .min(0, 'Cannot be negative'),
-  
+
   price: z.number()
     .min(0, 'Price cannot be negative')
     .max(999999999999, 'Price too large'),
-  
+
   coefficient: z.number()
     .min(0, 'Coefficient cannot be negative')
     .max(99999, 'Coefficient too large'),
-  
+
   volume: z.number()
     .min(0, 'Volume cannot be negative')
     .max(999999999, 'Volume too large'),
-  
+
   isoDate: z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in ISO format YYYY-MM-DD'),
 }
@@ -98,6 +98,10 @@ export const ahspItemInputSchema = z.object({
   isActive: z.boolean().default(true),
   basePrice: commonValidations.price.optional().default(0),
   finalPrice: commonValidations.price.optional().default(0),
+  price_material: commonValidations.price.optional().default(0),
+  price_labor: commonValidations.price.optional().default(0),
+  price_equipment: commonValidations.price.optional().default(0),
+  price_subcon: commonValidations.price.optional().default(0),
 })
 
 /** AHSP Item update schema */
@@ -137,6 +141,12 @@ export const rabItemInputSchema = z.object({
   unit: unitEnum.optional(),
   volume: commonValidations.volume.optional().default(0),
   unit_price: commonValidations.price.optional().default(0),
+  cost_material: commonValidations.price.optional().default(0),
+  cost_labor: commonValidations.price.optional().default(0),
+  cost_equipment: commonValidations.price.optional().default(0),
+  cost_subcon: commonValidations.price.optional().default(0),
+  markup_percentage: commonValidations.percentage.optional().default(0),
+  weight_percentage: commonValidations.percentage.optional().default(0),
   taskId: z.string().optional(),
 })
 
@@ -493,25 +503,25 @@ export default {
   // Resource schemas
   resourceInputSchema,
   resourceUpdateSchema,
-  
+
   // AHSP schemas
   ahspItemInputSchema,
   ahspItemUpdateSchema,
   ahspComponentInputSchema,
   ahspComponentUpdateSchema,
-  
+
   // RAB schemas
   rabItemInputSchema,
   rabItemUpdateSchema,
-  
+
   // Project schemas
   projectInputSchema,
   projectUpdateSchema,
-  
+
   // WBS schemas
   wbsItemInputSchema,
   wbsItemUpdateSchema,
-  
+
   // Timeline schemas
   timelineTaskInputSchema,
   timelineTaskUpdateSchema,
@@ -520,7 +530,7 @@ export default {
   taskStatusEnum,
   taskPriorityEnum,
   taskDependencySchema,
-  
+
   // RAP schemas
   rapItemInputSchema,
   rapItemUpdateSchema,
@@ -528,7 +538,7 @@ export default {
   periodTypeEnum,
   rapStatusEnum,
   distributionMethodEnum,
-  
+
   // Feature Config schemas (Phase 4)
   accessControlSchema,
   notificationSettingsSchema,
@@ -536,14 +546,14 @@ export default {
   featureSnapshotInputSchema,
   featureSnapshotUpdateSchema,
   moduleConfigUpdateSchema,
-  
+
   // Curva-S schemas (Phase 4)
   curvaSDataPointInputSchema,
   curvaSDataPointUpdateSchema,
   curvaSBaselineConfigSchema,
   curvaSScenarioSchema,
   curvaSStatusEnum,
-  
+
   // Common
   commonValidations,
   unitEnum,

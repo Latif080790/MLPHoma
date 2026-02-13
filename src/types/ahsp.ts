@@ -83,6 +83,11 @@ export interface AHSPItem {
   profitPercentage?: number
   /** Final price (base + overhead + profit) */
   finalPrice: number
+  /** Split prices (Cost Components) */
+  price_material?: number
+  price_labor?: number
+  price_equipment?: number
+  price_subcon?: number
   /** Detailed description */
   description?: string
   /** Whether this AHSP is active */

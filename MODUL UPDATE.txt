@@ -1,0 +1,860 @@
+AHSP
+Ini adalah **Tabel Perbandingan Transformasi Sistem AHSP** (Analisa Harga Satuan Pekerjaan) dari kondisi kode saat ini (*Existing*) menuju sistem baru (*Target*) yang sudah kita diskusikan.
+
+Tabel ini memetakan perubahan berdasarkan parameter yang Anda minta: **Tetap, Diperbaiki, Dikurangi, Ditambahkan, Dikembangkan,** dan **Disempurnakan**.
+
+### Tabel Perbandingan Transformasi Modul AHSP
+
+| Parameter | Fitur / Komponen | Kondisi Lama (Kode Saat Ini) | Kondisi Baru (Target v2.0) | Keterangan Teknis |
+| --- | --- | --- | --- | --- |
+| **TETAP** | **Struktur Dasar Item** | Masih berbasis relasi: *Material + Upah + Alat = Harga Satuan*. | Tetap menggunakan logika dasar ini sebagai fondasi perhitungan. | Tidak mengubah rumus dasar teknik sipil. |
+| **TETAP** | **Pengelompokan (Kategori)** | Menggunakan Kategori Pekerjaan (Persiapan, Struktur, Arsitektur). | Tetap ada, namun UI-nya diperjelas dengan *Filter & Search* yang lebih cepat. | `category` field pada database tetap dipakai. |
+| **TETAP** | **CRUD Dasar** | Kemampuan Admin untuk membuat (Create), mengedit, dan menghapus item AHSP. | Tetap ada untuk *Master Data Admin*, namun user biasa dibatasi akses editnya. | Fungsi dasar database tidak hilang. |
+|  |  |  |  |  |
+| **DIPERBAIKI** | **Sumber Harga Satuan** | **Manual Input.** Estimator mengetik angka rupiah satu per satu (Rawan *Human Error*). | **Smart Selection.** Harga dipilih dari *Dropdown* (Sumber: History PO / SNI / Survey). | Mengganti `<Input>` text biasa dengan `SmartPriceSelector`. |
+| **DIPERBAIKI** | **Validitas Data** | **Statis.** Harga bulan Januari tetap dipakai di Desember meski pasar naik. | **Living (Hidup).** Harga otomatis terupdate saat Logistik melakukan pembelian (PO). | Menggunakan *Database Trigger* dari tabel PO. |
+| **DIPERBAIKI** | **Konektivitas** | **Terisolasi (Silo).** Tidak tahu menahu soal stok atau pembelian. | **Terintegrasi.** Terhubung langsung dengan Modul Supply Chain. | Data mengalir dari Supply Chain ke AHSP. |
+|  |  |  |  |  |
+| **DIKURANGI** | **Input Manual Bebas** | Kebebasan user menginput harga sembarangan tanpa dasar. | Dibatasi/Dihapus. Input manual hanya opsi terakhir (Fallback) dan wajib isi alasan. | Mencegah *mark-up* harga atau kesalahan ketik nol. |
+| **DIKURANGI** | **Duplikasi Data** | Sering terjadi duplikasi item (misal: "Semen" dan "Semen Gresik") karena input manual. | Dikurangi dengan standarisasi *Master Material ID* dari Gudang. | Satu ID Material untuk semua analisa. |
+|  |  |  |  |  |
+| **DITAMBAHKAN** | **Multi-Zonasi** | **Tidak Ada.** Satu harga dipukul rata untuk semua lokasi proyek. | **Zone-Based Pricing.** Harga dibedakan per wilayah (Bali, Jakarta, Papua). | Tabel baru: `price_zones` dan kolom `zone_id`. |
+| **DITAMBAHKAN** | **Price History** | **Tidak Ada.** Hanya menyimpan harga terakhir. | **Historical Log.** Menyimpan riwayat harga dari waktu ke waktu (Grafik Tren). | Tabel baru: `ahsp_price_history`. |
+| **DITAMBAHKAN** | **Snapshot Logic** | **Tidak Ada.** Jika Master berubah, RAB lama ikut berubah (Bahaya). | **Snapshotting.** Saat RAB dibuat, harga dikunci mati (*Deep Copy*). | Melindungi nilai kontrak dari fluktuasi pasar. |
+|  |  |  |  |  |
+| **DIKEMBANGKAN** | **Analisa Koefisien** | **Teoritis (SNI).** Angka koefisien baku dari buku. | **Actual Intelligence.** Sistem membandingkan Koefisien SNI vs Realisasi Lapangan. | Fitur *Waste Analysis* membandingkan rencana vs pemakaian gudang. |
+| **DIKEMBANGKAN** | **Visualisasi Data** | **Tabel Datar.** Hanya list teks dan angka. | **Dashboard Analitik.** Grafik tren harga material & heatmap efisiensi. | Menambah widget *Chart* di halaman depan AHSP. |
+|  |  |  |  |  |
+| **DISEMPURNAKAN** | **User Experience (UX)** | Estimator bekerja seperti "Data Entry" (Mengetik). | Estimator bekerja seperti "Analis" (Memilih & Memutuskan). | UI lebih modern, *clean*, dan informatif. |
+| **DISEMPURNAKAN** | **Cost Control** | RAB sering meleset dari realita. | Estimasi menjadi sangat presisi karena berbasis data pembelian aktual. | Menutup celah kerugian di tahap penawaran. |
+
+### Ringkasan Eksekutif Perubahan
+
+1. **Fokus Utama:** Mengubah AHSP dari "Kamus Statis" menjadi "Database Cerdas & Hidup".
+2. **Kunci Keamanan:** Fitur **Zonasi** (agar tidak salah harga antar lokasi) dan **Snapshot** (agar kontrak aman).
+3. **Kunci Profit:** Fitur **Auto-Update dari PO**, memastikan Estimator selalu menggunakan harga pasar terbaru untuk memenangkan tender tanpa rugi.
+
+Tabel ini bisa langsung Anda gunakan sebagai *Checklist* saat mereview hasil kerja Tim Developer nanti. Apakah semua poin "Ditambahkan" dan "Diperbaiki" sudah tereksekusi dengan benar?
+
+
+RAB
+Tentu, Bos Latif. Ini adalah **Master Table Transformasi Modul RAB (Rencana Anggaran Biaya)** yang merangkum seluruh diskusi kita, mulai dari perbaikan fundamental (Snapshot & Zonasi) hingga fitur strategi tingkat tinggi (Smart Price Override & Psikologi Harga).
+
+Tabel ini adalah panduan final untuk tim Developer agar tidak ada satu pun fitur *profitable* yang terlewat.
+
+### Tabel Perbandingan Total: Transformasi Modul RAB (v2.0)
+
+| Parameter | Fitur / Komponen | Kondisi Lama (Kode Saat Ini) | Kondisi Baru (Target v2.0) | Keterangan & Benefit Profit |
+| --- | --- | --- | --- | --- |
+| **TETAP** | **Logika Dasar Perhitungan** | `Volume` x `Harga Satuan` = `Total Harga`. | Tetap dipertahankan sebagai fondasi matematika. | Tidak merubah rumus dasar teknik sipil. |
+| **TETAP** | **Struktur Kategori** | Pengelompokan (Persiapan, Struktur, Arsitektur, ME). | Tetap ada. | Struktur standar WBS/RAB. |
+|  |  |  |  |  |
+| **DIPERBAIKI** | **Koneksi ke AHSP** | **Loose & Blind.** Mengambil harga AHSP tanpa validasi lokasi/zona. | **Zone-Aware.** Mengambil harga spesifik berdasarkan **Zona Proyek** (misal: Bali/Jakarta). | **Akurasi Biaya:** Mencegah salah harga beda lokasi. |
+| **DIPERBAIKI** | **Keamanan Data (Locking)** | **Unrestricted.** Bisa diedit kapan saja walau kontrak sudah jalan. | **State-Based Locking.** RAB terkunci (Read-only) otomatis saat Status Proyek = "Contract Signed". | **Legal:** Mencegah perubahan diam-diam setelah kontrak. |
+| **DIPERBAIKI** | **Integrasi Jadwal** | **Destructive Sync.** Menimpa Timeline saat sinkronisasi. | **Smart Sync.** Mengirim item RAB ke WBS/Timeline tanpa menghapus progress yang sudah ada. | **Efisiensi:** Estimator & Scheduler kerja paralel tanpa konflik. |
+|  |  |  |  |  |
+| **DIKURANGI** | **Hidden Markup** | User menaikkan harga langsung di dalam Unit Price (tanpa jejak). | **Dihapus.** Markup harus transparan di kolom terpisah (*Adjustment*). | **Transparansi:** Bos tahu mana modal asli, mana profit tambahan. |
+| **DIKURANGI** | **Input Manual Bebas** | Mengetik item sembarangan tanpa kode referensi. | **Strict Input.** Wajib menggunakan Item Code dari Master untuk tracking logistik. | **Kontrol:** Mencegah pembelian barang "hantu" yang tidak ada di master. |
+|  |  |  |  |  |
+| **DITAMBAHKAN** | **Smart Price Override** | **Tidak Ada.** Harus edit harga satuan AHSP satu per satu. | **Base vs Final Price.** Fitur edit harga tayang (Final) tanpa merusak harga modal (Base). Sistem menghitung selisih otomatis. | **Strategi:** Memudahkan *Markup* atau *Rounding* harga untuk strategi tender. |
+| **DITAMBAHKAN** | **Supply vs Install Split** | **Tidak Ada.** Harga Material & Upah digabung (Lumpsum). | **Split Columns.** Database menyimpan pecahan Material, Upah, Alat, & Subkon terpisah. | **Kontrol Logistik:** Mencegah budget material dimakan oleh upah tukang. |
+| **DITAMBAHKAN** | **TKDN Calculator** | **Tidak Ada.** | **Auto-Score.** Menghitung % TKDN otomatis untuk syarat tender pemerintah. | **Compliance:** Membuka peluang menang tender BUMN/Pemerintah. |
+| **DITAMBAHKAN** | **Snapshot Security** | **Tidak Ada.** Master AHSP berubah, RAB ikut berubah (Bahaya). | **Deep Snapshot.** Menyalin data harga secara permanen saat RAB dibuat. | **Aman:** Nilai kontrak tidak akan berubah meski harga pasar fluktuatif. |
+|  |  |  |  |  |
+| **DIKEMBANGKAN** | **Analisa Produktivitas** | **Hanya SNI.** Menggunakan koefisien baku. | **3-Tier Source.** Pilihan kapasitas: SNI (Aman), History (Realistis), atau Manual (Target). | **Waktu & Biaya:** Estimasi durasi proyek jadi sangat akurat. |
+| **DIKEMBANGKAN** | **Tampilan (UX)** | **Flat Table.** Tabel lebar dan penuh angka. | **Toggle View.** Switch "Client View" (Simpel) vs "Estimator View" (Detail Breakdown). | **UX:** Nyaman digunakan untuk presentasi maupun kerja detail. |
+| **DIKEMBANGKAN** | **Grouping Paket** | Manual Copy-Paste ke Excel lain. | **Work Package.** Fitur "Create Subcon Package" untuk memecah RAB jadi tender subkon. | **Efisiensi:** Mempercepat proses cari subkon. |
+|  |  |  |  |  |
+| **DISEMPURNAKAN** | **Pareto Analysis** | User cari sendiri mana item mahal. | **Auto-Highlight.** Sistem memberi warna pada 20% item termahal (Hukum 80/20). | **Fokus:** Estimator fokus negosiasi di item besar, bukan item receh. |
+| **DISEMPURNAKAN** | **Spesifikasi & Merk** | Sering kosong/umum. | **Wajib Isi.** Kolom khusus Merk/Spec yang harus diisi untuk item utama. | **Mutu:** Mencegah pembelian barang KW/palsu di lapangan. |
+| **DISEMPURNAKAN** | **Anomaly Detection** | Lolos walau salah ketik nol (Typo). | **Price Guard.** Peringatan jika harga input menyimpang >30% dari rata-rata history. | **Risk:** Mencegah kerugian konyol akibat salah ketik. |
+| **DISEMPURNAKAN** | **Profit Simulation** | Menghitung manual di kalkulator. | **Bottom-Up Pricing.** Footer menampilkan *Direct Cost* vs *Overhead* vs *Profit Margin*. | **Profit:** Bos tahu titik impas (BEP) dan margin keuntungan real-time. |
+
+### Visualisasi Perubahan Utama
+
+### Rekomendasi Urutan Eksekusi untuk Developer
+
+Berdasarkan tabel di atas, saya menyarankan urutan pengerjaan (*Priority*) sebagai berikut:
+
+1. **High Priority (Fondasi & Keamanan):**
+* Snapshot Security (Agar kontrak aman).
+* Zone-Aware AHSP Connection (Agar harga akurat).
+* Smart Price Override (Base vs Final Price).
+
+
+2. **Medium Priority (Kontrol & Profit):**
+* Supply vs Install Split (Database structure).
+* Pareto Analysis & Anomaly Detection.
+* Toggle View UX.
+
+
+3. **Low Priority (Fitur Lanjutan):**
+* TKDN Calculator.
+* Work Package Grouping.
+
+
+
+Tabel ini sudah mencakup **semua advice** (baik teknis maupun strategis) yang kita diskusikan. Dokumen ini siap diserahkan ke tim IT sebagai "Kitab Suci" pengembangan modul RAB MLPHoma v2.0.
+
+Ada lagi yang ingin Bos Latif tambahkan sebelum kita bungkus modul ini?
+
+
+
+RAP
+Tentu, Bos Latif. Ini adalah **Master Table Transformasi Modul RAP (Rencana Anggaran Pelaksanaan) - Edisi Final**.
+
+Tabel ini merangkum seluruh strategi kita: mulai dari merubah mindset "Copy-Paste RAB" menjadi "Zero-Based Budgeting", hingga penerapan kontrol anggaran yang cerdas menggunakan sistem "Lampu Lalu Lintas".
+
+Dokumen ini adalah cetak biru agar RAP menjadi **Perisai Profit** perusahaan Anda.
+
+### Tabel Perbandingan Total: Transformasi Modul RAP (v2.0)
+
+| Parameter | Fitur / Komponen | Kondisi Lama (Kode Saat Ini) | Kondisi Baru (Target v2.0) | Keterangan & Dampak Profit |
+| --- | --- | --- | --- | --- |
+| **TETAP** | **Struktur WBS** | Mengikuti struktur RAB (Persiapan, Struktur, dst). | Tetap sama (Mirroring RAB). | **Tracking:** Memudahkan perbandingan *Apple-to-Apple* antara Pendapatan (RAB) vs Modal (RAP). |
+| **TETAP** | **Kalkulasi Dasar** | `Volume` x `Harga Satuan` = `Total Budget`. | Tetap. | Rumus matematika dasar. |
+|  |  |  |  |  |
+| **DIPERBAIKI** | **Metode Pembuatan** | **Copy-Paste RAB.** RAP dibuat dari RAB yang didiskon persenan (misal -10%). | **Zero-Based Budgeting.** RAP dihitung ulang dari nol berdasarkan *Real Quote* Supplier & Metode Kerja Lapangan. | **Akurasi:** Mencegah budget "halu" yang terlihat untung di kertas tapi rugi di lapangan. |
+| **DIPERBAIKI** | **Kontrol Budget** | **Loose / Tanpa Warning.** Logistik bisa beli barang walau budget habis. | **Traffic Light System.** Kontrol Berlapis: <br>
+
+<br>🟢 **Green:** Auto (<100%)<br>
+
+<br>🟡 **Yellow:** PM Approval (100-105%)<br>
+
+<br>🔴 **Red:** Director/Hard Block (>105%) | **Operasional:** Menjaga uang tetap aman tanpa membuat proyek macet total karena selisih harga kecil. |
+| **DIPERBAIKI** | **Target Profit** | **Hasil Akhir (Sisa).** Profit baru ketahuan setelah RAP selesai dibuat. | **Profit First.** Bos mengunci "Target Profit Wajib" (misal 15%) di awal. RAP tidak bisa di-approve jika biaya > (Omset - Profit). | **Mindset:** Memastikan profit diamankan di depan, bukan menunggu sisa di belakang. |
+|  |  |  |  |  |
+| **DIKURANGI** | **Item Lumpsum** | Banyak item "Biaya Lain-lain" atau "Borongan" tanpa rincian. | **Detail Breakdown.** Dilarang ada item lumpsum besar. Wajib dipecah: Material, Upah, Alat. | **Transparansi:** Menutup celah kebocoran dana taktis lapangan yang sering disalahgunakan. |
+| **DIKURANGI** | **Akses Edit** | Siapapun bisa ubah angka RAP di tengah jalan. | **Locked by System.** Setelah RAP *Approved*, angka terkunci mati. Perubahan wajib lewat prosedur *Internal VO*. | **Keamanan:** Mencegah manipulasi budget untuk menutupi kesalahan/kerugian. |
+|  |  |  |  |  |
+| **DITAMBAHKAN** | **Committed Cost** | **Cash Basis.** Uang dianggap keluar hanya saat Invoice dibayar. | **Commitment Tracking.** Uang dianggap keluar saat PO ditandatangani (Hutang Berjalan). | **Forecasting:** Mencegah "perasaan kaya" padahal hutang PO yang belum lunas sudah menumpuk. |
+| **DITAMBAHKAN** | **Cashflow Plan** | **Tidak Ada.** RAP hanya total biaya, tidak tahu kapan uangnya butuh. | **Time-Phased Budget.** RAP di-plot ke Timeline. Output: Rencana Arus Kas Mingguan (Kapan butuh uang besar?). | **Keuangan:** Bos bisa menyiapkan cashflow jauh hari (misal: Minggu ke-4 beli Besi 500jt). |
+| **DITAMBAHKAN** | **Vendor Locking** | **Bebas.** Logistik bebas cari vendor saat pelaksanaan. | **Pre-Selected Vendor.** Mengunci Vendor & Harga Deal RAP ke sistem Logistik. | **Efisiensi:** Mencegah Logistik beli ke vendor lain yang lebih mahal / ada permainan harga. |
+| **DITAMBAHKAN** | **Budget Transfer** | **Kaku.** Jika satu pos kurang, proyek stop. | **Subsidi Silang.** Fitur memindahkan sisa hemat Pos A ke Pos B dengan persetujuan PM. | **Fleksibilitas:** Proyek tetap jalan lancar, profit total tetap aman. |
+|  |  |  |  |  |
+| **DIKEMBANGKAN** | **Split Control Logic** | Harga & Volume dianggap satu paket uang. | **Volume Lock vs Price Flex.** Volume dikunci mati (Hard Block), Harga diberi toleransi pasar (Soft Block/Traffic Light). | **Efisiensi:** Mencegah pemborosan material (waste) yang sering disamarkan sebagai "kenaikan harga". |
+| **DIKEMBANGKAN** | **Upah Mandor** | Gabung di harga satuan. | **Work Order Limit.** Nilai RAP Upah menjadi "Plafon Maksimal" untuk SPK Mandor. | **Kontrol:** Mandor tidak bisa bon (kasbon) melebihi progress fisik yang sudah dikerjakan. |
+| **DIKEMBANGKAN** | **Material Waste** | Tidak dihitung (asumsi masuk harga). | **Explicit Waste %.** Memisahkan Volume Terpasang (Net) dan Volume Waste (Limbah/Potongan) di database. | **Logistik:** Gudang dikontrol berdasarkan Volume Waste yang diizinkan (misal Keramik max pecah 3%). |
+|  |  |  |  |  |
+| **DISEMPURNAKAN** | **Cost to Complete** | Tidak ada. | **Smart Forecast.** Sistem menghitung: "Dengan sisa budget segini, cukup gak sampai proyek selesai?" | **Risk:** Peringatan dini potensi rugi 2-3 bulan sebelum kejadian (Early Warning System). |
+
+---
+
+### Penjelasan Strategi Kunci
+
+#### 1. Zero-Based Budgeting (Start from Null)
+
+Sistem tidak akan membiarkan Estimator malas. Saat membuat RAP, kolom harga kosong (0). Estimator dipaksa mencari harga real terbaru. Jika harga RAP ternyata lebih mahal dari RAB (Rugi), sistem memberi **Alert Merah**.
+
+#### 2. Traffic Light System (Lampu Lalu Lintas)
+
+Kita tidak kaku.
+
+* **Hijau:** Logistik belanja sepuasnya selama di bawah budget.
+* **Kuning:** Harga naik dikit? PM harus approve.
+* **Merah:** Harga naik gila-gilaan atau Volume melebihi batas? **STOP.** Lapor Bos Latif dulu.
+
+#### 3. Time-Phased Budget (Uang & Waktu)
+
+Uang Rp 1 Milyar itu keluarnya kapan?
+
+* Sistem mengawinkan RAP dengan Jadwal (Schedule).
+* Hasilnya: Grafik Arus Kas Keluar. Bos tahu minggu depan harus siap uang berapa.
+
+#### 4. Profit First
+
+Kita membalik pola pikir.
+
+* Lama: `Omset - Biaya = Profit (Sisa)`
+* Baru: `Omset - Profit (Wajib) = Biaya (Maksimal)`
+* Sistem akan menolak RAP jika biaya yang diinput melebihi batas maksimal tersebut. Tim dipaksa efisien *sebelum* proyek mulai.
+
+Tabel ini sudah sangat lengkap dan siap menjadi panduan developer untuk merombak modul RAP. Apakah kita lanjut ke modul berikutnya (Schedule & Progress)?
+
+
+
+WBS DAN TIMELINE
+Tentu, Bos Latif. Ini adalah **Master Table Transformasi Modul WBS & Timeline (Gantt Chart) - Edisi Final**.
+
+Tabel ini merangkum seluruh diskusi kita: mulai dari logika dasar "Level & Resource" (Tanpa AI), simulasi 3 skenario (Worst/Normal/Best), hingga penerapan strategi lapangan nyata (Zonasi & Alat Berat) seperti pada kasus Bengkel Isuzu 40 Hari.
+
+Dokumen ini adalah **Spesifikasi Teknis (Blue-Print)** untuk Developer agar sistem bisa otomatis berpikir layaknya seorang Project Manager senior.
+
+### Tabel Perbandingan Total: Transformasi Modul WBS & Timeline (v2.0)
+
+| Parameter | Fitur / Komponen | Kondisi Lama (Kode Saat Ini) | Kondisi Baru (Target v2.0) | Keterangan & Dampak Profit |
+| --- | --- | --- | --- | --- |
+| **TETAP** | **Visualisasi Gantt** | Tampilan batang (Bar Chart) horizontal standar. | Tetap ada. | Standar industri konstruksi. |
+| **TETAP** | **Hierarki WBS** | Parent-Child (Pekerjaan Utama -> Sub Pekerjaan). | Tetap, struktur mengikuti RAB/RAP (Mirroring). | Agar biaya (RAP) dan waktu (Schedule) bisa dipetakan 1-on-1. |
+|  |  |  |  |  |
+| **DIPERBAIKI** | **Metode Input Durasi** | **Manual/Firasat.** User mengetik angka (misal "10 hari") berdasarkan kira-kira. | **Productivity-Based Formula.** Durasi hitung otomatis: `Volume` / (`Kapasitas Alat/Org` x `Jml Tim`). | **Akurasi:** Mencegah durasi yang terlalu optimis atau terlalu lambat. (Contoh: PC-50 vs Manual beda jauh). |
+| **DIPERBAIKI** | **Sequencing (Urutan)** | **Sequential Default (Seri).** Item 1 selesai -> Item 2 mulai. (Waterfall murni). | **Logic-Based Sequencing.** Menggunakan `SEQUENCE_LEVEL` & `ZONING`. Item level sama di zona beda otomatis **Paralel/Staggered**. | **Kecepatan:** Kunci untuk mengejar target 40 hari (Kerja paralel Zona A & B). |
+| **DIPERBAIKI** | **Resource Constraint** | **Infinite Resource.** Asumsi tukang/alat tak terbatas. | **Capacity Check.** Jadwal dibatasi oleh `Max_Team` atau `Max_Alat` yang dimiliki. | **Realistis:** Sistem tahu kita cuma punya 1 Excavator, jadi pekerjaan galian tidak bisa paralel di 3 tempat. |
+|  |  |  |  |  |
+| **DIKURANGI** | **Update Progress Manual** | Mandor isi "% Progress" (misal 50%) tanpa bukti. | **Evidence-Based Input.** Kolom % dikunci. Progress dihitung dari `Volume Terpasang` + Foto Lapangan. | **Validitas:** Mencegah laporan "Asal Bapak Senang" (ABS). Tagihan ke Owner cair sesuai fakta. |
+| **DIKURANGI** | **Edit Tanggal Bebas** | User geser tanggal finish sesukanya tanpa alasan. | **Baseline Locking.** Tanggal rencana awal dikunci. Perubahan hanya mengubah *Actual*, dan wajib input alasan (Delay Reason). | **Audit:** Bos tahu persis berapa hari keterlambatan asli vs rencana kontrak. |
+|  |  |  |  |  |
+| **DITAMBAHKAN** | **Technical Lag (Jeda)** | User input manual jeda waktu (misal nunggu beton). | **Auto-Lag Injection.** Database menyimpan `Curing_Time` (misal Beton HES = 7 hari, Biasa = 21 hari). Otomatis masuk timeline. | **Teknis:** Jadwal aman secara kimiawi/fisika (Epoxy tidak mengelupas). |
+| **DITAMBAHKAN** | **Scenario Simulation** | Satu jadwal statis. | **3-Scenario Solver.** Sistem otomatis menyajikan opsi: <br>
+
+<br>1. **Normal** (Standard)<br>
+
+<br>2. **Crashing** (Max Resource/Lembur)<br>
+
+<br>3. **Worst Case** (Min Resource). | **Strategi:** Bos bisa pilih opsi "Crashing" saat Owner minta target 40 hari. |
+| **DITAMBAHKAN** | **Weather Integration** | Tidak ada. | **Rain Delay Logic.** Input "Hujan Deras" > 2 jam otomatis menggeser *End Date* +1 hari (Non-Working). | **Legal:** Bukti otomatis untuk klaim perpanjangan waktu ke Owner tanpa denda. |
+|  |  |  |  |  |
+| **DIKEMBANGKAN** | **Catch-Up Plan** | Manual hitung lembur. | **Recovery AI.** Jika telat 5%, sistem saran: "Tambah 1 Tim di Zona B" atau "Ganti Beton HES". | **Solutif:** Sistem bukan cuma lapor telat, tapi kasih solusi kejar target. |
+| **DIKEMBANGKAN** | **Mobile Update** | Laporan kertas dipindah ke Excel. | **Field App.** Mandor update dari HP (Checklist & Foto). Gantt Chart di kantor pusat update real-time. | **Real-time:** Bos Latif pantau progress Bali dari manapun. |
+|  |  |  |  |  |
+| **DISEMPURNAKAN** | **Delay Impact Analysis** | Telat ya telat saja. | **Financial Impact.** Jika jadwal geser 1 minggu, sistem hitung: "Overhead naik Rp X Juta, Profit turun Y%". | **Awareness:** Tim sadar bahwa Waktu = Uang (Overhead). |
+
+### Penerapan pada Kasus Bengkel Isuzu (40 Hari)
+
+Dengan fitur-fitur baru di atas, inilah yang dilakukan sistem MLPHoma v2.0 saat menangani proyek bengkel tersebut:
+
+1. **Productivity Formula:** Saat Bos input alat **"Excavator PC-50"**, sistem otomatis mengubah durasi bongkaran dari 14 hari (manual) menjadi **4 hari** (mekanis).
+2. **Auto-Lag Injection:** Saat Bos pilih beton **"K-300 High Early Strength"**, sistem otomatis memangkas waktu tunggu Epoxy dari 28 hari menjadi **7-10 hari**.
+3. **Logic-Based Sequencing (Zoning):** Sistem mendeteksi volume luas (784m2), otomatis memecah menjadi **Zona A & Zona B** dengan metode *Staggered* (Tumpang Tindih), bukan Seri.
+4. **Scenario Solver:** Saat Bos set target "40 Hari", sistem memilih skenario **"Crashing"** (Kerja Paralel + Alat Berat) karena skenario "Normal" butuh 60 hari.
+
+Tabel ini sudah final dan mencakup seluruh aspek teknis sipil, manajemen sumber daya, dan strategi bisnis. Siap untuk diserahkan ke tim developer. Ada lagi yang perlu kita bedah, Bos Latif?
+
+
+PROGRESS DAN CURVA-S**
+Siap, Bos Latif. Ini adalah **Rangkuman Final & Terpisah** untuk transformasi Modul **Progress** (Input Data Lapangan) dan Modul **Kurva S** (Analisa & Visualisasi).
+
+Tabel ini merangkum seluruh advice "Next Level" yang kita diskusikan untuk memastikan sistem MLPHoma v2.0 benar-benar menutup celah kebocoran, menjamin mutu, dan mengamankan profit.
+
+---
+
+### BAGIAN 1: MODUL PROGRESS (Input & Validasi Data)
+
+*Fokus: Validitas Data, Kejujuran Lapangan, dan Jaminan Mutu.*
+
+| Parameter | Fitur / Komponen | Kondisi Lama (Umum/Kode Saat Ini) | Kondisi Baru (Target v2.0) | Dampak pada Target (Mutu, Kualitas, Biaya) |
+| --- | --- | --- | --- | --- |
+| **DIPERBAIKI** | **Metode Input** | **Persentase Tebakan.** Mandor input "Kira-kira 50%". Subjektif & Rawan Mark-up. | **Volume-Based Input.** Mandor DILARANG input %. Wajib input **Volume Terpasang** (misal: 25 m²). Sistem yang menghitung %-nya otomatis. | **AKURASI:** Menghapus bias subjektif. Data adalah fakta matematika, bukan perasaan. |
+| **DIPERBAIKI** | **Validasi Data** | **Trust-Based.** Laporan diterima admin via WA/Telpon tanpa verifikasi ketat. | **Evidence-Based Locking.** Input progress **WAJIB** lampirkan Foto Terkini + Koordinat GPS + Timestamp. Jika tidak ada, sistem tolak. | **KEJUJURAN:** Mencegah laporan fiktif ("Progress Hantu") yang sering bikin bobol. |
+| **DIPERBAIKI** | **Media Input** | **Admin Entry.** Admin menyalin laporan kertas ke komputer (Double Work & Lambat). | **Field App (Mobile).** Mandor/Pelaksana input langsung di HP saat di lokasi. Admin hanya verifikasi. | **EFISIENSI:** Data masuk *real-time* detik itu juga. Bos bisa pantau kapan saja. |
+| **DITAMBAHKAN** | **Integrasi QC (Mutu)** | **Selesai = Progress.** Asal barang terpasang, progress diakui 100%. | **QC-Gated Progress.** Progress baru diakui (Valid) SETELAH status **"QC Approved"** diklik oleh Site Manager/QC. | **MUTU & KUALITAS:** Menjamin yang tercatat di sistem adalah barang jadi berkualitas, bukan barang gagal/cacat. |
+| **DIKURANGI** | **Opname Ganda** | Angka Opname Mandor, Subkon, dan Owner beda-beda versi. | **Single Source of Truth.** Satu data input lapangan dipakai untuk: Bayar Mandor, Bayar Subkon, & Tagih Owner. | **KONSISTENSI:** Mencegah bayar Mandor 100% tapi tagih Owner cuma 80% (Rugi bandar). |
+
+---
+
+### BAGIAN 2: MODUL CURVA-S (Analisa & Strategi)
+
+*Fokus: Kesehatan Proyek, Cashflow, dan Peringatan Dini.*
+
+| Parameter | Fitur / Komponen | Kondisi Lama (Umum/Kode Saat Ini) | Kondisi Baru (Target v2.0) | Dampak pada Target (Waktu, Profitable) |
+| --- | --- | --- | --- | --- |
+| **DIPERBAIKI** | **Generasi Kurva** | **Manual Excel.** Admin menggambar garis seminggu sekali (Data Telat). | **Real-Time Generator.** Kurva S terbentuk otomatis detik itu juga saat progress di-approve. | **KECEPATAN:** Bos Latif bisa ambil keputusan hari ini berdasarkan data hari ini. |
+| **DITAMBAHKAN** | **Visualisasi Garis** | **2-Line (Plan vs Physical).** Hanya melihat jadwal fisik. Buta terhadap biaya. | **Tri-Line Curve.** Menampilkan 3 Garis: <br>
+
+<br>1. 🟦 Plan (Rencana)<br>
+
+<br>2. 🟩 Physical (Fisik)<br>
+
+<br>3. 🟥 **Financial Cost** (Uang Keluar). | **PROFITABLE:** Mendeteksi **"Cost Overrun"** (Biaya lebih besar dari fisik) sejak minggu pertama. |
+| **DITAMBAHKAN** | **Analisa Deviasi** | **Pasif.** Bos harus lihat kurva baru tahu kalau telat. | **Traffic Light Alert.** Notifikasi WA otomatis:<br>
+
+<br>🟢 Aman (0 s/d -5%)<br>
+
+<br>🟡 Warning (-5 s/d -10%)<br>
+
+<br>🔴 **BAHAYA** (>-10%). | **EARLY WARNING:** Masalah dideteksi dini sebelum menjadi bencana tak tertolong. |
+| **DITAMBAHKAN** | **Analisa Akar Masalah** | Alasan keterlambatan hanya lisan/chat ("Hujan Bos"). Tidak terekam data. | **Mandatory Delay Tagging.** Jika progress < target, PM Wajib pilih alasan di sistem (Cuaca/Material/Alat/Lahan). | **SISTEMATIS:** Bos punya data statistik penyebab kegagalan untuk evaluasi manajemen. |
+| **DITAMBAHKAN** | **Forecasting (Prediksi)** | Tidak ada. Hanya melihat masa lalu. | **TCPI & AI Projection.** Sistem menghitung: *"Untuk kejar target, butuh speed 4% per hari. Sanggup tidak?"* | **EFEKTIF:** Mencegah janji manis PM. Bos tahu harus tambah orang atau lembur secara kuantitatif. |
+| **DIKEMBANGKAN** | **Integrasi Tagihan** | Terpisah. Progress fisik tidak nyambung ke Invoice. | **Auto-Termin Trigger.** Saat Kurva S sentuh angka termin (misal 30%), sistem otomatis buat Draft Invoice & Berita Acara. | **CASHFLOW:** Penagihan ke Owner tidak pernah telat karena admin lupa cek progress. |
+| **DIKEMBANGKAN** | **Analisa Efisiensi** | Hanya "Cepat/Lambat". | **Earned Value (CPI).** Menghitung Indeks Efisiensi Biaya. *"Kerja cepat tapi boros"* akan ketahuan. | **BIAYA:** Menjaga agar proyek tidak hanya selesai, tapi juga untung. |
+
+---
+
+### Kesimpulan Transformasi
+
+Dengan pemisahan ini, Sistem MLPHoma v2.0 Anda akan memiliki dua kekuatan besar:
+
+1. **Di Lapangan (Progress Module):** Memaksa tim bekerja jujur, disiplin input volume, dan menjaga mutu (QC Gate).
+2. **Di Kantor (S-Curve Module):** Memberikan Bos Latif "Dashboard Kokpit" pesawat tempur yang lengkap (Fisik, Biaya, Prediksi, dan Alarm Bahaya).
+
+Tabel ini sudah sangat lengkap dan siap menjadi "Kitab Suci" bagi tim Developer untuk fase coding Modul 3.
+
+Apakah sekarang kita sudah bisa lanjut "Gaspol" ke **Modul 4: Supply Chain (Logistik)**?
+
+
+
+SUPPLY Chain
+Tentu, **Gaspolll Bos Latif!** 🔥
+
+Ini adalah **Master Plan Lengkap Modul 4: Supply Chain (Logistik & Gudang)**.
+
+Tabel ini merangkum seluruh strategi "Anti-Bocor" dan "Pro-Profit" yang kita bahas, mulai dari *RAP Locking* hingga *Scrap Management*. Dokumen ini adalah spesifikasi final untuk Developer agar sistem Supply Chain MLPHoma v2.0 benar-benar **Galak, Detail, dan Menguntungkan**.
+
+---
+
+### 1. Tabel Master Transformasi Modul Supply Chain (Logistik & Gudang)
+
+| Kategori | Parameter / Fitur | Kondisi Lama (Umum) | Kondisi Baru (Target v2.0) | Dampak pada Target (Mutu, Biaya, Profitable) |
+| --- | --- | --- | --- | --- |
+| **PERENCANAAN (PLANNING)** | **RAP-Locked Purchasing** | **Loose.** Logistik bisa bikin PO selama ada uang kas. Sering *over-buy*. | **Hard-Block Budget.** PO **DITOLAK** sistem jika volume > Sisa RAP. (Kecuali ada VO/Approval Bos). | **BIAYA:** Mencegah pembelian barang di luar anggaran. Dana proyek terkunci aman. |
+|  | **JIT Schedule Trigger** | **Reaktif.** Beli saat lapangan teriak habis (mendadak & mahal). | **Schedule-Driven.** WBS memicu notifikasi otomatis: *"Minggu depan Cor Zona A, Pesan Beton Sekarang!"* | **WAKTU:** Material datang tepat waktu, tidak menumpuk di gudang sempit, cashflow terjaga. |
+| **PENGADAAN (PROCUREMENT)** | **Smart TOP Selection** | Asal murah, sering cash keras. Cashflow sesak. | **Cashflow Optimization.** Sistem saran Vendor: *"Pilih Vendor B (Mahal dikit tapi Tempo 30 Hari)"* vs Vendor A (Murah tapi Cash). | **SISTEMATIS:** Menjaga napas keuangan perusahaan (likuiditas). |
+|  | **Vendor Performance** | Vendor dipilih karena "kenalan". | **Algoritma Rating.** Auto-Blacklist vendor dengan skor buruk (Sering telat, barang jelek). | **MUTU:** Memastikan hanya supplier berintegritas yang mensupply proyek Bos. |
+| **PENERIMAAN (RECEIVING)** | **Blind Receiving** | **Trust-Based.** Gudang lihat surat jalan, lalu centang "OK". Rawan kongkalikong. | **Blind Count Logic.** Kolom jumlah di App **KOSONG**. Gudang wajib hitung manual & input angka real. | **KEJUJURAN:** Menutup celah pencurian/pengurangan volume saat pengiriman. |
+|  | **Quality Gate (QC)** | Barang diterima dulu, baru dicek saat mau pasang (telat). | **Digital QC Check.** Wajib foto ukur (Sigmat/Moisture Meter) saat truk datang. Reject di gerbang. | **KUALITAS:** Mencegah material "banci" (sub-standar) masuk ke struktur bangunan. |
+| **INVENTORY (GUDANG)** | **Cycle Counting** | Stok Opname sebulan sekali. Selisih ketahuan telat. | **Daily Random Check.** Sistem suruh hitung 5 item acak tiap hari. | **AKURASI:** Kehilangan barang terdeteksi H+1. |
+|  | **Inter-Project Transfer** | Proyek A buang sisa, Proyek B beli baru. Boros ganda. | **Cross-Project Check.** Sebelum PO, sistem cek stok mati di proyek lain. Sarankan transfer. | **EFISIENSI:** Mengurangi belanja baru dengan memanfaatkan aset menganggur. |
+| **OPTIMALISASI (PROFIT)** | **Smart Waste Detection** | Sisa material dianggap wajar. | **Theoretical vs Actual.** Bandingkan `Vol. Terpasang (Modul 3)` vs `Barang Keluar`. Jika >3%, **ALERT!** | **PROFITABLE:** Mendeteksi maling atau tukang yang kerjanya boros. |
+|  | **Subkon Reconciliation** | Material supply Bos, Subkon pasang boros. | **Chargeback System.** Jika pemakaian Subkon melebihi batas waste kontrak, otomatis potong tagihan. | **BIAYA:** Memaksa Subkon disiplin menggunakan material Bos. |
+|  | **Scrap Management** | Besi sisa/kaleng bekas jadi "uang rokok" mandor/kuli. | **Reverse Logistics.** Sisa potongan/limbah wajib diinput jadi "Stok Scrap" & dijual resmi masuk Kas. | **PROFITABLE:** Mengubah sampah proyek menjadi pendapatan lain-lain (resmi). |
+
+---
+
+### 2. Daftar Perubahan File Sistem & Database (Arsitektur Teknis)
+
+Untuk menerapkan fitur canggih di atas, Tim Developer harus melakukan perubahan signifikan pada file sistem MLPHoma. Berikut daftar kerjanya:
+
+#### **A. Database Schema (`MySQL / PostgreSQL`)**
+
+Tabel baru atau kolom baru yang harus ditambahkan:
+
+1. `tbl_vendors`: Tambah kolom `rating_score`, `top_days` (Tempo), `is_blacklisted`.
+2. `tbl_materials`: Tambah kolom `lead_time_days` (untuk JIT Trigger), `min_stock_level`.
+3. `tbl_purchase_orders`: Tambah kolom `rap_budget_id` (Foreign Key ke RAP) untuk fitur Locking.
+4. `tbl_inventory_scrap`: **(BARU)** Tabel khusus mencatat stok limbah (besi potongan, karung bekas).
+5. `tbl_transfer_notes`: **(BARU)** Mencatat perpindahan barang antar gudang proyek A ke B.
+6. `tbl_waste_logs`: **(BARU)** Log otomatis selisih Teoritis vs Aktual.
+7. `tbl_subcon_chargeback`: **(BARU)** Mencatat hutang subkon akibat pemborosan material.
+
+#### **B. Backend Logic (`API Controller / Services`)**
+
+Logic "Otak" yang harus diprogram:
+
+1. **`BudgetLockService.js` (The Gatekeeper):**
+* *Logic:* Saat tombol "Create PO" ditekan  Cek `Sum(PO Existing) + Current PO` vs `RAP Budget`. Jika lebih, `return Error("Overbudget")`.
+
+
+2. **`JITTriggerJob.js` (The Scheduler):**
+* *Logic:* Cron Job lari tiap malam  Baca `WBS Schedule` H+3  Cek `Lead Time Material`  Kirim Notifikasi `Create PO`.
+
+
+3. **`WasteAnalyzer.js` (The Detective):**
+* *Logic:* Membandingkan input `ProgressController` (Volume Terpasang) dengan `InventoryOut` (Barang Keluar). Hitung % Waste.
+
+
+4. **`VendorRatingAlgorythm.js`:**
+* *Logic:* Hitung rata-rata keterlambatan dan jumlah barang reject per PO  Update skor vendor.
+
+
+
+#### **C. Frontend / Mobile App (`UI/UX`)**
+
+Tampilan yang dilihat Bos dan Tim Logistik:
+
+1. **Mobile App - Goods Receipt (Penerimaan):**
+* Hapus default number di kolom jumlah (Wajib ketik 0-9).
+* Wajibkan akses Kamera untuk foto bukti (Material di atas truk + Surat Jalan).
+* Integrasi Bluetooth Caliper (Opsional untuk besi).
+
+
+2. **Web Dashboard - Supply Chain:**
+* **Grafik Waste:** Batang Merah jika waste > limit.
+* **Stok Antar Proyek:** Peta sebaran stok material di semua proyek Bos Latif.
+
+
+3. **Halaman Approval PO:**
+* Tampilkan Bar berwarna: "Budget Terpakai vs Sisa Budget RAP" agar Bos tahu sisa uang sebelum Approve.
+
+
+
+---
+
+### Kesimpulan Modul 4
+
+Sistem ini sekarang sudah **TERTUTUP RAPAT**.
+
+* **Logistik** tidak bisa main mata (Locked by RAP & Blind Count).
+* **Gudang** tidak bisa jual barang (Cycle Count & Waste Detection).
+* **Subkon** tidak bisa boros (Reconciliation Chargeback).
+* **Supplier** tidak bisa kirim sampah (Vendor Rating & QC Gate).
+
+Ini adalah definisi **Supply Chain 4.0** untuk kontraktor modern.
+
+Apakah Bos Latif setuju dengan spesifikasi teknis dan tabel ini? Jika ya, kita kunci Modul 4 dan lanjut ke "Jantung" dari segala profit: **Modul 5: Finance (Keuangan)**.
+
+
+FINANCE
+Siap, **Gaspolll Bos Latif!** 🔥
+
+Ini adalah **Master Plan Lengkap Modul 5: Finance (Keuangan & Cashflow)**.
+
+Tabel ini merangkum seluruh strategi **"Financial Shield"** (Perisai Keuangan) dan **"Profit Engine"** (Mesin Profit) yang kita bahas. Mulai dari *3-Way Matching* untuk mencegah pembayaran bodong, hingga *Internal Rental Rate* untuk memaksa produktivitas alat berat.
+
+Dokumen ini adalah spesifikasi final untuk Developer agar sistem Keuangan MLPHoma v2.0 benar-benar **Akurat, Prediktif, dan Menguntungkan**.
+
+---
+
+### 1. Tabel Master Transformasi Modul Finance (Keuangan & Cashflow)
+
+| Kategori | Parameter / Fitur | Kondisi Lama (Umum) | Kondisi Baru (Target v2.0) | Dampak pada Target (Mutu, Biaya, Profitable) |
+| --- | --- | --- | --- | --- |
+| **ARUS KAS (CASHFLOW)** | **Predictive Cashflow** | **Reaktif / "Sisa Saldo".** Bayar tagihan selama ada uang di bank. Sering kaget saat kas kosong. | **Forward-Looking Projection.** Sistem memprediksi Saldo Bank masa depan berdasarkan *Schedule WBS* & *RAP*. *"Minggu depan butuh Rp 500jt, Estimasi cair Rp 100jt. Defisit!"* | **PROFITABLE:** Mencegah proyek berhenti (mangkrak) karena kehabisan nafas (likuiditas). Bos bisa cari dana talangan sejak dini. |
+|  | **Cross-Project Liquidity** | Proyek A uangnya banyak (DP), Proyek B sekarat. Bos bingung putar uang manual. | **Smart Subsidy Manager.** Sistem menyarankan: *"Gunakan Cash Proyek A untuk talangi Beton Proyek B (Internal Loan)."* Tercatat otomatis sebagai hutang antar proyek. | **EFISIENSI:** Mengoptimalkan uang nganggur tanpa perlu pinjam bank (Bunga 0%). |
+| **PENAGIHAN (RECEIVABLE)** | **Auto-Invoicing** | **Manual Trigger.** Admin sering lupa atau telat bikin tagihan termin. Dokumen pendukung tercecer. | **Progress-Triggered.** Saat Progress (Modul 3) capai target termin, sistem otomatis draft Invoice + Berita Acara + Foto Bukti. | **EFISIENSI:** Mempercepat uang masuk. Telat nagih 1 hari = Hilang kesempatan putar uang. |
+|  | **Retensi Subkon** | Uang jaminan subkon (5%) tercampur kas operasional & terpakai. | **Virtual Escrow.** Sistem mengunci saldo retensi subkon secara virtual. Tidak bisa dipakai belanja material lain. | **KEJUJURAN:** Menjaga kepercayaan subkon (Bonafiditas Perusahaan). |
+| **PEMBAYARAN (PAYABLE)** | **3-Way Matching** | Asal ada tagihan masuk, langsung diproses. Rawan bayar barang fiktif. | **System Validation.** Sistem mencocokkan otomatis 3 Dokumen: **PO (Harga) + GRN (Fisik Gudang) + Invoice Vendor**. Jika beda, Auto-Reject. | **BIAYA:** Mencegah kebocoran akibat membayar barang yang tidak diterima atau harga mark-up. |
+|  | **Priority Payment** | **First Come First Served.** Siapa vendor yang galak dibayar duluan. | **Smart Algo Payment.** Mengurutkan pembayaran: 1. Vendor Kritis (Beton), 2. Vendor Diskon (Early Bird), 3. Vendor Jatuh Tempo. | **STRATEGIS:** Menjaga hubungan vendor kunci & menghindari denda. |
+| **PROFITABILITAS (P&L)** | **Real-Time P&L** | **Post-Mortem.** Laba/Rugi baru ketahuan setelah proyek selesai (Terlambat). | **Live Margin Dashboard.** Bos bisa lihat margin detik ini juga: *"Minggu ke-4: Proyek Isuzu Margin 18%."* | **PROFITABLE:** Jika margin turun di tengah jalan, Bos bisa langsung intervensi (cut cost). |
+|  | **Internal Rental Rate** | Alat berat milik sendiri (PC-50) dianggap "Gratis". Sering dibiarkan nganggur di lokasi. | **Asset Cost Allocation.** Sistem membebankan biaya sewa harian ke Proyek setiap alat milik Bos ada di lokasi. Masuk ke pendapatan Divisi Alat. | **BIAYA:** Memaksa PM memulangkan alat segera jika tidak dipakai. Aset jadi produktif. |
+| **KONTROL & AUDIT** | **Auto-Tax Calc** | Hitung PPh Final manual. Sering salah tarif atau telat lapor (Denda). | **Tax Intelligence.** Sistem otomatis potong PPh Final (1.75% / 2.65%) dari setiap termin cair & invoice vendor. | **SISTEMATIS:** Menghindari denda pajak & memastikan Laba Bersih yang dilihat Bos adalah *Net After Tax*. |
+|  | **Anomaly Detection** | Laporan keuangan wajar, tapi harga barang perlahan naik. | **Price Volatility Alert.** Membandingkan harga beli hari ini vs rata-rata historis. Jika naik >5% tanpa alasan pasar, **ALERT!** | **MUTU & BIAYA:** Mendeteksi "permainan harga" (fraud) antara Logistik & Supplier. |
+
+---
+
+### 2. Daftar Perubahan File Sistem & Database (Arsitektur Teknis)
+
+Untuk menerapkan fitur "Financial Shield" ini, Tim Developer harus melakukan perubahan pada struktur sistem MLPHoma sebagai berikut:
+
+#### **A. Database Schema (`MySQL / PostgreSQL`)**
+
+Tabel baru atau kolom baru yang harus ditambahkan:
+
+1. `tbl_internal_transactions`: **(BARU)** Mencatat pinjaman antar proyek (Project A  Project B).
+2. `tbl_asset_rentals`: **(BARU)** Mencatat log pemakaian alat berat sendiri (PC-50) & tarif sewa internalnya.
+3. `tbl_invoices`: Tambah kolom `tax_rate`, `tax_amount`, `retention_held`, `retention_due_date`.
+4. `tbl_payments`: Tambah kolom `priority_score` (Skor prioritas pembayaran otomatis).
+5. `tbl_cost_centers`: Update struktur untuk memisahkan "Biaya Langsung Proyek" vs "Biaya Sewa Internal".
+6. `tbl_price_history`: **(BARU)** Log harga material per tanggal untuk fitur *Anomaly Detection*.
+
+#### **B. Backend Logic (`API Controller / Services`)**
+
+Logic "Otak" yang harus diprogram:
+
+1. **`ThreeWayMatchService.js` (The Gatekeeper):**
+* *Logic:* Ambil data `PO` (Harga), `GRN` (Qty Terima), `Invoice Vendor` (Total). Jika `(PO.Price * GRN.Qty) != Invoice.Total`, return `Reject`.
+
+
+2. **`CashflowProjectionEngine.js` (The Predictor):**
+* *Logic:* `Saldo Awal + (Termin Schedule - Tax) - (PO Jatuh Tempo + Gaji + Estimasi Belanja Mingguan)`. Output: Grafik Saldo Harian.
+
+
+3. **`InternalRentCalculator.js`:**
+* *Logic:* Cron Job lari tiap malam  Cek status alat "On Site"  `Debit Biaya Proyek` & `Credit Pendapatan Alat`.
+
+
+4. **`TaxCalculatorService.js`:**
+* *Logic:* Menentukan tarif PPh berdasarkan jenis proyek & status NPWP vendor secara otomatis.
+
+
+5. **`AnomalyDetectorService.js`:**
+* *Logic:* Bandingkan harga input PO baru dengan `Average(Price History 3 Months)`. Jika deviasi > 5%, kirim notifikasi ke Bos.
+
+
+
+#### **C. Frontend / Dashboard (`UI/UX`)**
+
+Tampilan yang dilihat Bos dan Tim Keuangan:
+
+1. **Dashboard Finance:**
+* **Grafik Cashflow:** Garis kurva naik turun yang menunjukkan saldo bank di masa depan.
+* **Traffic Light P&L:** Indikator Margin Proyek (Hijau > 20%, Kuning 10-20%, Merah < 10%).
+
+
+2. **Halaman Approval Pembayaran:**
+* Tampilkan tanda **CENTANG HIJAU (✓)** besar jika *3-Way Matching* cocok.
+* Tampilkan tanda **SILANG MERAH (X)** jika ada selisih, beserta detail selisihnya.
+
+
+3. **Menu Internal Transfer:**
+* Form sederhana untuk memindahkan saldo kas dari Proyek A ke B dengan status "Pinjaman".
+
+
+
+---
+
+### Kesimpulan Akhir
+
+Dengan selesainya Modul 5 ini, sistem **MLPHoma v2.0** Anda sekarang sudah memiliki:
+
+1. **RAB/RAP (Otak Kiri):** Perencanaan yang kuat.
+2. **WBS & Schedule (Jantung):** Detak operasional yang terukur (40 Hari).
+3. **Progress & QC (Mata & Telinga):** Validasi lapangan yang jujur.
+4. **Supply Chain (Tangan & Kaki):** Eksekusi logistik yang hemat & efisien.
+5. **Finance (Darah):** Aliran uang yang sehat & menguntungkan.
+
+Semua tabel dan spesifikasi file ini sudah siap serah terima ke Tim IT. **Gaspol** realisasikan sistem ini, Bos Latif! 🚀
+
+
+
+DOKUMEN AND REPORT
+Siap, **Gaspolll Bos Latif!** 🔥
+
+Ini adalah **Master Plan Lengkap Modul Documents (Manajemen Dokumen & Arsip Digital)**.
+
+Tabel ini merangkum seluruh strategi mulai dari **"Perpustakaan Digital"** (Penyimpanan), **"Mesin Laporan Otomatis"** (Reporting), hingga **"Benteng Hukum"** (RFI & SI) yang baru saja kita bahas.
+
+Dokumen ini adalah spesifikasi final untuk Developer agar Modul Dokumen MLPHoma v2.0 benar-benar menjadi **Pusat Kebenaran (Single Source of Truth)** yang melindungi perusahaan dari kerugian teknis dan hukum.
+
+---
+
+### 1. Tabel Master Transformasi Modul Documents
+
+| Kategori | Parameter / Fitur | Kondisi Lama (Umum) | Kondisi Baru (Target v2.0) | Dampak pada Target (Mutu, Biaya, Profitable) |
+| --- | --- | --- | --- | --- |
+| **KONTROL TEKNIS (ENGINEERING)** | **Version Control (QR Code)** | **WhatsApp Based.** Gambar revisi dikirim via chat. Mandor sering salah pakai gambar lama. | **QR-Code Validity Check.** Setiap gambar kerja punya QR Code unik. Scan di HP  Status: *"VALID"* atau *"OBSOLETE (JANGAN PAKAI)"*. | **MUTU & BIAYA:** Mencegah bongkar pasang (rework) akibat salah pakai gambar kerja yang sudah basi. |
+|  | **RFI System (Tanya Jawab)** | Tanya jawab teknis via lisan/chat. Bukti hilang saat sengketa. | **Digital RFI Tracker.** Pertanyaan teknis mandor & jawaban Owner terekam resmi, bernomor urut, & mengikat secara teknis. | **MUTU:** Menghindari salah tafsir gambar & menjadi bukti kuat jika terjadi klaim waktu (EOT). |
+|  | **Submittal Approval** | Acc sampel material hanya paraf di fisik barang (barang hilang = bukti hilang). | **Digital Sample Log.** Foto material yang di-Acc & Form Persetujuan disimpan digital. Terlink ke PO Logistik. | **PROFITABLE:** Owner tidak bisa menolak hasil kerja yang sudah sesuai sampel awal. Mencegah kerugian material. |
+| **PELAPORAN (REPORTING)** | **Auto-Compiler (Laporan)** | **Manual Excel.** Admin copy-paste foto satu-satu dari WA. Lama & Rawan Typo. | **One-Click Generator.** Sistem menarik data Progress (Modul 3) & Logistik (Modul 4). Laporan Harian jadi PDF dalam 5 detik. | **EFISIENSI:** Menghemat gaji admin teknik. Admin bisa fokus ke QC lapangan. |
+|  | **Sanitized Reporting** | Sering salah kirim file Excel yang ada rumus profitnya ke Owner. Bocor rahasia. | **Dual-View Output.** Sistem otomatis memisahkan PDF "Untuk Owner" (Fisik saja) vs "Untuk Bos" (Fisik + Biaya/Margin). | **PROFITABLE:** Menjaga kerahasiaan margin keuntungan perusahaan di mata klien. |
+|  | **Distribusi Otomatis** | Laporan diprint & dikirim kurir. Lambat. | **Auto-Blast.** Pukul 08:00 pagi, Laporan otomatis terkirim ke Email/WA Bos & Owner. | **KECEPATAN:** Owner merasa dilayani sangat profesional (Update rutin). |
+| **LEGAL & HUKUM** | **Site Instruction (SI)** | Perintah tambah/kurang lisan di lokasi. Sering lupa ditagih harganya. | **SI Digitizer.** Mengubah perintah lisan menjadi record digital yang mentrigger pengecekan biaya (VO). | **PROFITABLE:** Memastikan setiap perintah tambahan dari Owner terhitung harganya (Monetisasi Jasa). |
+|  | **Expiry Radar** | Asuransi/Jaminan/SIO Alat mati tanpa sadar. Risiko fatal. | **Validity Dashboard.** Notifikasi otomatis H-30 sebelum dokumen penting kadaluarsa. | **SISTEMATIS:** Manajemen risiko proaktif. Melindungi aset dari tuntutan hukum. |
+| **PENYIMPANAN (ARCHIVE)** | **Centralized Vault** | **Scattered.** Hardcopy di site, Softcopy di laptop admin. Cari data butuh berjam-jam. | **Cloud Folder Structure.** Arsip otomatis tersusun per Proyek/Kategori. Cari data pakai "Global Search" < 5 detik. | **EFISIENSI:** Admin tidak buang waktu mencari kertas. Data aman dari hilang/rusak. |
+|  | **Digital Signature** | Tanda tangan basah. Proyek terhambat nunggu Bos datang ke site. | **E-Signature Workflow.** Approval dokumen dilakukan di App dengan stempel waktu (Timestamp) & Geo-tag. | **KECEPATAN:** Keputusan lapangan tidak tertunda birokrasi. |
+
+---
+
+### 2. Daftar Perubahan File Sistem & Database (Arsitektur Teknis)
+
+Untuk menerapkan fitur canggih di atas, Tim Developer harus melakukan perubahan signifikan pada struktur sistem MLPHoma sebagai berikut:
+
+#### **A. Database Schema (`MySQL / PostgreSQL`)**
+
+Tabel baru yang harus dibuat:
+
+1. `tbl_documents`:
+* Kolom: `version_no`, `qr_code_hash`, `category_id`, `expiry_date` (untuk legalitas).
+
+
+2. `tbl_rfis` **(BARU)**:
+* Mencatat Request For Information (Tanya: Mandor, Jawab: Owner/Konsultan).
+
+
+3. `tbl_submittals` **(BARU)**:
+* Mencatat persetujuan material (Foto Sampel + TTD Owner).
+
+
+4. `tbl_site_instructions` **(BARU)**:
+* Mencatat perintah lapangan yang berpotensi menjadi VO (Variation Order).
+
+
+5. `tbl_daily_reports`:
+* Menyimpan *metadata* laporan harian yang sudah digenerate (link PDF Internal vs External).
+
+
+6. `tbl_approvals`:
+* Menyimpan jejak Digital Signature (User, Timestamp, IP Address, Location).
+
+
+
+#### **B. Backend Logic (`API Controller / Services`)**
+
+Logic "Otak" yang harus diprogram:
+
+1. **`ReportGeneratorService.js` (The Chef):**
+* *Logic:* Cron Job pukul 17:00  `Fetch Progress Data` + `Fetch Weather` + `Fetch Material In`  Compile to PDF (menggunakan library seperti *Puppeteer/PDFKit*).
+
+
+2. **`QRCodeService.js`:**
+* *Logic:* Saat upload gambar kerja baru  Generate QR String  Overlay ke pojok kanan bawah PDF.
+
+
+3. **`SanitizerService.js`:**
+* *Logic:* Saat generate laporan  Buat 2 File. File A (Include Cost), File B (Exclude Cost columns).
+
+
+4. **`ExpiryNotificationJob.js`:**
+* *Logic:* Cek `tbl_documents` dengan kategori 'Legal'  Jika `expiry_date` < 30 hari  Kirim WA Alert.
+
+
+5. **`GlobalSearchEngine.js`:**
+* *Logic:* Indexing semua teks dalam PDF dan Database agar bisa dicari lewat satu kolom pencarian.
+
+
+
+#### **C. Frontend / Mobile App (`UI/UX`)**
+
+Tampilan yang dilihat Bos dan Tim Lapangan:
+
+1. **Mobile App - Scanner:**
+* Tombol khusus "Scan Gambar Kerja" yang langsung memvalidasi status revisi (Merah/Hijau).
+
+
+2. **Dashboard - Document Library:**
+* Tampilan Tree-View (Folder) yang rapi seperti Windows Explorer/Google Drive.
+
+
+3. **Form RFI & SI:**
+* Input form sederhana di HP untuk Mandor bertanya atau mencatat instruksi.
+
+
+4. **PDF Viewer (In-App):**
+* Bisa buka Laporan/Gambar langsung tanpa download aplikasi pihak ketiga.
+
+
+
+---
+
+### Kesimpulan Akhir Modul Documents
+
+Sistem dokumen MLPHoma v2.0 sekarang bukan lagi sekadar "Gudang Arsip", melainkan:
+
+1. **Pengacara Digital:** (RFI, SI, Kontrak).
+2. **Admin Otomatis:** (Auto-Report, Auto-Blast).
+3. **Penjaga Mutu:** (QR Code, Submittal).
+
+Seluruh spesifikasi di atas sudah siap dieksekusi oleh Tim IT.
+Dengan ini, kita telah menyelesaikan bedah tuntas **6 Modul Utama**.
+
+Apakah Bos Latif siap untuk langkah terakhir: Menggabungkan semua ini ke dalam **Command Center (Dashboard Utama)** agar Anda bisa memantau kerajaan bisnis konstruksi Anda dari satu layar?
+
+
+SETTING
+Siap, **Gaspolll Bos Latif!** 🔥
+
+Ini adalah **Master Plan Lengkap Modul 8: Settings (Pengaturan Sistem)**.
+
+Tabel ini merangkum seluruh strategi **"Konstitusi Digital"** yang kita bahas. Mulai dari *Granular Access* untuk menjaga rahasia dapur, *Kill Switch* untuk keamanan darurat, hingga konsep *Centralized Tab* agar Bos bisa mengatur seluruh bisnis hanya dari satu layar.
+
+Dokumen ini adalah spesifikasi final untuk Developer agar Modul Settings MLPHoma v2.0 menjadi **Pusat Komando (Control Tower)** yang aman, dinamis, dan fleksibel.
+
+---
+
+### 1. Tabel Master Transformasi Modul Settings (Pengaturan)
+
+| Kategori | Parameter / Fitur | Kondisi Lama (Umum) | Kondisi Baru (Target v2.0) | Dampak pada Target (Mutu, Biaya, Profitable) |
+| --- | --- | --- | --- | --- |
+| **KEAMANAN (SECURITY)** | **Hak Akses (RBAC)** | **Flat Role.** Cuma ada Admin vs User. Staff Logistik bisa lihat Harga Modal (RAB). Rawan bocor. | **Granular Permission Matrix.** Izin detail per fitur. Logistik dilarang lihat Harga/Margin. Keuangan dilarang Edit Teknik. | **PROFITABLE:** Melindungi data rahasia margin keuntungan perusahaan dari mata karyawan. |
+|  | **Akses Darurat** | Cabut akses manual & lama (reset password). Risiko sabotase data saat pemecatan. | **Kill Switch (Revoke).** Tombol merah untuk memutus sesi login user tertentu secara instan (detik itu juga). | **KEAMANAN:** Melindungi aset data dari ancaman internal (karyawan sakit hati). |
+|  | **Jejak Audit** | Tidak ada log. Data berubah/hilang tidak ketahuan pelakunya. | **Black Box Recorder.** Mencatat SIAPA, KAPAN, DIMANA, dan APA yang diubah (Old vs New Value). | **KEJUJURAN:** Mencegah fraud/manipulasi data. Pelaku pasti ketahuan. |
+|  | **Login Biometrik** | Password "123456" atau dishare ke teman. | **Biometric Enforce.** Wajib Scan Wajah/Jari untuk login & approval transaksi krusial. | **VALIDITAS:** Memastikan identitas pelaku transaksi adalah asli (Non-repudiation). |
+| **KONTROL DATA (CONFIG)** | **Pusat Pengaturan** | Settingan tersebar di tiap modul atau Hardcoded di kodingan. Susah diubah. | **Centralized Config Hub.** Satu menu "Settings" dengan Tab per Modul (Costing, Finance, dll). Bos atur PPN/Margin di satu layar. | **EFISIENSI BIAYA:** Tidak perlu biaya maintenance IT untuk perubahan regulasi/bisnis rutin. |
+|  | **Parameter Global** | Ganti PPN 11% ke 12% harus panggil programmer. | **Dynamic Variable UI.** Bos input sendiri angka PPN, Jam Kerja, & Radius GPS via menu. | **SISTEMATIS:** Sistem adaptif terhadap perubahan kebijakan pemerintah/perusahaan. |
+|  | **Geo-Fencing** | Absen/Laporan bisa dari mana saja (rumah/warung). | **Radius Lock Setting.** Bos setel batas jarak input (misal: 50m). Di luar itu, tombol "Submit" mati. | **MUTU:** Memastikan fisik personel benar-benar ada di site saat bekerja. |
+| **INTEGRASI & MAINTENANCE** | **Koneksi Pihak Ketiga** | API Key WA/Maps tertanam di kode. Ganti vendor = Aplikasi error/bongkar kode. | **API Integration Hub.** Halaman input khusus untuk API Key WhatsApp, Maps, & Email Server. | **FLEKSIBILITAS:** Mudah ganti vendor layanan pendukung tanpa stop operasi. |
+|  | **Kedaulatan Data** | Data tersandra di server developer. | **Full Data Export.** Tombol download seluruh database (Excel/SQL) kapan saja Bos mau. | **ASET:** Menjamin kepemilikan data bisnis 100% di tangan Bos Latif. |
+|  | **Perawatan Sistem** | Aplikasi makin lama makin lemot (berat data). | **Auto-Archiving Rule.** Setting otomatis pindahkan data > 2 tahun ke *Cold Storage*. | **EFISIENSI:** Menjaga performa aplikasi tetap ngebut selamanya. |
+| **BRANDING** | **White-Labeling** | Kop surat/Logo hardcoded. | **Multi-Entity Branding.** Upload Logo & Kop Surat berbeda untuk tiap PT/Proyek. | **PROFESIONALISME:** Citra perusahaan konsisten sesuai entitas kontrak. |
+
+---
+
+### 2. Daftar Perubahan File Sistem & Database (Arsitektur Teknis)
+
+Tim Developer perlu membangun fondasi ini agar "Otak Sistem" bisa bekerja:
+
+#### **A. Database Schema (`MySQL / PostgreSQL`)**
+
+Tabel utama yang harus dibuat/diupdate:
+
+1. `tbl_settings`:
+* **Struktur:** `id`, `module_group` (Enum: general, finance, supply, costing), `config_key` (misal: 'ppn_rate'), `config_value` (misal: '12'), `is_editable` (Boolean).
+* *Fungsi:* Menampung semua variabel dinamis dari semua modul.
+
+
+2. `tbl_roles_permissions`:
+* **Struktur:** Matriks Many-to-Many antara `role_id` dan `permission_id` (View, Edit, Delete, Approve).
+
+
+3. `tbl_audit_logs`:
+* **Struktur:** `user_id`, `action`, `table_name`, `record_id`, `old_payload` (JSON), `new_payload` (JSON), `ip_address`, `timestamp`.
+
+
+4. `tbl_api_keys`:
+* **Struktur:** `service_name` (WhatsApp, Maps), `api_key` (Encrypted), `api_secret` (Encrypted), `is_active`.
+
+
+5. `tbl_active_sessions`:
+* **Struktur:** `user_id`, `session_token`, `device_info`, `last_activity`. (Untuk fitur Kill Switch).
+
+
+
+#### **B. Backend Logic (`API Controller / Services`)**
+
+Logic "Otak" yang harus diprogram:
+
+1. **`SettingsController.js` (The Hub):**
+* *Endpoint:* `GET /api/settings/{group}`. Mengambil settingan spesifik per tab (misal Finance).
+* *Endpoint:* `POST /api/settings/update`. Bos update PPN/Margin.
+
+
+2. **`AuthMiddleware.js` (The Gatekeeper):**
+* Cek `tbl_active_sessions`. Jika token tidak ada (karena di-Kill Switch), tolak request dengan `401 Unauthorized`.
+* Cek `tbl_roles_permissions`. Jika user akses menu terlarang, tolak `403 Forbidden`.
+
+
+3. **`GeoFenceService.js`:**
+* Logic validasi jarak koordinat User vs Proyek berdasarkan setting radius di `tbl_settings`.
+
+
+
+#### **C. Frontend / UI (`Web & Mobile`)**
+
+Tampilan yang dilihat Bos:
+
+1. **Halaman "Konfigurasi Sistem":**
+* Desain **Vertical Tabs** (Tab Kiri: Umum, Keuangan, Logistik, dll).
+* Form input angka/teks yang mudah diedit.
+
+
+2. **Halaman "User Management":**
+* Tabel User dengan tombol merah menyala **"REVOKE ACCESS"** (Kill Switch).
+* Setting Matrix Role (Centang fitur yang boleh diakses).
+
+
+3. **Halaman "Integrasi":**
+* Form input aman (masking *****) untuk API Key WhatsApp & Maps.
+
+
+
+---
+
+### Kesimpulan Akhir Modul Settings
+
+Sistem MLPHoma v2.0 sekarang memiliki **"Otak Kiri"** (Logika Bisnis) dan **"Otak Kanan"** (Kontrol Keamanan) yang seimbang.
+
+Dengan Modul Settings ini, Bos Latif bisa:
+
+1. **Tidur Nyenyak:** Karena keamanan data terjamin (Kill Switch & Audit Trail).
+2. **Hemat Biaya:** Karena tidak perlu panggil programmer untuk ubah PPN/Margin.
+3. **Kerja Efisien:** Karena semua aturan main diatur dari satu layar pusat.
+
+Sekarang, seluruh 8 Modul (Costing, Schedule, Progress, Supply Chain, Finance, Documents, Settings) sudah **LENGKAP**.
+
+Kita tinggal satu langkah terakhir yang paling menyenangkan: **Merancang Tampilan "Command Center" (Dashboard Utama)** yang akan menjadi wajah dari semua kecanggihan ini.
+
+Siap untuk *Grand Final*, Bos?
+
+
+
+sekarang tolong buatkan dalam tabel semua perubahan yang akan dilakukan pada sistem ini dari awal chat ini hingga saat ini pada segi Frontend dan Backend, adapun yg lain seperti dibawah :
+1. Jalur integrasi yg akan dilakukan untuk semua modul dan fitur
+2. Workflow Integrasi, trigger system dan sistem notifikasi
+3. Workflow Sistem ini
+4. File2 apa saja perubahan pada sistem ini
+5. Perubahan UI/UX mengikuti sistem yg baru
+
+
+
+Setting
+Ini adalah **Visualisasi Konsep "Command Center" MLPHoma v2.0**.
+
+Karena saya adalah AI teks, saya tidak bisa membuat file gambar *(JPG/PNG)* secara langsung. Namun, saya akan membuatkan **Mockup Visual Mendetail** menggunakan tata letak berbasis teks dan deskripsi grafis yang sangat presisi.
+
+Bayangkan Anda sedang menatap layar Monitor TV Besar 65 inch di ruang rapat Anda, dengan mode **"DARK MODE (War Room)"** yang aktif.
+
+---
+
+# 🖥️ MLPHOMA v2.0 - COMMAND CENTER (WAR ROOM VIEW)
+
+**Status:** 🟢 PT. Homa Nata Sarwatatas | **User:** Bos Latif (Super Admin) | **Mode:** Dark 🌙 | **[+ Add Widget]**
+
+---
+
+## BARIS 1: STRATEGIC OVERVIEW (Pandangan Elang)
+
+*Widget besar untuk pemantauan level atas.*
+
+| **[📍 PETA SEBARAN PROYEK & STATUS TRAFFIC]** | **[💰 GLOBAL CASH RUNWAY (Napas Perusahaan)]** | **[🚀 LIVE PROFIT MARGIN (Speedometer)]** |
+| --- | --- | --- |
+| *(Visual Peta Google Gelap dengan Pin Berkedip)*<br>
+
+<br>
+
+<br>📍 **Bali (Villa Bedugul)**: 🔴 *Alert: Telat 14 Hari (Cuaca)*<br>
+
+<br>📍 **Jakarta (Bengkel Isuzu)**: 🟡 *Warning: Overbudget Material 5%*<br>
+
+<br>📍 **Surabaya (Gudang)**: 🟢 *Status: On Track*<br>
+
+<br>
+
+<br>✅ *Total: 3 Aktif | 1 Bahaya | 1 Warning* |
+| *[✋ Drag Handle]* | *[✋ Drag Handle] [↗ Drill Down]* | *[✋ Drag Handle] [↗ Drill Down]* |
+
+---
+
+## BARIS 2: TACTICAL & ACTION (Fokus Lapangan & Eksekusi)
+
+*Widget operasional untuk melihat masalah dan mengambil tindakan cepat.*
+
+| **[📈 TRI-LINE S-CURVE (Fokus: Bengkel Isuzu)]** | **[📹 LIVE CCTV & MANPOWER]** | **[⚡ QUICK APPROVAL DECK (Tinder for Boss)]** |
+| --- | --- | --- |
+| *(Grafik Garis dengan Latar Gelap)*<br>
+
+<br>
+
+<br>🟦 **Plan:** 50% (Garis Putus Biru)<br>
+
+<br>🟩 **Fisik:** 42% (Garis Hijau Solid)<br>
+
+<br>🟥 **Biaya:** 48% (Garis Merah Solid)<br>
+
+<br>
+
+<br>💡 **Analisa Cepat:** *Status "Ngebut tapi Boros". Fisik telat 8%, tapi Biaya sudah hampir menyamai Plan. Cek lembur & material!* | *(Jendela Video Streaming)*<br>
+
+<br>
+
+<br>🎥 **CAM 01 - Area Pengecoran Zona B**<br>
+
+<br>*(Visual tukang sedang bekerja real-time)*<br>
+
+<br>🔴 LIVE | 13:45 WITA<br>
+
+<br>
+
+<br>👷‍♂️ **Manpower Hari Ini:**<br>
+
+<br>Rencana: 40 Orang<br>
+
+<br>Absen Biometrik: **35 Orang** (Kurang 5)<br>
+
+<br>🌦️ Cuaca: Berawan |
+| *[✋ Drag Handle] [🔍 Zoom Chart]* | *[✋ Drag Handle] [🔄 Ganti Kamera]* | *[✋ Drag Handle] [📂 Lihat Semua Pending]* |
+
+---
+
+## BARIS 3: INSIGHTS & FINANCIAL DETAILS (Analisa & Hutang Piutang)
+
+*Widget pendukung untuk melihat detail masalah dan saran sistem.*
+
+| **[⚠️ TOP 3 PROBLEM CHILD (Masalah Kritis)]** | **[🤖 AI PREDICTION INSIGHT (Paranormal Digital)]** | **[💸 AGING AR/AP (Hutang Piutang)]** |
+| --- | --- | --- |
+| 1. 🔴 **Villa Bedugul (Schedule):** Progress 3 Minggu tidak bergerak. *Penyebab: Hujan ekstrem & akses jalan putus.*<br>
+
+<br>2. 🟡 **Bengkel Isuzu (Supply):** Stok Besi D16 menipis, sisa untuk 2 hari kerja. *Action: Segera PO.*<br>
+
+<br>3. 🟡 **Kantor Cabang (Legal):** IMB belum terbit, risiko denda Pemda. | *"Bos, berdasarkan pola 3 minggu terakhir:*<br>
+
+<br>
+
+<br>1. **Risiko Telat:** Proyek Villa Bedugul diprediksi molor 14 hari jika tidak ada penambahan 2 tim shift malam.<br>
+
+<br>2. **Saran Material:** Harga semen diprediksi naik bulan depan. Disarankan stok aman sekarang untuk proyek jangka panjang." | **AR (Piutang - Uang Akan Masuk):**<br>
+
+<br>🟩 PT. Isuzu Astra (Termin 2): Rp 500 Jt (Due: 5 Hari lagi)<br>
+
+<br>
+
+<br>**AP (Hutang - Harus Dibayar):**<br>
+
+<br>🟥 Toko Besi Abadi (PO #041): Rp 150 Jt (**OVERDUE 2 Hari!**)<br>
+
+<br>🟨 Jayamix Beton (PO #043): Rp 200 Jt (Due: Besok)<br>
+
+<br>
+
+<br>**[Bayar Vendor Prioritas]** |
+| *[✋ Drag Handle]* | *[✋ Drag Handle]* | *[✋ Drag Handle] [↗ Ke Modul Finance]* |
+
+---
+
+### KETERANGAN VISUAL & UX:
+
+1. **Aestetik "War Room":** Latar belakang hitam pekat, kartu widget berwarna abu-abu gelap kebiruan, dengan aksen warna neon (Hijau, Merah, Kuning, Biru) yang menyala untuk data penting. Sangat nyaman di mata untuk monitoring jangka panjang.
+2. **Drag Handle [✋]:** Di setiap pojok kiri atas widget ada ikon kecil (titik-titik grip) yang menunjukkan bahwa widget ini bisa diklik, ditahan, dan digeser posisinya.
+3. **Actionable Buttons:** Perhatikan tombol **[✅ APPROVE]**, **[❌ REJECT]**, dan **[Bayar Vendor Prioritas]** yang ada langsung di dalam widget. Bos tidak perlu pindah halaman untuk eksekusi.
+4. **Drill Down [↗]:** Ikon panah kecil di pojok kanan atas widget. Jika diklik, akan membawa Bos ke laporan detail yang relevan (misal: klik di AR/AP akan membuka Aging Report lengkap di Modul Finance).
+5. **Mobile Responsiveness (Tidak Terlihat di Gambar):** Jika dibuka di HP, Baris 1, 2, dan 3 akan otomatis menumpuk ke bawah menjadi satu kolom panjang agar mudah discroll.
+
+Inilah tampilan kokpit pesawat tempur bisnis Anda, Bos Latif. Siap untuk lepas landas? 🚀

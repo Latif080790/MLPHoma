@@ -30,6 +30,13 @@ export interface RABItem {
   finalTotal?: number
   final_total?: number
   finalPrice?: number
+  /** Split Costs (v3 Ultra) */
+  cost_material?: number
+  cost_labor?: number
+  cost_equipment?: number
+  cost_subcon?: number
+  markup_percentage?: number
+  weight_percentage?: number
   /** Optional WBS link */
   wbsId?: string
   /** Optional Timeline Task link */

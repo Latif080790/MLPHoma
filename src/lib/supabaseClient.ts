@@ -30,6 +30,10 @@ export interface AhspItemRow {
   category: string
   base_price?: number
   final_price?: number
+  price_material?: number
+  price_labor?: number
+  price_equipment?: number
+  price_subcon?: number
   overhead_percentage?: number
   profit_percentage?: number
   created_at?: string
@@ -191,5 +195,125 @@ export async function upsertProject(project: any) {
 export async function deleteProject(id: string) {
   const client = assertSupabase()
   return client.from('projects').delete().eq('id', id)
+}
+
+export interface MaterialRequestRow {
+  id: string
+  project_id: string
+  wbs_id?: string
+  item_name: string
+  unit?: string
+  quantity_requested: number
+  date_required?: string
+  status: string
+  requested_by?: string
+  notes?: string
+  created_at?: string
+}
+
+export interface PurchaseOrderRow {
+  id: string
+  project_id: string
+  po_number: string
+  vendor_name?: string
+  status: string
+  total_amount: number
+  created_by?: string
+  approved_by?: string
+  approved_at?: string
+  created_at?: string
+}
+
+export interface PoItemRow {
+  id: string
+  po_id: string
+  rap_item_id?: string
+  item_name?: string
+  quantity: number
+  unit_price: number
+  total_price?: number // Generated
+  created_at?: string
+}
+
+export interface InventoryTransactionRow {
+  id: string
+  project_id: string
+  wbs_id?: string
+  material_name: string
+  transaction_type: string // IN, OUT, TRANSFER, RETURN
+  quantity: number
+  unit?: string
+  reference_doc?: string
+  created_at?: string
+}
+
+// Supply Chain Operations
+
+// Material Requests
+export async function fetchMaterialRequests(projectId: string) {
+  const client = assertSupabase()
+  return client.from('material_requests')
+    .select(`
+      *,
+      wbs_items ( name, code )
+    `)
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: false })
+}
+
+export async function upsertMaterialRequest(row: Partial<MaterialRequestRow>) {
+  const client = assertSupabase()
+  return client.from('material_requests').upsert(row).select().single()
+}
+
+// Purchase Orders
+export async function fetchPurchaseOrders(projectId: string) {
+  const client = assertSupabase()
+  return client.from('purchase_orders')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: false })
+}
+
+export async function upsertPurchaseOrder(row: Partial<PurchaseOrderRow>) {
+  const client = assertSupabase()
+  return client.from('purchase_orders').upsert(row).select().single()
+}
+
+export async function fetchPoItems(poId: string) {
+  const client = assertSupabase()
+  return client.from('po_items')
+    .select(`
+      *,
+      rap_items ( 
+        id, 
+        rab_items ( name ) 
+      )
+    `)
+    .eq('po_id', poId)
+}
+
+export async function upsertPoItem(row: Partial<PoItemRow>) {
+  const client = assertSupabase()
+  return client.from('po_items').upsert(row).select().single()
+}
+
+export async function deletePoItem(id: string) {
+  const client = assertSupabase()
+  return client.from('po_items').delete().eq('id', id)
+}
+
+// Inventory
+export async function fetchInventoryTransactions(projectId: string) {
+  const client = assertSupabase()
+  return client.from('inventory_transactions')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: false })
+}
+
+export async function upsertInventoryTransaction(row: Partial<InventoryTransactionRow>) {
+  const client = assertSupabase()
+  return client.from('inventory_transactions').upsert(row).select().single()
 }
 
