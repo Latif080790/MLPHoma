@@ -26,7 +26,7 @@ function generateWBSCode(items: WBSItem[], parentId: string | null, index: numbe
     // Child level: extend parent code (1.1, 1.2, ...)
     const parent = items.find(item => item.id === parentId)
     if (!parent) return (index + 1).toString()
-    
+
     const siblings = items.filter(item => item.parentId === parentId)
     const siblingIndex = siblings.findIndex(item => item.sortOrder === index)
     return `${parent.code}.${siblingIndex + 1}`
@@ -44,12 +44,12 @@ function sortHierarchy(items: WBSItem[]): WBSItem[] {
     if (visited.has(item.id)) return
     visited.add(item.id)
     result.push(item)
-    
+
     // Visit children in order
     const children = items
       .filter(i => i.parentId === item.id)
       .sort((a, b) => a.sortOrder - b.sortOrder)
-    
+
     children.forEach(visit)
   }
 
@@ -102,7 +102,7 @@ export const useWBSStore = create<WBSStore>()(
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
           const updatedItems = [...currentItems, newItem]
-          
+
           // Update sort order for siblings
           const siblings = updatedItems.filter(i => i.parentId === newItem.parentId)
           siblings.forEach((sibling, index) => {
@@ -131,12 +131,30 @@ export const useWBSStore = create<WBSStore>()(
       // Update WBS item
       updateItem: (projectId, id, updates) => {
         // Validate updates
-          const validation = validate(wbsItemUpdateSchema, updates)
-          if (!validation.success) {
-            const errorMsg = mergeErrorMessages(validation.errors)
-            toast.error('Failed to update WBS item', errorMsg)
+        const validation = validate(wbsItemUpdateSchema, updates)
+        if (!validation.success) {
+          const errorMsg = mergeErrorMessages(validation.errors)
+          toast.error('Failed to update WBS item', errorMsg)
           set({ error: errorMsg })
           return
+        }
+
+        // Logic: QC Gate
+        // If progress is being set to 100, ensure QC is PASSED or NOT_REQUIRED
+        if (updates.progress === 100) {
+          const currentState = get()
+          const currentItem = currentState.itemsByProject[projectId]?.find(i => i.id === id)
+          if (currentItem) {
+            // If qc_status is in updates, use it; otherwise use current
+            const nextQcStatus = updates.qc_status || currentItem.qc_status || 'NOT_REQUIRED'
+            if (nextQcStatus !== 'PASSED' && nextQcStatus !== 'NOT_REQUIRED') {
+              toast.error(
+                "QC Gate Enforcement",
+                "Cannot complete task (100%) because Quality Control is not PASSED."
+              )
+              return // Abort
+            }
+          }
         }
 
         let updatedItem: WBSItem | null = null
@@ -171,7 +189,7 @@ export const useWBSStore = create<WBSStore>()(
 
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
-          
+
           // Find all descendants
           const toDelete = new Set<string>([id])
           let added = true
@@ -191,13 +209,13 @@ export const useWBSStore = create<WBSStore>()(
 
           // Remove items
           const updatedItems = currentItems.filter(item => !toDelete.has(item.id))
-          
+
           // Regenerate codes
           const finalItems = generateCodesForProject(updatedItems)
 
           // Update selection if needed
-          const newSelectedId = state.selectedId && toDelete.has(state.selectedId) 
-            ? null 
+          const newSelectedId = state.selectedId && toDelete.has(state.selectedId)
+            ? null
             : state.selectedId
 
           return {
@@ -262,19 +280,19 @@ export const useWBSStore = create<WBSStore>()(
           // Since we have references in newSiblings, the objects in updatedItems (which are the same references) are updated?
           // No, we mapped at the start. newSiblings contains references to objects in updatedItems.
           // So modifying sibling.sortOrder updates the object in updatedItems.
-          
+
           // However, we need to put 'item' back into updatedItems array.
           updatedItems.push(item)
 
           // 6. Also update sortOrder for old siblings to close gaps (optional but good for cleanliness)
           if (oldParentId !== newParentId) {
-             const oldSiblings = updatedItems
-                .filter(i => i.parentId === oldParentId)
-                .sort((a, b) => a.sortOrder - b.sortOrder)
-             
-             oldSiblings.forEach((sibling, index) => {
-                sibling.sortOrder = index
-             })
+            const oldSiblings = updatedItems
+              .filter(i => i.parentId === oldParentId)
+              .sort((a, b) => a.sortOrder - b.sortOrder)
+
+            oldSiblings.forEach((sibling, index) => {
+              sibling.sortOrder = index
+            })
           }
 
           // 7. Generate codes
@@ -380,7 +398,7 @@ export const useWBSStore = create<WBSStore>()(
       findDescendants: (projectId, itemId) => {
         const items = get().itemsByProject[projectId] || []
         const descendants: WBSItem[] = []
-        
+
         function collectDescendants(parentId: string) {
           const children = items.filter(item => item.parentId === parentId)
           children.forEach(child => {
@@ -388,7 +406,7 @@ export const useWBSStore = create<WBSStore>()(
             collectDescendants(child.id)
           })
         }
-        
+
         collectDescendants(itemId)
         return descendants
       },
@@ -417,11 +435,11 @@ export const useWBSStore = create<WBSStore>()(
  */
 function generateCodesForProject(items: WBSItem[]): WBSItem[] {
   const updatedItems = [...items]
-  
+
   // Process root items first
   const rootItems = updatedItems.filter(item => !item.parentId)
   rootItems.sort((a, b) => a.sortOrder - b.sortOrder)
-  
+
   rootItems.forEach((item, index) => {
     item.code = (index + 1).toString()
   })
@@ -430,7 +448,7 @@ function generateCodesForProject(items: WBSItem[]): WBSItem[] {
   function processChildren(parentId: string) {
     const children = updatedItems.filter(item => item.parentId === parentId)
     children.sort((a, b) => a.sortOrder - b.sortOrder)
-    
+
     const parent = updatedItems.find(item => item.id === parentId)
     if (!parent) return
 
@@ -454,7 +472,7 @@ export function getWBSTree(items: WBSItem[]): WBSItem[] {
 
   items.forEach(item => {
     const itemWithChildren = itemMap.get(item.id)!
-    
+
     if (item.parentId) {
       const parent = itemMap.get(item.parentId)
       if (parent) {

@@ -3,120 +3,131 @@
 @tailwind utilities;
 
 :root {
-  --background: 220 14% 96%;
-  --foreground: 224 71% 4%;
-  --card: 0 0% 100%;
-  --card-foreground: 224 71% 4%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 224 71% 4%;
-  --primary: 220 70% 50%;
-  --primary-foreground: 210 20% 98%;
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 220 9% 46%;
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
-  --accent: 220 14% 96%;
-  --accent-foreground: 224 71% 4%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 20% 98%;
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 220 70% 50%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-  --radius: 0.625rem;
-  --sidebar-width: 260px;
-  --sidebar-collapsed-width: 68px;
-  --sidebar-background: 0 0% 100%;
-  --sidebar-foreground: 224 71% 4%;
-  --sidebar-primary: 220 70% 50%;
-  --sidebar-primary-foreground: 210 20% 98%;
-  --sidebar-accent: 220 14% 96%;
-  --sidebar-accent-foreground: 224 71% 4%;
-  --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 220 70% 50%;
-}
+  /* Google Stitch: Slate-50 */
+  --background: 210 40% 98%;
+  /* Slate-900 for text */
+  --foreground: 222 47% 11%;
 
-.dark {
-  --background: 224 71% 4%;
-  --foreground: 210 20% 98%;
-  --card: 224 50% 8%;
-  --card-foreground: 210 20% 98%;
-  --popover: 224 50% 8%;
-  --popover-foreground: 210 20% 98%;
-  --primary: 217 91% 60%;
-  --primary-foreground: 224 71% 4%;
-  --secondary: 215 28% 17%;
-  --secondary-foreground: 210 20% 98%;
-  --muted: 215 28% 17%;
-  --muted-foreground: 218 11% 65%;
-  --accent: 215 28% 17%;
-  --accent-foreground: 210 20% 98%;
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 210 20% 98%;
-  --border: 215 28% 17%;
-  --input: 215 28% 17%;
-  --ring: 217 91% 60%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-  --sidebar-background: 224 50% 6%;
-  --sidebar-foreground: 210 20% 98%;
-  --sidebar-primary: 217 91% 60%;
-  --sidebar-primary-foreground: 210 20% 98%;
-  --sidebar-accent: 215 28% 14%;
-  --sidebar-accent-foreground: 210 20% 98%;
-  --sidebar-border: 215 28% 17%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+
+  /* Google Stitch: Blue-600 (#2563eb) */
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
+
+  /* Slate-100 */
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222 47% 11%;
+
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222 47% 11%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221 83% 53%;
+
+  --radius: 0.75rem;
+  /* Rounded-xl for modern feel */
+
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 240 5.3% 26.1%;
+  --sidebar-primary: 240 5.9% 10%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 240 4.8% 95.9%;
+  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-border: 220 13% 91%;
   --sidebar-ring: 217 91% 60%;
 }
 
-html {
-  scroll-behavior: smooth;
-  font-size: 16px;
+.dark {
+  /* Google Stitch: Slate-900 (#0f172a) */
+  --background: 222 47% 11%;
+  /* Slate-50 */
+  --foreground: 210 40% 98%;
+
+  /* Slate-900/Glassy */
+  --card: 222 47% 11%;
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
+
+  /* Blue-600 */
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
+
+  /* Slate-800 */
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 221 83% 53%;
+
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+
+  --sidebar-background: 222 47% 11%;
+  /* Match Dark Bg */
+  --sidebar-foreground: 240 4.8% 95.9%;
+  --sidebar-primary: 224.3 76.3% 48%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent-foreground: 240 4.8% 95.9%;
+  --sidebar-border: 240 3.7% 15.9%;
+  --sidebar-ring: 217 91% 60%;
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: hsl(var(--foreground));
-  background-color: hsl(var(--background));
-  overscroll-behavior: none;
-  font-synthesis-weight: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
-html>body * {
-  border-color: hsl(var(--border));
-}
-
-/* Sidebar transition */
-.sidebar-transition {
-  transition: width 200ms ease, transform 200ms ease;
-}
-
-.main-transition {
-  transition: margin-left 200ms ease;
-}
-
-/* Glassmorphism */
+/* Glassmorphism Utilities */
 .glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-sm;
 }
 
 .dark .glass {
-  background: rgba(10, 15, 30, 0.78);
+  @apply bg-slate-900/70 border-white/10;
 }
 
-/* Scrollbar */
+/* Custom Scrollbar for Bento Grids */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -124,28 +135,5 @@ html>body * {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 5px;
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--border)) transparent;
-}
-
-/* Animation for sidebar items */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(-4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.sidebar-label {
-  animation: fadeIn 150ms ease forwards;
+  @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50 transition-colors;
 }
