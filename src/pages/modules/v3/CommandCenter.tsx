@@ -5,7 +5,7 @@ import { Activity, AlertTriangle, TrendingUp, CheckCircle2, DollarSign, Clock } 
 import { useProjectStore } from '../../../store/projectStore'
 import { assertSupabase } from '../../../lib/supabaseClient'
 import { format } from 'date-fns'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router' // Ensure this matches package.json
 import { Button } from '../../../components/ui/button'
 
 interface ActivityItem {
@@ -48,7 +48,7 @@ export default function CommandCenter() {
             .select('*', { count: 'exact', head: true })
             .eq('project_id', projectId)
             .gte('risk_score', 15)
-            .ne('status', 'CLOSED')
+            .neq('status', 'CLOSED')
 
         // 2. Pending Approvals (POs + VOs + MRs)
         const { count: poCount } = await client.from('purchase_orders').select('*', { count: 'exact', head: true }).eq('project_id', projectId).eq('status', 'PENDING_APPROVAL')
