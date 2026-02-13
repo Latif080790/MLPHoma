@@ -22,7 +22,13 @@ export interface RapItem {
     remaining_budget: number // Generated
 
     risk_buffer_amount: number
+    risk_level?: 'low' | 'medium' | 'high' | 'critical'
     notes?: string
+
+    // Joined relation fields (optional)
+    ahsp_items?: { name: string; unit?: string }
+    rab_items?: { name: string }
+    wbs_items?: { name: string; code: string }
 }
 
 export const rapService = {
