@@ -20,6 +20,9 @@ import { EmptyState } from "../../components/common/EmptyState"
 import * as XLSX from "xlsx"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
+import { timelineService } from "@/services/timelineService"
+import { Camera, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 /**
  * Export progress rows as CSV
@@ -108,6 +111,25 @@ export default function Progress() {
     weather: 'sunny',
     delayReason: 'none'
   })
+
+  // Photo Upload State
+  const [uploading, setUploading] = useState(false)
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    try {
+      const url = await timelineService.uploadProgressPhoto(file, `progress/${projectId}`)
+      setForm(prev => ({ ...prev, photoUrl: url }))
+      toast.success("Photo uploaded successfully")
+    } catch (err: any) {
+      toast.error("Upload failed", { description: err.message })
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const recent = useMemo(
     () =>
@@ -262,14 +284,32 @@ export default function Progress() {
                   </div>
                   <div className="md:col-span-2">
                     <Label htmlFor="photo">Evidence / Photo URL (Required for QC)</Label>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <Input
                         id="photo"
                         placeholder="https://..."
                         value={form.photoUrl}
                         onChange={(e) => setForm({ ...form, photoUrl: e.target.value })}
+                        className="flex-1"
                       />
-                      <Button variant="outline" size="icon" title="Get GPS">
+
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        id="photo-upload"
+                        onChange={handleFileUpload}
+                        disabled={uploading}
+                      />
+                      <label
+                        htmlFor="photo-upload"
+                        className={`inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 w-10 cursor-pointer ${uploading ? 'opacity-50' : ''}`}
+                      >
+                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                      </label>
+
+                      <Button variant="outline" size="icon" title="Get GPS" onClick={() => toast.info("GPS Coordinates Captured (Mock)")}>
                         <MapPin className="h-4 w-4" />
                       </Button>
                     </div>
