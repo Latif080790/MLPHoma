@@ -6,6 +6,9 @@ import { useProjectStore } from '@/store/projectStore'
 import { assertSupabase } from '@/lib/supabaseClient'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
+import { ProjectDialog } from '@/components/project/ProjectDialog'
+import { toast } from 'sonner'
+import { generateId } from '@/lib/idGenerator'
 
 interface ActivityItem {
     type: string
@@ -33,7 +36,7 @@ const MOCK_WASTE = [
 ]
 
 export default function CommandCenter() {
-    const { activeProjectId } = useProjectStore()
+    const { activeProjectId, addProject } = useProjectStore()
     const [stats, setStats] = useState({
         totalProjects: 0,
         criticalRisks: 3, // Mock active risks
@@ -42,6 +45,23 @@ export default function CommandCenter() {
         deviasi: -7.5 // Mock Delay
     })
     const [activities, setActivities] = useState<ActivityItem[]>([])
+    const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
+
+    const handleCreateProject = async (projectData: any) => {
+        try {
+            const newProject = {
+                ...projectData,
+                id: projectData.id || generateId('proj'), // Ensure ID
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            }
+            addProject(newProject)
+            toast.success(`Project "${newProject.name}" created successfully!`)
+            setIsProjectDialogOpen(false)
+        } catch (error) {
+            toast.error("Failed to create project")
+        }
+    }
 
     // ... existing load stats logic ...
 
@@ -201,6 +221,11 @@ export default function CommandCenter() {
                     </CardContent>
                 </Card>
 
+                <ProjectDialog
+                    open={isProjectDialogOpen}
+                    onOpenChange={setIsProjectDialogOpen}
+                    onSave={handleCreateProject}
+                />
             </div>
         </div>
     )
