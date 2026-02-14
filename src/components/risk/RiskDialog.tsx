@@ -11,18 +11,18 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRiskStore } from "@/store/riskStore"
 import { useTimelineStore } from "@/store/timelineStore"
-import { RISK_CATEGORIES, RISK_STATUSES } from "@/types/risk"
+import { RISK_CATEGORIES, RISK_STATUSES, type RiskCategory, type RiskStatus } from "@/types/risk"
 import { toast } from "sonner"
 
 const riskSchema = z.object({
     description: z.string().min(1, "Description is required"),
-    category: z.string(),
+    category: z.string() as z.ZodType<RiskCategory>,
     probability: z.coerce.number().min(1).max(5),
     impact: z.coerce.number().min(1).max(5),
     mitigation_plan: z.string().optional(),
     owner: z.string().optional(),
     wbs_id: z.string().optional(),
-    status: z.string()
+    status: z.string() as z.ZodType<RiskStatus>
 })
 
 type RiskFormValues = z.infer<typeof riskSchema>
@@ -128,7 +128,7 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label>Category</Label>
-                            <Select onValueChange={(val) => form.setValue("category", val)} value={form.watch("category")}>
+                            <Select onValueChange={(val) => form.setValue("category", val as RiskCategory)} value={form.watch("category")}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
@@ -180,7 +180,7 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
                         </div>
                         <div className="grid gap-2">
                             <Label>Status</Label>
-                            <Select onValueChange={(val) => form.setValue("status", val)} value={form.watch("status")}>
+                            <Select onValueChange={(val) => form.setValue("status", val as RiskStatus)} value={form.watch("status")}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>

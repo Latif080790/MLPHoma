@@ -20,6 +20,11 @@ export type ModuleKey =
   | 'cashflow'
   | 'progress'
   | 'reports'
+  | 'finance'
+  | 'supply-chain'
+  | 'risk'
+  | 'change-order'
+  | 'documents'
 
 /**
  * MODULE_ROUTES
@@ -38,4 +43,9 @@ export const MODULE_ROUTES: Record<ModuleKey, string> = {
   cashflow: '/cashflow',
   progress: '/progress',
   reports: '/reports',
+  finance: '/finance',
+  'supply-chain': '/supply-chain',
+  risk: '/risk',
+  'change-order': '/change-management',
+  documents: '/documents',
 }

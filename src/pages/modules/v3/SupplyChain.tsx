@@ -227,7 +227,7 @@ export default function SupplyChain() {
                                             <h3 className="font-bold text-lg text-slate-900 dark:text-white line-clamp-1">{item.materialName}</h3>
                                             <p className="text-xs text-slate-500">Unit: {item.unit} • SKU: {generateSku(item.materialName)}</p>
                                         </div>
-                                        <div className={`p-2 rounded-lg ${item.currentStock > 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-500'}`}>
+                                        <div className={`p-2 rounded-lg ${(item.currentStock ?? 0) > 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-500'}`}>
                                             <Warehouse size={18} />
                                         </div>
                                     </div>
