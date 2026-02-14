@@ -1281,43 +1281,45 @@ export default function GanttChart({
                         ) : null}
 
                         {shouldUseTooltip && cpmMetrics[t.id] ? (
-                          <TooltipProvider delayDuration={100}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <ContextMenu>
-                                  <ContextMenuTrigger asChild>{barNode}</ContextMenuTrigger>
-                                  <ContextMenuContent className="w-44">
-                                    <div className="px-2 py-1.5 text-xs text-neutral-500">{t.name}</div>
-                                    <ContextMenuSeparator />
-                                    <ContextMenuItem onSelect={() => onTaskEdit?.(t.id)}>Edit task</ContextMenuItem>
-                                    <ContextMenuItem className="text-red-600 focus:text-red-700" onSelect={() => onTaskDelete?.(t.id)}>
-                                      Delete task
-                                    </ContextMenuItem>
-                                  </ContextMenuContent>
-                                </ContextMenu>
-                              </TooltipTrigger>
-                              <TooltipContent className="text-xs">
-                                <div className="mb-1 font-medium">{t.name}</div>
-                                <div className="grid grid-cols-5 gap-2">
-                                  <span>
-                                    <b>ES</b>: {cpmMetrics[t.id].ES}
-                                  </span>
-                                  <span>
-                                    <b>EF</b>: {cpmMetrics[t.id].EF}
-                                  </span>
-                                  <span>
-                                    <b>LS</b>: {cpmMetrics[t.id].LS}
-                                  </span>
-                                  <span>
-                                    <b>LF</b>: {cpmMetrics[t.id].LF}
-                                  </span>
-                                  <span>
-                                    <b>TF</b>: {cpmMetrics[t.id].TF}
-                                  </span>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <ContextMenu>
+                            <ContextMenuTrigger asChild>
+                              <div>
+                                <TooltipProvider delayDuration={100}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>{barNode}</TooltipTrigger>
+                                    <TooltipContent className="text-xs">
+                                      <div className="mb-1 font-medium">{t.name}</div>
+                                      <div className="grid grid-cols-5 gap-2">
+                                        <span>
+                                          <b>ES</b>: {cpmMetrics[t.id].ES}
+                                        </span>
+                                        <span>
+                                          <b>EF</b>: {cpmMetrics[t.id].EF}
+                                        </span>
+                                        <span>
+                                          <b>LS</b>: {cpmMetrics[t.id].LS}
+                                        </span>
+                                        <span>
+                                          <b>LF</b>: {cpmMetrics[t.id].LF}
+                                        </span>
+                                        <span>
+                                          <b>TF</b>: {cpmMetrics[t.id].TF}
+                                        </span>
+                                      </div>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </div>
+                            </ContextMenuTrigger>
+                            <ContextMenuContent className="w-44">
+                              <div className="px-2 py-1.5 text-xs text-neutral-500">{t.name}</div>
+                              <ContextMenuSeparator />
+                              <ContextMenuItem onSelect={() => onTaskEdit?.(t.id)}>Edit task</ContextMenuItem>
+                              <ContextMenuItem className="text-red-600 focus:text-red-700" onSelect={() => onTaskDelete?.(t.id)}>
+                                Delete task
+                              </ContextMenuItem>
+                            </ContextMenuContent>
+                          </ContextMenu>
                         ) : (
                           <ContextMenu>
                             <ContextMenuTrigger asChild>{barNode}</ContextMenuTrigger>

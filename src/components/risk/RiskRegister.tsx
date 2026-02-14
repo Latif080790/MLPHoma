@@ -98,7 +98,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                             </tr>
                         </thead>
                         <tbody>
-                            {risks.map(risk => {
+                            {(risks || []).map(risk => {
                                 const score = risk.risk_score
                                 let scoreColor = "bg-green-100 text-green-800"
                                 if (score >= 10) scoreColor = "bg-yellow-100 text-yellow-800"

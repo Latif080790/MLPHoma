@@ -65,15 +65,15 @@ class SyncQueueManager {
       retryCount: 0,
       maxRetries: task.maxRetries || this.maxRetries,
     }
-    
+
     this.queue.push(fullTask)
     this.saveQueue()
-    
+
     // Start processing if not already running
     if (!this.processing) {
       this.processQueue()
     }
-    
+
     return id
   }
 
@@ -82,15 +82,17 @@ class SyncQueueManager {
    */
   private async processQueue() {
     if (this.processing || this.queue.length === 0) return
-    
+
     this.processing = true
-    
+
     while (this.queue.length > 0) {
       const task = this.queue[0]
-      
+
       try {
-        const result = await this.executeTask(task)
-        
+        const result = task.operation === 'upsert' && Array.isArray(task.data)
+          ? await this.executeBatchTask(task)
+          : await this.executeTask(task)
+
         if (result.success) {
           // Remove successful task
           this.queue.shift()
@@ -102,11 +104,11 @@ class SyncQueueManager {
       } catch (error) {
         await this.handleFailedTask(task, error instanceof Error ? error.message : 'Unknown error')
       }
-      
+
       // Small delay between tasks
       await this.delay(100)
     }
-    
+
     this.processing = false
   }
 
@@ -128,24 +130,24 @@ class SyncQueueManager {
         case 'insert':
           result = await supabase.from(task.table).insert(task.data)
           break
-        
+
         case 'update':
           result = await supabase.from(task.table)
             .update(task.data)
             .eq('id', task.data.id)
           break
-        
+
         case 'delete':
           result = await supabase.from(task.table)
             .delete()
             .eq('id', task.data.id)
           break
-        
+
         case 'upsert':
           result = await supabase.from(task.table)
             .upsert(task.data, { onConflict: 'id' })
           break
-        
+
         default:
           throw new Error(`Unknown operation: ${task.operation}`)
       }
@@ -170,27 +172,47 @@ class SyncQueueManager {
   }
 
   /**
+   * Execute a batch upsert task
+   */
+  private async executeBatchTask(task: SyncTask): Promise<SyncResult> {
+    if (!supabase) return { success: false, error: 'Supabase not initialized' }
+
+    try {
+      const result = await supabase.from(task.table)
+        .upsert(task.data, { onConflict: 'id' })
+
+      if (result.error) return { success: false, error: result.error.message }
+      return { success: true, data: result.data }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      }
+    }
+  }
+
+  /**
    * Handle failed task with retry logic
    */
   private async handleFailedTask(task: SyncTask, error?: string) {
     task.retryCount++
-    
+
     if (task.retryCount >= task.maxRetries) {
       // Max retries reached, move to failed queue
       console.error(`Task ${task.id} failed after ${task.retryCount} retries:`, error)
       toast.error(`Sync failed: ${error || 'Unknown error'}. Please check your connection.`)
-      
+
       // Remove from queue
       this.queue.shift()
       this.saveQueue()
-      
+
       // Optionally save to failed queue for manual retry
       this.saveToFailedQueue(task)
     } else {
       // Retry with exponential backoff
       const delay = this.retryDelay * Math.pow(2, task.retryCount - 1)
       console.warn(`Retrying task ${task.id} in ${delay}ms (attempt ${task.retryCount}/${task.maxRetries})`)
-      
+
       await this.delay(delay)
       this.saveQueue()
     }
@@ -414,15 +436,51 @@ export function syncRABItem(item: any, projectId: string): string {
     data: {
       id: item.id,
       project_id: projectId,
-      ahsp_code: item.item_code,
-      name: item.name,
+      ahsp_code: item.itemCode || item.item_code || item.code,
+      name: item.name || item.item_name,
       unit: item.unit,
       volume: item.volume,
-      unit_price: item.unit_price,
-      final_total: item.finalTotal ?? item.final_total ?? item.finalPrice,
+      unit_price: item.unitPrice || item.unit_price,
+      cost_material: item.cost_material || 0,
+      cost_labor: item.cost_labor || 0,
+      cost_equipment: item.cost_equipment || 0,
+      cost_subcon: item.cost_subcon || 0,
+      markup_percentage: item.markup_percentage || 0,
+      weight_percentage: item.weight_percentage || 0,
+      final_total: item.finalTotal || item.final_total || item.finalPrice,
       created_at: item.createdAt,
       updated_at: new Date().toISOString(),
     },
+    maxRetries: 3,
+  })
+}
+
+/**
+ * Sync multiple RAB items (Batch)
+ */
+export function syncRABItems(items: any[], projectId: string): string {
+  if (!items.length) return ''
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'rab_items',
+    data: items.map(item => ({
+      id: item.id,
+      project_id: projectId,
+      ahsp_code: item.item_code || item.itemCode || item.code,
+      name: item.name || item.item_name,
+      unit: item.unit,
+      volume: item.volume,
+      unit_price: item.unit_price || item.unitPrice,
+      cost_material: item.cost_material || 0,
+      cost_labor: item.cost_labor || 0,
+      cost_equipment: item.cost_equipment || 0,
+      cost_subcon: item.cost_subcon || 0,
+      markup_percentage: item.markup_percentage || 0,
+      weight_percentage: item.weight_percentage || 0,
+      final_total: item.final_total || item.finalTotal || item.finalPrice,
+      created_at: item.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })),
     maxRetries: 3,
   })
 }
@@ -444,6 +502,7 @@ export function syncProject(project: any): string {
       end_date: project.endDate,
       budget: project.budget,
       status: project.status,
+      user_id: project.userId,
       payment_terms: project.paymentTerms,
       meta: project.meta,
       updated_at: new Date().toISOString(),
@@ -488,6 +547,30 @@ export function syncWBSItem(item: any): string {
 }
 
 /**
+ * Sync multiple WBS items (Batch)
+ */
+export function syncWBSItems(items: any[], projectId: string): string {
+  if (!items.length) return ''
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'wbs_items',
+    data: items.map(item => ({
+      id: item.id,
+      project_id: projectId,
+      code: item.code,
+      name: item.name,
+      description: item.description,
+      level: item.level,
+      parent_id: item.parentId,
+      sort_order: item.sortOrder,
+      created_at: item.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })),
+    maxRetries: 3,
+  })
+}
+
+/**
  * Sync Timeline task
  */
 export function syncTimelineTask(task: any): string {
@@ -506,13 +589,46 @@ export function syncTimelineTask(task: any): string {
       end_date: task.endDate,
       progress: task.progress,
       status: task.status,
-      dependencies: task.dependencies,
+      dependencies: JSON.stringify(task.dependencies || []),
       assigned_resources: task.assignedResources,
       priority: task.priority,
-      color: task.color,
+      baseline_start_date: task.baselineStartDate,
+      baseline_end_date: task.baselineEndDate,
       created_at: task.createdAt,
       updated_at: new Date().toISOString(),
     },
+    maxRetries: 3,
+  })
+}
+
+/**
+ * Sync Timeline tasks (Batch)
+ */
+export function syncTimelineTasks(tasks: any[], projectId: string): string {
+  if (!tasks.length) return ''
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'timeline_tasks',
+    data: tasks.map(task => ({
+      id: task.id,
+      project_id: projectId,
+      wbs_id: task.wbsId,
+      rab_id: task.rabId,
+      name: task.name,
+      description: task.description,
+      duration: task.duration,
+      start_date: task.startDate,
+      end_date: task.endDate,
+      progress: task.progress,
+      status: task.status,
+      dependencies: JSON.stringify(task.dependencies || []),
+      assigned_resources: task.assignedResources,
+      priority: task.priority,
+      baseline_start_date: task.baselineStartDate,
+      baseline_end_date: task.baselineEndDate,
+      created_at: task.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })),
     maxRetries: 3,
   })
 }
@@ -527,23 +643,55 @@ export function syncRAPItem(item: any): string {
     data: {
       id: item.id,
       project_id: item.projectId,
-      rab_id: item.rabId,
-      task_id: item.taskId,
+      rab_item_id: item.rabId || item.rab_item_id,
+      wbs_id: item.taskId || item.wbs_id,
       period_key: item.periodKey,
       period_type: item.periodType,
       planned_volume: item.plannedVolume,
       planned_cost: item.plannedCost,
-      actual_volume: item.actualVolume,
-      actual_cost: item.actualCost,
-      cumulative_planned_cost: item.cumulativePlannedCost,
-      cumulative_actual_cost: item.cumulativeActualCost,
-      variance: item.variance,
-      variance_percentage: item.variancePercentage,
-      status: item.status,
+      actual_volume: item.actualVolume || 0,
+      actual_cost: item.actualCost || 0,
+      cost_material: item.cost_material || 0,
+      cost_labor: item.cost_labor || 0,
+      cost_equipment: item.cost_equipment || 0,
+      cost_subcon: item.cost_subcon || 0,
+      status: item.status || 'not_started',
       notes: item.notes,
       created_at: item.createdAt,
       updated_at: new Date().toISOString(),
     },
+    maxRetries: 3,
+  })
+}
+
+/**
+ * Sync multiple RAP items (Batch)
+ */
+export function syncRAPItems(items: any[], projectId: string): string {
+  if (!items.length) return ''
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'rap_items',
+    data: items.map(item => ({
+      id: item.id,
+      project_id: projectId,
+      rab_item_id: item.rabId || item.rab_item_id,
+      wbs_id: item.taskId || item.wbs_id,
+      period_key: item.periodKey,
+      period_type: item.periodType,
+      planned_volume: item.plannedVolume,
+      planned_cost: item.plannedCost,
+      actual_volume: item.actualVolume || 0,
+      actual_cost: item.actualCost || 0,
+      cost_material: item.cost_material || 0,
+      cost_labor: item.cost_labor || 0,
+      cost_equipment: item.cost_equipment || 0,
+      cost_subcon: item.cost_subcon || 0,
+      status: item.status || 'not_started',
+      notes: item.notes,
+      created_at: item.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })),
     maxRetries: 3,
   })
 }
@@ -671,11 +819,15 @@ export default {
   syncResource,
   syncAHSPComponent,
   syncRABItem,
+  syncRABItems,
   syncProject,
   syncDelete,
   syncWBSItem,
+  syncWBSItems,
   syncTimelineTask,
+  syncTimelineTasks,
   syncRAPItem,
+  syncRAPItems,
   syncFeatureConfig,
   syncFeatureSnapshot,
   syncCurvaSDataPoint,

@@ -12,13 +12,9 @@ import { Badge } from '../../components/ui/badge'
 import { FolderKanban, Plus, CheckCircle2, DollarSign, Calendar, MapPin, MoreVertical, Edit, Trash2 } from 'lucide-react'
 import { useProjectStore, type Project } from '../../store/projectStore'
 import { ProjectDialog } from '../../components/project/ProjectDialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../../components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/dropdown-menu'
 import { formatIDR } from '../../lib/utils'
+import { toast } from 'sonner'
 
 /**
  * Project card menampilkan KPI ringkas dan tombol set aktif.
@@ -112,10 +108,10 @@ function ProjectCard({
         )}
       </CardContent>
       <CardFooter className="pt-0">
-        <Button 
-          className="w-full" 
-          variant={isActive ? 'secondary' : 'default'} 
-          onClick={onActivate} 
+        <Button
+          className="w-full"
+          variant={isActive ? 'secondary' : 'default'}
+          onClick={onActivate}
           disabled={isActive}
         >
           {isActive ? 'Currently Active' : 'Set Active'}
@@ -181,8 +177,12 @@ export default function ProjectManagement() {
     if (editingProject) {
       updateProject(editingProject.id, data)
     } else {
-      if (data.id && data.name) {
+      if (data.name) {
+        // If ID is missing, we still send it as undefined/empty string
+        // so the database trigger can handle it
         addProject(data as Project)
+      } else {
+        toast.error("Project Name is required")
       }
     }
   }
@@ -262,8 +262,8 @@ export default function ProjectManagement() {
         </div>
       )}
 
-      <ProjectDialog 
-        open={showDialog} 
+      <ProjectDialog
+        open={showDialog}
         onOpenChange={setShowDialog}
         project={editingProject}
         onSave={handleSave}

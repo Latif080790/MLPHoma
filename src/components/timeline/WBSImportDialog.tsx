@@ -23,7 +23,7 @@ export function WBSImportDialog({ projectId, open, onOpenChange }: WBSImportDial
 
   const wbsItems = itemsByProject[projectId] || []
   const existingTasks = getTasks(projectId) || []
-  
+
   // Filter out WBS items that already have linked tasks
   // This is a heuristic: check if any task has this wbsId
   const linkedWbsIds = new Set(existingTasks.map(t => t.wbsId).filter(Boolean))
@@ -36,8 +36,8 @@ export function WBSImportDialog({ projectId, open, onOpenChange }: WBSImportDial
     if (!searchQuery) return availableItems
     const q = searchQuery.toLowerCase()
     return availableItems.filter(
-      item => 
-        item.name.toLowerCase().includes(q) || 
+      item =>
+        item.name.toLowerCase().includes(q) ||
         item.code.toLowerCase().includes(q)
     )
   }, [availableItems, searchQuery])
@@ -62,19 +62,26 @@ export function WBSImportDialog({ projectId, open, onOpenChange }: WBSImportDial
 
   const handleImport = () => {
     const itemsToImport = wbsItems.filter(item => selectedIds.has(item.id))
-    
-    itemsToImport.forEach(item => {
-      addTask(projectId, {
-        name: item.name,
-        description: `Imported from WBS: ${item.code}`,
-        startDate: new Date().toISOString().split('T')[0],
-        duration: 1,
-        progress: 0,
-        status: 'not_started',
-        priority: 'medium',
-        wbsId: item.id,
-      })
-    })
+
+    const tasks = itemsToImport.map(item => ({
+      name: item.name,
+      description: `Imported from WBS: ${item.code}`,
+      startDate: new Date().toISOString().split('T')[0],
+      duration: 1,
+      progress: 0,
+      status: 'not_started' as const,
+      priority: 'medium' as const,
+      wbsId: item.id,
+    }))
+
+    const { importTasks } = (useTimelineStore.getState() as any)
+    if (importTasks) {
+      importTasks(projectId, tasks)
+    } else {
+      // Fallback if importTasks not available (should not happen after my update)
+      const { addTask } = useTimelineStore.getState()
+      tasks.forEach(t => addTask(projectId, t))
+    }
 
     onOpenChange(false)
     setSelectedIds(new Set())

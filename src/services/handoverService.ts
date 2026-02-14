@@ -84,7 +84,7 @@ export const handoverService = {
             },
             safety: {
                 total: risksData?.length || 0,
-                highSeverity: (risksData || []).filter((r: any) => r.severity === 'HIGH' || r.severity === 'CRITICAL').length || 0,
+                highSeverity: (risksData || []).filter((r: any) => (r.risk_score || 0) >= 15).length || 0,
                 incidents: 0,
                 manhours: 0,
             },
@@ -104,18 +104,18 @@ export const handoverService = {
         // Fetch High/Critical Risks
         const { data: risks } = await supabase
             .from('risks')
-            .select('id, title, status, severity')
+            .select('id, description, status, risk_score')
             .eq('project_id', projectId)
-            .in('severity', ['HIGH', 'CRITICAL'])
+            .gte('risk_score', 15)
             .eq('status', 'OPEN');
 
         if (risks) {
             risks.forEach((r: any) => issues.push({
                 id: r.id,
                 type: 'RISK',
-                desc: r.title,
+                desc: r.description,
                 status: r.status,
-                priority: r.severity
+                priority: (r.risk_score || 0) >= 20 ? 'CRITICAL' : 'HIGH'
             }));
         }
 

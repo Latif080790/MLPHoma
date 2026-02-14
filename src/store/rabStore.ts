@@ -14,8 +14,7 @@
 
 import { create } from 'zustand'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
-import { supabase } from '../lib/supabaseClient'
-import { syncRABItem, syncDelete } from '../lib/supabaseSyncService'
+import { syncRABItem, syncDelete, syncRABItems } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import { rabItemInputSchema, rabItemUpdateSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
@@ -228,8 +227,8 @@ export const useRabStore = create<RabState>((set, get) => {
       set((s) => ({ itemsByProject: { ...s.itemsByProject, [projectId]: normalized } }))
       get().logAction({ projectId, action: 'importItems', payload: { count: normalized.length } })
       get().persist()
-      // Queue-based sync with retry for each item
-      normalized.forEach(item => syncRABItem(item, projectId))
+      // Use batch sync for better performance
+      syncRABItems(normalized, projectId)
     },
 
     clearProject: (projectId) => {
@@ -333,8 +332,8 @@ export const useRabStore = create<RabState>((set, get) => {
     syncProjectToSupabase: async (projectId: string) => {
       const items = get().itemsByProject[projectId] || []
       if (!items.length) return
-      // Queue-based sync with retry for each item
-      items.forEach(item => syncRABItem(item, projectId))
+      // Use batch sync for better performance
+      syncRABItems(items, projectId)
       get().logAction({ projectId, action: 'syncProjectToSupabase', payload: { count: items.length } })
     },
   }

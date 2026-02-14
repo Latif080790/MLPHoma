@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Badge } from '../ui/badge'
-import { 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -113,21 +114,21 @@ export function AHSPItemEditor({
       manualComponents
         .filter(c => c.type === 'material' && !c.editing)
         .reduce((sum, c) => sum + (c.coefficient * c.unitPrice), 0)
-    
+
     const laborTotal = components
       .filter(c => c.type === 'labor')
       .reduce((sum, c) => sum + c.subtotal, 0) +
       manualComponents
         .filter(c => c.type === 'labor' && !c.editing)
         .reduce((sum, c) => sum + (c.coefficient * c.unitPrice), 0)
-    
+
     const equipmentTotal = components
       .filter(c => c.type === 'equipment')
       .reduce((sum, c) => sum + c.subtotal, 0) +
       manualComponents
         .filter(c => c.type === 'equipment' && !c.editing)
         .reduce((sum, c) => sum + (c.coefficient * c.unitPrice), 0)
-    
+
     const subcontractorTotal = components
       .filter(c => c.type === 'subcontractor')
       .reduce((sum, c) => sum + c.subtotal, 0) +
@@ -136,7 +137,7 @@ export function AHSPItemEditor({
         .reduce((sum, c) => sum + (c.coefficient * c.unitPrice), 0)
 
     const basePrice = materialTotal + laborTotal + equipmentTotal + subcontractorTotal
-    
+
     let finalPrice = basePrice
     if (formData.overheadPercentage > 0) {
       finalPrice *= (1 + formData.overheadPercentage / 100)
@@ -209,7 +210,7 @@ export function AHSPItemEditor({
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validate()) {
       return
     }
@@ -243,7 +244,7 @@ export function AHSPItemEditor({
 
           // Find the resource we just added by code
           const tempResource = resources.find(r => r.code === tempResourceCode)
-          
+
           // Add as component to AHSP
           if (tempResource) {
             addComponent(ahspId, {
@@ -386,28 +387,35 @@ export function AHSPItemEditor({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            <div className="space-y-6">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+          <Tabs defaultValue="master" className="flex-1 flex flex-col overflow-hidden">
+            <TabsList className="grid w-full grid-cols-3 h-12 bg-muted/30 shrink-0 rounded-none border-b">
+              <TabsTrigger value="master" className="data-[state=active]:bg-background">Master Data</TabsTrigger>
+              <TabsTrigger value="components" className="data-[state=active]:bg-background">Analisa Komponen</TabsTrigger>
+              <TabsTrigger value="summary" className="data-[state=active]:bg-background">Cost Summary</TabsTrigger>
+            </TabsList>
+
+            {/* Tab 1: Master Data */}
+            <TabsContent value="master" className="flex-1 overflow-y-auto p-6 space-y-6 m-0">
               {/* Basic Information */}
-              <div className="grid gap-4 lg:grid-cols-3 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="code">AHSP Code *</Label>
+                  <Label htmlFor="code" className="text-sm font-semibold">AHSP Code *</Label>
                   <Input
                     id="code"
                     value={formData.code}
                     onChange={(e) => handleChange('code', e.target.value)}
                     placeholder="e.g., 6.3.2.7"
-                    className={errors.code ? 'border-red-500' : ''}
+                    className={errors.code ? 'border-red-500 shadow-sm' : 'shadow-sm'}
                     disabled={isSubmitting}
                   />
                   {errors.code && (
-                    <p className="text-sm text-red-500">{errors.code}</p>
+                    <p className="text-xs text-red-500 font-medium">{errors.code}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="unit">Unit *</Label>
+                  <Label htmlFor="unit" className="text-sm font-semibold">Unit Satuan *</Label>
                   <Select value={formData.unit} onValueChange={(value: any) => handleChange('unit', value)}>
                     <SelectTrigger className={errors.unit ? 'border-red-500' : ''}>
                       <SelectValue />
@@ -421,17 +429,15 @@ export function AHSPItemEditor({
                       <SelectItem value="bh">buah</SelectItem>
                       <SelectItem value="oh">OH (orang-hari)</SelectItem>
                       <SelectItem value="jam">jam</SelectItem>
-                      <SelectItem value="hr">hr</SelectItem>
-                      <SelectItem value="hari">hari</SelectItem>
                       <SelectItem value="unit">unit</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="mainCategory">Main Category *</Label>
-                  <Select 
-                    value={selectedCategory} 
+                  <Label htmlFor="mainCategory" className="text-sm font-semibold">Main Category *</Label>
+                  <Select
+                    value={selectedCategory}
                     onValueChange={(value) => {
                       setSelectedCategory(value)
                       setSelectedSubcategory('')
@@ -442,7 +448,7 @@ export function AHSPItemEditor({
                     }}
                   >
                     <SelectTrigger className={errors.category ? 'border-red-500' : ''}>
-                      <SelectValue placeholder="Select main category" />
+                      <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
                       {mainCategories.map(cat => (
@@ -456,9 +462,9 @@ export function AHSPItemEditor({
 
                 {selectedCategory && getSubcategories(selectedCategory).length > 0 && (
                   <div className="space-y-2">
-                    <Label htmlFor="subcategory">Subcategory</Label>
-                    <Select 
-                      value={selectedSubcategory} 
+                    <Label htmlFor="subcategory" className="text-sm font-semibold">Subcategory</Label>
+                    <Select
+                      value={selectedSubcategory}
                       onValueChange={(value) => {
                         setSelectedSubcategory(value)
                         const subcats = getSubcategories(selectedCategory)
@@ -470,7 +476,7 @@ export function AHSPItemEditor({
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select subcategory (optional)" />
+                        <SelectValue placeholder="Select subcategory" />
                       </SelectTrigger>
                       <SelectContent>
                         {getSubcategories(selectedCategory).map(subcat => (
@@ -482,435 +488,364 @@ export function AHSPItemEditor({
                     </Select>
                   </div>
                 )}
+              </div>
 
-                <div className="space-y-2 lg:col-span-2">
-                  <Label htmlFor="name">Name *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleChange('name', e.target.value)}
-                    placeholder="Enter AHSP item name"
-                    className={errors.name ? 'border-red-500' : ''}
-                    disabled={isSubmitting}
-                  />
-                  {errors.name && (
-                    <p className="text-sm text-red-500">{errors.name}</p>
-                  )}
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-semibold">Pekerjaan / Item Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="e.g., Pasangan Dinding Bata Merah 1:4"
+                  className={errors.name ? 'border-red-500 shadow-sm' : 'shadow-sm'}
+                  disabled={isSubmitting}
+                />
+                {errors.name && (
+                  <p className="text-xs text-red-500 font-medium">{errors.name}</p>
+                )}
+              </div>
 
-                <div className="space-y-2 lg:col-span-3">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => handleChange('description', e.target.value)}
-                    placeholder="Enter optional description"
-                    rows={2}
-                    disabled={isSubmitting}
-                  />
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-sm font-semibold">Description / Spesifikasi Teknik</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  placeholder="Detail spesifikasi material atau cara pengerjaan..."
+                  rows={3}
+                  className="resize-none shadow-sm"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 border-t pt-6 bg-slate-50/50 p-4 rounded-lg">
+                <div className="space-y-2">
+                  <Label htmlFor="overhead" className="text-sm font-semibold">Overhead (%)</Label>
+                  <div className="relative">
+                    <Input
+                      id="overhead"
+                      type="number"
+                      value={formData.overheadPercentage}
+                      onChange={(e) => handleChange('overheadPercentage', parseFloat(e.target.value) || 0)}
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      className="pr-8 shadow-sm"
+                      disabled={isSubmitting}
+                    />
+                    <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">%</span>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="overhead">Overhead %</Label>
-                  <Input
-                    id="overhead"
-                    type="number"
-                    value={formData.overheadPercentage}
-                    onChange={(e) => handleChange('overheadPercentage', parseFloat(e.target.value) || 0)}
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="profit">Profit %</Label>
-                  <Input
-                    id="profit"
-                    type="number"
-                    value={formData.profitPercentage}
-                    onChange={(e) => handleChange('profitPercentage', parseFloat(e.target.value) || 0)}
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    disabled={isSubmitting}
-                  />
+                  <Label htmlFor="profit" className="text-sm font-semibold">Profit (%)</Label>
+                  <div className="relative">
+                    <Input
+                      id="profit"
+                      type="number"
+                      value={formData.profitPercentage}
+                      onChange={(e) => handleChange('profitPercentage', parseFloat(e.target.value) || 0)}
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      className="pr-8 shadow-sm"
+                      disabled={isSubmitting}
+                    />
+                    <span className="absolute right-3 top-2.5 text-xs text-muted-foreground">%</span>
+                  </div>
                 </div>
               </div>
+            </TabsContent>
 
-              {/* Components */}
-              <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Components - Analisa Komponen</CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddManualComponent}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Manual Component
-                  </Button>
-                </div>
-              </div>
-              {errors.components && (
-                <p className="text-sm text-red-500 mt-2">{errors.components}</p>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {components.length === 0 && manualComponents.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                  <Calculator className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p className="font-medium">No components added yet</p>
-                  <p className="text-sm">Click "Add Manual Component" to start building your AHSP analysis</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-24">Type</TableHead>
-                        <TableHead className="min-w-[250px]">Resource Name</TableHead>
-                        <TableHead className="w-20">Unit</TableHead>
-                        <TableHead className="w-32 text-right">Unit Price (Rp)</TableHead>
-                        <TableHead className="w-32 text-right">Coefficient</TableHead>
-                        <TableHead className="w-32 text-right">Subtotal (Rp)</TableHead>
-                        <TableHead className="w-24 text-center">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {/* Manual Components */}
-                      {manualComponents.map((comp) => (
-                        <TableRow key={comp.tempId} className="bg-blue-50/50 dark:bg-blue-950/20">
-                          <TableCell>
-                            {comp.editing ? (
-                              <Select 
-                                value={comp.type} 
-                                onValueChange={(value: ResourceType) => handleUpdateManualComponent(comp.tempId, 'type', value)}
-                              >
-                                <SelectTrigger className="h-9">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="material">Material</SelectItem>
-                                  <SelectItem value="labor">Labor</SelectItem>
-                                  <SelectItem value="equipment">Equipment</SelectItem>
-                                  <SelectItem value="subcontractor">Subcon</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <Badge variant="outline">{comp.type}</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {comp.editing ? (
-                              <Input
-                                value={comp.resourceName}
-                                onChange={(e) => handleUpdateManualComponent(comp.tempId, 'resourceName', e.target.value)}
-                                placeholder="Enter resource name"
-                                className="h-9"
-                              />
-                            ) : (
-                              <div className="font-medium">{comp.resourceName}</div>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {comp.editing ? (
-                              <Select 
-                                value={comp.unit} 
-                                onValueChange={(value: ResourceUnit) => handleUpdateManualComponent(comp.tempId, 'unit', value)}
-                              >
-                                <SelectTrigger className="h-9">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="m3">m³</SelectItem>
-                                  <SelectItem value="m2">m²</SelectItem>
-                                  <SelectItem value="m">m</SelectItem>
-                                  <SelectItem value="kg">kg</SelectItem>
-                                  <SelectItem value="ltr">ltr</SelectItem>
-                                  <SelectItem value="bh">bh</SelectItem>
-                                  <SelectItem value="oh">OH</SelectItem>
-                                  <SelectItem value="jam">jam</SelectItem>
-                                  <SelectItem value="hari">hari</SelectItem>
-                                  <SelectItem value="unit">unit</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <span className="uppercase text-sm">{comp.unit}</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {comp.editing ? (
-                              <Input
-                                type="number"
-                                value={comp.unitPrice}
-                                onChange={(e) => handleUpdateManualComponent(comp.tempId, 'unitPrice', parseFloat(e.target.value) || 0)}
-                                className="h-9 text-right"
-                                step="0.01"
-                                min="0"
-                              />
-                            ) : (
-                              <span className="font-mono text-sm">{formatIDR(comp.unitPrice)}</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {comp.editing ? (
+            {/* Tab 2: Components Analysis */}
+            <TabsContent value="components" className="flex-1 overflow-y-auto p-6 m-0">
+              <Card className="border-none shadow-none">
+                <CardHeader className="px-0 pt-0">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg font-bold">Analisa Komponen Pekerjaan</CardTitle>
+                      <p className="text-sm text-muted-foreground">Daftar material, tenaga kerja, dan peralatan.</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddManualComponent}
+                      className="border-primary text-primary hover:bg-primary/5"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Tambah Komponen Manual
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-0 pt-4">
+                  <div className="rounded-md border overflow-hidden">
+                    <Table>
+                      <TableHeader className="bg-slate-50">
+                        <TableRow>
+                          <TableHead className="w-24">Tipe</TableHead>
+                          <TableHead className="min-w-[200px]">Nama Komponen</TableHead>
+                          <TableHead className="w-20 text-center">Satuan</TableHead>
+                          <TableHead className="w-32 text-right">Harga Satuan</TableHead>
+                          <TableHead className="w-24 text-center">Koefisien</TableHead>
+                          <TableHead className="w-32 text-right">Subtotal</TableHead>
+                          <TableHead className="w-12 text-center"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {/* Manual Components */}
+                        {manualComponents.map((comp) => (
+                          <TableRow key={comp.tempId} className="group hover:bg-blue-50/30">
+                            <TableCell>
+                              <Badge variant="secondary" className="font-normal capitalize h-6">
+                                {comp.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {comp.editing ? (
+                                <Input
+                                  value={comp.resourceName}
+                                  onChange={(e) => handleUpdateManualComponent(comp.tempId, 'resourceName', e.target.value)}
+                                  className="h-8 py-0"
+                                />
+                              ) : (
+                                <div className="font-medium text-slate-700">{comp.resourceName}</div>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <span className="text-xs uppercase text-slate-500 font-medium">{comp.unit}</span>
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-sm text-slate-600">
+                              {formatIDR(comp.unitPrice)}
+                            </TableCell>
+                            <TableCell className="text-right">
                               <Input
                                 type="number"
                                 value={comp.coefficient}
                                 onChange={(e) => handleUpdateManualComponent(comp.tempId, 'coefficient', parseFloat(e.target.value) || 0)}
-                                className="h-9 text-right"
-                                step="0.001"
-                                min="0"
+                                className="h-8 py-0 text-right font-medium"
                               />
-                            ) : (
-                              <span className="font-mono text-sm">{comp.coefficient.toFixed(3)}</span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className="font-mono text-sm font-semibold">
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-slate-950 font-mono">
                               {formatIDR(comp.coefficient * comp.unitPrice)}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <div className="flex justify-center gap-1">
-                              {comp.editing ? (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleSaveManualComponent(comp.tempId)}
-                                  className="text-green-600 hover:text-green-700"
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                              ) : (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleUpdateManualComponent(comp.tempId, 'editing', true)}
-                                >
-                                  <Edit2 className="h-4 w-4" />
-                                </Button>
-                              )}
+                            </TableCell>
+                            <TableCell className="text-center">
                               <Button
                                 type="button"
                                 variant="ghost"
-                                size="sm"
+                                size="icon"
                                 onClick={() => handleDeleteManualComponent(comp.tempId)}
-                                className="text-red-600 hover:text-red-700"
+                                className="h-7 w-7 text-red-400 opacity-0 group-hover:opacity-100"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                          </TableRow>
+                        ))}
 
-                      {/* Existing Components from Resources */}
-                      {components.map((component) => (
-                        <TableRow key={component.id}>
-                          <TableCell>
-                            <Badge variant="outline">{component.type}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">{component.resource?.name}</div>
-                              <div className="text-xs text-muted-foreground">
-                                From DKH Resources
+                        {/* Resource Components */}
+                        {components.map((component) => (
+                          <TableRow key={component.id} className="hover:bg-slate-50 group">
+                            <TableCell>
+                              <Badge variant="outline" className="font-normal capitalize h-6">
+                                {component.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium text-slate-700">{component.resource?.name}</div>
+                            </TableCell>
+                            <TableCell className="text-center text-xs uppercase text-slate-500 font-medium">
+                              {component.unit}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-sm text-slate-600">
+                              {formatIDR(component.unitPrice)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Input
+                                type="number"
+                                value={component.coefficient}
+                                onChange={(e) => handleUpdateComponent(component.id, 'coefficient', parseFloat(e.target.value) || 0)}
+                                className="h-8 py-0 text-right font-bold text-slate-800"
+                              />
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-slate-950 font-mono">
+                              {formatIDR(component.subtotal)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDeleteComponent(component.id)}
+                                className="h-7 w-7 text-red-300 opacity-0 group-hover:opacity-100"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Add from DKH Selector in Tab 2 instead of separate card */}
+                  <div className="mt-8 pt-8 border-t">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Database className="h-4 w-4 text-primary" />
+                      <h4 className="text-sm font-bold">Import dari DKH Resources</h4>
+                    </div>
+                    <div className="flex gap-2">
+                      <Select value={selectedComponentType} onValueChange={(value: ResourceType) => setSelectedComponentType(value)}>
+                        <SelectTrigger className="w-32 h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="material">Material</SelectItem>
+                          <SelectItem value="labor">Labor</SelectItem>
+                          <SelectItem value="equipment">Alat</SelectItem>
+                          <SelectItem value="subcontractor">Subcon</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {item && (
+                        <Select onValueChange={handleAddComponent}>
+                          <SelectTrigger className="flex-1 h-9">
+                            <SelectValue placeholder="Pilih resource dari master price list..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {resourcesByType[selectedComponentType].length === 0 ? (
+                              <div className="px-2 py-4 text-center text-xs text-muted-foreground">
+                                Tidak ada data {selectedComponentType}
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="uppercase text-sm">
-                            {component.unit}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-sm">
-                            {formatIDR(component.unitPrice)}
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              value={component.coefficient}
-                              onChange={(e) => handleUpdateComponent(component.id, 'coefficient', parseFloat(e.target.value) || 0)}
-                              step="0.001"
-                              min="0"
-                              className="w-28 text-right h-9"
-                            />
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-sm font-semibold">
-                            {formatIDR(component.subtotal)}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteComponent(component.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-
-              {/* Cost Summary */}
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <h4 className="font-medium">Cost Breakdown</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span>Material:</span>
-                      <span className="font-mono">{formatIDR(totals.material)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Labor:</span>
-                      <span className="font-mono">{formatIDR(totals.labor)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Equipment:</span>
-                      <span className="font-mono">{formatIDR(totals.equipment)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Subcontractor:</span>
-                      <span className="font-mono">{formatIDR(totals.subcontractor)}</span>
-                    </div>
-                    <div className="flex justify-between font-semibold pt-2 border-t">
-                      <span>Base Price:</span>
-                      <span className="font-mono">{formatIDR(totals.base)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-medium">Final Price</h4>
-                  <div className="space-y-1 text-sm">
-                    {formData.overheadPercentage > 0 && (
-                      <div className="flex justify-between">
-                        <span>Overhead ({formData.overheadPercentage}%):</span>
-                        <span className="font-mono">
-                          {formatIDR(totals.base * formData.overheadPercentage / 100)}
-                        </span>
-                      </div>
-                    )}
-                    {formData.profitPercentage > 0 && (
-                      <div className="flex justify-between">
-                        <span>Profit ({formData.profitPercentage}%):</span>
-                        <span className="font-mono">
-                          {formatIDR((totals.base * (1 + formData.overheadPercentage / 100)) * formData.profitPercentage / 100)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex justify-between font-bold pt-2 border-t text-lg">
-                      <span>Final Price:</span>
-                      <span className="font-mono">{formatIDR(totals.final)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-              {/* Resource Selector - Add Components from DKH */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                Add Component from DKH Resources
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Select resources from your master price list (DKH) to add to this AHSP analysis
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Select value={selectedComponentType} onValueChange={(value: ResourceType) => setSelectedComponentType(value)}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="material">Material</SelectItem>
-                    <SelectItem value="labor">Labor</SelectItem>
-                    <SelectItem value="equipment">Equipment</SelectItem>
-                    <SelectItem value="subcontractor">Subcontractor</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {item && (
-                  <Select onValueChange={handleAddComponent}>
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Select resource from DKH..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {resourcesByType[selectedComponentType].length === 0 ? (
-                        <div className="px-2 py-6 text-center text-sm text-muted-foreground">
-                          No {selectedComponentType} resources in DKH
-                        </div>
-                      ) : (
-                        resourcesByType[selectedComponentType].map(resource => (
-                          <SelectItem key={resource.id} value={resource.id}>
-                            {resource.name} - {formatIDR(resource.unitPrice)} per {resource.unit}
-                          </SelectItem>
-                        ))
+                            ) : (
+                              resourcesByType[selectedComponentType].map(resource => (
+                                <SelectItem key={resource.id} value={resource.id}>
+                                  {resource.name} - {formatIDR(resource.unitPrice)} / {resource.unit}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
                       )}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Error message */}
-          {errors.submit && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-              {errors.submit}
-            </div>
-          )}
-            </div>
-          </div>
-
-          {/* Actions - Sticky Footer */}
-          <div className="sticky bottom-0 bg-white border-t px-6 py-4">
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !item}
-                className="min-w-[100px]"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Saving...
+                    </div>
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Tab 3: Detailed Summary */}
+            <TabsContent value="summary" className="flex-1 overflow-y-auto p-6 m-0">
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card className="bg-slate-50/50 border-slate-200">
+                  <CardHeader>
+                    <CardTitle className="text-base font-semibold">Struktur Biaya Dasar</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 rounded-full bg-blue-500 mr-2" />
+                          <span>Material (Bahan)</span>
+                        </div>
+                        <span className="font-mono font-semibold">{formatIDR(totals.material)}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 rounded-full bg-orange-400 mr-2" />
+                          <span>Tenaga Kerja (Upah)</span>
+                        </div>
+                        <span className="font-mono font-semibold">{formatIDR(totals.labor)}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 rounded-full bg-indigo-500 mr-2" />
+                          <span>Peralatan (Alat)</span>
+                        </div>
+                        <span className="font-mono font-semibold">{formatIDR(totals.equipment)}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 rounded-full bg-slate-400 mr-2" />
+                          <span>Subkontraktor</span>
+                        </div>
+                        <span className="font-mono font-semibold">{formatIDR(totals.subcontractor)}</span>
+                      </div>
+                    </div>
+                    <div className="pt-4 border-t flex justify-between items-baseline font-bold text-slate-900 mt-2">
+                      <span>Total Biaya Dasar</span>
+                      <span className="text-xl font-mono">{formatIDR(totals.base)}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="space-y-6">
+                  <Card className="bg-primary/5 border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="text-base text-primary font-semibold flex items-center">
+                        <Calculator className="h-4 w-4 mr-2" />
+                        Harga Akhir Satuan
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="pt-2 text-center pb-4">
+                        <Label className="text-[10px] uppercase tracking-widest text-primary/70 font-black mb-1 block">
+                          ESTIMASI AHSP AKHIR
+                        </Label>
+                        <div className="text-4xl font-black text-primary font-mono tabular-nums">
+                          {formatIDR(totals.final)}
+                        </div>
+                        <span className="text-xs text-muted-foreground">per {formData.unit}</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 border-t border-primary/10 pt-4 text-sm font-medium">
+                        <div className="flex justify-between">
+                          <span className="opacity-60 font-normal">Overhead:</span>
+                          <span>{formData.overheadPercentage}%</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="opacity-60 font-normal">Profit:</span>
+                          <span>{formData.profitPercentage}%</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <div className="shrink-0 px-6 py-4 border-t bg-slate-50 flex items-center justify-between">
+            <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
+              Batal
+            </Button>
+            <div className="flex gap-3">
+              {errors.submit && (
+                <p className="text-sm text-red-500 self-center font-medium mr-4">{errors.submit}</p>
+              )}
+              <Button type="submit" size="lg" className="px-10 shadow-md" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <span className="flex items-center">
+                    <Database className="animate-spin h-4 w-4 mr-2" />
+                    Menyimpan...
+                  </span>
                 ) : (
-                  <>
-                    <Save size={16} className="mr-2" />
-                    {item ? 'Update' : 'Add'}
-                  </>
+                  <span className="flex items-center">
+                    <Save className="h-4 w-4 mr-2" />
+                    Simpan Perubahan
+                  </span>
                 )}
               </Button>
             </div>
           </div>
         </form>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   )
 }
 
