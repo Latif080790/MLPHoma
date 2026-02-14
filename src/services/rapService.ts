@@ -6,6 +6,7 @@ export interface RapItem {
     wbs_id?: string
     ahsp_id?: string
     rab_item_id?: string
+    name?: string  // Local name carried from RAB source
 
     qty_budget: number
     unit_price_budget: number

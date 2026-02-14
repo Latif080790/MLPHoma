@@ -8,6 +8,7 @@ import { assertSupabase } from '../lib/supabaseClient'
 import { generateId } from '../lib/idGenerator'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
+import { supplyChainService } from './supplyChainService'
 import type { GoodsReceipt, CreateGrnInput, GrnStatus, GrnItem } from '../types/grn'
 
 // ------------------------------------------------------------------
@@ -191,7 +192,7 @@ export const grnService = {
 
         // --- DOWNSTREAM EFFECTS ---
 
-        // 1. Auto-create Invoice (AP) from PO data
+        // 1. Auto-create Invoice (AP) from GRN received quantities (not PO total)
         try {
             const { data: po } = await client
                 .from('purchase_orders')
@@ -200,50 +201,88 @@ export const grnService = {
                 .single()
 
             if (po) {
-                const totalAmount = (po.po_items || []).reduce(
-                    (sum: number, item: any) => sum + (item.quantity * item.unit_price), 0
-                )
-                const taxAmount = totalAmount * 0.11 // PPN 11%
+                // Check for existing invoice for this GRN to prevent duplicates
+                const { data: existingInv } = await client
+                    .from('invoices')
+                    .select('id')
+                    .eq('po_id', grn.poId)
+                    .eq('invoice_number', `INV-${grn.grnNumber}`)
+                    .maybeSingle()
 
-                await client.from('invoices').insert({
-                    id: generateId('inv'),
-                    project_id: grn.projectId,
-                    po_id: grn.poId,
-                    vendor_name: po.vendor_name || 'Unknown Vendor',
-                    invoice_number: `INV-${grn.grnNumber}`,
-                    description: `Invoice from GRN ${grn.grnNumber}`,
-                    amount: totalAmount,
-                    tax_amount: taxAmount,
-                    total_amount: totalAmount + taxAmount,
-                    due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                    status: 'UNPAID',
-                })
+                if (!existingInv) {
+                    // Calculate invoice from GRN received items (not full PO amount)
+                    const grnItems: GrnItem[] = grn.items || []
+                    const poItems = po.po_items || []
 
-                // 2. Move committed_cost → actual_cost in RAP items
-                const poItems = po.po_items || []
-                for (const poItem of poItems) {
-                    if (poItem.rap_item_id) {
-                        const { data: rapItem } = await client
-                            .from('rap_items')
-                            .select('committed_cost, actual_cost')
-                            .eq('id', poItem.rap_item_id)
-                            .single()
+                    // Match GRN items to PO items to get unit prices
+                    let grnTotal = 0
+                    for (const gi of grnItems) {
+                        // Find matching PO item by name
+                        const matchedPo = poItems.find((pi: any) =>
+                            pi.item_name === gi.itemName || pi.rap_item_id === (gi as any).rapItemId
+                        )
+                        const unitPrice = matchedPo ? Number(matchedPo.unit_price) : (gi as any).unitPrice || 0
+                        grnTotal += gi.qtyReceived * unitPrice
+                    }
 
-                        if (rapItem) {
-                            const amount = poItem.quantity * poItem.unit_price
-                            await client.from('rap_items').update({
-                                committed_cost: Math.max(0, (rapItem.committed_cost || 0) - amount),
-                                actual_cost: (rapItem.actual_cost || 0) + amount,
-                            }).eq('id', poItem.rap_item_id)
-                        }
+                    // Fallback: if no match found, use PO total (backward compat)
+                    if (grnTotal === 0) {
+                        grnTotal = poItems.reduce(
+                            (sum: number, item: any) => sum + (item.quantity * item.unit_price), 0
+                        )
+                    }
+
+                    const taxAmount = grnTotal * 0.11 // PPN 11%
+
+                    await client.from('invoices').insert({
+                        id: generateId('inv'),
+                        project_id: grn.projectId,
+                        po_id: grn.poId,
+                        vendor_name: po.vendor_name || 'Unknown Vendor',
+                        invoice_number: `INV-${grn.grnNumber}`,
+                        description: `Invoice from GRN ${grn.grnNumber}`,
+                        amount: grnTotal,
+                        tax_amount: taxAmount,
+                        total_amount: grnTotal + taxAmount,
+                        due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        status: 'UNPAID',
+                    })
+                }
+
+                // 2. Check if PO is fully received across all GRNs
+                const { data: allGrns } = await client
+                    .from('goods_receipts')
+                    .select('items')
+                    .eq('po_id', grn.poId)
+                    .eq('status', 'VERIFIED')
+
+                // Sum received quantities per item across all verified GRNs
+                const receivedMap = new Map<string, number>()
+                for (const g of (allGrns || [])) {
+                    for (const item of (g.items || [])) {
+                        const key = item.itemName || item.item_name || ''
+                        receivedMap.set(key, (receivedMap.get(key) || 0) + Number(item.qtyReceived || 0))
                     }
                 }
 
-                // 3. Update PO status to COMPLETED
-                await client.from('purchase_orders').update({
-                    status: 'COMPLETED',
-                    updated_at: new Date().toISOString(),
-                }).eq('id', grn.poId)
+                // Compare with PO ordered quantities
+                const poItemsList = po.po_items || []
+                const isFullyReceived = poItemsList.length > 0 && poItemsList.every((pi: any) => {
+                    const received = receivedMap.get(pi.item_name) || 0
+                    return received >= Number(pi.quantity)
+                })
+
+                // 3. Update PO status via supplyChainService (single source of truth for cost migration)
+                if (isFullyReceived) {
+                    // Fully received — delegate to supplyChainService which handles committed→actual
+                    await supplyChainService.updatePoStatus(grn.poId, 'COMPLETED')
+                } else {
+                    // Partially received — just update status, no cost migration yet
+                    await client.from('purchase_orders').update({
+                        status: 'PARTIALLY_RECEIVED',
+                        updated_at: new Date().toISOString(),
+                    }).eq('id', grn.poId)
+                }
             }
         } catch (downstreamError) {
             console.warn('[GRN] Downstream effect error:', downstreamError)

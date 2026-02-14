@@ -1,6 +1,6 @@
 
 export type MrStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'PO_CREATED'
-export type PoStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED'
+export type PoStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'PARTIALLY_RECEIVED' | 'COMPLETED'
 export type TransactionType = 'IN' | 'OUT' | 'TRANSFER' | 'RETURN'
 
 export interface MaterialRequest {
@@ -74,5 +74,7 @@ export interface InventoryStock {
     unit: string
     totalIn: number
     totalOut: number
-    currentStock: number
+    current: number
+    /** Alias for current (kept for backward compatibility) */
+    currentStock?: number
 }

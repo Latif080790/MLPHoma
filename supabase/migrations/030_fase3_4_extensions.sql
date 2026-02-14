@@ -6,8 +6,8 @@
 
 -- 1. Progress Evidence Table (GPS + Photo Validation)
 CREATE TABLE IF NOT EXISTS progress_evidence (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     progress_date DATE NOT NULL,
     photo_url TEXT NOT NULL,
     latitude DOUBLE PRECISION,
@@ -39,8 +39,8 @@ DO $$ BEGIN
 EXCEPTION WHEN undefined_table THEN
     -- documents table doesn't exist yet, create it with all columns
     CREATE TABLE documents (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+        id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+        project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
         document_group_id UUID,
         category TEXT DEFAULT 'General',
         title TEXT NOT NULL,
@@ -65,8 +65,8 @@ END $$;
 
 -- 3. Project Members Table (per-project role assignments)
 CREATE TABLE IF NOT EXISTS project_members (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     project_role TEXT DEFAULT 'user' CHECK (project_role IN ('admin', 'manager', 'user', 'viewer')),
     assigned_at TIMESTAMPTZ DEFAULT now(),

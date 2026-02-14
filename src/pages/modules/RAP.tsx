@@ -146,7 +146,7 @@ export default function RAP(): JSX.Element {
                         <TableRow key={item.id}>
                           <TableCell className="font-medium">
                             <div className="flex flex-col">
-                              <span>{/* @ts-ignore */ item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
+                              <span>{(item as any).name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
                               <span className="text-xs text-muted-foreground">Vol: {item.qty_budget}</span>
                             </div>
                           </TableCell>

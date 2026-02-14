@@ -642,9 +642,11 @@ export function syncRAPItem(item: any): string {
     table: 'rap_items',
     data: {
       id: item.id,
-      project_id: item.projectId,
+      project_id: item.projectId || item.project_id,
       rab_item_id: item.rabId || item.rab_item_id,
-      wbs_id: item.taskId || item.wbs_id,
+      wbs_id: item.wbs_id || null,  // Never use taskId — it references timeline_tasks, not wbs_items
+      ahsp_id: item.ahsp_id || null,
+      name: item.name || null,
       period_key: item.periodKey,
       period_type: item.periodType,
       planned_volume: item.plannedVolume,
@@ -676,7 +678,9 @@ export function syncRAPItems(items: any[], projectId: string): string {
       id: item.id,
       project_id: projectId,
       rab_item_id: item.rabId || item.rab_item_id,
-      wbs_id: item.taskId || item.wbs_id,
+      wbs_id: item.wbs_id || null,  // Never use taskId — it references timeline_tasks, not wbs_items
+      ahsp_id: item.ahsp_id || null,
+      name: item.name || null,
       period_key: item.periodKey,
       period_type: item.periodType,
       planned_volume: item.plannedVolume,
