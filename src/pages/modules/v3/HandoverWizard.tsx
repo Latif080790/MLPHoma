@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,27 +9,41 @@ import { useProjectStore } from '@/store/projectStore'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabaseClient'
 
+import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
+
 export function HandoverWizard() {
     const project = useProjectStore((s: any) => s.project)
     const [step, setStep] = useState(1)
     const [generating, setGenerating] = useState(false)
     const [reportReady, setReportReady] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [summary, setSummary] = useState<HandoverSummary | null>(null)
+    const [outstanding, setOutstanding] = useState<OutstandingIssue[]>([])
 
-    // Mock Data for Report Sections (In real app, fetch these)
-    const summary = {
-        budget: { planned: 5000000000, actual: 4850000000, variance: 3 }, // 3% under
-        schedule: { plannedFinish: '2025-12-31', actualFinish: '2025-12-28', status: 'On Time' },
-        safety: { incidents: 0, manhours: 15600 }
+    useEffect(() => {
+        if (project?.id) {
+            loadHandoverData()
+        }
+    }, [project?.id])
+
+    const loadHandoverData = async () => {
+        setLoading(true)
+        try {
+            const [s, o] = await Promise.all([
+                handoverService.getHandoverSummary(project.id),
+                handoverService.getOutstandingIssues(project.id)
+            ])
+            setSummary(s)
+            setOutstanding(o)
+        } catch (error) {
+            toast.error("Failed to load handover data")
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const inventory = [
-        { item: 'Semen Gresik', qty: 50, unit: 'Zak', value: 3750000 },
-        { item: 'Besi 10mm', qty: 12, unit: 'Btg', value: 1200000 }
-    ]
 
-    const outstanding = [
-        { id: 1, desc: 'Pengecatan ulang dinding area lobby', priority: 'Low' }
-    ]
+
 
     const handleGenerateReport = async () => {
         setGenerating(true)
@@ -124,98 +138,124 @@ export function HandoverWizard() {
                 </CardHeader>
 
                 <CardContent className="flex-1">
-                    {step === 1 && (
-                        <div className="grid gap-6 md:grid-cols-3">
-                            <div className="p-4 border rounded-lg bg-green-50 border-green-200">
-                                <div className="text-sm text-green-700 font-medium">Budget Efficiency</div>
-                                <div className="text-2xl font-bold text-green-800">+{summary.budget.variance}%</div>
-                                <div className="text-xs text-green-600 mt-1">Under Budget</div>
-                            </div>
-                            <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
-                                <div className="text-sm text-blue-700 font-medium">Schedule Status</div>
-                                <div className="text-2xl font-bold text-blue-800">{summary.schedule.status}</div>
-                                <div className="text-xs text-blue-600 mt-1">Actual: {summary.schedule.actualFinish}</div>
-                            </div>
-                            <div className="p-4 border rounded-lg bg-slate-50 border-slate-200">
-                                <div className="text-sm text-slate-700 font-medium">Safety Record</div>
-                                <div className="text-2xl font-bold text-slate-800">{summary.safety.incidents} Incidents</div>
-                                <div className="text-xs text-slate-600 mt-1">{summary.safety.manhours.toLocaleString()} Manhours</div>
-                            </div>
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center p-12 space-y-4">
+                            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                            <p className="text-muted-foreground animate-pulse">Fetching project metrics...</p>
                         </div>
-                    )}
-
-                    {step === 2 && (
-                        <div className="rounded-md border">
-                            <table className="w-full text-sm">
-                                <thead className="bg-slate-50 border-b">
-                                    <tr>
-                                        <th className="p-3 text-left">Item Name</th>
-                                        <th className="p-3 text-right">Qty</th>
-                                        <th className="p-3 text-right">Est. Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {inventory.map((i, idx) => (
-                                        <tr key={idx} className="border-b last:border-0 hover:bg-slate-50">
-                                            <td className="p-3">{i.item}</td>
-                                            <td className="p-3 text-right">{i.qty} {i.unit}</td>
-                                            <td className="p-3 text-right">Rp {i.value.toLocaleString()}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                            <div className="p-4 bg-yellow-50 text-yellow-800 text-sm mt-4 rounded border border-yellow-200 flex gap-2">
-                                <AlertTriangle className="w-4 h-4 shrink-0" />
-                                These items must be transferred to Warehouse or sold before closing.
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div className="space-y-4">
-                            {outstanding.map(issue => (
-                                <div key={issue.id} className="flex items-center gap-4 p-4 border rounded-lg">
-                                    <AlertTriangle className="text-orange-500 w-5 h-5" />
-                                    <div className="flex-1">
-                                        <div className="font-medium">{issue.desc}</div>
-                                        <Badge variant="outline">{issue.priority}</Badge>
+                    ) : (
+                        <>
+                            {step === 1 && summary && (
+                                <div className="grid gap-6 md:grid-cols-3">
+                                    <div className="p-4 border rounded-lg bg-green-50 border-green-200">
+                                        <div className="text-sm text-green-700 font-medium">Budget Efficiency</div>
+                                        <div className="text-2xl font-bold text-green-800">
+                                            {summary.budget.variance >= 0 ? '+' : ''}{summary.budget.variance}%
+                                        </div>
+                                        <div className="text-xs text-green-600 mt-1">
+                                            {summary.budget.variance >= 0 ? 'Under Budget' : 'Over Budget'}
+                                        </div>
                                     </div>
-                                    <Button variant="ghost" size="sm">Mark Resolved</Button>
+                                    <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
+                                        <div className="text-sm text-blue-700 font-medium">Schedule Status</div>
+                                        <div className="text-2xl font-bold text-blue-800">{summary.schedule.status}</div>
+                                        <div className="text-xs text-blue-600 mt-1">Actual: {summary.schedule.actualFinish}</div>
+                                    </div>
+                                    <div className="p-4 border rounded-lg bg-slate-50 border-slate-200">
+                                        <div className="text-sm text-slate-700 font-medium">Safety Record</div>
+                                        <div className="text-2xl font-bold text-slate-800">{summary.safety.incidents} Incidents</div>
+                                        <div className="text-xs text-slate-600 mt-1">{summary.safety.manhours.toLocaleString()} Manhours</div>
+                                    </div>
                                 </div>
-                            ))}
-                            {outstanding.length === 0 && (
-                                <div className="text-center p-8 text-neutral-400">No outstanding issues. Good job!</div>
                             )}
-                        </div>
-                    )}
 
-                    {step === 4 && (
-                        <div className="space-y-6">
-                            <div className="p-6 border-2 border-dashed rounded-lg bg-slate-50 flex flex-col items-center justify-center text-center space-y-4">
-                                <FileText className="w-12 h-12 text-slate-400" />
-                                <div>
-                                    <h3 className="font-medium">Final Project Report</h3>
-                                    <p className="text-sm text-muted-foreground max-w-sm">
-                                        Generates a comprehensive PDF including Budget, Schedule, Assets, and Safety records.
-                                    </p>
-                                </div>
-                                <Button onClick={handleGenerateReport} disabled={generating}>
-                                    {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                                    {reportReady ? 'Download Again' : 'Generate & Download PDF'}
-                                </Button>
-                            </div>
 
-                            <div className="pt-6 border-t">
-                                <h3 className="font-medium text-red-600 mb-2">Danger Zone</h3>
-                                <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
-                                    <div>
-                                        <div className="font-medium text-red-900">Archive Project</div>
-                                        <div className="text-sm text-red-700">Make read-only and hide from main dashboard.</div>
+                            {step === 2 && (
+                                <div className="rounded-md border">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-slate-50 border-b">
+                                            <tr>
+                                                <th className="p-3 text-left">Item Name</th>
+                                                <th className="p-3 text-right">Qty</th>
+                                                <th className="p-3 text-right">Est. Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {summary?.inventory.map((i: any, idx: number) => (
+                                                <tr key={idx} className="border-b last:border-0 hover:bg-slate-50">
+                                                    <td className="p-3">{i.materialName}</td>
+                                                    <td className="p-3 text-right">{i.current} {i.unit}</td>
+                                                    <td className="p-3 text-right">Rp {i.value.toLocaleString()}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    <div className="p-4 bg-yellow-50 text-yellow-800 text-sm mt-4 rounded border border-yellow-200 flex gap-2">
+                                        <AlertTriangle className="w-4 h-4 shrink-0" />
+                                        These items must be transferred to Warehouse or sold before closing.
                                     </div>
-                                    <Button variant="destructive" onClick={handleArchiveProject}>Archive Project</Button>
                                 </div>
-                            </div>
-                        </div>
+                            )}
+
+                            {step === 3 && (
+                                <div className="space-y-4">
+                                    {outstanding.map(issue => (
+                                        <div key={issue.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                                            <AlertTriangle className="text-orange-500 w-5 h-5" />
+                                            <div className="flex-1">
+                                                <div className="font-medium">{issue.desc}</div>
+                                                <Badge variant="outline">{issue.priority}</Badge>
+                                            </div>
+                                            <Button variant="ghost" size="sm">Mark Resolved</Button>
+                                        </div>
+                                    ))}
+                                    {outstanding.length === 0 && (
+                                        <div className="text-center p-8 text-neutral-400">No outstanding issues. Good job!</div>
+                                    )}
+                                </div>
+                            )}
+
+                            {step === 4 && (
+                                <div className="space-y-6">
+                                    <div className="p-6 border-2 border-dashed rounded-lg bg-slate-50 flex flex-col items-center justify-center text-center space-y-4">
+                                        <FileText className="w-12 h-12 text-slate-400" />
+                                        <div>
+                                            <h3 className="font-medium">Final Project Report</h3>
+                                            <p className="text-sm text-muted-foreground max-w-sm">
+                                                Generates a comprehensive PDF including Budget, Schedule, Assets, and Safety records.
+                                            </p>
+                                        </div>
+                                        <Button onClick={handleGenerateReport} disabled={generating}>
+                                            {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                                            {reportReady ? 'Download Again' : 'Generate & Download PDF'}
+                                        </Button>
+                                    </div>
+
+                                    <div className="pt-6 border-t">
+                                        <h3 className="font-medium text-red-600 mb-2">Danger Zone</h3>
+                                        <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
+                                            <div>
+                                                <div className="font-medium text-red-900">Archive Project</div>
+                                                <div className="text-sm text-red-700">Make read-only and hide from main dashboard.</div>
+                                            </div>
+                                            <Button
+                                                variant="destructive"
+                                                onClick={handleArchiveProject}
+                                                disabled={outstanding.length > 0}
+                                            >
+                                                Archive Project
+                                            </Button>
+                                            {outstanding.length > 0 && (
+                                                <p className="text-[10px] text-red-500 mt-1">
+                                                    Resolve all issues to archive
+                                                </p>
+                                            )}
+
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </CardContent>
 
@@ -245,11 +285,13 @@ export function HandoverWizard() {
                         <div className="grid grid-cols-3 gap-4">
                             <div className="p-4 bg-slate-100 rounded">
                                 <div className="text-sm">Final Budget</div>
-                                <div className="text-xl font-bold">Rp {summary.budget.actual.toLocaleString()}</div>
+                                <div className="text-xl font-bold">
+                                    Rp {summary?.budget.actual.toLocaleString() || '0'}
+                                </div>
                             </div>
                             <div className="p-4 bg-slate-100 rounded">
                                 <div className="text-sm">Completion Date</div>
-                                <div className="text-xl font-bold">{summary.schedule.actualFinish}</div>
+                                <div className="text-xl font-bold">{summary?.schedule.actualFinish || '-'}</div>
                             </div>
                         </div>
                     </section>
@@ -264,10 +306,10 @@ export function HandoverWizard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {inventory.map((i, idx) => (
+                                {summary?.inventory.map((i: any, idx: number) => (
                                     <tr key={idx} className="border-b">
-                                        <td className="p-2">{i.item}</td>
-                                        <td className="p-2">{i.qty} {i.unit}</td>
+                                        <td className="p-2">{i.materialName}</td>
+                                        <td className="p-2">{i.current} {i.unit}</td>
                                     </tr>
                                 ))}
                             </tbody>
