@@ -3,6 +3,7 @@ import { rapService, RapItem } from '../services/rapService'
 import { syncRAPItem, syncRAPItems } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
 import { toast } from 'sonner'
+import { createCachedGetterWithKey } from '../lib/cachedGetter'
 
 interface RapState {
   items: RapItem[]
@@ -16,7 +17,29 @@ interface RapState {
   getPlan: (projectId: string) => { date: string; planned: number; actual: number }[]
 }
 
-export const useRapStore = create<RapState>((set, get) => ({
+export const useRapStore = create<RapState>((set, get) => {
+  const EMPTY_PLAN: { date: string; planned: number; actual: number }[] = []
+
+  const getPlanCached = createCachedGetterWithKey<RapItem[], { date: string; planned: number; actual: number }[]>(
+    (key) => get().items.filter(i => i.project_id === key),
+    (items) => {
+      if (!items.length) return EMPTY_PLAN
+      const monthly: Record<string, { planned: number; actual: number }> = {}
+      items.forEach((i) => {
+        const key = (i as any).createdAt
+          ? (i as any).createdAt.substring(0, 7)
+          : new Date().toISOString().substring(0, 7)
+        if (!monthly[key]) monthly[key] = { planned: 0, actual: 0 }
+        monthly[key].planned += i.total_budget || 0
+        monthly[key].actual += i.actual_cost || 0
+      })
+      return Object.entries(monthly)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, v]) => ({ date: `${date}-01`, planned: v.planned, actual: v.actual }))
+    }
+  )
+
+  return {
   items: [],
   isLoading: false,
   error: null,
@@ -46,21 +69,7 @@ export const useRapStore = create<RapState>((set, get) => ({
   },
 
   getPlan: (projectId: string) => {
-    const items = get().items.filter(i => i.project_id === projectId)
-    if (!items.length) return []
-    // Group by month and aggregate budget vs actual
-    const monthly: Record<string, { planned: number; actual: number }> = {}
-    items.forEach((i) => {
-      const key = (i as any).createdAt
-        ? (i as any).createdAt.substring(0, 7)   // YYYY-MM
-        : new Date().toISOString().substring(0, 7)
-      if (!monthly[key]) monthly[key] = { planned: 0, actual: 0 }
-      monthly[key].planned += i.total_budget || 0
-      monthly[key].actual += i.actual_cost || 0
-    })
-    return Object.entries(monthly)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([date, v]) => ({ date: `${date}-01`, planned: v.planned, actual: v.actual }))
+    return getPlanCached(projectId)
   },
 
   initFromRab: async (projectId: string, rabItems: any[]) => {
@@ -105,5 +114,5 @@ export const useRapStore = create<RapState>((set, get) => ({
       set({ isLoading: false })
     }
   }
-}))
+}})
 

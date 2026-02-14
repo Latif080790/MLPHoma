@@ -574,10 +574,7 @@ export function syncWBSItems(items: any[], projectId: string): string {
  * Sync Timeline task
  */
 export function syncTimelineTask(task: any): string {
-  return syncQueue.enqueue({
-    operation: 'upsert',
-    table: 'timeline_tasks',
-    data: {
+  const data: Record<string, any> = {
       id: task.id,
       project_id: task.projectId,
       wbs_id: task.wbsId,
@@ -595,8 +592,17 @@ export function syncTimelineTask(task: any): string {
       baseline_start_date: task.baselineStartDate,
       baseline_end_date: task.baselineEndDate,
       created_at: task.createdAt,
-      updated_at: new Date().toISOString(),
-    },
+  }
+  // Only include updated_at if column exists (some schemas may not have it yet)
+  if (task.updatedAt !== undefined) {
+    data.updated_at = task.updatedAt
+  } else {
+    data.updated_at = new Date().toISOString()
+  }
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'timeline_tasks',
+    data,
     maxRetries: 3,
   })
 }
