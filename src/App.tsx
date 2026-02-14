@@ -15,8 +15,6 @@ import { useAuthStore } from './store/authStore'
 import { useProjectStore } from './store/projectStore'
 
 // Lazy-loaded page components for optimal code splitting
-// Lazy-loaded page components for optimal code splitting
-const HomePage = React.lazy(() => import('./pages/Home'))
 const ProjectManagement = React.lazy(() => import('./pages/modules/ProjectManagement'))
 
 // v3 Ultra Modules
@@ -28,6 +26,8 @@ const Finance = React.lazy(() => import('./pages/modules/v3/Finance'))
 const ChangeManagement = React.lazy(() => import('./pages/modules/v3/ChangeManagement'))
 const Documents = React.lazy(() => import('./pages/modules/v3/Documents'))
 const Settings = React.lazy(() => import('./pages/modules/v3/Settings'))
+const HandoverWizard = React.lazy(() => import('./pages/modules/v3/HandoverWizard'))
+const TKDNPage = React.lazy(() => import('./pages/TKDNPage'))
 
 // Legacy Modules (Keep for reference if needed, but routes will be replaced)
 const WBS = React.lazy(() => import('./pages/modules/WBS'))
@@ -89,7 +89,6 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Protected routes — all wrapped with sidebar layout */}
-            {/* Protected routes — all wrapped with sidebar layout */}
             <Route path="/" element={<ProtectedLayout><CommandCenter /></ProtectedLayout>} />
             <Route path="/projects" element={<ProtectedLayout><ProjectManagement /></ProtectedLayout>} />
 
@@ -101,6 +100,8 @@ export default function App() {
             <Route path="/change-management" element={<ProtectedLayout><ChangeManagement /></ProtectedLayout>} />
             <Route path="/documents" element={<ProtectedLayout><Documents /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
+            <Route path="/handover" element={<ProtectedLayout><HandoverWizard /></ProtectedLayout>} />
+            <Route path="/tkdn" element={<ProtectedLayout><TKDNPage /></ProtectedLayout>} />
 
             {/* Legacy Routes (redirect or keep active for direct access if needed) */}
             <Route path="/wbs" element={<ProtectedLayout><WBS /></ProtectedLayout>} />

@@ -2,16 +2,26 @@
 import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
+import { Calculator } from 'lucide-react'
+import { ModuleHeader } from '@/components/modules/ModuleHeader'
+import { EmptyState } from '@/components/common/EmptyState'
+import { useProjectStore } from '@/store/projectStore'
 import AHSP from '../AHSP' // Sibling in parent modules dir
 import RAB from '../RAB'
 import RAP from '../RAP'
 
 export default function ProjectCosting() {
+    const { activeProjectId } = useProjectStore()
+
+    if (!activeProjectId) return <EmptyState title="No Project Selected" description="Select a project to view costing data." />
+
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Project Costing</h1>
-            </div>
+            <ModuleHeader
+                icon={<Calculator size={18} />}
+                title="Project Costing"
+                description="AHSP master data, RAB estimation, and RAP budget control."
+            />
 
             <Tabs defaultValue="rab" className="w-full">
                 <TabsList className="grid w-full grid-cols-3">

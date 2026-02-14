@@ -277,5 +277,6 @@ export default function SupplyChain() {
 }
 
 function generateSku(name: string) {
-    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 4) + '-' + Math.floor(Math.random() * 999)
+    const hash = name.split('').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0)
+    return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 4) + '-' + String(Math.abs(hash) % 999).padStart(3, '0')
 }
