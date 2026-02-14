@@ -113,11 +113,33 @@ export const financeService = {
         // 2. Record Transaction (Expense)
         await this.recordTransaction({
             project_id: projectId,
-            description: `Payment for Invoice ${invoiceId}`, // In real app use invoice number
+            description: `Payment for Invoice ${invoiceId}`,
             category: 'Payment Out',
-            amount: -Math.abs(amount), // Negative for outflow
+            amount: -Math.abs(amount),
             reference_type: 'INVOICE',
             reference_id: invoiceId
         })
+    },
+
+    // --- Claims status transition ---
+    async updateClaimStatus(id: string, status: string) {
+        const client = assertSupabase()
+        const { error } = await client
+            .from('client_claims')
+            .update({ status })
+            .eq('id', id)
+
+        if (error) throw error
+    },
+
+    // --- Invoice update ---
+    async updateInvoice(id: string, data: Partial<Invoice>) {
+        const client = assertSupabase()
+        const { error } = await client
+            .from('invoices')
+            .update(data)
+            .eq('id', id)
+
+        if (error) throw error
     }
 }

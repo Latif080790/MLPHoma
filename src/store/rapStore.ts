@@ -12,6 +12,8 @@ interface RapState {
   fetchItems: (projectId: string) => Promise<void>
   updateItem: (item: Partial<RapItem>) => Promise<void>
   initFromRab: (projectId: string, rabItems: any[]) => Promise<void>
+  /** Return RAP items as monthly plan entries for Curva-S / CashFlow import */
+  getPlan: (projectId: string) => { date: string; planned: number; actual: number }[]
 }
 
 export const useRapStore = create<RapState>((set, get) => ({
@@ -41,6 +43,24 @@ export const useRapStore = create<RapState>((set, get) => ({
     // Sync using service
     syncRAPItem(item)
     toast.success('RAP Item update queued')
+  },
+
+  getPlan: (projectId: string) => {
+    const items = get().items.filter(i => i.project_id === projectId)
+    if (!items.length) return []
+    // Group by month and aggregate budget vs actual
+    const monthly: Record<string, { planned: number; actual: number }> = {}
+    items.forEach((i) => {
+      const key = (i as any).createdAt
+        ? (i as any).createdAt.substring(0, 7)   // YYYY-MM
+        : new Date().toISOString().substring(0, 7)
+      if (!monthly[key]) monthly[key] = { planned: 0, actual: 0 }
+      monthly[key].planned += i.total_budget || 0
+      monthly[key].actual += i.actual_cost || 0
+    })
+    return Object.entries(monthly)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, v]) => ({ date: `${date}-01`, planned: v.planned, actual: v.actual }))
   },
 
   initFromRab: async (projectId: string, rabItems: any[]) => {
