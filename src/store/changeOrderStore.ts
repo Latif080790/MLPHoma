@@ -5,21 +5,34 @@ import { changeOrderService } from '../services/changeOrderService'
 import { changeOrderCascade } from '../services/changeOrderCascade'
 import { toast } from 'sonner'
 
+interface CascadePreview {
+    affectedRabItems: number
+    affectedTasks: number
+    estimatedBudgetDelta: number
+    estimatedScheduleDelta: number
+}
+
 interface ChangeOrderState {
     orders: ChangeOrder[]
     loading: boolean
     error: string | null
+    cascadePreview: CascadePreview | null
+    previewLoading: boolean
 
     fetchOrders: (projectId: string) => Promise<void>
     createOrder: (order: Partial<ChangeOrder>, items: Partial<ChangeOrderItem>[]) => Promise<void>
     updateStatus: (id: string, status: string) => Promise<void>
     deleteOrder: (id: string) => Promise<void>
+    previewCascade: (id: string) => Promise<CascadePreview>
+    clearPreview: () => void
 }
 
 export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
     orders: [],
     loading: false,
     error: null,
+    cascadePreview: null,
+    previewLoading: false,
 
     fetchOrders: async (projectId: string) => {
         set({ loading: true, error: null })
@@ -94,5 +107,20 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
         } catch (err: any) {
             set({ error: err.message })
         }
-    }
+    },
+
+    previewCascade: async (id: string) => {
+        set({ previewLoading: true })
+        try {
+            const preview = await changeOrderCascade.preview(id)
+            set({ cascadePreview: preview, previewLoading: false })
+            return preview
+        } catch (err: any) {
+            set({ previewLoading: false })
+            toast.error('Failed to preview cascade: ' + err.message)
+            throw err
+        }
+    },
+
+    clearPreview: () => set({ cascadePreview: null })
 }))

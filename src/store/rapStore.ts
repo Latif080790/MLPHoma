@@ -51,7 +51,11 @@ export const useRapStore = create<RapState>((set, get) => ({
         id: (rab as any).rap_id || generateId('rap'),
         project_id: projectId,
         rab_item_id: rab.id,
-        wbs_id: rab.task_id || rab.taskId || rab.wbs_id,
+        // Use only valid wbs_id (never timeline taskId which is a different FK)
+        wbs_id: rab.wbsId || rab.wbs_id || null,
+        ahsp_id: rab.ahspId || rab.ahsp_id || null,
+        // Carry the name locally so UI doesn't depend on DB joins
+        name: rab.name || rab.item_name || 'Unnamed Item',
         qty_budget: rab.volume,
         unit_price_budget: rab.unit_price,
         total_budget: (rab.volume || 0) * (rab.unit_price || 0),

@@ -165,9 +165,17 @@ export default function Progress() {
         projectId,
         Number(form.progress) || 0
       ).then(() => {
-        toast.success("Billing claim auto-generated", { description: "Check Finance → AR for details." })
+        toast.success("Billing claim auto-generated", {
+          description: "Check Finance → AR for details.",
+          action: {
+            label: 'Go to Finance',
+            onClick: () => window.location.hash = '/finance'
+          }
+        })
       }).catch((err) => {
-        console.warn('Auto-billing failed (non-critical):', err)
+        toast.error('Auto-billing gagal', {
+          description: err?.message || 'Billing generation failed. Please check Finance module manually.'
+        })
       })
     } catch { /* ignore */ }
 

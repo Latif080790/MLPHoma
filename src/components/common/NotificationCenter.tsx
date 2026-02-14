@@ -55,11 +55,11 @@ export function NotificationCenter() {
         unsubscribe,
     } = useNotificationStore()
 
-    // Subscribe to realtime on mount
+    // Subscribe to realtime on mount (subscribe first, then fetch to avoid race window)
     useEffect(() => {
         if (user?.id) {
-            fetchNotifications(user.id)
             subscribe(user.id)
+            fetchNotifications(user.id)
         }
         return () => {
             unsubscribe()

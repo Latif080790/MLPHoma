@@ -8,6 +8,7 @@ import { assertSupabase } from '../lib/supabaseClient'
 import { generateId } from '../lib/idGenerator'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
+import { changeOrderCascade } from './changeOrderCascade'
 import type { ApprovalRequest, CreateApprovalInput, ApprovalStatus } from '../types/approval'
 
 // ------------------------------------------------------------------
@@ -228,6 +229,17 @@ export const approvalService = {
             })
         } catch (e) {
             console.warn('Audit log failed:', e)
+        }
+
+        // Post-approval hook: trigger domain-specific cascade
+        if (approval.entityType === 'CHANGE_ORDER' && approval.entityId) {
+            try {
+                const cascadeResult = await changeOrderCascade.execute(approval.entityId)
+                console.info('[Approval] Change Order cascade completed:', cascadeResult)
+            } catch (cascadeErr) {
+                console.error('[Approval] Change Order cascade failed:', cascadeErr)
+                // Don't throw — approval succeeded, cascade failure is logged separately
+            }
         }
 
         return approval

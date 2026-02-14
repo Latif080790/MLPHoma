@@ -13,6 +13,9 @@ import { useSupplyChainStore } from "@/store/supplyChainStore"
 import { useProjectStore } from "@/store/projectStore"
 import { useTimelineStore } from "@/store/timelineStore"
 import { toast } from "sonner"
+import { smartMRService, type MaterialSuggestion } from "@/services/smartMRService"
+import { Loader2, Sparkles, ArrowRight } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 const mrSchema = z.object({
     wbs_id: z.string().optional(),
@@ -36,12 +39,9 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
     const getTasks = useTimelineStore(s => s.getTasks)
     const tasks = getTasks(projectId)
 
-    // Ensure tasks are loaded (if not already in store)
-    // In a real app we might need a distinct 'fetchTasks' async action
-    // But getTasks returns what's in store.
-    // If we assume data is loaded via project load, this is fine.
-    // If we need to trigger fetch:
-    // useEffect(() => { ... }, [])
+    // Smart MR: auto-suggestions from AHSP
+    const [suggestions, setSuggestions] = useState<MaterialSuggestion[]>([])
+    const [loadingSuggestions, setLoadingSuggestions] = useState(false)
 
     const form = useForm<MrFormValues>({
         resolver: zodResolver(mrSchema),
@@ -52,6 +52,40 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
             notes: ""
         }
     })
+
+    const selectedWbsId = form.watch("wbs_id")
+
+    // Fetch Smart MR suggestions when WBS changes
+    useEffect(() => {
+        if (!selectedWbsId || !projectId) {
+            setSuggestions([])
+            return
+        }
+
+        let cancelled = false
+        setLoadingSuggestions(true)
+
+        smartMRService.getSuggestionsForWBS(projectId, selectedWbsId)
+            .then((data) => {
+                if (!cancelled) setSuggestions(data)
+            })
+            .catch((err) => {
+                console.warn('Smart MR suggestions failed:', err)
+                if (!cancelled) setSuggestions([])
+            })
+            .finally(() => {
+                if (!cancelled) setLoadingSuggestions(false)
+            })
+
+        return () => { cancelled = true }
+    }, [selectedWbsId, projectId])
+
+    function applySuggestion(s: MaterialSuggestion) {
+        form.setValue("item_name", s.resourceName)
+        form.setValue("unit", s.unit)
+        form.setValue("quantity_requested", Math.round(s.netDemand * 100) / 100)
+        toast.info(`Applied: ${s.resourceName}`, { description: `${s.netDemand} ${s.unit} (net demand)` })
+    }
 
     async function onSubmit(data: MrFormValues) {
         try {
@@ -64,14 +98,15 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
             toast.success("Material Request created")
             onOpenChange(false)
             form.reset()
+            setSuggestions([])
         } catch (err: any) {
             toast.error("Failed to create request: " + err.message)
         }
     }
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[500px]">
+        <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) { setSuggestions([]); form.reset() } }}>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>New Material Request</DialogTitle>
                 </DialogHeader>
@@ -95,6 +130,51 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {/* Smart MR Suggestions Panel */}
+                    {selectedWbsId && (
+                        <div className="rounded-lg border bg-muted/30 p-3 space-y-2">
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                                <Sparkles className="h-4 w-4 text-amber-500" />
+                                <span>Smart Suggestions (from AHSP)</span>
+                                {loadingSuggestions && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                            </div>
+                            {!loadingSuggestions && suggestions.length === 0 && (
+                                <p className="text-xs text-muted-foreground">No material suggestions for this WBS item.</p>
+                            )}
+                            {suggestions.length > 0 && (
+                                <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                                    {suggestions.map((s, i) => (
+                                        <div
+                                            key={s.resourceId || i}
+                                            className="flex items-center justify-between gap-2 rounded-md bg-background p-2 text-xs border hover:border-primary/50 transition-colors"
+                                        >
+                                            <div className="flex-1 min-w-0">
+                                                <div className="font-medium truncate">{s.resourceName}</div>
+                                                <div className="text-muted-foreground">
+                                                    Need: <span className="font-mono">{s.netDemand.toFixed(2)}</span> {s.unit}
+                                                    {s.currentStock > 0 && (
+                                                        <Badge variant="outline" className="ml-1 text-[10px]">
+                                                            Stock: {s.currentStock.toFixed(1)}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 px-2 text-xs shrink-0"
+                                                onClick={() => applySuggestion(s)}
+                                            >
+                                                Apply <ArrowRight className="ml-1 h-3 w-3" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     <div className="grid gap-2">
                         <Label>Item Name</Label>

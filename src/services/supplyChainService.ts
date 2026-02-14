@@ -133,20 +133,20 @@ export const supplyChainService = {
                 })
             ))
 
-            // 4. Update Committed Cost in RAP
+            // 4. Update Committed Cost in RAP (await for reliability)
             for (const item of items) {
                 if (item.rap_item_id) {
                     const rapItem = rapMap.get(item.rap_item_id)
                     if (rapItem) {
                         const newCommitted = (rapItem.committed_cost || 0) + (item.quantity * item.unit_price)
-                        // Fire and forget update
-                        supabase!
+                        const { error: updateErr } = await supabase!
                             .from('rap_items')
                             .update({ committed_cost: newCommitted })
                             .eq('id', rapItem.id)
-                            .then(({ error }) => {
-                                if (error) console.error("Failed to update committed cost", error)
-                            })
+                        if (updateErr) {
+                            console.error('Failed to update committed cost for', rapItem.id, updateErr)
+                            throw new Error(`Failed to lock budget for RAP item: ${updateErr.message}`)
+                        }
                     }
                 }
             }
@@ -203,8 +203,43 @@ export const supplyChainService = {
             updates.approved_at = new Date().toISOString()
         }
 
+        // Handle Rejection / Cancellation — rollback committed_cost
+        if (status === 'REJECTED' || status === 'CANCELLED') {
+            const items = await this.getPoItems(id)
+            for (const item of items) {
+                if (item.rapItemId) {
+                    const { data: rapItem } = await supabase!
+                        .from('rap_items')
+                        .select('committed_cost')
+                        .eq('id', item.rapItemId)
+                        .single()
+
+                    if (rapItem) {
+                        const newCommitted = Math.max(0, (rapItem.committed_cost || 0) - item.totalPrice)
+                        await supabase!
+                            .from('rap_items')
+                            .update({ committed_cost: newCommitted })
+                            .eq('id', item.rapItemId)
+                    }
+                }
+            }
+        }
+
         // Handle Completion (Move Committed -> Actual)
+        // Idempotency guard: only migrate if PO is not already COMPLETED
         if (status === 'COMPLETED') {
+            // Check current PO status first
+            const { data: currentPo } = await supabase!
+                .from('purchase_orders')
+                .select('status')
+                .eq('id', id)
+                .single()
+
+            if (currentPo?.status === 'COMPLETED') {
+                // Already completed — skip cost migration to prevent double-move
+                return upsertPurchaseOrder({ id, ...updates })
+            }
+
             const items = await this.getPoItems(id)
             for (const item of items) {
                 if (item.rapItemId) {
@@ -261,10 +296,10 @@ export const supplyChainService = {
     },
 
     // Calculate current stock from transactions
-    async getInventoryStock(projectId: string) {
+    async getInventoryStock(projectId: string): Promise<{ materialName: string, unit: string, totalIn: number, totalOut: number, current: number, currentStock: number }[]> {
         const transactions = await this.getInventoryTransactions(projectId)
 
-        const stock: Record<string, { materialName: string, unit: string, totalIn: number, totalOut: number, current: number }> = {}
+        const stock: Record<string, { materialName: string, unit: string, totalIn: number, totalOut: number, current: number, currentStock: number }> = {}
 
         transactions.forEach(tx => {
             const key = tx.materialName.toLowerCase().trim()
@@ -275,7 +310,8 @@ export const supplyChainService = {
                     unit: tx.unit || 'unit',
                     totalIn: 0,
                     totalOut: 0,
-                    current: 0
+                    current: 0,
+                    currentStock: 0
                 }
             }
 
@@ -288,6 +324,9 @@ export const supplyChainService = {
                 stock[key].totalOut += qty
                 stock[key].current -= qty
             }
+
+            // Keep currentStock in sync for UI backward compatibility
+            stock[key].currentStock = stock[key].current
         })
 
         return Object.values(stock)
