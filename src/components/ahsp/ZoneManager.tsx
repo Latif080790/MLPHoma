@@ -103,7 +103,7 @@ export function ZoneManager() {
                                             <TableCell>{zone.description}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-1">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingZone(zone)}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingZone({ id: zone.id, name: zone.name, description: zone.description || '' })}>
                                                         <Edit2 className="h-3 w-3" />
                                                     </Button>
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteZone(zone.id)}>

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Folder, FileText, Upload, Download, Trash2, Search } from "lucide-react"
+import { Folder, FileText, Upload, Download, Trash2, Search, History } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
+import { DocumentVersionHistory } from "@/components/modules/DocumentVersionHistory"
 
 const CATEGORIES = ["Contracts", "Drawings", "Reports", "Invoices", "Correspondence", "Other"]
 
@@ -28,6 +29,9 @@ export default function Documents() {
     const [newDocTitle, setNewDocTitle] = useState("")
     const [newDocCategory, setNewDocCategory] = useState("Reports")
     const [newDocUrl, setNewDocUrl] = useState("")
+
+    // Version History State
+    const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
 
     useEffect(() => {
         if (activeProjectId) loadDocs()
@@ -126,14 +130,25 @@ export default function Documents() {
                                     <div className="bg-blue-50 p-2 rounded text-blue-600">
                                         <FileText size={20} />
                                     </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        onClick={() => handleDelete(doc.id)}
-                                    >
-                                        <Trash2 size={14} />
-                                    </Button>
+                                    <div className="flex gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-neutral-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={() => setVersionDoc(doc)}
+                                            title="Version History"
+                                        >
+                                            <History size={14} />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={() => handleDelete(doc.id)}
+                                        >
+                                            <Trash2 size={14} />
+                                        </Button>
+                                    </div>
                                 </div>
                                 <div>
                                     <h4 className="font-semibold truncate" title={doc.title}>{doc.title}</h4>
@@ -179,6 +194,18 @@ export default function Documents() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Version History Dialog */}
+            {versionDoc && (
+                <DocumentVersionHistory
+                    open={!!versionDoc}
+                    onOpenChange={(open) => { if (!open) setVersionDoc(null) }}
+                    documentGroupId={versionDoc.document_group_id || versionDoc.id}
+                    projectId={activeProjectId!}
+                    documentTitle={versionDoc.title}
+                    onReverted={loadDocs}
+                />
+            )}
         </div>
     )
 }

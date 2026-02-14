@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, Search, Filter } from "lucide-react"
+import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, Search, Filter, PackageCheck, ArrowRightLeft, ClipboardList } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +15,9 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { MaterialRequestDialog } from "@/components/supply-chain/MaterialRequestDialog"
 import { PurchaseOrderDialog } from "@/components/supply-chain/PurchaseOrderDialog"
 import { InventoryTransactionDialog } from "@/components/supply-chain/InventoryTransactionDialog"
+import { GRNDialog } from "@/components/supply-chain/GRNDialog"
+import { MaterialTransferDialog } from "@/components/supply-chain/MaterialTransferDialog"
+import { WorkOrderPanel } from "@/components/modules/WorkOrderPanel"
 
 export default function SupplyChain() {
     const { activeProjectId } = useProjectStore()
@@ -34,6 +37,8 @@ export default function SupplyChain() {
     const [invOpen, setInvOpen] = useState(false)
     const [invType, setInvType] = useState<"IN" | "OUT">("IN")
     const [searchTerm, setSearchTerm] = useState("")
+    const [grnOpen, setGrnOpen] = useState(false)
+    const [transferOpen, setTransferOpen] = useState(false)
 
     useEffect(() => {
         if (activeProjectId) {
@@ -69,6 +74,12 @@ export default function SupplyChain() {
                 description="End-to-end material management: Requests -> Purchase Orders -> Inventory."
                 actions={
                     <div className="flex gap-2">
+                        <Button size="sm" className="gap-2" variant="outline" onClick={() => setGrnOpen(true)}>
+                            <PackageCheck size={16} /> GRN
+                        </Button>
+                        <Button size="sm" className="gap-2" variant="outline" onClick={() => setTransferOpen(true)}>
+                            <ArrowRightLeft size={16} /> Transfer
+                        </Button>
                         <Button size="sm" className="gap-2" variant="outline" onClick={() => setPoOpen(true)}>
                             <ShoppingCart size={16} /> New PO
                         </Button>
@@ -82,6 +93,8 @@ export default function SupplyChain() {
             <MaterialRequestDialog open={mrOpen} onOpenChange={setMrOpen} projectId={activeProjectId} />
             <PurchaseOrderDialog open={poOpen} onOpenChange={setPoOpen} projectId={activeProjectId} />
             <InventoryTransactionDialog open={invOpen} onOpenChange={setInvOpen} projectId={activeProjectId} defaultType={invType} />
+            <GRNDialog open={grnOpen} onOpenChange={setGrnOpen} projectId={activeProjectId} />
+            <MaterialTransferDialog open={transferOpen} onOpenChange={setTransferOpen} projectId={activeProjectId} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <div className="flex items-center justify-between mb-4">
@@ -94,6 +107,9 @@ export default function SupplyChain() {
                         </TabsTrigger>
                         <TabsTrigger value="inventory" className="gap-2">
                             <Warehouse size={14} /> Inventory
+                        </TabsTrigger>
+                        <TabsTrigger value="spk" className="gap-2">
+                            <ClipboardList size={14} /> SPK / Opname
                         </TabsTrigger>
                     </TabsList>
 
@@ -248,6 +264,11 @@ export default function SupplyChain() {
                             </div>
                         )}
                     </div>
+                </TabsContent>
+
+                {/* --- SPK / OPNAME --- */}
+                <TabsContent value="spk" className="space-y-4">
+                    <WorkOrderPanel projectId={activeProjectId} />
                 </TabsContent>
 
             </Tabs>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
+import { ProfitHealthWidget } from '../../components/modules/ProfitHealthWidget'
 
 // Existing Scheduler Components (Keeping them for the "Scheduler" tab)
 import { RapToolbar, PresetKind } from '../../components/rap/RapToolbar'
@@ -83,6 +84,9 @@ export default function RAP(): JSX.Element {
         {/* --- TAB 1: BUDGET CONTROL (New SQL-based) --- */}
         <TabsContent value="control">
           <div className="space-y-4">
+            {/* Profit Health Widget */}
+            {projectId && <ProfitHealthWidget projectId={projectId} compact />}
+
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Budget Summary</CardTitle>

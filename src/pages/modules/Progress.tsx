@@ -23,6 +23,8 @@ import jsPDF from "jspdf"
 import { timelineService } from "@/services/timelineService"
 import { Camera, Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { progressBillingService } from "@/services/progressBillingService"
+import { progressEvidenceService } from "@/services/progressEvidenceService"
 
 /**
  * Export progress rows as CSV
@@ -114,6 +116,7 @@ export default function Progress() {
 
   // Photo Upload State
   const [uploading, setUploading] = useState(false)
+  const [gpsCoords, setGpsCoords] = useState<{ latitude: number; longitude: number } | null>(null)
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -145,12 +148,6 @@ export default function Progress() {
   const onAdd = () => {
     if (!form.date) return
 
-    // Find existing point to preserve planned values if needed, 
-    // but actually we should just omit them from the update object 
-    // so the store's merge logic keeps the old ones.
-    // However, if it's a new point, we might want defaults.
-    // The store handles merge. We just need to not send 0.
-
     const payload: any = {
       projectId,
       date: form.date,
@@ -160,10 +157,19 @@ export default function Progress() {
       updatedAt: new Date().toISOString(),
     }
 
-    // Only add createdAt if it's likely a new point (though store handles this too)
-    // We don't send plannedProgress/plannedCost so they are not overwritten.
-
     addDataPoint(projectId, payload)
+
+    // Auto-trigger billing generation (non-blocking)
+    try {
+      progressBillingService.generateMonthlyBilling(
+        projectId,
+        Number(form.progress) || 0
+      ).then(() => {
+        toast.success("Billing claim auto-generated", { description: "Check Finance → AR for details." })
+      }).catch((err) => {
+        console.warn('Auto-billing failed (non-critical):', err)
+      })
+    } catch { /* ignore */ }
 
     setForm({
       date: new Date().toISOString().split("T")[0],
@@ -175,6 +181,7 @@ export default function Progress() {
       weather: 'sunny',
       delayReason: 'none'
     })
+    setGpsCoords(null)
   }
 
   const currentPlanned = useMemo(() => {
@@ -309,8 +316,20 @@ export default function Progress() {
                         {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
                       </label>
 
-                      <Button variant="outline" size="icon" title="Get GPS" onClick={() => toast.info("GPS Coordinates Captured (Mock)")}>
-                        <MapPin className="h-4 w-4" />
+                      <Button variant="outline" size="icon" title="Get GPS" onClick={async () => {
+                        try {
+                          const pos = await progressEvidenceService.getCurrentPosition()
+                          if (pos) {
+                            setGpsCoords(pos)
+                            toast.success(`GPS: ${pos.latitude.toFixed(6)}, ${pos.longitude.toFixed(6)}`)
+                          } else {
+                            toast.error("GPS unavailable")
+                          }
+                        } catch (err: any) {
+                          toast.error("GPS failed", { description: err.message })
+                        }
+                      }}>
+                        <MapPin className={`h-4 w-4 ${gpsCoords ? 'text-green-600' : ''}`} />
                       </Button>
                     </div>
                   </div>
