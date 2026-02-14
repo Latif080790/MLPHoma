@@ -75,23 +75,23 @@ export const dashboardService = {
         // 2. Risk Stats
         const { count: criticalRisks, data: activeRisks } = await supabase
             .from('risks')
-            .select('*')
+            .select('*', { count: 'exact' })
             .eq('project_id', projectId)
-            .in('severity', ['HIGH', 'CRITICAL'])
+            .gte('risk_score', 15)
             .eq('status', 'OPEN')
             .limit(5)
 
         // 3. Schedule Stats (Overdue & Upcoming)
         const today = new Date().toISOString().split('T')[0]
         const { count: overdueTasks } = await supabase
-            .from('wbs_items')
+            .from('timeline_tasks')
             .select('*', { count: 'exact', head: true })
             .eq('project_id', projectId)
             .lt('progress', 100)
             .lt('end_date', today)
 
         const { data: upcomingTasksData } = await supabase
-            .from('wbs_items')
+            .from('timeline_tasks')
             .select('id, name, end_date, progress')
             .eq('project_id', projectId)
             .gte('end_date', today)
@@ -183,7 +183,7 @@ export const dashboardService = {
                     type: 'RISK',
                     message: `Risk: ${risk.description?.substring(0, 20)}...`,
                     date: risk.created_at || new Date().toISOString(),
-                    status: risk.severity
+                    status: risk.status
                 })
             })
         }

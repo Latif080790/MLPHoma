@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
 import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/validationSchemas'
-import { syncTimelineTask, syncDelete } from '../lib/supabaseSyncService'
+import { syncTimelineTask, syncDelete, syncTimelineTasks } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
 
 /**
@@ -100,6 +100,9 @@ export interface TimelineState {
 
   /** Snapshot baseline (copy current dates to baseline fields) */
   setBaseline: (projectId: string, overwrite?: boolean) => void
+
+  /** Import multiple tasks (Batch) */
+  importTasks: (projectId: string, tasks: Partial<TimelineTask>[]) => void
 }
 
 /**
@@ -292,6 +295,42 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
         })
         return { tasksByProject: { ...s.tasksByProject, [projectId]: next } }
       })
+    },
+
+    importTasks: (projectId, tasks) => {
+      const now = new Date().toISOString()
+      const newTasks: TimelineTask[] = tasks.map((t) => {
+        const dur = Math.max(1, Number(t.duration || 1))
+        const startDate = t.startDate || toISODate(new Date())
+        const endDate = t.endDate ?? addDays(startDate, dur - 1)
+
+        return {
+          id: t.id || generateId('task'),
+          projectId,
+          name: t.name || 'Unhamed Task',
+          description: t.description || '',
+          startDate,
+          endDate,
+          duration: inclusiveDays(startDate, endDate),
+          progress: Number(t.progress || 0),
+          status: t.status || 'not_started',
+          priority: t.priority || 'medium',
+          wbsId: t.wbsId,
+          rabId: t.rabId,
+          dependencies: t.dependencies || [],
+          assignedResources: t.assignedResources || [],
+          createdAt: now,
+          updatedAt: now,
+        }
+      })
+
+      set((s) => {
+        const arr = s.tasksByProject[projectId] || []
+        return { tasksByProject: { ...s.tasksByProject, [projectId]: [...arr, ...newTasks] } }
+      })
+
+      // Sync to Supabase using batch
+      syncTimelineTasks(newTasks, projectId)
     },
   }
 })

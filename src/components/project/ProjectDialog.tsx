@@ -79,8 +79,16 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="id">Project ID</Label>
-              <Input id="id" {...register('id')} disabled={!!project} placeholder="e.g. P-001" required />
+              <Label htmlFor="id">Project ID/Number</Label>
+              <Input
+                id="id"
+                {...register('id')}
+                disabled={!!project}
+                placeholder="Auto-generated if empty"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                Leave blank to use internal numbering (PRJ-YYYY-XXXX).
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>

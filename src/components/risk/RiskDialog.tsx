@@ -36,7 +36,8 @@ interface RiskDialogProps {
 
 export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDialogProps) {
     const { createRisk, updateRisk, loading } = useRiskStore()
-    const { tasks, getTasks } = useTimelineStore()
+    const getTasks = useTimelineStore((s) => s.getTasks)
+    const tasks = projectId ? getTasks(projectId) : []
 
     useEffect(() => {
         if (open && projectId) {
@@ -144,7 +145,7 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="none">Project Wide</SelectItem>
-                                    {tasks.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                                    {(tasks || []).map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>

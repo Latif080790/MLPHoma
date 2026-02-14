@@ -10,7 +10,7 @@ import { notify as toast } from '../lib/toast'
 import type { WBSStore, WBSItem } from '../types/wbs'
 import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { wbsItemInputSchema, wbsItemUpdateSchema } from '../lib/validationSchemas'
-import { syncWBSItem, syncDelete } from '../lib/supabaseSyncService'
+import { syncWBSItem, syncDelete, syncWBSItems } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
 
 /**
@@ -386,6 +386,10 @@ export const useWBSStore = create<WBSStore>()(
             },
           }
         })
+
+        // Sync to Supabase using batch
+        const finalItems = get().itemsByProject[projectId] || []
+        syncWBSItems(finalItems, projectId)
       },
 
       // Export WBS structure

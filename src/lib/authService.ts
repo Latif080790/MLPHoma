@@ -221,11 +221,20 @@ export const authService = {
         .eq('id', userId)
         .single()
 
-      if (error) throw error
+      if (error) {
+        // 404/PGRST116 means no row found – not a hard error, profile may not exist yet
+        if (error.code === 'PGRST116' || error.message?.includes('not found')) {
+          console.warn('Profile not found for user', userId)
+          return { profile: null, error: null }
+        }
+        throw error
+      }
 
       return { profile: data as ProfileData, error: null }
     } catch (err) {
+      console.warn('getProfile failed:', err)
       return {
+        profile: null,
         error: err instanceof Error ? err : new Error('Get profile failed'),
       }
     }

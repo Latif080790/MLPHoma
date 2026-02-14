@@ -4,7 +4,7 @@
  * Main AHSP catalog component with search, filter, and management
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
@@ -66,16 +66,16 @@ export function AHSPCatalog({
   } = useAHSPStore()
 
   // Load zones on mount
-  useState(() => {
+  useEffect(() => {
     fetchZones()
-  })
+  }, [fetchZones])
 
   // Load zone prices when zone changes
-  useMemo(() => {
+  useEffect(() => {
     if (selectedZone && selectedZone !== 'default') {
       fetchZonePrices(selectedZone)
     }
-  }, [selectedZone])
+  }, [selectedZone, fetchZonePrices])
 
   // Calculate summary
   const summary = useMemo(() => {
@@ -108,7 +108,6 @@ export function AHSPCatalog({
       items = searchAHSPItems(searchQuery)
     }
 
-    return items
     return items
   }, [ahspItems, showInactive, selectedCategory, searchQuery, filterByCategory, searchAHSPItems])
 

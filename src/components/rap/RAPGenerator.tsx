@@ -151,26 +151,42 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
 
   /** Import amounts from RAB items linked to tasks */
   const importFromRAB = () => {
-    if (!items.length) return
-    
+    if (!items.length) {
+      toast.error('No tasks found to import budget into.')
+      return
+    }
+
     // Map taskId -> total cost
     const taskCosts = new Map<string, number>()
-    rabItems.forEach((item: any) => {
-      if (item.taskId) {
-        const cost = item.finalTotal || (item.volume * (item.unit_price || 0)) || 0
-        taskCosts.set(item.taskId, (taskCosts.get(item.taskId) || 0) + cost)
+    const activeRabItems = Array.isArray(rabItems) ? rabItems : []
+
+    activeRabItems.forEach((item: any) => {
+      // Normalize taskId link
+      const tid = item.taskId || item.task_id || item.wbsId || item.wbs_id
+      if (tid) {
+        const cost = Number(item.finalTotal || item.finalPrice || item.final_total || (item.volume * (item.unit_price || item.unitPrice || 0)) || 0)
+        taskCosts.set(tid, (taskCosts.get(tid) || 0) + cost)
       }
     })
 
-    setItems(prev => prev.map(it => ({
-      ...it,
-      amount: Math.round(taskCosts.get(it.taskId) || 0)
-    })))
-    
+    let matchedCount = 0
+    setItems(prev => prev.map(it => {
+      const amt = taskCosts.get(it.taskId)
+      if (amt !== undefined) matchedCount++
+      return {
+        ...it,
+        amount: Math.round(amt || 0)
+      }
+    }))
+
     const total = Array.from(taskCosts.values()).reduce((a, b) => a + b, 0)
     setTotalBudget(Math.round(total))
-    
-    toast.success(`Imported Rp ${fmtIDR(total)} from RAB`)
+
+    if (matchedCount > 0) {
+      toast.success(`Imported Rp ${fmtIDR(total)} from RAB (${matchedCount} tasks matched)`)
+    } else {
+      toast.warning('No RAB items found with matching Task IDs.')
+    }
   }
 
   /** Initialize items when tasks change */
