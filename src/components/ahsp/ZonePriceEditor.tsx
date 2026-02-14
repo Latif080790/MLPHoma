@@ -63,7 +63,8 @@ export function ZonePriceEditor({ item, zoneId, currentPrice, open, onClose }: Z
         updateZonePrice({
             zoneId,
             ahspId: item.id,
-            ...formData
+            ...formData,
+            finalPrice
         })
         onClose()
     }

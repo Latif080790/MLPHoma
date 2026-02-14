@@ -57,7 +57,7 @@ export function RABTable({ projectId }: RABTableProps) {
   const tasks = getTasks(projectId)
 
   // Get Project for Zone Info
-  const project = useProjectStore(s => s.projects.find(p => p.id === projectId))
+  const project = useProjectStore(s => s.projects[projectId])
 
   // WBS Store
   const { importWBS } = useWBSStore()

@@ -33,15 +33,15 @@ interface MaterialRequestDialogProps {
 
 export function MaterialRequestDialog({ open, onOpenChange, projectId }: MaterialRequestDialogProps) {
     const { createMaterialRequest, loading } = useSupplyChainStore()
-    const { tasks } = useTimelineStore() // get tasks for WBS dropdown
-    const { getTasks } = useTimelineStore()
+    const getTasks = useTimelineStore(s => s.getTasks)
+    const tasks = getTasks(projectId)
 
-    // Ensure tasks are loaded
-    useEffect(() => {
-        if (open && projectId) {
-            getTasks(projectId)
-        }
-    }, [open, projectId, getTasks])
+    // Ensure tasks are loaded (if not already in store)
+    // In a real app we might need a distinct 'fetchTasks' async action
+    // But getTasks returns what's in store.
+    // If we assume data is loaded via project load, this is fine.
+    // If we need to trigger fetch:
+    // useEffect(() => { ... }, [])
 
     const form = useForm<MrFormValues>({
         resolver: zodResolver(mrSchema),
@@ -89,7 +89,7 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
                             <SelectContent>
                                 {tasks.map(t => (
                                     <SelectItem key={t.id} value={t.id}>
-                                        {t.code ? `[${t.code}] ` : ''}{t.name}
+                                        {t.wbsCode ? `[${t.wbsCode}] ` : ''}{t.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
