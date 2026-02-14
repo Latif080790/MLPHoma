@@ -208,14 +208,18 @@ export default function Reports() {
   const cashFlow = useCashFlowSummary(projectId, project?.budget ?? 0, project?.paymentTerms)
   const topResources = useResourceSummary(projectId)
 
-  const rap = useRapStore((s: any) => s.getPlan?.(projectId) ?? EMPTY_ARRAY)
+  const rapItems = useRapStore((s) => s.items)
+  const rap_plan = useMemo(() => {
+    const plan = useRapStore.getState().getPlan(projectId)
+    return plan
+  }, [rapItems, projectId])
   const totalRap = useMemo(
     () =>
-      rap.reduce(
-        (sum: number, p: any) => sum + (p.items || []).reduce((s: number, it: any) => s + (it.plannedCost || 0), 0),
+      rap_plan.reduce(
+        (sum: number, p: any) => sum + (p.planned || 0),
         0
       ),
-    [rap]
+    [rap_plan]
   )
 
   const exportRef = useRef<HTMLDivElement | null>(null)

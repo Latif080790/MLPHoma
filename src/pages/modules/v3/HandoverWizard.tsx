@@ -15,6 +15,7 @@ export default function HandoverWizard() {
     const activeProjectId = useProjectStore((s) => s.activeProjectId)
     const projects = useProjectStore((s) => s.projects)
     const project = activeProjectId ? projects[activeProjectId] : null
+    const projectId = project?.id ?? null
     const [step, setStep] = useState(1)
     const [generating, setGenerating] = useState(false)
     const [reportReady, setReportReady] = useState(false)
@@ -23,26 +24,28 @@ export default function HandoverWizard() {
     const [outstanding, setOutstanding] = useState<OutstandingIssue[]>([])
 
     useEffect(() => {
-        if (project?.id) {
-            loadHandoverData()
+        if (!projectId) { setLoading(false); return }
+        let cancelled = false
+        const load = async () => {
+            setLoading(true)
+            try {
+                const [s, o] = await Promise.all([
+                    handoverService.getHandoverSummary(projectId),
+                    handoverService.getOutstandingIssues(projectId)
+                ])
+                if (!cancelled) {
+                    setSummary(s)
+                    setOutstanding(o)
+                }
+            } catch (error) {
+                if (!cancelled) toast.error("Failed to load handover data")
+            } finally {
+                if (!cancelled) setLoading(false)
+            }
         }
-    }, [project?.id])
-
-    const loadHandoverData = async () => {
-        setLoading(true)
-        try {
-            const [s, o] = await Promise.all([
-                handoverService.getHandoverSummary(project!.id),
-                handoverService.getOutstandingIssues(project!.id)
-            ])
-            setSummary(s)
-            setOutstanding(o)
-        } catch (error) {
-            toast.error("Failed to load handover data")
-        } finally {
-            setLoading(false)
-        }
-    }
+        load()
+        return () => { cancelled = true }
+    }, [projectId])
 
 
 
