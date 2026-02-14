@@ -6,6 +6,7 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { Textarea } from '../ui/textarea'
+import { useAHSPStore } from '../../store/ahspStore'
 import type { Project } from '../../store/projectStore'
 
 interface ProjectDialogProps {
@@ -26,9 +27,19 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
       clientName: '',
       startDate: '',
       endDate: '',
+
+      zoneId: '',
       meta: { description: '' }
     }
   })
+
+  const { zones, fetchZones } = useAHSPStore()
+
+  useEffect(() => {
+    if (open) {
+      fetchZones()
+    }
+  }, [open])
 
   useEffect(() => {
     if (project) {
@@ -46,6 +57,8 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
         clientName: '',
         startDate: '',
         endDate: '',
+
+        zoneId: '',
         meta: { description: '' }
       })
     }
@@ -62,7 +75,7 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
         <DialogHeader>
           <DialogTitle>{project ? 'Edit Project' : 'Create New Project'}</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -71,8 +84,8 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select 
-                value={watch('status')} 
+              <Select
+                value={watch('status')}
                 onValueChange={(val) => setValue('status', val)}
               >
                 <SelectTrigger>
@@ -100,11 +113,11 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
             </div>
             <div className="space-y-2">
               <Label htmlFor="budget">Budget (IDR)</Label>
-              <Input 
-                id="budget" 
-                type="number" 
-                {...register('budget', { valueAsNumber: true })} 
-                placeholder="0" 
+              <Input
+                id="budget"
+                type="number"
+                {...register('budget', { valueAsNumber: true })}
+                placeholder="0"
               />
             </div>
           </div>
@@ -112,6 +125,27 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
             <Input id="location" {...register('location')} placeholder="Project Location" />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="zoneId">Pricing Zone</Label>
+            <Select
+              value={watch('zoneId') || "default"}
+              onValueChange={(val) => setValue('zoneId', val === "default" ? undefined : val)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Pricing Zone" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Default (Master)</SelectItem>
+                {zones.map((z) => (
+                  <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="text-xs text-muted-foreground">
+              Select a zone to apply specific material and labor prices.
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -127,10 +161,10 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
 
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
-            <Textarea 
-              id="description" 
-              {...register('meta.description')} 
-              placeholder="Project description..." 
+            <Textarea
+              id="description"
+              {...register('meta.description')}
+              placeholder="Project description..."
             />
           </div>
 

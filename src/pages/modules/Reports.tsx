@@ -1,6 +1,6 @@
 /**
  * Reports.tsx
- * Reports & Export Center: KPIs snapshot and export buttons (CSV, Excel, PDF).
+ * Reports & Export Center: KPI snapshot and export buttons (CSV, Excel, PDF).
  * Enhancements: Excel export (xlsx) and PDF export (jsPDF + html2canvas) for KPI snapshot.
  */
 
@@ -16,6 +16,8 @@ import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { calculateCashFlow } from "../../lib/cashflowCalculator"
+import { HandoverWizard } from "./v3/HandoverWizard"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const EMPTY_ARRAY: any[] = []
 
@@ -223,7 +225,7 @@ export default function Reports() {
       <ModuleHeader
         icon={<FileBarChart2 size={18} />}
         title="Reports"
-        description="Dashboard analitik dan ekspor (CSV, Excel, PDF) untuk RAB &amp; Curva‑S."
+        description="Dashboard analitik, ekspor laporan, dan wizard serah terima project."
         actions={
           <div className="flex flex-wrap gap-2">
             <button
@@ -254,127 +256,140 @@ export default function Reports() {
         }
       />
 
-      <div ref={exportRef} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-green-600" /> Total Budget (RAB)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-bold">
-            Rp {rab.total.toLocaleString("id-ID")}
-            <div className="mt-2 text-sm text-neutral-500">{rab.count} items</div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="dashboard" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="dashboard">Analytics Dashboard</TabsTrigger>
+          <TabsTrigger value="handover">Project Handover & Archival</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-blue-600" /> Total RAP (Planned Cost)
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-bold">
-            Rp {totalRap.toLocaleString("id-ID")}
-            <div className="mt-2 text-sm text-neutral-500">Aggregated from schedule</div>
-          </CardContent>
-        </Card>
+        <TabsContent value="dashboard" className="space-y-6">
+          <div ref={exportRef} className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-green-600" /> Total Budget (RAB)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-2xl font-bold">
+                Rp {rab.total.toLocaleString("id-ID")}
+                <div className="mt-2 text-sm text-neutral-500">{rab.count} items</div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-amber-600" /> SPI/CPI
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-2xl font-bold">
-            {curva ? (
-              <div className="flex items-center gap-6">
-                <div>SPI {curva.metrics.spi.toFixed(2)}</div>
-                <div>CPI {curva.metrics.cpi.toFixed(2)}</div>
-              </div>
-            ) : (
-              <div className="text-base text-neutral-500">No analysis</div>
-            )}
-            <div className="mt-2 text-sm text-neutral-500">Status: {curva ? curva.status.replace("-", " ") : "—"}</div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-blue-600" /> Total RAP (Planned Cost)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-2xl font-bold">
+                Rp {totalRap.toLocaleString("id-ID")}
+                <div className="mt-2 text-sm text-neutral-500">Aggregated from schedule</div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-emerald-600" /> Cash Flow
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm text-neutral-500">Inflow</div>
-                <div className="font-bold text-green-600">Rp {cashFlow.inflow.toLocaleString("id-ID")}</div>
-              </div>
-              <div>
-                <div className="text-sm text-neutral-500">Outflow</div>
-                <div className="font-bold text-rose-600">Rp {cashFlow.outflow.toLocaleString("id-ID")}</div>
-              </div>
-            </div>
-            <div className="mt-2 border-t pt-2">
-              <div className="flex justify-between text-sm font-medium">
-                <span>Net Balance</span>
-                <span className={cashFlow.balance < 0 ? "text-rose-600" : "text-blue-600"}>
-                  Rp {cashFlow.balance.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-amber-600" /> SPI/CPI
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-2xl font-bold">
+                {curva ? (
+                  <div className="flex items-center gap-6">
+                    <div>SPI {curva.metrics.spi.toFixed(2)}</div>
+                    <div>CPI {curva.metrics.cpi.toFixed(2)}</div>
+                  </div>
+                ) : (
+                  <div className="text-base text-neutral-500">No analysis</div>
+                )}
+                <div className="mt-2 text-sm text-neutral-500">Status: {curva ? curva.status.replace("-", " ") : "—"}</div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileBarChart2 className="h-5 w-5 text-purple-600" /> Top Resources
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {topResources.length > 0 ? (
-              topResources.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <span className="truncate pr-2">{item.name}</span>
-                  <span className="font-medium">Rp {item.total.toLocaleString("id-ID")}</span>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-emerald-600" /> Cash Flow
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm text-neutral-500">Inflow</div>
+                    <div className="font-bold text-green-600">Rp {cashFlow.inflow.toLocaleString("id-ID")}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-neutral-500">Outflow</div>
+                    <div className="font-bold text-rose-600">Rp {cashFlow.outflow.toLocaleString("id-ID")}</div>
+                  </div>
                 </div>
-              ))
-            ) : (
-              <div className="text-sm text-neutral-500">No resource data</div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <img
-              src="https://pub-cdn.sider.ai/u/U0W8H7R4X2W/web-coder/690b315461d18d657615a7d2/resource/43ef6f55-5795-47a4-be29-66d5c61e53fa.jpg"
-              className="h-56 w-full object-cover"
-              alt="Reports"
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Insights</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {curva?.insights?.length ? (
-              curva.insights.map((i, idx) => (
-                <div key={idx} className="rounded-md border p-3 dark:border-neutral-800">
-                  {i}
+                <div className="mt-2 border-t pt-2">
+                  <div className="flex justify-between text-sm font-medium">
+                    <span>Net Balance</span>
+                    <span className={cashFlow.balance < 0 ? "text-rose-600" : "text-blue-600"}>
+                      Rp {cashFlow.balance.toLocaleString("id-ID")}
+                    </span>
+                  </div>
                 </div>
-              ))
-            ) : (
-              <div className="text-neutral-500">Belum ada insight.</div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileBarChart2 className="h-5 w-5 text-purple-600" /> Top Resources
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {topResources.length > 0 ? (
+                  topResources.map((item, idx) => (
+                    <div key={idx} className="flex justify-between text-sm">
+                      <span className="truncate pr-2">{item.name}</span>
+                      <span className="font-medium">Rp {item.total.toLocaleString("id-ID")}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-neutral-500">No resource data</div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <img
+                  src="https://pub-cdn.sider.ai/u/U0W8H7R4X2W/web-coder/690b315461d18d657615a7d2/resource/43ef6f55-5795-47a4-be29-66d5c61e53fa.jpg"
+                  className="h-56 w-full object-cover"
+                  alt="Reports"
+                />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Insights</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {curva?.insights?.length ? (
+                  curva.insights.map((i, idx) => (
+                    <div key={idx} className="rounded-md border p-3 dark:border-neutral-800">
+                      {i}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-neutral-500">Belum ada insight.</div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="handover">
+          <HandoverWizard />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

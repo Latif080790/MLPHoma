@@ -25,6 +25,30 @@ import type { RABItem } from '../types/rab'
 // Re-export RABItem for backward compatibility
 export type { RABItem }
 
+// Helper to calculate Pareto Class
+export const calculatePareto = (items: RABItem[]): (RABItem & { paretoClass: 'A' | 'B' | 'C' })[] => {
+  if (!items.length) return []
+
+  // 1. Sort by Total Price Descending
+  const sorted = [...items].sort((a, b) => (b.finalTotal || b.total_price || 0) - (a.finalTotal || a.total_price || 0))
+
+  // 2. Calculate Cumulative %
+  const totalCost = sorted.reduce((sum, item) => sum + (item.finalTotal || item.total_price || 0), 0)
+  let runningTotal = 0
+
+  return sorted.map(item => {
+    const cost = (item.finalTotal || item.total_price || 0)
+    runningTotal += cost
+    const cumPercent = totalCost > 0 ? (runningTotal / totalCost) * 100 : 0
+
+    let pClass: 'A' | 'B' | 'C' = 'C'
+    if (cumPercent <= 80) pClass = 'A' // Top 80% of value
+    else if (cumPercent <= 95) pClass = 'B' // Next 15%
+
+    return { ...item, paretoClass: pClass }
+  })
+}
+
 /**
  * Simple audit entry for actions affecting RAB
  */
@@ -144,6 +168,7 @@ export const useRabStore = create<RabState>((set, get) => {
         final_total: (item as any).final_total ?? (item as any).finalTotal,
         finalPrice: (item as any).finalPrice ?? (item as any).finalTotal,
         taskId: (item as any).taskId,
+        tkdn_percent: (item as any).tkdn_percent ?? 0,
         createdAt: now,
         updatedAt: now,
         ...item,
