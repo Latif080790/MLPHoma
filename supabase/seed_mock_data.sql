@@ -7,25 +7,87 @@
 -- 1. Create a Mock Project
 -- We must assign a user_id to see it in the app due to RLS.
 -- We'll pick the first user found in auth.users.
-WITH first_user AS (
-  SELECT id FROM auth.users ORDER BY created_at ASC LIMIT 1
-)
-INSERT INTO public.projects (id, code, name, client_name, location, start_date, end_date, budget, status, user_id)
-SELECT
-  'MOCK-PRJ-001', 
-  'PRJ-2026-0001', 
-  'Pembangunan Gedung Perkantoran ABC', 
-  'PT. Maju Bersama', 
-  'Jakarta Selatan', 
-  '2026-03-01', 
-  '2026-09-01', 
-  1500000000, 
-  'active',
-  id -- Assign to the first user found
-FROM first_user
-ON CONFLICT (id) 
-DO UPDATE SET 
-  user_id = EXCLUDED.user_id; -- Ensure ownership is claimed if row exists
+-- 1. Create a Mock Project
+-- Ensure a user exists to own the project (required by RLS and foreign keys)
+DO $$
+DECLARE
+    v_user_id UUID;
+    v_project_exists BOOLEAN;
+BEGIN
+    -- Enable pgcrypto for password hashing
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+    -- Check if we have any user
+    SELECT id INTO v_user_id FROM auth.users WHERE email = 'user@example.com' LIMIT 1;
+
+    -- If no user exists, create a dummy one for development
+    IF v_user_id IS NULL THEN
+        v_user_id := uuid_generate_v4();
+        
+        -- Insert into auth.users (Minimal fields for local dev)
+        INSERT INTO auth.users (
+            instance_id,
+            id,
+            aud,
+            role,
+            email,
+            encrypted_password,
+            email_confirmed_at,
+            raw_app_meta_data,
+            raw_user_meta_data,
+            created_at,
+            updated_at
+        ) VALUES (
+            '00000000-0000-0000-0000-000000000000',
+            v_user_id,
+            'authenticated',
+            'authenticated',
+            'user@example.com',
+            crypt('password123', gen_salt('bf')), -- Valid bcrypt hash for 'password123'
+            NOW(),
+            '{"provider": "email", "providers": ["email"]}',
+            '{"full_name": "Mock User"}', 
+            NOW(),
+            NOW()
+        );
+        
+        -- Create public profile
+        INSERT INTO public.profiles (id, full_name, role)
+        VALUES (v_user_id, 'Mock User', 'admin')
+        ON CONFLICT (id) DO NOTHING;
+        
+    ELSE
+        -- User exists, FORCE UPDATE the password
+        UPDATE auth.users 
+        SET encrypted_password = crypt('password123', gen_salt('bf')),
+            updated_at = NOW()
+        WHERE id = v_user_id;
+        
+        -- Ensure profile exists
+        INSERT INTO public.profiles (id, full_name, role)
+        VALUES (v_user_id, 'Mock User', 'admin')
+        ON CONFLICT (id) DO NOTHING;
+    END IF;
+
+    -- Create Project linked to this user
+    INSERT INTO public.projects (id, code, name, client_name, location, start_date, end_date, budget, status, user_id)
+    VALUES (
+        'MOCK-PRJ-001', 
+        'PRJ-2026-0001', 
+        'Pembangunan Gedung Perkantoran ABC', 
+        'PT. Maju Bersama', 
+        'Jakarta Selatan', 
+        '2026-03-01', 
+        '2026-09-01', 
+        1500000000, 
+        'active',
+        v_user_id
+    )
+    ON CONFLICT (id) 
+    DO UPDATE SET 
+        user_id = v_user_id; -- Ensure claimed by valid user
+        
+END $$;
 
 -- 2. Create Master Resources (Labor, Material, Equipment)
 INSERT INTO public.resources (id, code, name, type, unit, unit_price)

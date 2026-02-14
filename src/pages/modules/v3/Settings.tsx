@@ -11,6 +11,7 @@ import { useProjectStore } from "@/store/projectStore"
 import { EmptyState } from "@/components/common/EmptyState"
 import { toast } from "sonner"
 import { assertSupabase } from "@/lib/supabaseClient"
+import { TeamManagementPanel } from "@/components/modules/TeamManagementPanel"
 
 export default function Settings() {
     const { activeProjectId, projects, updateProject } = useProjectStore()
@@ -133,19 +134,15 @@ export default function Settings() {
 
                 {/* --- TEAM MANAGEMENT --- */}
                 <TabsContent value="team">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Team Members</CardTitle>
-                            <CardDescription>Manage access and roles.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <EmptyState
-                                title="Team Management Coming Soon"
-                                description="Invite users and assign roles (Project Manager, Site Engineer, etc.)."
-                                imageKeyword="team"
-                            />
-                        </CardContent>
-                    </Card>
+                    {activeProjectId ? (
+                        <TeamManagementPanel projectId={activeProjectId} />
+                    ) : (
+                        <Card>
+                            <CardContent className="py-8">
+                                <EmptyState title="No Project Selected" description="Select a project to manage team." />
+                            </CardContent>
+                        </Card>
+                    )}
                 </TabsContent>
 
                 {/* --- MASTER DATA --- */}

@@ -2,6 +2,8 @@
 import { create } from 'zustand'
 import { ChangeOrder, ChangeOrderItem } from '../types/change-order'
 import { changeOrderService } from '../services/changeOrderService'
+import { changeOrderCascade } from '../services/changeOrderCascade'
+import { toast } from 'sonner'
 
 interface ChangeOrderState {
     orders: ChangeOrder[]
@@ -58,6 +60,25 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
             set(state => ({
                 orders: state.orders.map(o => o.id === id ? { ...o, status: status as any } : o)
             }))
+
+            // FASE 2.4: Cascade on approval — update RAB items, timeline tasks, budget
+            if (status === 'APPROVED') {
+                try {
+                    const result = await changeOrderCascade.execute(id)
+                    if (result.errors.length > 0) {
+                        toast.warning('VO Approved with warnings', {
+                            description: `RAB: ${result.rabItemsUpdated} updated, Timeline: ${result.timelineTasksUpdated} updated. ${result.errors.length} warning(s).`,
+                        })
+                    } else {
+                        toast.success('VO Approved — Cascade Complete', {
+                            description: `RAB: ${result.rabItemsUpdated} item updated (Rp ${Math.abs(result.budgetDelta).toLocaleString('id-ID')}). Timeline: ${result.timelineTasksUpdated} task updated.`,
+                        })
+                    }
+                } catch (cascadeErr: any) {
+                    console.error('VO cascade failed:', cascadeErr)
+                    toast.error('VO approved but cascade failed', { description: cascadeErr.message })
+                }
+            }
         } catch (err: any) {
             set({ error: err.message })
             throw err

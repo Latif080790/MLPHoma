@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Receipt, TrendingUp, TrendingDown, FileText, Plus } from "lucide-react"
+import { Receipt, TrendingUp, TrendingDown, FileText, Plus, Zap } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,7 @@ import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
 import { Invoice, ClientClaim, FinanceTransaction } from "@/types/finance"
 import { toast } from "sonner"
+import { progressBillingService } from "@/services/progressBillingService"
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
@@ -130,7 +131,20 @@ export default function Finance() {
 
                 {/* --- AR (CLAIMS) --- */}
                 <TabsContent value="ar">
-                    <div className="flex justify-end mb-4">
+                    <div className="flex justify-end mb-4 gap-2">
+                        <Button size="sm" variant="outline" className="gap-2" onClick={async () => {
+                            try {
+                                const pct = parseFloat(prompt("Enter current overall progress % (e.g. 35.5):", "0") || "0")
+                                if (pct <= 0) { toast.info("Cancelled"); return }
+                                await progressBillingService.generateMonthlyBilling(activeProjectId!, pct)
+                                toast.success("Monthly billing generated", { description: "Claims created from progress data." })
+                                loadData()
+                            } catch (err: any) {
+                                toast.error("Billing generation failed", { description: err.message })
+                            }
+                        }}>
+                            <Zap size={14} /> Auto-Generate Billing
+                        </Button>
                         <Button size="sm" variant="outline" className="gap-2">
                             <Plus size={14} /> Create Claim
                         </Button>

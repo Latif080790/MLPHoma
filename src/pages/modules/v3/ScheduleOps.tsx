@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
-import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle } from 'lucide-react'
+import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical } from 'lucide-react'
 import WBS from '../WBS'
 import Timeline from '../Timeline'
 import CurvaS from '../CurvaS'
@@ -11,6 +11,7 @@ import Progress from '../Progress'
 import RiskRegister from '@/components/risk/RiskRegister'
 import { useProjectStore } from '@/store/projectStore'
 import { EmptyState } from '@/components/common/EmptyState'
+import { TimelineScenarioPanel } from '@/components/modules/TimelineScenarioPanel'
 
 export default function ScheduleOps() {
     const { activeProjectId } = useProjectStore()
@@ -42,6 +43,9 @@ export default function ScheduleOps() {
                     <TabsTrigger value="risk" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
                         <AlertTriangle size={14} /> Risk & Issues
                     </TabsTrigger>
+                    <TabsTrigger value="scenario" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
+                        <FlaskConical size={14} /> What-If
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="timeline" className="outline-none">
@@ -71,6 +75,12 @@ export default function ScheduleOps() {
                 <TabsContent value="risk" className="outline-none">
                     <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-4">
                         <RiskRegister projectId={activeProjectId} />
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="scenario" className="outline-none">
+                    <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-4">
+                        <TimelineScenarioPanel projectId={activeProjectId} />
                     </div>
                 </TabsContent>
             </Tabs>

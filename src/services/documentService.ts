@@ -11,6 +11,11 @@ export interface ProjectDocument {
     file_url: string
     version_number: number
     created_at: string
+    document_group_id?: string
+    change_notes?: string
+    is_latest?: boolean
+    file_size?: number
+    mime_type?: string
 }
 
 export const documentService = {

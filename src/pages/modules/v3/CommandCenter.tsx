@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Plus, Info, MessageSquare, Layout } from 'lucide-react'
+import { ApprovalQueueWidget } from '@/components/common/ApprovalQueueWidget'
 
 export default function CommandCenter() {
     const { projects, activeProjectId, addProject, setActiveProject } = useProjectStore()
@@ -251,6 +252,11 @@ export default function CommandCenter() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* 2.5 APPROVAL QUEUE (Dynamic) */}
+                <div className="col-span-1 md:col-span-2">
+                    <ApprovalQueueWidget />
+                </div>
 
                 {/* 3. ROW 3 (Quick Actions & Waste) */}
                 <Card className="col-span-1 md:col-span-2 shadow-sm border border-orange-100 dark:border-orange-900/30">

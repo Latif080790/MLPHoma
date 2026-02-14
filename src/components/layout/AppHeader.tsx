@@ -1,11 +1,9 @@
-/**
- * AppHeader.tsx
- * Modern glassmorphism header with project context and theme toggle.
- */
-
 import React from "react"
 import { ThemeToggle } from "../shared/ThemeToggle"
-import { Bell } from "lucide-react"
+import { LogOut, User } from "lucide-react"
+import { useAuthStore } from "../../store/authStore"
+import { useNavigate } from "react-router"
+import { NotificationCenter } from "../common/NotificationCenter"
 
 export interface AppHeaderProps {
   projectName?: string
@@ -13,6 +11,14 @@ export interface AppHeaderProps {
 }
 
 export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
+  const { user, profile, signOut } = useAuthStore()
+  const navigate = useNavigate()
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/login')
+  }
+
   return (
     <header className="glass sticky top-0 z-30 border-b">
       <div className="flex items-center gap-4 px-6 py-3">
@@ -42,20 +48,25 @@ export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
           )}
 
           {/* Notifications */}
-          <button
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))] transition-colors"
-            title="Notifications"
-          >
-            <Bell size={18} />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-blue-500" />
-          </button>
+          <NotificationCenter />
 
           {/* Theme toggle */}
           <ThemeToggle />
 
-          {/* User avatar placeholder */}
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-semibold text-white">
-            U
+          {/* User Profile / Logout */}
+          <div className="flex items-center gap-3 pl-2 border-l ml-1">
+            <div className="flex flex-col items-end hidden sm:flex">
+              <span className="text-xs font-medium">{profile?.full_name || 'User'}</span>
+              <span className="text-[10px] text-muted-foreground">{user?.email || ''}</span>
+            </div>
+
+            <button
+              onClick={handleSignOut}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+              title="Log Out"
+            >
+              <LogOut size={14} />
+            </button>
           </div>
         </div>
       </div>
