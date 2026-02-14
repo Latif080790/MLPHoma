@@ -33,7 +33,9 @@ import type {
   ResourceType,
   ResourceUnit,
   AHSPState,
-  PriceHistory
+  PriceHistory,
+  Zone,
+  AhspZonePrice
 } from '../types/ahsp'
 
 /**
@@ -60,7 +62,11 @@ export const useAHSPStore = create<AHSPStore>()(
           ahspItems: false,
           components: false,
           priceHistory: false,
+          zones: false,
+          zonePrices: false,
         },
+        zones: [],
+        zonePricesByZone: {},
         settings: {
           defaultOverhead: 10,
           defaultProfit: 10,
@@ -70,6 +76,8 @@ export const useAHSPStore = create<AHSPStore>()(
           ahspItems: null,
           components: null,
           priceHistory: null,
+          zones: null,
+          zonePrices: null,
         },
 
         // Data fetching actions
@@ -391,6 +399,11 @@ export const useAHSPStore = create<AHSPStore>()(
             profitPercentage: validation.data!.profitPercentage ?? get().settings.defaultProfit,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            // Initialize split costs as 0 or from input if available
+            price_material: validation.data!.price_material ?? 0,
+            price_labor: validation.data!.price_labor ?? 0,
+            price_equipment: validation.data!.price_equipment ?? 0,
+            price_subcon: validation.data!.price_subcon ?? 0,
           }
 
           set((state) => ({
@@ -680,7 +693,7 @@ export const useAHSPStore = create<AHSPStore>()(
                     basePrice: result.priceBreakdown.basePrice,
                     finalPrice: result.priceBreakdown.finalPrice,
 
-                    // Update split costs from breakdown
+                    // Update split costs from breakdown - This will now be persisted via syncAHSPItem
                     price_material: result.componentBreakdown.breakdown.material,
                     price_labor: result.componentBreakdown.breakdown.labor,
                     price_equipment: result.componentBreakdown.breakdown.equipment,
@@ -696,6 +709,8 @@ export const useAHSPStore = create<AHSPStore>()(
           // Queue-based sync with retry
           const item = get().ahspItems.find(i => i.id === ahspId)
           if (item) {
+            // Explicitly sync the new split cost fields to update the DB
+            // Note: syncAHSPItem needs to be robust enough to handle these new fields if they are in the Type
             syncAHSPItem(item)
           }
         },
@@ -754,30 +769,56 @@ export const useAHSPStore = create<AHSPStore>()(
         },
 
         // History actions
-        fetchPriceHistory: async (ahspId: string) => {
+        fetchPriceHistory: async (ahspId: string, zoneId?: string) => {
+          set((state) => ({
+            loading: { ...state.loading, priceHistory: true },
+            errors: { ...state.errors, priceHistory: null }
+          }))
           try {
             const client = assertSupabase()
-            const { data, error } = await client
+            let query = client
               .from('ahsp_price_history')
               .select('*')
               .eq('ahsp_id', ahspId)
               .order('created_at', { ascending: false })
 
+            if (zoneId) {
+              query = query.eq('zone_id', zoneId)
+            } else {
+              query = query.is('zone_id', null)
+            }
+
+            const { data, error } = await query
+
             if (error) throw error
 
-            const history = (data as AhspPriceHistoryRow[]) || []
-            return history.map((item) => ({
+            const history = (data as any[]).map((item) => ({
               id: item.id,
               ahspId: item.ahsp_id,
+              zoneId: item.zone_id,
               oldPrice: item.old_price,
               newPrice: item.new_price,
+              priceMaterial: item.price_material,
+              priceLabor: item.price_labor,
+              priceEquipment: item.price_equipment,
+              priceSubcon: item.price_subcon,
               changeType: item.change_type,
               changeReason: item.change_reason,
+              changedBy: item.changed_by, // ideally resolve user name
               createdAt: item.created_at || new Date().toISOString()
             }))
+
+            return history
           } catch (error: any) {
             console.error('Failed to fetch price history:', error)
+            set((state) => ({
+              errors: { ...state.errors, priceHistory: error.message }
+            }))
             return []
+          } finally {
+            set((state) => ({
+              loading: { ...state.loading, priceHistory: false }
+            }))
           }
         },
 
@@ -786,6 +827,205 @@ export const useAHSPStore = create<AHSPStore>()(
           set((state) => ({
             settings: { ...state.settings, ...newSettings }
           }))
+        },
+
+        /* -------------------------------------------------------------------------- */
+        /*                                ZONE ACTIONS                                */
+        /* -------------------------------------------------------------------------- */
+
+        fetchZones: async () => {
+          set((state) => ({
+            loading: { ...state.loading, zones: true },
+            errors: { ...state.errors, zones: null }
+          }))
+          try {
+            const client = assertSupabase()
+            const { data, error } = await client.from('zones').select('*').order('created_at')
+            if (error) throw error
+
+            const zones: Zone[] = (data || []).map(z => ({
+              id: z.id,
+              name: z.name,
+              description: z.description,
+              isActive: z.is_active,
+              createdAt: z.created_at,
+              updatedAt: z.updated_at
+            }))
+
+            set((state) => ({
+              zones,
+              loading: { ...state.loading, zones: false }
+            }))
+          } catch (err: any) {
+            set((state) => ({
+              loading: { ...state.loading, zones: false },
+              errors: { ...state.errors, zones: err.message }
+            }))
+          }
+        },
+
+        addZone: (zoneData) => {
+          const newZone: Zone = {
+            id: generateId('zone'),
+            name: zoneData.name,
+            description: zoneData.description,
+            isActive: zoneData.isActive ?? true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+
+          set(state => ({
+            zones: [...state.zones, newZone]
+          }))
+
+          // Sync
+          const client = assertSupabase()
+          client.from('zones').insert({
+            id: newZone.id,
+            name: newZone.name,
+            description: newZone.description,
+            is_active: newZone.isActive,
+            created_at: newZone.createdAt,
+            updated_at: newZone.updatedAt
+          }).then(({ error }) => {
+            if (error) toast.error("Failed to sync zone")
+          })
+        },
+
+        updateZone: (id, updates) => {
+          set(state => ({
+            zones: state.zones.map(z => z.id === id ? { ...z, ...updates, updatedAt: new Date().toISOString() } : z)
+          }))
+
+          const client = assertSupabase()
+          client.from('zones').update({
+            name: updates.name,
+            description: updates.description,
+            is_active: updates.isActive,
+            updated_at: new Date().toISOString()
+          }).eq('id', id).then(({ error }) => {
+            if (error) toast.error("Failed to update zone")
+          })
+        },
+
+        deleteZone: (id) => {
+          set(state => ({
+            zones: state.zones.filter(z => z.id !== id)
+          }))
+          syncDelete('zones', id)
+        },
+
+        fetchZonePrices: async (zoneId) => {
+          set(state => ({
+            loading: { ...state.loading, zonePrices: true }
+          }))
+          try {
+            const client = assertSupabase()
+            const { data, error } = await client
+              .from('ahsp_zone_prices')
+              .select('*')
+              .eq('zone_id', zoneId)
+
+            if (error) throw error
+
+            const prices: AhspZonePrice[] = (data || []).map(p => ({
+              id: p.id,
+              ahspId: p.ahsp_id,
+              zoneId: p.zone_id,
+              price_material: p.price_material || 0,
+              price_labor: p.price_labor || 0,
+              price_equipment: p.price_equipment || 0,
+              price_subcon: p.price_subcon || 0,
+              overheadPercentage: p.overhead_percentage || 0,
+              profitPercentage: p.profit_percentage || 0,
+              finalPrice: p.final_price || 0,
+              createdAt: p.created_at,
+              updatedAt: p.updated_at
+            }))
+
+            set(state => ({
+              zonePricesByZone: {
+                ...state.zonePricesByZone,
+                [zoneId]: prices
+              },
+              loading: { ...state.loading, zonePrices: false }
+            }))
+          } catch (err: any) {
+            console.error(err)
+            set(state => ({ loading: { ...state.loading, zonePrices: false } }))
+          }
+        },
+
+        updateZonePrice: (priceData) => {
+          const { zoneId, ahspId } = priceData
+
+          set(state => {
+            const zonePrices = state.zonePricesByZone[zoneId] || []
+            const existingIdx = zonePrices.findIndex(p => p.ahspId === ahspId)
+
+            let newPrices = [...zonePrices]
+            const now = new Date().toISOString()
+
+            // Calculate final price locally
+            const sum = (priceData.price_material || 0) +
+              (priceData.price_labor || 0) +
+              (priceData.price_equipment || 0) +
+              (priceData.price_subcon || 0)
+            const final = sum * (1 + ((priceData.overheadPercentage || 0) + (priceData.profitPercentage || 0)) / 100)
+
+            const newRecord: AhspZonePrice = {
+              id: existingIdx >= 0 ? zonePrices[existingIdx].id : generateId('zp'),
+              ahspId,
+              zoneId,
+              price_material: priceData.price_material ?? 0,
+              price_labor: priceData.price_labor ?? 0,
+              price_equipment: priceData.price_equipment ?? 0,
+              price_subcon: priceData.price_subcon ?? 0,
+              overheadPercentage: priceData.overheadPercentage ?? 0,
+              profitPercentage: priceData.profitPercentage ?? 0,
+              finalPrice: final,
+              createdAt: existingIdx >= 0 ? zonePrices[existingIdx].createdAt : now,
+              updatedAt: now
+            }
+
+            if (existingIdx >= 0) {
+              newPrices[existingIdx] = newRecord
+            } else {
+              newPrices.push(newRecord)
+            }
+
+            return {
+              zonePricesByZone: {
+                ...state.zonePricesByZone,
+                [zoneId]: newPrices
+              }
+            }
+          })
+
+          // Sync
+          const client = assertSupabase()
+          const state = get()
+          const price = state.zonePricesByZone[zoneId]?.find(p => p.ahspId === ahspId)
+          if (!price) return
+
+          client.from('ahsp_zone_prices').upsert({
+            id: price.id,
+            ahsp_id: price.ahspId,
+            zone_id: price.zoneId,
+            price_material: price.price_material,
+            price_labor: price.price_labor,
+            price_equipment: price.price_equipment,
+            price_subcon: price.price_subcon,
+            overhead_percentage: price.overheadPercentage,
+            profit_percentage: price.profitPercentage,
+            // final_price is generated
+            updated_at: price.updatedAt
+          }).then(({ error }) => {
+            if (error) {
+              console.error("Failed to sync zone price", error)
+              toast.error("Failed to save zone price")
+            }
+          })
         },
 
         applySettingsToAll: () => {

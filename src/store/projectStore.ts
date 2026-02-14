@@ -56,6 +56,8 @@ export interface Project {
   userId?: string
   /** Optional payment terms attached to the project */
   paymentTerms?: PaymentTerms
+  /** Optional AHSP Pricing Zone ID */
+  zoneId?: string
   /** Misc free-form metadata */
   meta?: Record<string, any>
 }
@@ -80,6 +82,9 @@ interface ProjectState {
   setActiveProject: (projectId?: string) => void
   /** Set payment terms for a project (partial replace/merge) */
   setPaymentTerms: (projectId: string, terms: Partial<PaymentTerms>) => void
+
+  /** Archive a project */
+  archiveProject: (projectId: string) => Promise<void>
 
   /** Getters (stable references) */
   getProject: (projectId: string) => Project | null
@@ -196,6 +201,44 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       })
       // Queue-based delete with retry
       syncDelete('projects', projectId)
+    },
+
+    /**
+     * archiveProject
+     * Mark project as ARCHIVED locally and sync.
+     */
+    archiveProject: async (projectId: string) => {
+      if (!projectId) return
+
+      // 1. Optimistic Update
+      set((state) => {
+        const existing = state.projects[projectId]
+        if (!existing) return state
+        const archived = { ...existing, status: 'ARCHIVED' }
+        return { projects: { ...state.projects, [projectId]: archived } }
+      })
+
+      // 2. Sync to DB
+      if (!supabase) {
+        console.error("Supabase client not initialized")
+        toast.error("Supabase client not initialized")
+        return
+      }
+
+      try {
+        const { error } = await supabase
+          .from('projects')
+          .update({
+            status: 'ARCHIVED',
+            archived_at: new Date().toISOString()
+          })
+          .eq('id', projectId)
+
+        if (error) throw error
+      } catch (err: any) {
+        toast.error("Failed to archive project remotely", { description: err.message })
+        // Revert on failure (optional but good practice)
+      }
     },
 
     /**

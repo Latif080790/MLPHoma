@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload } from 'lucide-react'
+import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -14,8 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { useAHSPStore, getAHSPSummary, validateAHSP } from '../../store/ahspStore'
 import { AHSPItemEditor } from './AHSPItemEditor'
+import { ZoneManager } from './ZoneManager'
+import { ZonePriceEditor } from './ZonePriceEditor'
+import { PriceHistoryDialog } from './PriceHistoryDialog'
 import { formatIDR } from '../../lib/utils'
-import type { AHSPItem } from '../../types/ahsp'
+import type { AHSPItem, Zone } from '../../types/ahsp'
 
 /** Props for AHSPCatalog component */
 export interface AHSPCatalogProps {
@@ -37,12 +40,19 @@ export function AHSPCatalog({
 }: AHSPCatalogProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>(defaultCategory || 'all')
+  const [selectedZone, setSelectedZone] = useState<string>('default')
+
   const [showEditor, setShowEditor] = useState(false)
+  const [showZoneEditor, setShowZoneEditor] = useState(false)
+  const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+
   const [editingItem, setEditingItem] = useState<AHSPItem | null>(null)
-  
+
   const {
     ahspItems,
     resources,
+    zones,
+    zonePricesByZone,
     loading,
     errors,
     addAHSPItem,
@@ -51,7 +61,21 @@ export function AHSPCatalog({
     searchAHSPItems,
     filterByCategory,
     exportAHSPItems,
+    fetchZones,
+    fetchZonePrices
   } = useAHSPStore()
+
+  // Load zones on mount
+  useState(() => {
+    fetchZones()
+  })
+
+  // Load zone prices when zone changes
+  useMemo(() => {
+    if (selectedZone && selectedZone !== 'default') {
+      fetchZonePrices(selectedZone)
+    }
+  }, [selectedZone])
 
   // Calculate summary
   const summary = useMemo(() => {
@@ -85,7 +109,29 @@ export function AHSPCatalog({
     }
 
     return items
+    return items
   }, [ahspItems, showInactive, selectedCategory, searchQuery, filterByCategory, searchAHSPItems])
+
+  // Apply Zone Overrides
+  const displayItems = useMemo(() => {
+    if (selectedZone === 'default') return filteredItems
+
+    const zonePrices = zonePricesByZone[selectedZone] || []
+    const priceMap = new Map(zonePrices.map(p => [p.ahspId, p]))
+
+    return filteredItems.map(item => {
+      const override = priceMap.get(item.id)
+      if (override) {
+        return {
+          ...item,
+          basePrice: (override.price_material + override.price_labor + override.price_equipment + override.price_subcon),
+          finalPrice: override.finalPrice,
+          originalFinalPrice: item.finalPrice // Flag to show difference
+        }
+      }
+      return item
+    })
+  }, [filteredItems, selectedZone, zonePricesByZone])
 
   // Handle actions
   const handleAddItem = () => {
@@ -95,7 +141,16 @@ export function AHSPCatalog({
 
   const handleEditItem = (item: AHSPItem) => {
     setEditingItem(item)
-    setShowEditor(true)
+    if (selectedZone !== 'default') {
+      setShowZoneEditor(true)
+    } else {
+      setShowEditor(true)
+    }
+  }
+
+  const handleHistoryClick = (item: AHSPItem) => {
+    setEditingItem(item)
+    setShowHistoryDialog(true)
   }
 
   const handleDeleteItem = (item: AHSPItem) => {
@@ -131,13 +186,13 @@ export function AHSPCatalog({
       try {
         const content = e.target?.result as string
         const data = JSON.parse(content)
-        
+
         if (!Array.isArray(data)) {
           throw new Error('Invalid file format')
         }
 
         // Add validation for required fields
-        const validItems = data.filter(item => 
+        const validItems = data.filter(item =>
           item.code && item.name && item.unit && item.category
         )
 
@@ -257,6 +312,21 @@ export function AHSPCatalog({
               ))}
             </SelectContent>
           </Select>
+
+
+          {/* Zone Selector */}
+          <Select value={selectedZone} onValueChange={setSelectedZone}>
+            <SelectTrigger className="w-48 border-blue-200 dark:border-blue-900">
+              <SelectValue placeholder="Select Zone" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">Default (Master)</SelectItem>
+              {zones.map(z => (
+                <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <ZoneManager />
         </div>
 
         <div className="flex gap-2">
@@ -285,12 +355,25 @@ export function AHSPCatalog({
         </div>
       </div>
 
+      {/* Zone Indicator */}
+      {
+        selectedZone !== 'default' && (
+          <div className="bg-blue-50 dark:bg-blue-950/30 p-2 rounded text-sm text-blue-700 dark:text-blue-300 flex items-center">
+            <Calculator className="h-4 w-4 mr-2" />
+            Showing prices for zone: <strong>{zones.find(z => z.id === selectedZone)?.name}</strong>.
+            Edits will override base prices for this zone.
+          </div>
+        )
+      }
+
       {/* Error messages */}
-      {errors.ahspItems && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-          {errors.ahspItems}
-        </div>
-      )}
+      {
+        errors.ahspItems && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+            {errors.ahspItems}
+          </div>
+        )
+      }
 
       {/* AHSP Items Table */}
       <Card>
@@ -321,8 +404,8 @@ export function AHSPCatalog({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredItems.map((item) => (
-                  <TableRow 
+                {displayItems.map((item) => (
+                  <TableRow
                     key={item.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => handleEditItem(item)}
@@ -347,6 +430,11 @@ export function AHSPCatalog({
                     </TableCell>
                     <TableCell className="text-right font-mono font-semibold">
                       {formatIDR(item.finalPrice)}
+                      {(item as any).originalFinalPrice && (item as any).originalFinalPrice !== item.finalPrice && (
+                        <div className="text-[10px] text-muted-foreground line-through">
+                          {formatIDR((item as any).originalFinalPrice)}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant={item.isActive ? "default" : "secondary"}>
@@ -355,6 +443,14 @@ export function AHSPCatalog({
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleHistoryClick(item)}
+                          title="Price History"
+                        >
+                          <History className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -395,7 +491,27 @@ export function AHSPCatalog({
           }
         }}
       />
-    </div>
+
+      {/* Zone Price Editor */}
+      <ZonePriceEditor
+        item={editingItem}
+        zoneId={selectedZone}
+        currentPrice={
+          selectedZone !== 'default' && editingItem
+            ? zonePricesByZone[selectedZone]?.find(p => p.ahspId === editingItem.id)
+            : undefined
+        }
+        open={showZoneEditor}
+        onClose={() => setShowZoneEditor(false)}
+      />
+      <PriceHistoryDialog
+        open={showHistoryDialog}
+        onOpenChange={setShowHistoryDialog}
+        ahspId={editingItem?.id || ''}
+        zoneId={selectedZone === 'default' ? undefined : selectedZone}
+        itemName={editingItem?.name || ''}
+      />
+    </div >
   )
 }
 

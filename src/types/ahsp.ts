@@ -99,6 +99,8 @@ export interface AHSPItem {
 }
 
 /** AHSP Store State */
+
+/** AHSP Store State */
 export interface AHSPState {
   /** All resources */
   resources: Resource[]
@@ -106,11 +108,18 @@ export interface AHSPState {
   ahspItems: AHSPItem[]
   /** Components indexed by AHSP ID */
   componentsByAHSP: Record<string, AHSPComponent[]>
+  /** Zones */
+  zones: Zone[]
+  /** Zone Prices indexed by Zone ID */
+  zonePricesByZone: Record<string, AhspZonePrice[]>
   /** Loading states */
   loading: {
     resources: boolean
     ahspItems: boolean
     components: boolean
+    priceHistory: boolean
+    zones: boolean
+    zonePrices: boolean
   }
   /** Error states */
   errors: {
@@ -118,6 +127,8 @@ export interface AHSPState {
     ahspItems: string | null
     components: string | null
     priceHistory: string | null
+    zones: string | null
+    zonePrices: string | null
   }
   /** Global settings */
   settings: AHSPSettingsType
@@ -130,6 +141,8 @@ export interface AHSPActions {
   fetchAHSPItems: () => Promise<void>
   fetchComponents: (ahspId?: string) => Promise<void>
   fetchAll: () => Promise<void>
+  fetchZones: () => Promise<void>
+  fetchZonePrices: (zoneId: string) => Promise<void>
 
   // Resource actions
   addResource: (resource: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => void
@@ -152,6 +165,14 @@ export interface AHSPActions {
   reorderComponents: (ahspId: string, componentIds: string[]) => void
   moveComponents: (fromAhspId: string, toAhspId: string) => void
 
+  // Zone actions
+  addZone: (zone: Omit<Zone, 'id' | 'createdAt' | 'updatedAt'>) => void
+  updateZone: (id: string, updates: Partial<Zone>) => void
+  deleteZone: (id: string) => void
+
+  // Zone Price actions
+  updateZonePrice: (price: Omit<AhspZonePrice, 'id' | 'createdAt' | 'updatedAt'>) => void
+
   // Calculation actions
   calculateAHSPPrice: (ahspId: string) => void
   recalculateAllPrices: () => void
@@ -169,6 +190,7 @@ export interface AHSPActions {
   applySettingsToAll: () => void
 
   // History
+  fetchPriceHistory: (ahspId: string, zoneId?: string) => Promise<PriceHistory[]>
 }
 
 /** AHSP Store Interface */
@@ -275,4 +297,30 @@ export interface PriceHistory {
   changeType: string
   changeReason?: string
   createdAt: string
+}
+
+/** Pricing Zone */
+export interface Zone {
+  id: string
+  name: string
+  description?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+/** AHSP Zone Price Override */
+export interface AhspZonePrice {
+  id: string
+  ahspId: string
+  zoneId: string
+  price_material: number
+  price_labor: number
+  price_equipment: number
+  price_subcon: number
+  overheadPercentage: number
+  profitPercentage: number
+  finalPrice: number
+  createdAt: string
+  updatedAt: string
 }

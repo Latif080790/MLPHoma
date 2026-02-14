@@ -5,7 +5,8 @@ import {
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Trash2, Plus, Search, ChevronDown, ChevronRight } from 'lucide-react'
-import { useRabStore, RABItem } from '../../store/rabStore'
+import { Badge } from '../ui/badge'
+import { useRabStore, RABItem, calculatePareto } from '../../store/rabStore'
 import { formatIDR } from '../../lib/utils'
 import { useAHSPStore } from '../../store/ahspStore'
 import { SAMPLE_AHSP_ITEMS, SAMPLE_RESOURCES } from '../../lib/sampleData/ahspSample'
@@ -21,6 +22,7 @@ import {
 import { useTimelineStore } from '../../store/timelineStore'
 import { generateScheduleFromRAB } from '../../lib/autoScheduler'
 import { CalendarClock } from 'lucide-react'
+import { useProjectStore } from '../../store/projectStore'
 import {
   Select,
   SelectContent,
@@ -42,7 +44,9 @@ export function RABTable({ projectId }: RABTableProps) {
     importAHSPItems,
     importResources,
     resources,
-    componentsByAHSP
+    componentsByAHSP,
+    zonePricesByZone,
+    fetchZonePrices
   } = useAHSPStore()
 
   const { getItems, addItem, updateItem, removeItem } = useRabStore()
@@ -51,6 +55,9 @@ export function RABTable({ projectId }: RABTableProps) {
   // Get tasks for linking
   const { getTasks, setTasks } = useTimelineStore()
   const tasks = getTasks(projectId)
+
+  // Get Project for Zone Info
+  const project = useProjectStore(s => s.projects.find(p => p.id === projectId))
 
   // WBS Store
   const { importWBS } = useWBSStore()
@@ -68,9 +75,37 @@ export function RABTable({ projectId }: RABTableProps) {
     }
   }, [ahspItems.length, resources.length, importResources, importAHSPItems])
 
-  const filteredAHSP = searchQuery
-    ? searchAHSPItems(searchQuery)
-    : ahspItems
+  // Fetch Zone Prices if needed
+  useEffect(() => {
+    if (project?.zoneId) {
+      fetchZonePrices(project.zoneId)
+    }
+  }, [project?.zoneId])
+
+  const filteredAHSP = useMemo(() => {
+    const baseItems = searchQuery ? searchAHSPItems(searchQuery) : ahspItems
+
+    if (!project?.zoneId) return baseItems
+
+    const zonePrices = zonePricesByZone[project.zoneId] || []
+    const priceMap = new Map(zonePrices.map(p => [p.ahspId, p]))
+
+    return baseItems.map(item => {
+      const override = priceMap.get(item.id)
+      if (override) {
+        return {
+          ...item,
+          price_material: override.price_material,
+          price_labor: override.price_labor,
+          price_equipment: override.price_equipment,
+          price_subcon: override.price_subcon,
+          finalPrice: override.finalPrice,
+          basePrice: (override.price_material + override.price_labor + override.price_equipment + override.price_subcon)
+        }
+      }
+      return item
+    })
+  }, [searchQuery, ahspItems, project?.zoneId, zonePricesByZone, searchAHSPItems])
 
   const handleVolumeChange = (id: string, val: string) => {
     const num = parseFloat(val)
@@ -139,8 +174,9 @@ export function RABTable({ projectId }: RABTableProps) {
       cost_equipment: ahspItem.price_equipment || 0,
       cost_subcon: ahspItem.price_subcon || 0
     })
+
     setIsAddDialogOpen(false)
-    toast.success('Item added from AHSP')
+    toast.success(project?.zoneId ? 'Item added with Zone Price' : 'Item added from AHSP')
   }
 
   const handleAutoSchedule = () => {
@@ -230,14 +266,9 @@ export function RABTable({ projectId }: RABTableProps) {
 
   const total = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
 
-  // PARETO LOGIC: Identify top 20% items by value
-  const sortedItems = [...items].sort((a, b) => {
-    const valA = (a.volume || 0) * (a.unit_price || 0)
-    const valB = (b.volume || 0) * (b.unit_price || 0)
-    return valB - valA
-  })
-  const paretoCount = Math.ceil(items.length * 0.2)
-  const topItemsSet = new Set(sortedItems.slice(0, paretoCount).map(i => i.id))
+  // PARETO LOGIC: Identify Class A/B/C
+  const paretoItems = useMemo(() => calculatePareto(items), [items])
+  const paretoMap = useMemo(() => new Map(paretoItems.map(i => [i.id, i.paretoClass])), [paretoItems])
 
   return (
     <div className="space-y-4">
@@ -263,7 +294,10 @@ export function RABTable({ projectId }: RABTableProps) {
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
               <DialogHeader>
-                <DialogTitle>Add Item from AHSP</DialogTitle>
+                <DialogTitle>
+                  Add Item from AHSP
+                  {project?.zoneId && <span className="ml-2 text-sm font-normal text-muted-foreground">(Zone Pricing Active)</span>}
+                </DialogTitle>
               </DialogHeader>
               <div className="p-4 border-b">
                 <div className="relative">
@@ -314,6 +348,7 @@ export function RABTable({ projectId }: RABTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[50px]">No</TableHead>
+              <TableHead className="w-[40px]">Cls</TableHead>
               <TableHead className="w-[100px]">Code</TableHead>
               <TableHead className="min-w-[200px]">Description & Spec</TableHead>
               <TableHead className="w-[150px]">Linked Task</TableHead>
@@ -341,13 +376,23 @@ export function RABTable({ projectId }: RABTableProps) {
             ) : (
               items.map((item, idx) => {
                 const lineTotal = (item.volume || 0) * (item.unit_price || 0)
-                const isPareto = topItemsSet.has(item.id)
-                // Add pareto highlighting
-                const rowClass = isPareto ? "bg-yellow-50/50 dark:bg-yellow-900/10 border-l-4 border-l-yellow-400" : ""
+                const pClass = paretoMap.get(item.id) || 'C'
+
+                // Row Style based on Class
+                const rowClass = pClass === 'A'
+                  ? "bg-red-50/50 dark:bg-red-900/10 border-l-4 border-l-red-500"
+                  : pClass === 'B'
+                    ? "bg-yellow-50/50 dark:bg-yellow-900/10 border-l-4 border-l-yellow-400"
+                    : ""
 
                 return (
                   <TableRow key={item.id} className={rowClass}>
                     <TableCell className="text-center text-xs text-muted-foreground">{idx + 1}</TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} className={`h-5 w-5 p-0 flex items-center justify-center text-[10px] ${pClass === 'B' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : ''}`}>
+                        {pClass}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {item.item_code || '-'}
                     </TableCell>
@@ -402,9 +447,9 @@ export function RABTable({ projectId }: RABTableProps) {
                       <Input
                         type="number"
                         placeholder="0"
+                        value={item.tkdn_percent || ''}
+                        onChange={e => updateItem(projectId, item.id, { tkdn_percent: parseFloat(e.target.value) || 0 })}
                         className="h-8 text-right border-transparent hover:border-input focus:border-input text-xs"
-                      // TKDN placeholder logic since field might not exist in type yet
-                      // In real impl, add tkdn to RABItem type
                       />
                     </TableCell>
 
@@ -441,7 +486,7 @@ export function RABTable({ projectId }: RABTableProps) {
                       <Input
                         type="number"
                         value={item.unit_price || ''}
-                        onChange={e => handlePriceChange(item.id, e.target.value)} // Allows manual override of total unit price
+                        onChange={e => handlePriceChange(item.id, e.target.value)}
                         className="h-8 text-right border-transparent hover:border-input focus:border-input font-medium"
                       />
                     </TableCell>
@@ -467,9 +512,10 @@ export function RABTable({ projectId }: RABTableProps) {
       </div>
 
       <div className="flex justify-end gap-8 p-4 bg-muted/20 rounded-lg">
-        <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-500 bg-yellow-100 dark:bg-yellow-900/20 px-3 py-1 rounded-full">
-          <span className="h-2 w-2 rounded-full bg-yellow-500" />
-          Pareto Active: Top 20% Cost Items Highlighted
+        <div className="flex items-center gap-2 text-sm">
+          <Badge variant="destructive" className="text-[10px]">A</Badge> Top 80% (High Value)
+          <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white text-[10px]">B</Badge> Next 15%
+          <Badge variant="outline" className="text-[10px]">C</Badge> Bottom 5%
         </div>
         <div className="text-right">
           <div className="text-sm text-muted-foreground">Subtotal</div>
