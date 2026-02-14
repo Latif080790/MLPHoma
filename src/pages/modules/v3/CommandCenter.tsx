@@ -34,9 +34,13 @@ export default function CommandCenter() {
                 // Load global aggregate stats if no project selected
                 setStats({
                     totalBudget: projectList.reduce((sum, p) => sum + (p.budget || 0), 0),
-                    utilizedBudget: 0, // Need global service for this, but let's mock for now
+                    utilizedBudget: 0,
                     criticalRisks: 0,
                     overdueTasks: 0,
+                    cpi: null,
+                    spi: null,
+                    overallProgress: 0,
+                    forecastedEndDate: null,
                     cashflow: [],
                     wasteAlerts: [],
                     activityFeed: [],
@@ -144,13 +148,72 @@ export default function CommandCenter() {
 
                 <Card className="bg-gradient-to-br from-emerald-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-emerald-500 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="pt-6">
-                        <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Projects Count</div>
+                        <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Progress</div>
                         <div className="text-2xl font-bold mt-2 text-slate-900 dark:text-white">
-                            {projectList.length}
+                            {stats?.overallProgress ?? 0}%
                         </div>
-                        <div className="text-xs text-emerald-600/80 mt-1 font-medium">Managed Entities</div>
+                        <div className="w-full bg-emerald-100 dark:bg-emerald-900/30 h-1.5 rounded-full mt-2">
+                            <div className="bg-emerald-600 h-1.5 rounded-full transition-all" style={{ width: `${stats?.overallProgress ?? 0}%` }} />
+                        </div>
+                        <div className="text-xs text-emerald-600/80 mt-1 font-medium">
+                            {stats?.forecastedEndDate ? `ETC: ${stats.forecastedEndDate}` : 'Calculating...'}
+                        </div>
                     </CardContent>
                 </Card>
+
+                {/* Earned Value KPI Card */}
+                {activeProjectId && (
+                    <Card className="col-span-1 md:col-span-4 bg-gradient-to-r from-indigo-50 via-white to-violet-50 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 border border-indigo-200/40 dark:border-indigo-900/30 shadow-sm">
+                        <CardContent className="pt-5 pb-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-6">
+                                    <div>
+                                        <div className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Cost Performance (CPI)</div>
+                                        <div className={`text-xl font-bold mt-0.5 ${
+                                            stats?.cpi != null && stats.cpi >= 1 ? 'text-emerald-600' :
+                                            stats?.cpi != null && stats.cpi >= 0.9 ? 'text-amber-600' : 'text-red-600'
+                                        }`}>
+                                            {stats?.cpi != null ? stats.cpi.toFixed(2) : '—'}
+                                        </div>
+                                        <div className="text-[10px] text-slate-500">{stats?.cpi != null && stats.cpi >= 1 ? 'Under Budget' : stats?.cpi != null ? 'Over Budget' : 'N/A'}</div>
+                                    </div>
+                                    <div className="w-px h-10 bg-slate-200 dark:bg-slate-700" />
+                                    <div>
+                                        <div className="text-[10px] font-bold text-violet-600 uppercase tracking-widest">Schedule Performance (SPI)</div>
+                                        <div className={`text-xl font-bold mt-0.5 ${
+                                            stats?.spi != null && stats.spi >= 1 ? 'text-emerald-600' :
+                                            stats?.spi != null && stats.spi >= 0.9 ? 'text-amber-600' : 'text-red-600'
+                                        }`}>
+                                            {stats?.spi != null ? stats.spi.toFixed(2) : '—'}
+                                        </div>
+                                        <div className="text-[10px] text-slate-500">{stats?.spi != null && stats.spi >= 1 ? 'Ahead of Schedule' : stats?.spi != null ? 'Behind Schedule' : 'N/A'}</div>
+                                    </div>
+                                    <div className="w-px h-10 bg-slate-200 dark:bg-slate-700" />
+                                    <div>
+                                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Earned Value</div>
+                                        <div className="text-xl font-bold mt-0.5 text-slate-900 dark:text-white">
+                                            {stats ? formatCurrency((stats.overallProgress / 100) * stats.totalBudget) : '—'}
+                                        </div>
+                                        <div className="text-[10px] text-slate-500">of {stats ? formatCurrency(stats.totalBudget) : '—'} BAC</div>
+                                    </div>
+                                </div>
+                                <Badge variant="outline" className={`text-xs px-3 py-1 ${
+                                    stats?.cpi != null && stats?.spi != null && stats.cpi >= 1 && stats.spi >= 1
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        : stats?.cpi != null && stats.cpi >= 0.9
+                                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                        : 'bg-red-50 text-red-700 border-red-200'
+                                }`}>
+                                    {stats?.cpi != null && stats?.spi != null && stats.cpi >= 1 && stats.spi >= 1
+                                        ? 'HEALTHY'
+                                        : stats?.cpi != null && stats.cpi >= 0.9
+                                        ? 'ATTENTION'
+                                        : 'AT RISK'}
+                                </Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* 2. MAIN CHARTS (Row 2 & 3) */}
                 <Card className="col-span-1 md:col-span-2 row-span-2 shadow-sm border-border/50 overflow-hidden">
@@ -299,7 +362,7 @@ export default function CommandCenter() {
                             <Button variant="secondary" className="w-full justify-start font-bold bg-white/10 hover:bg-white/20 border-white/5" onClick={() => setIsProjectDialogOpen(true)}>
                                 <Plus className="mr-2 h-4 w-4 text-blue-400" /> New Project
                             </Button>
-                            <Button variant="secondary" className="w-full justify-start font-bold bg-white/5 hover:bg-white/10 border-white/5 text-slate-300">
+                            <Button variant="secondary" className="w-full justify-start font-bold bg-white/5 hover:bg-white/10 border-white/5 text-slate-300" onClick={() => window.location.hash = '/settings'}>
                                 <Users className="mr-2 h-4 w-4" /> Team Portfolio
                             </Button>
                         </div>

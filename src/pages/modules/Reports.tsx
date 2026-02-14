@@ -16,7 +16,7 @@ import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
 import { calculateCashFlow } from "../../lib/cashflowCalculator"
-import { HandoverWizard } from "./v3/HandoverWizard"
+import HandoverWizard from "./v3/HandoverWizard"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const EMPTY_ARRAY: any[] = []
@@ -358,12 +358,8 @@ export default function Reports() {
 
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <img
-                  src="https://pub-cdn.sider.ai/u/U0W8H7R4X2W/web-coder/690b315461d18d657615a7d2/resource/43ef6f55-5795-47a4-be29-66d5c61e53fa.jpg"
-                  className="h-56 w-full object-cover"
-                  alt="Reports"
-                />
+              <CardContent className="p-0 h-56 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                <FileText className="h-16 w-16 text-blue-300 dark:text-slate-600" />
               </CardContent>
             </Card>
 

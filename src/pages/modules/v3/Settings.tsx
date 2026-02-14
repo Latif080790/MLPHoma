@@ -148,23 +148,32 @@ export default function Settings() {
                 {/* --- MASTER DATA --- */}
                 <TabsContent value="master">
                     <div className="grid gap-4 md:grid-cols-2">
-                        <Card className="hover:border-blue-500 cursor-pointer transition-colors">
+                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => window.location.hash = '/costing'}>
                             <CardHeader>
                                 <CardTitle className="text-base">AHSP Categories</CardTitle>
                                 <CardDescription>Manage standard pricing categories.</CardDescription>
                             </CardHeader>
+                            <CardContent className="pt-0">
+                                <p className="text-xs text-muted-foreground">Open Project Costing module to manage AHSP data →</p>
+                            </CardContent>
                         </Card>
-                        <Card className="hover:border-blue-500 cursor-pointer transition-colors">
+                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => window.location.hash = '/supply-chain'}>
                             <CardHeader>
                                 <CardTitle className="text-base">Vendors</CardTitle>
                                 <CardDescription>Manage supplier list for POs.</CardDescription>
                             </CardHeader>
+                            <CardContent className="pt-0">
+                                <p className="text-xs text-muted-foreground">Open Supply Chain module to manage vendors →</p>
+                            </CardContent>
                         </Card>
-                        <Card className="hover:border-blue-500 cursor-pointer transition-colors">
+                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => window.location.hash = '/finance'}>
                             <CardHeader>
                                 <CardTitle className="text-base">Cost Centers</CardTitle>
                                 <CardDescription>Define financial cost codes.</CardDescription>
                             </CardHeader>
+                            <CardContent className="pt-0">
+                                <p className="text-xs text-muted-foreground">Open Finance module to manage cost categories →</p>
+                            </CardContent>
                         </Card>
                     </div>
                 </TabsContent>

@@ -28,7 +28,8 @@ export default function Documents() {
     // Upload Form State
     const [newDocTitle, setNewDocTitle] = useState("")
     const [newDocCategory, setNewDocCategory] = useState("Reports")
-    const [newDocUrl, setNewDocUrl] = useState("")
+    const [newDocFile, setNewDocFile] = useState<File | null>(null)
+    const fileInputRef = React.useRef<HTMLInputElement>(null)
 
     // Version History State
     const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
@@ -58,15 +59,23 @@ export default function Documents() {
                 project_id: activeProjectId!,
                 title: newDocTitle,
                 category: newDocCategory,
-                file_url: newDocUrl || 'https://example.com/file.pdf' // Mock URL if empty
-            })
+            }, newDocFile || undefined)
             toast.success("Document uploaded")
             setUploadOpen(false)
             loadDocs()
             setNewDocTitle("")
-            setNewDocUrl("")
+            setNewDocFile(null)
+            if (fileInputRef.current) fileInputRef.current.value = ''
         } catch (err: any) {
             toast.error(err.message)
+        }
+    }
+
+    function handleDownload(doc: ProjectDocument) {
+        if (doc.file_url) {
+            window.open(doc.file_url, '_blank')
+        } else {
+            toast.error('No file URL available')
         }
     }
 
@@ -134,6 +143,15 @@ export default function Documents() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
+                                            className="text-neutral-400 hover:text-green-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={() => handleDownload(doc)}
+                                            title="Download"
+                                        >
+                                            <Download size={14} />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             className="text-neutral-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                             onClick={() => setVersionDoc(doc)}
                                             title="Version History"
@@ -153,7 +171,10 @@ export default function Documents() {
                                 <div>
                                     <h4 className="font-semibold truncate" title={doc.title}>{doc.title}</h4>
                                     <p className="text-xs text-neutral-500">{doc.category} • v{doc.version_number}</p>
-                                    <div className="text-xs text-neutral-400 mt-1">{format(new Date(doc.created_at), 'dd MMM yyyy')}</div>
+                                    <div className="text-xs text-neutral-400 mt-1">
+                                        {format(new Date(doc.created_at), 'dd MMM yyyy')}
+                                        {doc.file_size ? ` • ${(doc.file_size / 1024).toFixed(0)} KB` : ''}
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -184,8 +205,18 @@ export default function Documents() {
                             </Select>
                         </div>
                         <div className="grid gap-2">
-                            <Label>File URL (Optional Mock)</Label>
-                            <Input value={newDocUrl} onChange={e => setNewDocUrl(e.target.value)} placeholder="https://..." />
+                            <Label>File</Label>
+                            <Input
+                                ref={fileInputRef}
+                                type="file"
+                                onChange={e => setNewDocFile(e.target.files?.[0] || null)}
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.dwg,.zip"
+                            />
+                            {newDocFile && (
+                                <p className="text-xs text-neutral-500">
+                                    {newDocFile.name} ({(newDocFile.size / 1024).toFixed(1)} KB)
+                                </p>
+                            )}
                         </div>
                     </div>
                     <DialogFooter>

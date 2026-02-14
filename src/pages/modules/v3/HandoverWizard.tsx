@@ -7,12 +7,14 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import { useProjectStore } from '@/store/projectStore'
 import { toast } from 'sonner'
-import { supabase } from '@/lib/supabaseClient'
+import { assertSupabase } from '@/lib/supabaseClient'
 
 import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
 
-export function HandoverWizard() {
-    const project = useProjectStore((s: any) => s.project)
+export default function HandoverWizard() {
+    const activeProjectId = useProjectStore((s) => s.activeProjectId)
+    const projects = useProjectStore((s) => s.projects)
+    const project = activeProjectId ? projects[activeProjectId] : null
     const [step, setStep] = useState(1)
     const [generating, setGenerating] = useState(false)
     const [reportReady, setReportReady] = useState(false)
@@ -30,8 +32,8 @@ export function HandoverWizard() {
         setLoading(true)
         try {
             const [s, o] = await Promise.all([
-                handoverService.getHandoverSummary(project.id),
-                handoverService.getOutstandingIssues(project.id)
+                handoverService.getHandoverSummary(project!.id),
+                handoverService.getOutstandingIssues(project!.id)
             ])
             setSummary(s)
             setOutstanding(o)
@@ -73,21 +75,23 @@ export function HandoverWizard() {
         }
     }
 
+    const handleMarkResolved = (issueId: string) => {
+        setOutstanding(prev => prev.filter(i => i.id !== issueId))
+        toast.success('Issue marked as resolved')
+    }
+
     const handleArchiveProject = async () => {
         if (!confirm("Are you sure? This will hide the project from the main dashboard.")) return
-        if (!supabase) {
-            toast.error("Supabase client not initialized")
-            return
-        }
 
         try {
-            const { error } = await supabase
+            const client = assertSupabase()
+            const { error } = await client
                 .from('projects')
                 .update({
                     status: 'ARCHIVED',
                     archived_at: new Date().toISOString()
                 })
-                .eq('id', project.id)
+                .eq('id', project!.id)
 
             if (error) throw error
             toast.success("Project Archived!")
@@ -206,7 +210,7 @@ export function HandoverWizard() {
                                                 <div className="font-medium">{issue.desc}</div>
                                                 <Badge variant="outline">{issue.priority}</Badge>
                                             </div>
-                                            <Button variant="ghost" size="sm">Mark Resolved</Button>
+                                            <Button variant="ghost" size="sm" onClick={() => handleMarkResolved(issue.id)}>Mark Resolved</Button>
                                         </div>
                                     ))}
                                     {outstanding.length === 0 && (
@@ -267,7 +271,7 @@ export function HandoverWizard() {
                         Next Step <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
                     {step === 4 && (
-                        <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>
+                        <Button variant="outline" onClick={() => { window.location.hash = '/' }}>
                             Close Wizard
                         </Button>
                     )}

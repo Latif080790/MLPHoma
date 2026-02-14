@@ -16,11 +16,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../ui/dialog'
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '../ui/sheet'
 import { useAHSPStore } from '../../store/ahspStore'
 import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
@@ -379,13 +379,13 @@ export function AHSPItemEditor({
   }, [resources])
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[98vw] w-[98vw] h-[98vh] max-h-[98vh] p-0 gap-0">
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="text-xl">
+    <Sheet open={open} onOpenChange={onClose}>
+      <SheetContent side="right" className="w-full sm:max-w-4xl p-0 gap-0 border-l">
+        <SheetHeader className="px-6 py-4 border-b">
+          <SheetTitle className="text-xl">
             {item ? 'Edit AHSP Item' : 'Add New AHSP Item'}
-          </DialogTitle>
-        </DialogHeader>
+          </SheetTitle>
+        </SheetHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
           <Tabs defaultValue="master" className="flex-1 flex flex-col overflow-hidden">
@@ -844,8 +844,8 @@ export function AHSPItemEditor({
             </div>
           </div>
         </form>
-      </DialogContent>
-    </Dialog >
+      </SheetContent>
+    </Sheet >
   )
 }
 

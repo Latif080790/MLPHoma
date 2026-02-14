@@ -1,11 +1,17 @@
 
 import { supabase } from '../lib/supabaseClient'
+import { differenceInDays, parseISO } from 'date-fns'
 
 export interface DashboardStats {
     totalBudget: number
     utilizedBudget: number
     criticalRisks: number
     overdueTasks: number
+    // Earned Value metrics
+    cpi: number | null   // Cost Performance Index = EV / AC
+    spi: number | null   // Schedule Performance Index = EV / PV
+    overallProgress: number // 0-100
+    forecastedEndDate: string | null
     cashflow: {
         week: string
         inflow: number
@@ -44,14 +50,17 @@ export const dashboardService = {
 
         let totalBudget = 0
         let utilizedBudget = 0
+        let actualCostTotal = 0
         const wasteAlerts: any[] = []
 
         if (rapItems) {
             rapItems.forEach((item: any) => {
                 const budget = (item.qty_budget || 0) * (item.unit_price_budget || 0)
                 const utilized = item.committed_cost || 0 // Use committed as "Utilized" for visibility
+                const actual = item.actual_cost || 0
                 totalBudget += budget
                 utilizedBudget += utilized
+                actualCostTotal += actual
 
                 // Waste Detection (Over Budget Items)
                 if (utilized > budget && budget > 0) {
@@ -158,17 +167,54 @@ export const dashboardService = {
             })
         }
 
-        // PREDICTIVE COMPLETION (Burndown)
-        // Simple logic: If we have completed X% in Y days, when will we reach 100%?
+        // EARNED VALUE ANALYSIS
+        // EV = % complete * BAC (Budget at Completion)
+        // PV = planned % * BAC (time-proportioned budget)
+        // AC = actual cost incurred
+        // CPI = EV / AC, SPI = EV / PV
+        let cpi: number | null = null
+        let spi: number | null = null
+        let overallProgress = 0
         let forecastedEndDate: string | null = null
-        if (totalBudget > 0 && utilizedBudget > 0) {
-            const projectStartDate = new Date() // Ideally fetch from project details
-            projectStartDate.setDate(projectStartDate.getDate() - 30) // Simulate start 30 days ago
-            const daysElapsed = 30
-            const progress = (utilizedBudget / totalBudget)
 
-            if (progress > 0.1) { // Only predict if >10% progress
-                const totalDaysNeeded = daysElapsed / progress
+        // Compute overall progress from timeline tasks
+        const { data: allTasks } = await supabase
+            .from('timeline_tasks')
+            .select('progress')
+            .eq('project_id', projectId)
+
+        if (allTasks && allTasks.length > 0) {
+            overallProgress = Math.round(
+                allTasks.reduce((sum: number, t: any) => sum + (t.progress || 0), 0) / allTasks.length
+            )
+        }
+
+        // Fetch project dates for EVM calculation
+        const { data: projectData } = await supabase
+            .from('projects')
+            .select('start_date, end_date')
+            .eq('id', projectId)
+            .single()
+
+        if (totalBudget > 0) {
+            const earnedValue = (overallProgress / 100) * totalBudget // EV
+            const ac = actualCostTotal > 0 ? actualCostTotal : utilizedBudget // AC fallback to committed
+
+            // Derive schedule duration from actual project dates
+            const now = new Date()
+            const projectStart = projectData?.start_date ? parseISO(projectData.start_date) : new Date(now.getTime() - 30 * 86400000)
+            const projectEnd = projectData?.end_date ? parseISO(projectData.end_date) : new Date(now.getTime() + 150 * 86400000)
+            const daysElapsed = Math.max(1, differenceInDays(now, projectStart))
+            const totalDuration = Math.max(1, differenceInDays(projectEnd, projectStart))
+            const plannedPercent = Math.min(daysElapsed / totalDuration, 1)
+            const plannedValue = plannedPercent * totalBudget // PV
+
+            if (ac > 0) cpi = parseFloat((earnedValue / ac).toFixed(2))
+            if (plannedValue > 0) spi = parseFloat((earnedValue / plannedValue).toFixed(2))
+
+            // Forecasted end date (EAC-based)
+            if (overallProgress > 5) { // Only predict if >5% progress
+                const totalDaysNeeded = daysElapsed / (overallProgress / 100)
                 const remainingDays = totalDaysNeeded - daysElapsed
                 const forecastDate = new Date()
                 forecastDate.setDate(forecastDate.getDate() + remainingDays)
@@ -196,6 +242,10 @@ export const dashboardService = {
             utilizedBudget,
             criticalRisks: criticalRisks || 0,
             overdueTasks: overdueTasks || 0,
+            cpi,
+            spi,
+            overallProgress,
+            forecastedEndDate,
             cashflow,
             wasteAlerts: wasteAlerts.slice(0, 5),
             activityFeed: activityFeed.slice(0, 5),
@@ -209,6 +259,10 @@ export const dashboardService = {
             utilizedBudget: 0,
             criticalRisks: 0,
             overdueTasks: 0,
+            cpi: null,
+            spi: null,
+            overallProgress: 0,
+            forecastedEndDate: null,
             cashflow: [],
             wasteAlerts: [],
             activityFeed: [],
