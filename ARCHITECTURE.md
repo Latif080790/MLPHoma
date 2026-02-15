@@ -63,9 +63,10 @@ MLPHoma adalah aplikasi manajemen proyek konstruksi yang mengintegrasikan:
 │  └──────────────────────┘  └─────────────────────────┘         │
 └────────────────┬────────────────────────────────────────────────┘
                  │
-                 ▼
+│                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      SUPABASE BACKEND                            │
+│  (Acting as Primary Backend - NestJS Source is Missing/Blackbox)│
 │  ┌────────────┐  ┌────────────┐  ┌──────────┐                 │
 │  │  resources │  │ ahsp_items │  │ projects │                 │
 │  └────────────┘  └────────────┘  └──────────┘                 │
@@ -375,12 +376,14 @@ toast.error('Failed to save AHSP item. Retrying...')
 
 ## Security Considerations
 
-1. **RLS (Row Level Security)**: Currently public policies for dev. Must restrict in production:
+1. **RLS (Row Level Security)**: 
+   - **Production Policies Enforced** (as of 2026-02-15).
+   - Projects restricted to Owner (user_id) + Members (project_members).
+   - Master Data (AHSP) restricted to Authenticated Read/Write.
    ```sql
-   -- Production policy example
-   CREATE POLICY "Users can only access their own projects"
-   ON projects FOR ALL
-   USING (auth.uid() = user_id);
+   -- Strict Policy
+   CREATE POLICY "Strict Project Access" ON projects 
+   USING (auth.uid() = user_id OR EXISTS(SELECT 1 FROM project_members...));
    ```
 
 2. **Environment Variables**: Supabase credentials in `.env.local` (not committed to git)
