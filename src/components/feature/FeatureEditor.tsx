@@ -11,7 +11,6 @@ import { Download, RefreshCw, Save } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import useFeatureStore from '../../store/featureStore'
 import { getFeatureConfig, saveFeatureConfig } from '../../lib/api/featureApi'
-import { AppShell } from '../../components/layout/AppShell'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import ProjectManagementEditor from './modules/ProjectManagementEditor'
 import WbsEditor from './modules/WBSEditor'
@@ -126,17 +125,17 @@ export default function FeatureEditor(): JSX.Element {
 
   if (!projectId) {
     return (
-      <AppShell>
+      <>
         <ModuleHeader title="Feature Settings" description="Project feature configuration (admin preview)" />
         <div className="rounded-xl border p-6 text-center dark:border-neutral-800">
           <p className="text-neutral-600 dark:text-neutral-300">Select a project to view or manage feature configuration.</p>
         </div>
-      </AppShell>
+      </>
     )
   }
 
   return (
-    <AppShell projectName={projectName}>
+    <>
       <ModuleHeader
         title="Feature Settings"
         description="Preview and edit per-project feature configuration. Save to local and optionally sync to backend."
@@ -216,6 +215,6 @@ export default function FeatureEditor(): JSX.Element {
           )}
         </div>
       </div>
-    </AppShell>
+    </>
   )
 }

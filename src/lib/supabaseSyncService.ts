@@ -818,6 +818,40 @@ export function syncCurvaSScenario(scenario: any, projectId: string): string {
 
 /**
  * ===========================
+ * TKDN SYNC FUNCTIONS
+ * ===========================
+ */
+
+/**
+ * Sync a single TKDN item (upsert)
+ */
+export function syncTKDNItem(item: any): string {
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'tkdn_items',
+    data: {
+      id: item.id,
+      project_id: item.project_id,
+      name: item.name,
+      category: item.category,
+      origin: item.origin,
+      unit: item.unit,
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+      total_value: item.total_value ?? (item.quantity * item.unit_price),
+      supplier: item.supplier || null,
+      country_of_origin: item.country_of_origin || null,
+      hs_code: item.hs_code || null,
+      rab_item_id: item.rab_item_id || null,
+      notes: item.notes || null,
+      updated_at: item.updated_at || new Date().toISOString(),
+    },
+    maxRetries: 3,
+  })
+}
+
+/**
+ * ===========================
  * EXPORTS
  * ===========================
  */
@@ -843,4 +877,5 @@ export default {
   syncCurvaSDataPoint,
   syncCurvaSAnalysis,
   syncCurvaSScenario,
+  syncTKDNItem,
 }

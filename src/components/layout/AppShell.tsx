@@ -22,6 +22,7 @@ import {
   BarChart3,
   FileBarChart,
   Flag,
+  Sliders,
 } from "lucide-react"
 
 /** Navigation item definition */
@@ -44,6 +45,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "#/reports", icon: <FileBarChart size={20} />, label: "Reports", color: "text-amber-500" },
   { href: "#/handover", icon: <ClipboardCheck size={20} />, label: "Handover", color: "text-violet-500" },
   { href: "#/tkdn", icon: <Flag size={20} />, label: "TKDN", color: "text-green-600" },
+  { href: "#/features", icon: <Sliders size={20} />, label: "Feature Config", color: "text-purple-500" },
   { href: "#/settings", icon: <Settings size={20} />, label: "Settings", color: "text-gray-500" },
 ]
 
