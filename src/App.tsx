@@ -32,17 +32,6 @@ const TKDNPage = React.lazy(() => import('./pages/TKDNPage'))
 const FeatureEditor = React.lazy(() => import('./components/feature/FeatureEditor'))
 
 // Legacy Modules (Keep for reference if needed, but routes will be replaced)
-// Legacy Modules (Keep for reference if needed, but routes will be replaced)
-// const WBS = React.lazy(() => import('./pages/modules/WBS'))
-// const AHSP = React.lazy(() => import('./pages/modules/AHSP'))
-// const RAB = React.lazy(() => import('./pages/modules/RAB'))
-// const Timeline = React.lazy(() => import('./pages/modules/Timeline'))
-// const RAP = React.lazy(() => import('./pages/modules/RAP'))
-// const CurvaS = React.lazy(() => import('./pages/modules/CurvaS'))
-// const Resource = React.lazy(() => import('./pages/modules/Resource'))
-// const CashFlow = React.lazy(() => import('./pages/modules/CashFlow'))
-// const Progress = React.lazy(() => import('./pages/modules/Progress'))
-// const Reports = React.lazy(() => import('./pages/modules/Reports'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 
@@ -109,17 +98,6 @@ export default function App() {
             <Route path="/tkdn" element={<ProtectedLayout><TKDNPage /></ProtectedLayout>} />
             <Route path="/features" element={<ProtectedLayout><FeatureEditor /></ProtectedLayout>} />
 
-            {/* Legacy Routes (redirect or keep active for direct access if needed) */}
-            {/* <Route path="/wbs" element={<ProtectedLayout><WBS /></ProtectedLayout>} /> */}
-            {/* <Route path="/ahsp" element={<ProtectedLayout><AHSP /></ProtectedLayout>} /> */}
-            {/* <Route path="/rab" element={<ProtectedLayout><RAB /></ProtectedLayout>} /> */}
-            {/* <Route path="/timeline" element={<ProtectedLayout><Timeline /></ProtectedLayout>} /> */}
-            {/* <Route path="/rap" element={<ProtectedLayout><RAP /></ProtectedLayout>} /> */}
-            {/* <Route path="/curvas" element={<ProtectedLayout><CurvaS /></ProtectedLayout>} /> */}
-            {/* <Route path="/resource" element={<ProtectedLayout><Resource /></ProtectedLayout>} /> */}
-            {/* <Route path="/cashflow" element={<ProtectedLayout><CashFlow /></ProtectedLayout>} /> */}
-            {/* <Route path="/progress" element={<ProtectedLayout><Progress /></ProtectedLayout>} /> */}
-            {/* <Route path="/reports" element={<ProtectedLayout><Reports /></ProtectedLayout>} /> */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

@@ -1,0 +1,43 @@
+﻿
+> natalaba@1.0.0 test
+> vitest src/__tests__/services/rapProfitService.test.ts
+
+node.exe : [33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified    : ([33mThe CJS bu...e details.[39m:S    tring) [], RemoteException
+    + FullyQualifiedErrorId : NativeComman    dError
+ 
+
+[7m[1m[34m DEV [39m[22m[27m [34mv1.6.1[39m [90mD:/2. NATA_PROJECTAPP/PM_LABHA/MLPHoma[39m
+
+ [33mΓ¥»[39m src/__tests__/services/rapProfitService.test.ts [2m ([22m[2m2 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 4[2mms[22m[39m
+[31m   [33mΓ¥»[31m src/__tests__/services/rapProfitService.test.ts[2m > [22mRAP Profit Service Unit Tests[2m > [22mgetProfitHealth[2m > [22mshould calculate profit health and trigger warning if eroding[39m
+[31m     ΓåÆ expected "spy" to be called at least once[39m
+
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1m[7m Failed Tests 1 [27m[22mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/__tests__/services/rapProfitService.test.ts[2m > [22mRAP Profit Service Unit Tests[2m > [22mgetProfitHealth[2m > [22mshould calculate profit health and trigger warning if 
+eroding
+[31m[1mAssertionError[22m: expected "spy" to be called at least once[39m
+[36m [2mΓ¥»[22m src/__tests__/services/rapProfitService.test.ts:[2m107:54[22m[39m
+    [90m105| [39m
+    [90m106| [39m            [34mexpect[39m(health[33m.[39mcriticalCount)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)
+    [90m107| [39m            [34mexpect[39m(notificationService[33m.[39mnotifyByRole)[33m.[39m[34mtoHaveBeenCalled[39m()
+    [90m   | [39m                                                     [31m^[39m
+    [90m108| [39m        })
+    [90m109| [39m    })
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/1]ΓÄ»[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 01:19:24
+[2m   Duration [22m 1.03s[2m (transform 35ms, setup 168ms, collect 22ms, tests 4ms, environment 369ms, prepare 111ms)[22m
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
+[31mCancelling test run. Press CTRL+c again to exit forcefully.
+[39m
