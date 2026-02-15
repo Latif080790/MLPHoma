@@ -122,7 +122,10 @@ export const rabPriceOverrideService = {
             .select('id, name, item_name, unit_price, base_price, snapshot_price, final_price')
             .eq('project_id', projectId)
 
-        if (error) throw error
+        if (error) {
+            console.warn('[rabPriceOverride] getPriceStatus error:', error.message)
+            return []
+        }
 
         return (items || []).map(item => {
             const basePrice = Number(item.base_price || item.unit_price || 0)

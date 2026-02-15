@@ -47,7 +47,10 @@ export const tkdnService = {
       .order('category', { ascending: true })
       .order('name', { ascending: true })
 
-    if (error) throw error
+    if (error) {
+      console.warn('[tkdn] getItems error:', error.message)
+      return []
+    }
     return (data || []).map(mapRow)
   },
 

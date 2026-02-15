@@ -98,9 +98,10 @@ describe('auditService', () => {
       expect(result).toEqual([])
     })
 
-    it('should throw on query error', async () => {
+    it('should return empty array on query error', async () => {
       mockFrom.mockImplementation(() => makeChain({ data: null, error: new Error('fail') }))
-      await expect(auditService.getLogs()).rejects.toThrow()
+      const result = await auditService.getLogs()
+      expect(result).toEqual([])
     })
   })
 

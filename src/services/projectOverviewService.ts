@@ -126,7 +126,10 @@ export const projectOverviewService = {
       .order('end_date', { ascending: true })
       .limit(limit)
 
-    if (error) throw error
+    if (error) {
+      console.warn('[projectOverview] getUpcomingMilestones error:', error.message)
+      return []
+    }
 
     const now = new Date()
     return (data || []).map((t: any) => {
@@ -162,7 +165,10 @@ export const projectOverviewService = {
       .order('end_date', { ascending: true })
       .limit(limit)
 
-    if (error) throw error
+    if (error) {
+      console.warn('[projectOverview] getOverdueTasks error:', error.message)
+      return []
+    }
 
     const now = new Date()
     return (data || []).map((t: any) => {
@@ -199,7 +205,10 @@ export const projectOverviewService = {
       `)
       .eq('project_id', projectId)
 
-    if (error) throw error
+    if (error) {
+      console.warn('[projectOverview] getTeamMembers error:', error.message)
+      return []
+    }
 
     return (data || []).map((row: any) => ({
       id: row.id,

@@ -28,7 +28,10 @@ export const documentService = {
             .eq('is_active', true)
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[document] getDocuments error:', error.message)
+            return []
+        }
         return data || []
     },
 

@@ -81,7 +81,10 @@ export const progressBillingService = {
             .eq('project_id', projectId)
             .in('status', ['SUBMITTED', 'APPROVED', 'PAID'])
 
-        if (error) throw error
+        if (error) {
+            console.warn('[progressBilling] getPreviousBilledAmount error:', error.message)
+            return 0
+        }
         return (data || []).reduce((sum, claim) => sum + Number(claim.amount || 0), 0)
     },
 

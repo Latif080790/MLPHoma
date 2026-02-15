@@ -89,7 +89,10 @@ export const auditService = {
         }
 
         const { data, error } = await query
-        if (error) throw error
+        if (error) {
+            console.warn('[audit] getLogs error:', error.message)
+            return []
+        }
         return (data || []).map(rowToAuditEntry)
     },
 
@@ -104,7 +107,10 @@ export const auditService = {
             .eq('entity_type', entityType)
             .eq('entity_id', entityId)
 
-        if (error) throw error
+        if (error) {
+            console.warn('[audit] getEntityLogCount error:', error.message)
+            return 0
+        }
         return count ?? 0
     },
 }

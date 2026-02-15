@@ -44,9 +44,10 @@ describe('rapService', () => {
       expect(result[0].wbs_items.name).toBe('Foundation')
     })
 
-    it('should throw on error', async () => {
+    it('should return empty array on error', async () => {
       mockFromImpl = () => makeChain({ data: null, error: new Error('DB fail') })
-      await expect(rapService.getByProject('P1')).rejects.toThrow()
+      const result = await rapService.getByProject('P1')
+      expect(result).toEqual([])
     })
   })
 

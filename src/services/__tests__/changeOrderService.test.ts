@@ -70,10 +70,11 @@ describe('changeOrderService', () => {
       expect(result[0].items![0].wbs_name).toBe('WBS-A')
     })
 
-    it('should throw on query error', async () => {
+    it('should return empty array on query error', async () => {
       mockFromImpl = () => makeChain({ data: null, error: new Error('DB error') })
 
-      await expect(changeOrderService.getChangeOrders('P1')).rejects.toThrow()
+      const result = await changeOrderService.getChangeOrders('P1')
+      expect(result).toEqual([])
     })
   })
 

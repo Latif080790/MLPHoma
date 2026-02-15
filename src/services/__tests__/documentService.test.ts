@@ -62,9 +62,10 @@ describe('documentService', () => {
       expect(result).toEqual([])
     })
 
-    it('should throw on error', async () => {
+    it('should return empty array on error', async () => {
       mockFromImpl = () => makeChain({ data: null, error: new Error('query fail') })
-      await expect(documentService.getDocuments('P1')).rejects.toThrow()
+      const result = await documentService.getDocuments('P1')
+      expect(result).toEqual([])
     })
   })
 

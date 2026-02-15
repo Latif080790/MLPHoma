@@ -55,7 +55,10 @@ export const approvalService = {
             .eq('project_id', projectId)
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[approval] getApprovals error:', error.message)
+            return []
+        }
         return (data || []).map(rowToApproval)
     },
 
@@ -74,7 +77,10 @@ export const approvalService = {
         }
 
         const { count, error } = await query
-        if (error) throw error
+        if (error) {
+            console.warn('[approval] getPendingCount error:', error.message)
+            return 0
+        }
         return count ?? 0
     },
 
@@ -94,7 +100,10 @@ export const approvalService = {
         }
 
         const { data, error } = await query
-        if (error) throw error
+        if (error) {
+            console.warn('[approval] getPendingApprovals error:', error.message)
+            return []
+        }
         return (data || []).map(rowToApproval)
     },
 

@@ -53,7 +53,10 @@ export const grnService = {
             .eq('project_id', projectId)
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[grn] getGRNs error:', error.message)
+            return []
+        }
         return (data || []).map(rowToGrn)
     },
 
@@ -68,7 +71,10 @@ export const grnService = {
             .eq('po_id', poId)
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[grn] getGRNsByPO error:', error.message)
+            return []
+        }
         return (data || []).map(rowToGrn)
     },
 
