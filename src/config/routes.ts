@@ -10,6 +10,7 @@
  */
 export type ModuleKey =
   | 'projects'
+  | 'project-overview'
   | 'wbs'
   | 'ahsp'
   | 'rab'
@@ -40,6 +41,7 @@ export type ModuleKey =
  */
 export const MODULE_ROUTES: Record<ModuleKey, string> = {
   projects: '/projects',
+  'project-overview': '/project-overview',
   wbs: '/wbs',
   ahsp: '/ahsp',
   rab: '/rab',

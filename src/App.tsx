@@ -27,6 +27,7 @@ const ChangeManagement = React.lazy(() => import('./pages/modules/v3/ChangeManag
 const Documents = React.lazy(() => import('./pages/modules/v3/Documents'))
 const Settings = React.lazy(() => import('./pages/modules/v3/Settings'))
 const HandoverWizard = React.lazy(() => import('./pages/modules/v3/HandoverWizard'))
+const ProjectOverview = React.lazy(() => import('./pages/modules/v3/ProjectOverview'))
 const TKDNPage = React.lazy(() => import('./pages/TKDNPage'))
 const FeatureEditor = React.lazy(() => import('./components/feature/FeatureEditor'))
 
@@ -92,6 +93,7 @@ export default function App() {
             {/* Protected routes — all wrapped with sidebar layout */}
             <Route path="/" element={<ProtectedLayout><CommandCenter /></ProtectedLayout>} />
             <Route path="/projects" element={<ProtectedLayout><ProjectManagement /></ProtectedLayout>} />
+            <Route path="/project-overview" element={<ProtectedLayout><ProjectOverview /></ProtectedLayout>} />
 
             {/* v3 Ultra Routes */}
             <Route path="/costing" element={<ProtectedLayout><ProjectCosting /></ProtectedLayout>} />

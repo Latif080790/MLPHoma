@@ -108,10 +108,18 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     (src) => Object.values(src || {})
   )
 
+  // Restore persisted activeProjectId from localStorage
+  const persistedActiveId = (() => {
+    try {
+      const stored = localStorage.getItem('mlphoma:activeProjectId')
+      return stored || undefined
+    } catch { return undefined }
+  })()
+
   return {
     projects: {},
 
-    activeProjectId: undefined,
+    activeProjectId: persistedActiveId,
 
     /**
      * addProject
@@ -197,6 +205,10 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         const copy = { ...state.projects }
         delete copy[projectId]
         const nextActive = state.activeProjectId === projectId ? undefined : state.activeProjectId
+        // Clear localStorage if active was removed
+        if (state.activeProjectId === projectId) {
+          try { localStorage.removeItem('mlphoma:activeProjectId') } catch { /* */ }
+        }
         return { projects: copy, activeProjectId: nextActive }
       })
       // Queue-based delete with retry
@@ -243,6 +255,14 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         }
         return { activeProjectId: projectId }
       })
+      // Persist to localStorage
+      try {
+        if (projectId) {
+          localStorage.setItem('mlphoma:activeProjectId', projectId)
+        } else {
+          localStorage.removeItem('mlphoma:activeProjectId')
+        }
+      } catch { /* storage unavailable */ }
     },
 
     /**
@@ -317,7 +337,14 @@ export const useProjectStore = create<ProjectState>((set, get) => {
               meta: row.meta,
             }
           })
-          set({ projects })
+          // Validate persisted activeProjectId still exists in loaded projects
+          const currentActiveId = get().activeProjectId
+          if (currentActiveId && !projects[currentActiveId]) {
+            set({ projects, activeProjectId: undefined })
+            try { localStorage.removeItem('mlphoma:activeProjectId') } catch { /* */ }
+          } else {
+            set({ projects })
+          }
         }
       } catch (err) {
         console.warn('Failed to load projects from Supabase', err)

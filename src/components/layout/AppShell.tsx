@@ -23,6 +23,8 @@ import {
   FileBarChart,
   Flag,
   Sliders,
+  FolderKanban,
+  ClipboardList,
 } from "lucide-react"
 
 /** Navigation item definition */
@@ -35,6 +37,8 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "#/", icon: <LayoutDashboard size={20} />, label: "Command Center", color: "text-blue-500" },
+  { href: "#/projects", icon: <FolderKanban size={20} />, label: "Projects", color: "text-yellow-600" },
+  { href: "#/project-overview", icon: <ClipboardList size={20} />, label: "Project Overview", color: "text-sky-500" },
   { href: "#/costing", icon: <Calculator size={20} />, label: "Project Costing", color: "text-emerald-500" },
   { href: "#/schedule", icon: <CalendarClock size={20} />, label: "Schedule & Ops", color: "text-indigo-500" },
   { href: "#/supply-chain", icon: <Truck size={20} />, label: "Supply Chain", color: "text-orange-500" },

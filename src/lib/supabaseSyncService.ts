@@ -592,12 +592,7 @@ export function syncTimelineTask(task: any): string {
       baseline_start_date: task.baselineStartDate,
       baseline_end_date: task.baselineEndDate,
       created_at: task.createdAt,
-  }
-  // Only include updated_at if column exists (some schemas may not have it yet)
-  if (task.updatedAt !== undefined) {
-    data.updated_at = task.updatedAt
-  } else {
-    data.updated_at = new Date().toISOString()
+      updated_at: task.updatedAt || new Date().toISOString(),
   }
   return syncQueue.enqueue({
     operation: 'upsert',
