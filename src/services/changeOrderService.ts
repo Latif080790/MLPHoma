@@ -13,7 +13,10 @@ export const changeOrderService = {
             .eq('project_id', projectId)
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[changeOrder] getChangeOrders error:', error.message)
+            return []
+        }
 
         // Fetch items for each order (could be optimized with a join but array join in supabase-js is tricky sometimes for nested lists)
         // For now simple approach

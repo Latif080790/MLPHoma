@@ -65,7 +65,10 @@ export const ahspSnapshotService = {
             .eq('project_id', projectId)
             .not('ahsp_id', 'is', null)
 
-        if (error) throw error
+        if (error) {
+            console.warn('[ahspSnapshot] takeSnapshot fetch error:', error.message)
+            return { itemsSnapshotted: 0, totalBaselineValue: 0, timestamp: new Date().toISOString() }
+        }
 
         let itemsSnapshotted = 0
         let totalBaselineValue = 0
@@ -162,7 +165,10 @@ export const ahspSnapshotService = {
             .not('snapshot_price', 'is', null)
             .gt('snapshot_price', 0)
 
-        if (error) throw error
+        if (error) {
+            console.warn('[ahspSnapshot] getPriceDrift error:', error.message)
+            return []
+        }
 
         const drifts: PriceDrift[] = []
 

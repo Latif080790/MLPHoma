@@ -48,8 +48,11 @@ export const rapService = {
       `)
             .eq('project_id', projectId)
 
-        if (error) throw error
-        return data
+        if (error) {
+            console.warn('[rap] getByProject error:', error.message)
+            return []
+        }
+        return data || []
     },
 
     /**

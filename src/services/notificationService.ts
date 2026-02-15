@@ -48,7 +48,10 @@ export const notificationService = {
             .order('created_at', { ascending: false })
             .limit(limit)
 
-        if (error) throw error
+        if (error) {
+            console.warn('[notification] getNotifications error:', error.message)
+            return []
+        }
         return (data || []).map(rowToNotification)
     },
 
@@ -63,7 +66,10 @@ export const notificationService = {
             .eq('user_id', userId)
             .eq('is_read', false)
 
-        if (error) throw error
+        if (error) {
+            console.warn('[notification] getUnreadCount error:', error.message)
+            return 0
+        }
         return count ?? 0
     },
 

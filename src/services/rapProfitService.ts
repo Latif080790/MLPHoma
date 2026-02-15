@@ -144,7 +144,21 @@ export const rapProfitService = {
             `)
             .eq('project_id', projectId)
 
-        if (error) throw error
+        if (error) {
+            console.warn('[rapProfit] getProfitHealth error:', error.message)
+            return {
+                targetProfitPct: profitPct,
+                totalRab: 0,
+                totalRapBudget: 0,
+                totalActualCost: 0,
+                totalCommittedCost: 0,
+                projectedProfit: 0,
+                projectedProfitPct: 0,
+                items: [],
+                warningCount: 0,
+                criticalCount: 0,
+            }
+        }
 
         const items: ProfitHealthItem[] = []
         let totalRab = 0

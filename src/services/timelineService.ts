@@ -1,10 +1,10 @@
-import { supabase } from '../lib/supabaseClient'
+import { assertSupabase } from '../lib/supabaseClient'
 
 export const timelineService = {
     async updateTaskProgress(id: string, progress: number) {
-        if (!supabase) throw new Error("Supabase client not initialized")
+        const client = assertSupabase()
 
-        const { data, error } = await supabase
+        const { data, error } = await client
             .from('wbs_items')
             .update({
                 progress: progress,
@@ -18,7 +18,7 @@ export const timelineService = {
     },
 
     async uploadProgressPhoto(file: File, path: string) {
-        if (!supabase) throw new Error("Supabase client not initialized")
+        const client = assertSupabase()
 
         // 1. Upload to Supabase Storage
         // Generate a clean file name
@@ -29,7 +29,7 @@ export const timelineService = {
         // Ensure bucket exists or use a common public one
         const bucketName = 'project-evidence'
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await client.storage
             .from(bucketName)
             .upload(filePath, file, {
                 cacheControl: '3600',
@@ -42,7 +42,7 @@ export const timelineService = {
         }
 
         // 2. Get Public URL
-        const { data } = supabase.storage
+        const { data } = client.storage
             .from(bucketName)
             .getPublicUrl(filePath)
 

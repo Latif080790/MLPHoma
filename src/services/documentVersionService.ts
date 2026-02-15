@@ -65,7 +65,10 @@ export const documentVersionService = {
                 .select('*')
                 .eq('id', documentId)
 
-            if (fallbackErr) throw fallbackErr
+            if (fallbackErr) {
+                console.warn('[documentVersion] getVersionHistory error:', fallbackErr.message)
+                return []
+            }
             return (fallback || []).map(rowToVersion)
         }
 
@@ -169,7 +172,10 @@ export const documentVersionService = {
             .eq('is_active', true)
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[documentVersion] getLatestDocuments error:', error.message)
+            return []
+        }
 
         // Group by document_group_id and pick latest version
         const groupMap = new Map<string, any>()

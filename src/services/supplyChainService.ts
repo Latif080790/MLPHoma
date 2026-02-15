@@ -11,6 +11,7 @@ import {
     fetchRabItems,
     fetchProjects,
     supabase,
+    assertSupabase,
     MaterialRequestRow,
     PurchaseOrderRow,
     PoItemRow,
@@ -33,7 +34,10 @@ export const supplyChainService = {
 
     async getMaterialRequests(projectId: string): Promise<MaterialRequest[]> {
         const { data, error } = await fetchMaterialRequests(projectId)
-        if (error) throw error
+        if (error) {
+            console.warn('[supplyChain] getMaterialRequests error:', error.message)
+            return []
+        }
 
         return (data || []).map((row: any) => ({
             id: row.id,
@@ -65,7 +69,7 @@ export const supplyChainService = {
 
         if (rapItemIds.length > 0) {
             // Fetch RAP Items directly using Supabase client
-            const { data: dbRapItems, error: dbError } = await supabase!
+            const { data: dbRapItems, error: dbError } = await assertSupabase()
                 .from('rap_items')
                 .select(`
                     id, 
@@ -139,7 +143,7 @@ export const supplyChainService = {
                     const rapItem = rapMap.get(item.rap_item_id)
                     if (rapItem) {
                         const newCommitted = (rapItem.committed_cost || 0) + (item.quantity * item.unit_price)
-                        const { error: updateErr } = await supabase!
+                        const { error: updateErr } = await assertSupabase()
                             .from('rap_items')
                             .update({ committed_cost: newCommitted })
                             .eq('id', rapItem.id)
@@ -161,7 +165,10 @@ export const supplyChainService = {
 
     async getPurchaseOrders(projectId: string): Promise<PurchaseOrder[]> {
         const { data, error } = await fetchPurchaseOrders(projectId)
-        if (error) throw error
+        if (error) {
+            console.warn('[supplyChain] getPurchaseOrders error:', error.message)
+            return []
+        }
 
         return (data || []).map((row: any) => ({
             id: row.id,
@@ -179,7 +186,10 @@ export const supplyChainService = {
 
     async getPoItems(poId: string): Promise<PoItem[]> {
         const { data, error } = await fetchPoItems(poId)
-        if (error) throw error
+        if (error) {
+            console.warn('[supplyChain] getPoItems error:', error.message)
+            return []
+        }
 
         return (data || []).map((row: any) => ({
             id: row.id,
@@ -208,7 +218,7 @@ export const supplyChainService = {
             const items = await this.getPoItems(id)
             for (const item of items) {
                 if (item.rapItemId) {
-                    const { data: rapItem } = await supabase!
+                    const { data: rapItem } = await assertSupabase()
                         .from('rap_items')
                         .select('committed_cost')
                         .eq('id', item.rapItemId)
@@ -216,7 +226,7 @@ export const supplyChainService = {
 
                     if (rapItem) {
                         const newCommitted = Math.max(0, (rapItem.committed_cost || 0) - item.totalPrice)
-                        await supabase!
+                        await assertSupabase()
                             .from('rap_items')
                             .update({ committed_cost: newCommitted })
                             .eq('id', item.rapItemId)
@@ -229,7 +239,7 @@ export const supplyChainService = {
         // Idempotency guard: only migrate if PO is not already COMPLETED
         if (status === 'COMPLETED') {
             // Check current PO status first
-            const { data: currentPo } = await supabase!
+            const { data: currentPo } = await assertSupabase()
                 .from('purchase_orders')
                 .select('status')
                 .eq('id', id)
@@ -243,7 +253,7 @@ export const supplyChainService = {
             const items = await this.getPoItems(id)
             for (const item of items) {
                 if (item.rapItemId) {
-                    const { data: rapItem } = await supabase!
+                    const { data: rapItem } = await assertSupabase()
                         .from('rap_items')
                         .select('committed_cost, actual_cost')
                         .eq('id', item.rapItemId)
@@ -254,7 +264,7 @@ export const supplyChainService = {
                         const newCommitted = Math.max(0, (rapItem.committed_cost || 0) - amount)
                         const newActual = (rapItem.actual_cost || 0) + amount
 
-                        await supabase!
+                        await assertSupabase()
                             .from('rap_items')
                             .update({
                                 committed_cost: newCommitted,
@@ -280,7 +290,10 @@ export const supplyChainService = {
 
     async getInventoryTransactions(projectId: string): Promise<InventoryTransaction[]> {
         const { data, error } = await fetchInventoryTransactions(projectId)
-        if (error) throw error
+        if (error) {
+            console.warn('[supplyChain] getInventoryTransactions error:', error.message)
+            return []
+        }
 
         return (data || []).map((row: any) => ({
             id: row.id,

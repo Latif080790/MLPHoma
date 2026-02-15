@@ -69,9 +69,10 @@ describe('approvalService', () => {
       expect(result[0].projectId).toBe('P1')
     })
 
-    it('should throw on error', async () => {
+    it('should return empty array on error', async () => {
       mockFrom.mockImplementation(() => makeChain({ data: null, error: new Error('DB fail') }))
-      await expect(approvalService.getApprovals('P1')).rejects.toThrow()
+      const result = await approvalService.getApprovals('P1')
+      expect(result).toEqual([])
     })
   })
 

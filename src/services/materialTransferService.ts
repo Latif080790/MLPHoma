@@ -60,7 +60,10 @@ export const materialTransferService = {
             .eq('project_id', projectId)
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[materialTransfer] getTransfers error:', error.message)
+            return []
+        }
         return (data || []).map(rowToTransfer)
     },
 

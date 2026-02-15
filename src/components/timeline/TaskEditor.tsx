@@ -116,6 +116,16 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
     if (!form.startDate) e.startDate = 'Start date is required'
     if (form.duration < 1) e.duration = 'Duration must be at least 1 day'
     if (form.progress < 0 || form.progress > 100) e.progress = 'Progress must be 0–100'
+
+    // Validate dependencies
+    if (dependencies.some(d => !d.predecessorId)) {
+      e.dependencies = 'All dependency rows must have a predecessor selected.'
+    }
+    // Prevent self-dependency validation (simple check)
+    if (task?.id && dependencies.some(d => d.predecessorId === task.id)) {
+      e.dependencies = 'A task cannot depend on itself.'
+    }
+
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -347,6 +357,12 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
               {dependencies.length === 0 ? (
                 <div className="text-sm text-neutral-500">No dependencies added.</div>
               ) : null}
+
+              {errors.dependencies && (
+                <div className="mb-2 p-2 bg-red-50 text-red-600 text-sm rounded border border-red-200">
+                  {errors.dependencies}
+                </div>
+              )}
 
               {dependencies.map((dep, idx) => (
                 <div key={dep.id} className="grid gap-3 md:grid-cols-4 items-end">

@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "lib": [
+            "deno.ns",
+            "deno.window"
+        ],
+        "strict": true
+    },
+    "imports": {
+        "std/": "https://deno.land/std@0.168.0/",
+        "supabase-js": "https://esm.sh/@supabase/supabase-js@2.0.0"
+    }
+}

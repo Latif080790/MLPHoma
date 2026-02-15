@@ -56,9 +56,10 @@ describe('riskService', () => {
       expect(result).toEqual([])
     })
 
-    it('should throw on error', async () => {
+    it('should return empty array on error', async () => {
       mockFromImpl = () => makeChain({ data: null, error: new Error('DB error') })
-      await expect(riskService.getRisks('P1')).rejects.toThrow()
+      const result = await riskService.getRisks('P1')
+      expect(result).toEqual([])
     })
   })
 

@@ -117,7 +117,10 @@ export const userManagementService = {
             .select('*')
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[userManagement] getUsers error:', error.message)
+            return []
+        }
         return (data || []).map(rowToProfile)
     },
 
@@ -132,7 +135,10 @@ export const userManagementService = {
             .eq('id', userId)
             .maybeSingle()
 
-        if (error) throw error
+        if (error) {
+            console.warn('[userManagement] getUser error:', error.message)
+            return null
+        }
         return data ? rowToProfile(data) : null
     },
 

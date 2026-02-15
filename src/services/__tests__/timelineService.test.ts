@@ -9,10 +9,10 @@ const mockFrom = vi.fn()
 const mockStorageFrom = vi.fn()
 
 vi.mock('../../lib/supabaseClient', () => ({
-  supabase: {
+  assertSupabase: () => ({
     from: (t: string) => mockFrom(t),
     storage: { from: (b: string) => mockStorageFrom(b) },
-  },
+  }),
 }))
 
 import { timelineService } from '../timelineService'

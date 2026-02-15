@@ -65,8 +65,8 @@ MLPHoma adalah aplikasi manajemen proyek konstruksi yang mengintegrasikan:
                  │
 │                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      SUPABASE BACKEND                            │
-│  (Acting as Primary Backend - NestJS Source is Missing/Blackbox)│
+│                   SUPABASE + THICK CLIENT                       │
+│  (Logic resides in React Services + Supabase Row Level Security)│
 │  ┌────────────┐  ┌────────────┐  ┌──────────┐                 │
 │  │  resources │  │ ahsp_items │  │ projects │                 │
 │  └────────────┘  └────────────┘  └──────────┘                 │

@@ -15,7 +15,10 @@ export const riskService = {
             .eq('project_id', projectId)
             .order('risk_score', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[risk] getRisks error:', error.message)
+            return []
+        }
 
         return (data || []).map((row: any) => ({
             id: row.id,
