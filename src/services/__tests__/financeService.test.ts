@@ -63,9 +63,10 @@ describe('financeService', () => {
       expect(result).toEqual([])
     })
 
-    it('should throw on query error', async () => {
+    it('should return empty array on query error (graceful fallback)', async () => {
       mockFromImpl = () => makeChain({ data: null, error: new Error('DB error') })
-      await expect(financeService.getInvoices('P1')).rejects.toThrow()
+      const result = await financeService.getInvoices('P1')
+      expect(result).toEqual([])
     })
   })
 

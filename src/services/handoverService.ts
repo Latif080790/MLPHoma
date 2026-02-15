@@ -48,10 +48,17 @@ export const handoverService = {
         const planned = rapData?.reduce((sum: number, item: any) => sum + (item.total_price || 0), 0) || 0;
 
         // 2. Fetch Schedule Progress (WBS weighted average)
-        const { data: wbsData } = await supabase
-            .from('wbs_items')
-            .select('progress, weight, start_date, end_date')
-            .eq('project_id', projectId);
+        // Columns progress/weight/start_date/end_date may not exist yet (added in migration 034)
+        let wbsData: any[] | null = null;
+        try {
+            const { data, error } = await supabase
+                .from('wbs_items')
+                .select('progress, weight, start_date, end_date')
+                .eq('project_id', projectId);
+            if (!error) wbsData = data;
+        } catch {
+            // Columns may not exist yet — use defaults
+        }
 
         const totalWeight = wbsData?.reduce((sum: number, item: any) => sum + (item.weight || 0), 0) || 0;
         const weightedProgress = wbsData?.reduce((sum: number, item: any) => sum + ((item.progress || 0) * (item.weight || 0)), 0) || 0;
@@ -65,7 +72,12 @@ export const handoverService = {
             .eq('status', 'OPEN');
 
         // 4. Fetch Inventory Stock
-        const stock = await supplyChainService.getInventoryStock(projectId);
+        let stock: any[] = [];
+        try {
+            stock = await supplyChainService.getInventoryStock(projectId);
+        } catch {
+            // Inventory may fail if supply chain tables have RLS issues
+        }
 
         return {
             budget: {
@@ -88,7 +100,7 @@ export const handoverService = {
                 incidents: 0,
                 manhours: 0,
             },
-            inventory: stock.map(s => ({
+            inventory: stock.map((s: any) => ({
                 materialName: s.materialName,
                 unit: s.unit,
                 current: s.current,
@@ -120,20 +132,25 @@ export const handoverService = {
         }
 
         // Fetch Incomplete WBS
-        const { data: wbs } = await supabase
-            .from('wbs_items')
-            .select('id, name, status, progress')
-            .eq('project_id', projectId)
-            .lt('progress', 100);
+        // Columns status/progress may not exist yet (added in migration 034)
+        try {
+            const { data: wbs, error: wbsErr } = await supabase
+                .from('wbs_items')
+                .select('id, name, status, progress')
+                .eq('project_id', projectId)
+                .lt('progress', 100);
 
-        if (wbs) {
-            wbs.forEach((w: any) => issues.push({
-                id: w.id,
-                type: 'WBS',
-                desc: w.name,
-                status: `${w.progress}%`,
-                priority: 'Normal'
-            }));
+            if (!wbsErr && wbs) {
+                wbs.forEach((w: any) => issues.push({
+                    id: w.id,
+                    type: 'WBS',
+                    desc: w.name,
+                    status: `${w.progress || 0}%`,
+                    priority: 'Normal'
+                }));
+            }
+        } catch {
+            // Columns may not exist yet — skip WBS issues
         }
 
         // Fetch Open Purchase Orders

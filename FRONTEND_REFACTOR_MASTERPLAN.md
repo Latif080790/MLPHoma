@@ -2,7 +2,7 @@
 
 **Dokumen ini dibuat untuk developer MLPHoma sebagai panduan refactor frontend yang terstruktur, aman, dan tetap kompatibel dengan sistem yang sudah berjalan.**
 
-> **Last Updated:** 15 Februari 2026  
+> **Last Updated:** 15 Februari 2026 (post Project Overview implementation)  
 > **Baseline Test:** 293/293 passing · 0 TS errors · 30 test files  
 > **Scope:** Frontend SPA (`src/`) — tidak termasuk backend/supabase-migration
 
@@ -44,9 +44,9 @@ Refactor frontend MLPHoma harus mencapai sasaran berikut:
 | Kategori                   | Jumlah  | Lokasi                         |
 |----------------------------|---------|--------------------------------|
 | Zustand Stores             | 16      | `src/store/*.ts`               |
-| Domain Services            | 26      | `src/services/*.ts`            |
+| Domain Services            | **27**  | `src/services/*.ts`            |
 | Type definition files      | 18      | `src/types/*.ts`               |
-| v3 Page Modules            | 9       | `src/pages/modules/v3/`        |
+| v3 Page Modules            | **10**  | `src/pages/modules/v3/`        |
 | Legacy Page Modules        | 10      | `src/pages/modules/`           |
 | Component folders          | 18+     | `src/components/*`             |
 | Custom Hooks               | 8       | `src/hooks/*`                  |
@@ -62,13 +62,13 @@ MLPHoma sudah memiliki layering yang cukup baik:
 ```
 ┌─────────────────────────────────────────────────────────┐
 │   UI Layer (Pages + Components)                         │
-│   9 v3 pages + 10 legacy pages + 60+ components        │
+│   10 v3 pages + 10 legacy pages + 60+ components       │
 ├─────────────────────────────────────────────────────────┤
 │   State Layer (Zustand Stores)                          │
 │   16 domain stores · cached getters · optimistic update │
 ├─────────────────────────────────────────────────────────┤
 │   Service Layer (Domain Services)                       │
-│   26 services · row↔domain mapping · business logic     │
+│   27 services · row↔domain mapping · business logic     │
 ├─────────────────────────────────────────────────────────┤
 │   Sync/Persistence Layer                                │
 │   SyncQueueManager · retry 3x · localStorage fallback   │
@@ -84,7 +84,7 @@ MLPHoma sudah memiliki layering yang cukup baik:
 
 - Pattern sync queue sudah matang dan wajib dipertahankan.
 - Formula perhitungan sudah disentralisasi di `calculationService`.
-- 11 dari 26 service sudah punya test dan lulus.
+- 11 dari 27 service sudah punya test dan lulus.
 - Pemisahan domain store sudah jelas.
 - Feature flag system (`featureStore` + `featureSchema`) sudah ada fondasi.
 - CPM computation sudah di-offload ke Web Worker.
@@ -96,9 +96,9 @@ MLPHoma sudah memiliki layering yang cukup baik:
 - Tidak ada mekanisme redirect legacy → v3.
 
 #### B. Konfigurasi navigasi hardcoded
-- Sidebar `NAV_ITEMS` di `AppShell.tsx` = array literal 13 item.
+- Sidebar `NAV_ITEMS` di `AppShell.tsx` = array literal **15 item** (sebelumnya 13; ditambah Projects + Project Overview pada 15 Feb 2026).
 - Belum 100% sumber dari `config/routes.ts`.
-- `ModuleKey` di `routes.ts` punya 23 key, tapi hanya 13 muncul di sidebar.
+- `ModuleKey` di `routes.ts` punya **24 key** (ditambah `'project-overview'`), tapi hanya 15 muncul di sidebar.
 
 #### C. 8 file melanggar layer boundary (Direct Supabase)
 File-file ini mengakses Supabase langsung, bypass service layer:
@@ -131,9 +131,9 @@ Tambahan inkonsistensi:
 - `tkdnStore` punya `loading` tapi tidak `error`.
 - Hanya **4 dari 16 store** menggunakan cached getter.
 
-#### E. Service test coverage masih rendah: 57.7% untested
+#### E. Service test coverage masih rendah: 59.3% untested
 
-15 service belum punya test:
+16 service belum punya test:
 
 | # | Service | Domain | Risk |
 |---|---------|--------|------|
@@ -152,6 +152,7 @@ Tambahan inkonsistensi:
 | 13 | `userManagementService` | Auth/Admin | SEDANG |
 | 14 | `tkdnService` | TKDN | RENDAH |
 | 15 | `ahspSnapshotService` | AHSP | RENDAH |
+| 16 | `projectOverviewService` | Project Overview | RENDAH — baru dibuat, belum ada test |
 
 #### F. i18n belum diadopsi
 
@@ -169,6 +170,7 @@ Ada string Indonesia hardcoded (misal "Gagal memuat data TKDN" di `tkdnStore`).
 |---------|-------|---------|
 | `CommandCenter.tsx` | 440 | Direct supabase + banyak inline logic |
 | `Finance.tsx` | 386 | Perlu dipecah ke sub-komponen |
+| **`ProjectOverview.tsx`** | **~370** | **NEW (15 Feb 2026)** — 6 section components, service layer clean |
 | `HandoverWizard.tsx` | 308 | Direct supabase |
 | `ChangeManagement.tsx` | 294 | |
 | `SupplyChain.tsx` | 264 | |
@@ -454,7 +456,7 @@ export const ROUTES: RouteEntry[] = [ ... ]
 | # | Task | File Target | Effort | Depends On |
 |---|------|-------------|--------|------------|
 | 4.1 | Definisikan error taxonomy per domain di `errorMessages.ts` | `src/lib/errorMessages.ts` | 1d | — |
-| 4.2 | Wajibkan `useErrorHandler` / `handleAsync` di semua async workflow v3 pages (9 pages) | 9 v3 page files | 2d | — |
+| 4.2 | Wajibkan `useErrorHandler` / `handleAsync` di semua async workflow v3 pages (10 pages) | 10 v3 page files | 2d | — |
 | 4.3 | Integrasi error logging eksternal (hook di `ErrorBoundary.tsx` — resolve TODO) | `ErrorBoundary.tsx` | 1d | — |
 | 4.4 | Tambah correlation ID ke `SyncQueueManager` tasks | `supabaseSyncService.ts` | 0.5d | — |
 | 4.5 | Test `documentVersionService` | `documentVersionService.test.ts` (new) | 0.5d | — |
@@ -465,7 +467,7 @@ export const ROUTES: RouteEntry[] = [ ... ]
 | 4.10 | Test `ahspSnapshotService` + `tkdnService` | 2 test files (new) | 0.5d | — |
 
 **KPI Target akhir sprint:**
-- Service test coverage: 70% → **100%** (26/26 tested).
+- Service test coverage: 70% → **100%** (27/27 tested).
 - Semua async error di v3 pages melewati `useErrorHandler`.
 
 **Sprint 4 Total Effort:** ~8d (2 dev)
@@ -481,7 +483,7 @@ export const ROUTES: RouteEntry[] = [ ... ]
 | 5.1 | Pisahkan `featureSchema.ts` per domain (modular import + versioning) | `src/config/featureSchema.ts` → `src/config/features/*.ts` | 1.5d | — |
 | 5.2 | Validasi strict saat save/restore snapshot di `featureStore` | `src/store/featureStore.ts` | 1d | 5.1 |
 | 5.3 | Audit trail perubahan config (siapa, kapan, changes) | `featureStore` + `auditService` integration | 1d | 5.2 |
-| 5.4 | Standardisasi page skeleton: ModuleHeader, loading/error/empty states across all 9 v3 pages | 9 v3 page files | 2d | — |
+| 5.4 | Standardisasi page skeleton: ModuleHeader, loading/error/empty states across all 10 v3 pages | 10 v3 page files | 2d | — |
 | 5.5 | Extract reusable table/filter/form pattern menjadi shared component | `src/components/shared/DataTable.tsx` (new) | 1.5d | — |
 | 5.6 | Pecah `CommandCenter.tsx` (440 baris) jadi sub-komponen | `CommandCenter.tsx` → 3-4 widget files | 1.5d | Sprint 2 |
 | 5.7 | Pecah `Finance.tsx` (386 baris) jadi sub-komponen | `Finance.tsx` → tab components | 1.5d | Sprint 2 |
@@ -622,7 +624,7 @@ Setiap PR refactor harus melampirkan:
 
 | Kategori | Saat Ini | Target Akhir Sprint 4 | Target Akhir Sprint 6 |
 |----------|----------|----------------------|----------------------|
-| Service tests | 11/26 (42%) | **26/26 (100%)** | 26/26 + 3 integration |
+| Service tests | 11/27 (41%) | **27/27 (100%)** | 27/27 + 3 integration |
 | Lib tests | 7 files | 7 files | 7+ mapper tests |
 | Store tests | 2 files | 2 files | 4+ files |
 | Total test count | 293 | ~380 | ~420+ |
@@ -691,11 +693,12 @@ Setiap PR refactor harus melampirkan:
 |--------|-----------------|---------------|
 | Direct supabase di UI/store | 8 files | **0 files** |
 | Store tanpa loading/error | 5 stores | **0 stores** |
-| Service test coverage | 42% (11/26) | **100% (26/26)** |
+| Service test coverage | 41% (11/27) | **100% (27/27)** |
 | Total tests | 293 | **420+** |
 | TS errors | 0 | **0** (dijaga CI) |
 | Deprecated exports hidup | 8 | **0** |
 | Halaman v3 > 300 baris | 3 pages | **0 pages** (dipecah) |
+| Sidebar nav items | 15 (hardcoded) | **Dynamic dari `routes.ts`** |
 | Route config = source of truth | ❌ Partial | **✅ Full** |
 
 ---
@@ -711,7 +714,7 @@ Setiap PR refactor harus melampirkan:
 | `curvaSStore` | 463 | ❌ | ❌ | ❌ | syncService |
 | `rabStore` | 342 | ✅ | ❌ | ❌ | syncService |
 | `timelineStore` | 338 | ✅ | ❌ | ❌ | syncService |
-| `projectStore` | 329 | ✅ | ❌ | ❌ | **Direct DB + syncService** |
+| `projectStore` | ~345 | ✅ | ❌ | ❌ | **Direct DB + syncService** · ✅ `activeProjectId` localStorage persist |
 | `authStore` | 286 | ❌ | ✅ | ✅ | Direct (auth API) |
 | `featureStore` | 276 | ❌ | ❌ | ❌ | syncService |
 | `financeStore` | 262 | ❌ | ✅ | ✅ | service |
@@ -753,6 +756,7 @@ Setiap PR refactor harus melampirkan:
 | tkdnService | ❌ | — |
 | userManagementService | ❌ | — |
 | workOrderService | ❌ | — |
+| **projectOverviewService** | ❌ | — | *(NEW 15 Feb 2026 — aggregates KPI/risks/timeline/team/activity for Project Overview page)* |
 
 ### Types (18 files)
 
@@ -778,5 +782,54 @@ Dokumen dan file teknis yang **wajib** dibaca semua developer:
 | 10 | `src/lib/validationMiddleware.ts` | Runtime Zod wrapper + batch validate |
 | 11 | `src/config/featureSchema.ts` | Feature flag type definitions |
 | 12 | `src/hooks/useErrorHandler.ts` | Centralized error handling hook |
+| 13 | `src/services/projectOverviewService.ts` | Aggregator service per-project KPI, risks, timeline, team, activity |
+| 14 | `src/pages/modules/v3/ProjectOverview.tsx` | Operational project overview (6 sections) |
 
 Dokumen ini harus dijaga tetap update seiring progres sprint refactor.
+
+---
+
+## 16) Change Log Implementasi
+
+Bagian ini mencatat implementasi nyata yang sudah dilakukan terhadap codebase, sebagai referensi developer.
+
+### 15 Februari 2026 — Project Overview + ProjectManagement Upgrade
+
+**Scope:** Modul Project Overview baru + upgrade ProjectManagement + sidebar navigation + state persistence.
+
+**Latar Belakang:**
+- Route `#/projects` sudah ada tapi TIDAK muncul di sidebar navigation — orphaned.
+- Tidak ada halaman overview operasional per-project (Command Center = executive/aggregate view).
+- `activeProjectId` hilang saat browser refresh (tidak persist ke localStorage).
+- ProjectManagement.tsx tidak punya fitur search, filter, atau sort.
+
+**Perubahan yang Diimplementasi:**
+
+| # | File | Tipe | Deskripsi |
+|---|------|------|----------|
+| 1 | `src/store/projectStore.ts` | Modified | `activeProjectId` persist ke `localStorage` (key: `mlphoma:activeProjectId`). Read on init, write on `setActiveProject()`, clear on remove, validate after `loadProjects()` |
+| 2 | `src/components/layout/AppShell.tsx` | Modified | Tambah 2 nav items: **Projects** (`FolderKanban`, `#/projects`, yellow) dan **Project Overview** (`ClipboardList`, `#/project-overview`, sky). Total sidebar: 15 items |
+| 3 | `src/pages/modules/ProjectManagement.tsx` | Modified | Tambah search bar (name/code/client/location), status filter dropdown (All/Active/Planning/Completed/Archived), sort dropdown (name/date/budget asc/desc), "View Overview" button per card. Uses `useMemo` chain for filtered+sorted projects |
+| 4 | `src/services/projectOverviewService.ts` | **New** | 6 method aggregator: `getProjectKPIs()` (RAB/RAP/actual/committed/remaining), `getTopRisks()` (delegates to riskService), `getUpcomingMilestones()`, `getOverdueTasks()`, `getTeamMembers()` (project_members+profiles join), `getRecentActivity()` (audit_logs) |
+| 5 | `src/pages/modules/v3/ProjectOverview.tsx` | **New** | 6 section page: KPI cards (5-col budget breakdown), progress bar, timeline summary (overdue+upcoming with WBS/assignee/days), top 5 risks with probability×impact score, team members with avatar+role, audit trail, quick links. Empty state guard → redirect to `#/projects` |
+| 6 | `src/config/routes.ts` | Modified | Added `'project-overview'` to `ModuleKey` union + `MODULE_ROUTES` |
+| 7 | `src/App.tsx` | Modified | Added lazy import `ProjectOverview` + route `/project-overview` |
+
+**Diferensiasi Command Center vs Project Overview:**
+
+| Aspek | Command Center | Project Overview |
+|-------|---------------|------------------|
+| Scope | Portfolio / semua proyek (executive) | Single active project (operational) |
+| KPI | Angka tunggal (Total Budget) | Breakdown tabel (RAB vs RAP vs Actual vs Remaining) |
+| Timeline | Progress bar + 5 upcoming | Detail per-task: assignee, WBS, days overdue |
+| Risk | Count angka (Critical Risks) | Top 5 individual rows dengan score |
+| Team | Tidak ada | Daftar member + role dari `project_members` |
+| Activity | PO + Risk feed (5 item) | Full audit trail dari `audit_logs` (10 item) |
+| Requires active project | Opsional (punya mode global) | WAJIB — empty state jika tidak ada |
+
+**Verifikasi:**
+- `tsc --noEmit` = 0 errors
+- `vitest run` = 293/293 passing, 30/30 test files
+- Sidebar menampilkan Projects + Project Overview setelah Command Center
+- `activeProjectId` tetap tersimpan setelah browser refresh
+- Search/filter/sort berfungsi di ProjectManagement

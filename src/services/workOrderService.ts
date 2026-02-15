@@ -56,7 +56,10 @@ export const workOrderService = {
             .eq('project_id', projectId)
             .order('created_at', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[workOrderService] getWorkOrders error:', error.message)
+            return []
+        }
         return (data || []).map(rowToWorkOrder)
     },
 

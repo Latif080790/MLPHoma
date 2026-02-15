@@ -14,7 +14,10 @@ export const financeService = {
             .eq('project_id', projectId)
             .order('due_date', { ascending: true })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[financeService] getInvoices error:', error.message)
+            return []
+        }
         return data || []
     },
 
@@ -54,7 +57,10 @@ export const financeService = {
             .eq('project_id', projectId)
             .order('period_end', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[financeService] getClaims error:', error.message)
+            return []
+        }
         return data || []
     },
 
@@ -84,7 +90,10 @@ export const financeService = {
             .eq('project_id', projectId)
             .order('transaction_date', { ascending: false })
 
-        if (error) throw error
+        if (error) {
+            console.warn('[financeService] getTransactions error:', error.message)
+            return []
+        }
         return data || []
     },
 

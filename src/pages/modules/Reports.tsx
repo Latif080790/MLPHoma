@@ -375,7 +375,7 @@ export default function Reports() {
                 {curva?.insights?.length ? (
                   curva.insights.map((i, idx) => (
                     <div key={idx} className="rounded-md border p-3 dark:border-neutral-800">
-                      {i}
+                      {typeof i === 'string' ? i : JSON.stringify(i)}
                     </div>
                   ))
                 ) : (
