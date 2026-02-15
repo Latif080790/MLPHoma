@@ -59,9 +59,9 @@ export default function Login() {
 
         <div className="relative z-20 flex items-center text-lg font-medium">
           <div className="mr-2 rounded-full bg-white/10 p-2 backdrop-blur-sm">
-            <DraftingCompass className="h-6 w-6" />
+            <img src="/logo.png" alt="NATA LABA Logo" className="h-8 w-8 object-contain" />
           </div>
-          MLPHoma Construction
+          NATA LABA Construction Suite
         </div>
 
         <div className="relative z-20 mt-auto">

@@ -25,6 +25,13 @@ export type ModuleKey =
   | 'risk'
   | 'change-order'
   | 'documents'
+  | 'command-center'
+  | 'costing'
+  | 'schedule'
+  | 'handover'
+  | 'tkdn'
+  | 'settings'
+  | 'features'
 
 /**
  * MODULE_ROUTES
@@ -48,4 +55,11 @@ export const MODULE_ROUTES: Record<ModuleKey, string> = {
   risk: '/risk',
   'change-order': '/change-management',
   documents: '/documents',
+  'command-center': '/',
+  costing: '/costing',
+  schedule: '/schedule',
+  handover: '/handover',
+  tkdn: '/tkdn',
+  settings: '/settings',
+  features: '/features',
 }

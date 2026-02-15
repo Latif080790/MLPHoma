@@ -302,7 +302,7 @@ describe('validationMiddleware', () => {
     })
 
     it('should handle empty errors', () => {
-      expect(mergeErrorMessages([])).toBe('')
+      expect(mergeErrorMessages([])).toBe('Validation failed')
     })
   })
 

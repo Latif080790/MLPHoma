@@ -205,7 +205,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
 
     /**
      * archiveProject
-     * Mark project as ARCHIVED locally and sync.
+     * Mark project as ARCHIVED locally and sync via centralized sync service.
      */
     archiveProject: async (projectId: string) => {
       if (!projectId) return
@@ -218,26 +218,14 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         return { projects: { ...state.projects, [projectId]: archived } }
       })
 
-      // 2. Sync to DB
-      if (!supabase) {
-        console.error("Supabase client not initialized")
-        toast.error("Supabase client not initialized")
-        return
-      }
-
-      try {
-        const { error } = await supabase
-          .from('projects')
-          .update({
-            status: 'ARCHIVED',
-            archived_at: new Date().toISOString()
-          })
-          .eq('id', projectId)
-
-        if (error) throw error
-      } catch (err: any) {
-        toast.error("Failed to archive project remotely", { description: err.message })
-        // Revert on failure (optional but good practice)
+      // 2. Sync via centralized service (queued + retry)
+      const existing = get().projects[projectId]
+      if (existing) {
+        syncProj({
+          ...existing,
+          status: 'ARCHIVED',
+          archived_at: new Date().toISOString(),
+        })
       }
     },
 
