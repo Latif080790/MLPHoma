@@ -1,0 +1,63 @@
+﻿
+> natalaba@1.0.0 test
+> vitest src/__tests__/services/supplyChainService.test.ts
+
+node.exe : [33mThe CJS build of Vite's Node 
+API is deprecated. See https://vite.dev/guide/
+troubleshooting.html#vite-cjs-node-api-depreca
+ted for more details.[39m
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified    
+: ([33mThe CJS bu...e details.[39m:S    
+tring) [], RemoteException
+    + FullyQualifiedErrorId : NativeComman    
+dError
+ 
+
+[7m[1m[34m DEV [39m[22m[27m [34mv1.6.1[39m [90mD:/2. NATA_PROJECTAPP/PM_LABHA/MLPHoma[39m
+
+ [33mΓ¥»[39m src/__tests__/services/supplyChainService.test.ts [2m ([22m[2m6 tests[22m [2m|[22m [31m1 failed[39m[2m)[22m[90m 16[2mms[22m[39m
+[31m   [33mΓ¥»[31m src/__tests__/services/supplyChainService.test.ts[2m > [22mSupplyChainService Unit Tests[2m > [22mInventory Transactions[2m > [22mshould calculate stock correctly[39m
+[31m     ΓåÆ fetchInventoryTransactions is not defined[39m
+
+[31mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1m[7m Failed 
+Tests 1 [27m[22mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/__tests
+__/services/supplyChainService.test.ts[2m > 
+[22mSupplyChainService Unit Tests[2m > 
+[22mInventory Transactions[2m > [22mshould 
+calculate stock correctly
+[31m[1mReferenceError[22m: 
+fetchInventoryTransactions is not defined[39m
+[36m [2mΓ¥»[22m src/__tests__/services/supp
+lyChainService.test.ts:[2m207:23[22m[39m
+    [90m205| [39m            ]
+    [90m206| [39m
+    [90m207| [39m            vi[33m.[39m[
+34mmocked[39m(fetchInventoryTransactions)[33
+m.[39m[34mmockResolvedValue[39m({ ΓÇª
+    [90m   | [39m                      
+[31m^[39m
+    [90m208| [39m
+    [90m209| [39m            
+[35mconst[39m stock [33m=[39m 
+[35mawait[39m supplyChainService[33m.[39m
+[34mgetInventoryStock[39m([33mP[39mΓÇª
+
+[31m[2mΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»Γ
+Ä»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/1]ΓÄ»[2
+2m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m5 passed[39m[22m[90m (6)[39m
+[2m   Start at [22m 01:14:27
+[2m   Duration [22m 1.07s[2m (transform 65ms, setup 169ms, collect 31ms, tests 16ms, environment 379ms, prepare 113ms)[22m
+
+
+[1m[7m[31m FAIL [39m[27m[22m[31m Tests failed. Watching for file changes...[39m
+       [2mpress [22m[1mh[22m[2m to show help[22m[2m, [22m[2mpress [22m[1mq[22m[2m to quit[22m
