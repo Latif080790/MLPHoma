@@ -5,11 +5,14 @@
  */
 
 import React, { useMemo, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
-import { FolderKanban, Plus, CheckCircle2, DollarSign, Calendar, MapPin, MoreVertical, Edit, Trash2 } from 'lucide-react'
+import { Input } from '../../components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
+import { FolderKanban, Plus, CheckCircle2, DollarSign, Calendar, MapPin, MoreVertical, Edit, Trash2, Search, ArrowUpDown, Eye } from 'lucide-react'
 import { useProjectStore, type Project } from '../../store/projectStore'
 import { ProjectDialog } from '../../components/project/ProjectDialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/ui/dropdown-menu'
@@ -25,12 +28,14 @@ function ProjectCard({
   onActivate,
   onEdit,
   onDelete,
+  onViewOverview,
 }: {
   project: Project
   isActive: boolean
   onActivate: () => void
   onEdit: () => void
   onDelete: () => void
+  onViewOverview: () => void
 }) {
   return (
     <Card className={`overflow-hidden flex flex-col ${isActive ? 'border-blue-500 ring-1 ring-blue-500' : ''}`}>
@@ -107,14 +112,22 @@ function ProjectCard({
           </p>
         )}
       </CardContent>
-      <CardFooter className="pt-0">
+      <CardFooter className="pt-0 gap-2">
         <Button
-          className="w-full"
+          className="flex-1"
           variant={isActive ? 'secondary' : 'default'}
           onClick={onActivate}
           disabled={isActive}
         >
           {isActive ? 'Currently Active' : 'Set Active'}
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          title="View Overview"
+          onClick={onViewOverview}
+        >
+          <Eye className="h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
@@ -125,6 +138,7 @@ function ProjectCard({
  * Halaman Project Management
  */
 export default function ProjectManagement() {
+  const navigate = useNavigate()
   /**
    * Select raw projects object from the store (stable reference).
    * Convert to array with useMemo so we don't create a new array on every render
@@ -147,6 +161,55 @@ export default function ProjectManagement() {
   // Dialog state
   const [showDialog, setShowDialog] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+
+  // Search, filter, sort state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('name-asc')
+
+  // Filtered + sorted projects
+  const filteredProjects = useMemo(() => {
+    let result = [...projects]
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      result = result.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.code || '').toLowerCase().includes(q) ||
+          (p.clientName || '').toLowerCase().includes(q) ||
+          (p.location || '').toLowerCase().includes(q)
+      )
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      result = result.filter((p) => (p.status || 'Planning').toLowerCase() === statusFilter.toLowerCase())
+    }
+
+    // Sort
+    const [field, dir] = sortBy.split('-') as [string, string]
+    result.sort((a, b) => {
+      let cmp = 0
+      switch (field) {
+        case 'name':
+          cmp = a.name.localeCompare(b.name)
+          break
+        case 'date':
+          cmp = (a.startDate || '').localeCompare(b.startDate || '')
+          break
+        case 'budget':
+          cmp = (a.budget || 0) - (b.budget || 0)
+          break
+        default:
+          cmp = 0
+      }
+      return dir === 'desc' ? -cmp : cmp
+    })
+
+    return result
+  }, [projects, searchQuery, statusFilter, sortBy])
 
   // Ringkasan portfolio
   const summary = useMemo(() => {
@@ -237,19 +300,62 @@ export default function ProjectManagement() {
         </Card>
       </div>
 
+      {/* Search, Filter, Sort toolbar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+        <div className="relative flex-1 w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Filter status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="planning">Planning</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="archived">Archived</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-[180px]">
+            <ArrowUpDown className="mr-2 h-4 w-4" />
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="name-asc">Name A → Z</SelectItem>
+            <SelectItem value="name-desc">Name Z → A</SelectItem>
+            <SelectItem value="date-desc">Newest First</SelectItem>
+            <SelectItem value="date-asc">Oldest First</SelectItem>
+            <SelectItem value="budget-desc">Budget High → Low</SelectItem>
+            <SelectItem value="budget-asc">Budget Low → High</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Grid projects */}
-      {projects.length === 0 ? (
+      {filteredProjects.length === 0 ? (
         <div className="text-center py-12 border rounded-xl bg-muted/10">
-          <h3 className="text-lg font-medium">No Projects Found</h3>
-          <p className="text-muted-foreground mb-4">Create your first project to get started.</p>
-          <Button onClick={handleAdd}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Project
-          </Button>
+          <h3 className="text-lg font-medium">{projects.length === 0 ? 'No Projects Found' : 'No Matching Projects'}</h3>
+          <p className="text-muted-foreground mb-4">
+            {projects.length === 0 ? 'Create your first project to get started.' : 'Try adjusting your search or filters.'}
+          </p>
+          {projects.length === 0 && (
+            <Button onClick={handleAdd}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Project
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p) => (
+          {filteredProjects.map((p) => (
             <ProjectCard
               key={p.id}
               project={p}
@@ -257,6 +363,10 @@ export default function ProjectManagement() {
               onActivate={() => setActive(p.id)}
               onEdit={() => handleEdit(p)}
               onDelete={() => handleDelete(p)}
+              onViewOverview={() => {
+                setActive(p.id)
+                navigate('/project-overview')
+              }}
             />
           ))}
         </div>
