@@ -30,15 +30,26 @@ export interface ProfitHealthItem {
     healthStatus: 'healthy' | 'warning' | 'critical' | 'loss'
 }
 
+export interface EquipmentCostEntry {
+    resourceId: string
+    logDate: string
+    status: string
+    hoursUsed: number
+    rentCost: number
+}
+
 export interface ProjectProfitSummary {
     targetProfitPct: number
     totalRab: number
     totalRapBudget: number
-    totalActualCost: number
+    totalActualCost: number       // RAP actual + equipment
     totalCommittedCost: number
+    totalEquipmentCost: number    // From tools_usage_logs
+    totalRapActualOnly: number    // RAP actual_cost only (excl equipment)
     projectedProfit: number       // RAB - (actual + committed remaining)
     projectedProfitPct: number
     items: ProfitHealthItem[]
+    equipmentBreakdown: EquipmentCostEntry[]
     warningCount: number
     criticalCount: number
 }
@@ -122,12 +133,43 @@ export const rapProfitService = {
     },
 
     /**
+     * Fetch total equipment/tools rent cost from tools_usage_logs.
+     */
+    async getEquipmentCosts(projectId: string): Promise<{ total: number; breakdown: EquipmentCostEntry[] }> {
+        const client = assertSupabase()
+        const { data, error } = await client
+            .from('tools_usage_logs')
+            .select('resource_id, log_date, status, hours_used, rent_cost')
+            .eq('project_id', projectId)
+
+        if (error || !data) {
+            console.warn('[rapProfit] getEquipmentCosts error:', error?.message)
+            return { total: 0, breakdown: [] }
+        }
+
+        const breakdown: EquipmentCostEntry[] = data.map((d: any) => ({
+            resourceId: d.resource_id || '',
+            logDate: d.log_date || '',
+            status: d.status || 'UNKNOWN',
+            hoursUsed: Number(d.hours_used || 0),
+            rentCost: Number(d.rent_cost || 0),
+        }))
+
+        const total = breakdown.reduce((sum, e) => sum + e.rentCost, 0)
+        return { total, breakdown }
+    },
+
+    /**
      * Get comprehensive profit health dashboard data.
+     * Now includes equipment costs from tools_usage_logs in totalActualCost.
      */
     async getProfitHealth(projectId: string): Promise<ProjectProfitSummary> {
         const client = assertSupabase()
 
         const profitPct = await this.getTargetProfitPct(projectId)
+
+        // Fetch equipment costs in parallel with RAP items
+        const equipmentPromise = this.getEquipmentCosts(projectId)
 
         // Get RAP items with WBS and RAB info
         const { data: rapItems, error } = await client
@@ -144,17 +186,22 @@ export const rapProfitService = {
             `)
             .eq('project_id', projectId)
 
+        const equipment = await equipmentPromise
+
         if (error) {
             console.warn('[rapProfit] getProfitHealth error:', error.message)
             return {
                 targetProfitPct: profitPct,
                 totalRab: 0,
                 totalRapBudget: 0,
-                totalActualCost: 0,
+                totalActualCost: equipment.total,
                 totalCommittedCost: 0,
+                totalEquipmentCost: equipment.total,
+                totalRapActualOnly: 0,
                 projectedProfit: 0,
                 projectedProfitPct: 0,
                 items: [],
+                equipmentBreakdown: equipment.breakdown,
                 warningCount: 0,
                 criticalCount: 0,
             }
@@ -211,7 +258,12 @@ export const rapProfitService = {
             totalCommittedCost += committedCost
         }
 
-        const projectedProfit = totalRab - totalActualCost - (totalCommittedCost - totalActualCost)
+        // Include equipment costs in overall actual cost
+        const totalEquipmentCost = equipment.total
+        const totalRapActualOnly = totalActualCost
+        totalActualCost += totalEquipmentCost
+
+        const projectedProfit = totalRab - totalActualCost - (totalCommittedCost - totalRapActualOnly)
         const projectedProfitPct = totalRab > 0 ? (projectedProfit / totalRab) * 100 : 0
 
         // Auto-notify if profit margin is eroding
@@ -236,9 +288,12 @@ export const rapProfitService = {
             totalRapBudget,
             totalActualCost,
             totalCommittedCost,
+            totalEquipmentCost,
+            totalRapActualOnly,
             projectedProfit,
             projectedProfitPct,
             items,
+            equipmentBreakdown: equipment.breakdown,
             warningCount,
             criticalCount,
         }

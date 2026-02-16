@@ -21,6 +21,7 @@ import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table"
 
 import { calculateUnifiedSchedule } from "../../lib/unifiedSchedule"
 import { useTimelineStore } from "../../store/timelineStore"
@@ -34,7 +35,7 @@ function exportHistogramCSV(rows: any[]) {
   const headers = ["Period", "TotalCost", "Material", "Labor", "Equipment", "Other"]
   const lines = [headers.join(",")]
   rows.forEach((r) => lines.push([
-    r.period, 
+    r.period,
     r.cost,
     r.material || 0,
     r.labor || 0,
@@ -99,7 +100,7 @@ export default function Resource() {
   // Stable selectors
   const rabItemsSelector = useCallback((s: any) => s.getItems?.(projectId) ?? EMPTY_ARRAY, [projectId])
   const tasksSelector = useCallback((s: any) => s.getTasks(projectId), [projectId])
-  
+
   const rabItems = useRabStore(rabItemsSelector)
   const tasks = useTimelineStore(tasksSelector)
   const ahspItems = useAHSPStore((s) => s.ahspItems)
@@ -118,7 +119,7 @@ export default function Resource() {
 
       // Find linked AHSP
       const ahspItem = ahspMap.get(item.item_code || item.code)
-      
+
       if (ahspItem) {
         // Case 1: Has AHSP - breakdown into components
         const components = componentsByAHSP[ahspItem.id] || []
@@ -127,7 +128,7 @@ export default function Resource() {
           const resourceName = comp.resource?.name || "Unknown"
           const resourceUnit = comp.unit || comp.resource?.unit || "unit"
           const resourceType = comp.resource?.type || comp.type || "material"
-          
+
           // Coefficient * RAB Volume
           const requiredVolume = (comp.coefficient || 0) * rabVolume
           const cost = requiredVolume * (comp.unitPrice || 0)
@@ -150,7 +151,7 @@ export default function Resource() {
         // Use item ID as resource ID to avoid collisions
         const resourceId = `manual-${item.id}`
         const cost = rabVolume * (item.unit_price || 0)
-        
+
         if (!resources[resourceId]) {
           resources[resourceId] = {
             name: item.name || item.item_name || "Unnamed Item",
@@ -160,7 +161,7 @@ export default function Resource() {
             totalCost: 0
           }
         }
-        
+
         resources[resourceId].totalVolume += rabVolume
         resources[resourceId].totalCost += cost
       }
@@ -204,7 +205,7 @@ export default function Resource() {
   const topItems = useMemo(() => {
     // Filter items that have a taskId (are scheduled)
     const scheduledItems = rabItems.filter((i: any) => i.taskId)
-    
+
     // Sort by total cost
     return scheduledItems
       .map((i: any) => ({
@@ -268,29 +269,39 @@ export default function Resource() {
                 <CardTitle>Total Resource Requirements</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="p-3 text-left font-medium">Resource Name</th>
-                        <th className="p-3 text-left font-medium">Type</th>
-                        <th className="p-3 text-right font-medium">Total Volume</th>
-                        <th className="p-3 text-left font-medium">Unit</th>
-                        <th className="p-3 text-right font-medium">Est. Cost</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {totalRequirements.map((res, idx) => (
-                        <tr key={idx} className="border-t hover:bg-muted/50">
-                          <td className="p-3">{res.name}</td>
-                          <td className="p-3 capitalize text-muted-foreground">{res.type}</td>
-                          <td className="p-3 text-right font-mono">{res.totalVolume.toLocaleString('id-ID', { maximumFractionDigits: 2 })}</td>
-                          <td className="p-3 text-muted-foreground">{res.unit}</td>
-                          <td className="p-3 text-right font-medium">Rp {res.totalCost.toLocaleString('id-ID')}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+                  <div className="max-h-[600px] overflow-auto relative">
+                    <Table>
+                      <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                        <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                          <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Resource Name</TableHead>
+                          <TableHead className="w-[100px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Type</TableHead>
+                          <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Total Volume</TableHead>
+                          <TableHead className="w-[80px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Unit</TableHead>
+                          <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Est. Cost</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {totalRequirements.map((res, idx) => (
+                          <TableRow key={idx} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors">
+                            <TableCell className="py-2 text-sm font-medium text-slate-800 dark:text-slate-200">{res.name}</TableCell>
+                            <TableCell className="py-2">
+                              <Badge variant="outline" className="capitalize text-[10px] font-normal border-slate-200 text-slate-500">
+                                {res.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="py-2 text-right font-mono text-xs text-slate-600 dark:text-slate-400">
+                              {res.totalVolume.toLocaleString('id-ID', { maximumFractionDigits: 2 })}
+                            </TableCell>
+                            <TableCell className="py-2 text-center text-xs text-slate-400 font-mono bg-slate-50/50 dark:bg-slate-900/50">{res.unit}</TableCell>
+                            <TableCell className="py-2 text-right font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+                              Rp {res.totalCost.toLocaleString('id-ID')}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </CardContent>
             </Card>

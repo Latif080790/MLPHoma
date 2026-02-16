@@ -375,95 +375,101 @@ export function AHSPCatalog({
       }
 
       {/* AHSP Items Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>AHSP Catalog ({filteredItems.length} items)</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className={`rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900 ${compact ? 'border-0 shadow-none' : ''}`}>
+        <div className="max-h-[600px] overflow-auto relative">
           {loading.ahspItems ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No AHSP items found. Create your first item to get started.
+            <div className="text-center py-12 text-muted-foreground">
+              <p className="text-sm">No AHSP items found.</p>
+              <Button variant="link" onClick={handleAddItem} className="mt-2 text-blue-600">Create new item</Button>
             </div>
           ) : (
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead className="text-right">Base Price</TableHead>
-                  <TableHead className="text-right">Final Price</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-20">Actions</TableHead>
+              <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                  <TableHead className="w-[100px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Code</TableHead>
+                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Description</TableHead>
+                  <TableHead className="w-[120px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Category</TableHead>
+                  <TableHead className="w-[80px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Unit</TableHead>
+                  <TableHead className="w-[120px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Base Price</TableHead>
+                  <TableHead className="w-[120px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Final Price</TableHead>
+                  <TableHead className="w-[80px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="w-[100px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayItems.map((item) => (
+                {displayItems.map((item, idx) => (
                   <TableRow
                     key={item.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800"
                     onClick={() => handleEditItem(item)}
                   >
-                    <TableCell className="font-mono text-sm">{item.code}</TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{item.name}</div>
+                    <TableCell className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-400 py-1.5 border-r border-transparent">
+                      <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">
+                        {item.code}
+                      </span>
+                    </TableCell>
+                    <TableCell className="py-1.5">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
                         {item.description && (
-                          <div className="text-sm text-muted-foreground line-clamp-1">
+                          <span className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
                             {item.description}
-                          </div>
+                          </span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{item.category}</Badge>
+                    <TableCell className="py-1.5">
+                      <Badge variant="outline" className="text-[10px] font-normal h-5 border-slate-200 text-slate-500">
+                        {item.category}
+                      </Badge>
                     </TableCell>
-                    <TableCell className="uppercase">{item.unit}</TableCell>
-                    <TableCell className="text-right font-mono">
+                    <TableCell className="text-center text-[11px] text-slate-500 py-1.5 font-medium bg-slate-50/50 dark:bg-slate-900/50">
+                      {item.unit}
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs text-slate-500 py-1.5">
                       {formatIDR(item.basePrice)}
                     </TableCell>
-                    <TableCell className="text-right font-mono font-semibold">
+                    <TableCell className="text-right font-mono text-xs font-bold text-slate-700 dark:text-slate-300 py-1.5 bg-slate-50/50 dark:bg-slate-900/50">
                       {formatIDR(item.finalPrice)}
                       {(item as any).originalFinalPrice && (item as any).originalFinalPrice !== item.finalPrice && (
-                        <div className="text-[10px] text-muted-foreground line-through">
+                        <div className="text-[9px] text-red-400 line-through mt-0.5">
                           {formatIDR((item as any).originalFinalPrice)}
                         </div>
                       )}
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={item.isActive ? "default" : "secondary"}>
-                        {item.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                    <TableCell className="text-center py-1.5">
+                      <div className={`w-2 h-2 rounded-full mx-auto ${item.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`} title={item.isActive ? 'Active' : 'Inactive'} />
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="py-1.5 text-right">
+                      <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
                           onClick={() => handleHistoryClick(item)}
                           title="Price History"
                         >
-                          <History className="h-4 w-4" />
+                          <History className="h-3 w-3" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          className="h-6 w-6 text-slate-400 hover:text-amber-600 hover:bg-amber-50"
                           onClick={() => handleEditItem(item)}
                         >
-                          <Edit2 className="h-4 w-4" />
+                          <Edit2 className="h-3 w-3" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="sm"
+                          size="icon"
+                          className="h-6 w-6 text-slate-400 hover:text-red-600 hover:bg-red-50"
                           onClick={() => handleDeleteItem(item)}
-                          className="text-red-600 hover:text-red-700"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </TableCell>
@@ -472,8 +478,8 @@ export function AHSPCatalog({
               </TableBody>
             </Table>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* AHSP Item Editor */}
       <AHSPItemEditor

@@ -123,8 +123,16 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
                         <div className="font-semibold">Rp {data.totalRapBudget.toLocaleString('id-ID')}</div>
                     </div>
                     <div>
-                        <div className="text-muted-foreground text-xs">Actual Cost</div>
-                        <div className="font-semibold text-red-600">Rp {data.totalActualCost.toLocaleString('id-ID')}</div>
+                        <div className="text-muted-foreground text-xs">Actual Cost (RAP)</div>
+                        <div className="font-semibold text-red-600">Rp {(data.totalRapActualOnly ?? data.totalActualCost).toLocaleString('id-ID')}</div>
+                    </div>
+                    <div>
+                        <div className="text-muted-foreground text-xs">Equipment Cost</div>
+                        <div className="font-semibold text-orange-600">Rp {(data.totalEquipmentCost ?? 0).toLocaleString('id-ID')}</div>
+                    </div>
+                    <div>
+                        <div className="text-muted-foreground text-xs">Total Actual</div>
+                        <div className="font-semibold text-red-700">Rp {data.totalActualCost.toLocaleString('id-ID')}</div>
                     </div>
                     <div>
                         <div className="text-muted-foreground text-xs">Committed</div>
