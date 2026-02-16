@@ -301,8 +301,8 @@ export default function Reports() {
               <CardContent className="text-2xl font-bold">
                 {curva ? (
                   <div className="flex items-center gap-6">
-                    <div>SPI {curva.metrics.spi.toFixed(2)}</div>
-                    <div>CPI {curva.metrics.cpi.toFixed(2)}</div>
+                    <div>SPI {(curva.metrics?.spi ?? 0).toFixed(2)}</div>
+                    <div>CPI {(curva.metrics?.cpi ?? 0).toFixed(2)}</div>
                   </div>
                 ) : (
                   <div className="text-base text-neutral-500">No analysis</div>
