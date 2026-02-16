@@ -21,6 +21,16 @@ import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -98,6 +108,7 @@ export function TKDNResourceManager() {
   const [filterCategory, setFilterCategory] = useState<TKDNCategory | 'all'>('all')
   const [filterOrigin, setFilterOrigin] = useState<ResourceOrigin | 'all'>('all')
   const [saving, setSaving] = useState(false)
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<TKDNItem | null>(null)
 
   useEffect(() => {
     if (activeProjectId) fetchItems(activeProjectId)
@@ -152,10 +163,14 @@ export function TKDNResourceManager() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Hapus item ini?')) {
-      await removeItem(id)
-    }
+  const handleDelete = (item: TKDNItem) => {
+    setPendingDeleteItem(item)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!pendingDeleteItem) return
+    await removeItem(pendingDeleteItem.id)
+    setPendingDeleteItem(null)
   }
 
   const handleExportCSV = () => {
@@ -177,7 +192,7 @@ export function TKDNResourceManager() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 density-compact">
       <ModuleHeader
         icon={<Flag size={18} />}
         title="TKDN Management"
@@ -195,7 +210,7 @@ export function TKDNResourceManager() {
       />
 
       <Tabs defaultValue="dashboard">
-        <TabsList>
+        <TabsList className="h-auto bg-slate-50/70 p-1 dark:bg-slate-950/40">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="items">Data Item ({items.length})</TabsTrigger>
         </TabsList>
@@ -300,18 +315,18 @@ export function TKDNResourceManager() {
         {/* ========== ITEMS TAB ========== */}
         <TabsContent value="items" className="space-y-4">
           {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="sticky-glass-panel flex flex-wrap items-center gap-3 p-3">
             <div className="relative flex-1 min-w-[200px]">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
               <Input
                 placeholder="Cari nama, supplier, HS code..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
+                className="control-compact pl-9"
               />
             </div>
             <Select value={filterCategory} onValueChange={(v) => setFilterCategory(v as any)}>
-              <SelectTrigger className="w-[150px]"><Filter size={14} className="mr-1" /><SelectValue placeholder="Kategori" /></SelectTrigger>
+              <SelectTrigger className="control-compact w-[150px]"><Filter size={14} className="mr-1" /><SelectValue placeholder="Kategori" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Kategori</SelectItem>
                 {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
@@ -320,7 +335,7 @@ export function TKDNResourceManager() {
               </SelectContent>
             </Select>
             <Select value={filterOrigin} onValueChange={(v) => setFilterOrigin(v as any)}>
-              <SelectTrigger className="w-[150px]"><SelectValue placeholder="Asal" /></SelectTrigger>
+              <SelectTrigger className="control-compact w-[150px]"><SelectValue placeholder="Asal" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Asal</SelectItem>
                 <SelectItem value="domestic">Dalam Negeri</SelectItem>
@@ -339,34 +354,34 @@ export function TKDNResourceManager() {
               ) : undefined}
             />
           ) : (
-            <div className="rounded-lg border bg-white dark:bg-neutral-900 dark:border-neutral-800 overflow-x-auto">
+            <div className="overflow-x-auto rounded-lg border bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
               <Table>
-                <TableHeader>
+                <TableHeader className="sticky-glass-tablehead z-10">
                   <TableRow>
-                    <TableHead className="w-[30%]">Nama</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Asal</TableHead>
-                    <TableHead className="text-right">Volume</TableHead>
-                    <TableHead className="text-right">Harga Satuan</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead className="w-[80px]">Aksi</TableHead>
+                    <TableHead className="h-8 w-[30%] text-[11px] font-semibold uppercase tracking-wider">Nama</TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold uppercase tracking-wider">Kategori</TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold uppercase tracking-wider">Asal</TableHead>
+                    <TableHead className="h-8 text-right text-[11px] font-semibold uppercase tracking-wider">Volume</TableHead>
+                    <TableHead className="h-8 text-right text-[11px] font-semibold uppercase tracking-wider">Harga Satuan</TableHead>
+                    <TableHead className="h-8 text-right text-[11px] font-semibold uppercase tracking-wider">Total</TableHead>
+                    <TableHead className="h-8 text-[11px] font-semibold uppercase tracking-wider">Supplier</TableHead>
+                    <TableHead className="h-8 w-[80px] text-[11px] font-semibold uppercase tracking-wider">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredItems.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">
+                    <TableRow key={item.id} className="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                      <TableCell className="py-2 font-medium text-xs">
                         {item.name}
                         {item.hs_code && <span className="block text-xs text-neutral-400">HS: {item.hs_code}</span>}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2">
                         <Badge variant="outline" className="gap-1 text-xs">
                           {CATEGORY_ICONS[item.category]}
                           {CATEGORY_LABELS[item.category]}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="py-2">
                         <Badge className={item.origin === 'domestic'
                           ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                           : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
@@ -374,19 +389,19 @@ export function TKDNResourceManager() {
                           {item.origin === 'domestic' ? 'DN' : 'Impor'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right tabular-nums">{item.quantity.toLocaleString('id-ID')} {item.unit}</TableCell>
-                      <TableCell className="text-right tabular-nums">{formatRp(item.unit_price)}</TableCell>
-                      <TableCell className="text-right tabular-nums font-medium">{formatRp(item.total_value)}</TableCell>
-                      <TableCell className="text-xs text-neutral-500">
+                      <TableCell className="py-2 text-right font-mono text-xs tabular-nums">{item.quantity.toLocaleString('id-ID')} {item.unit}</TableCell>
+                      <TableCell className="py-2 text-right font-mono text-xs tabular-nums">{formatRp(item.unit_price)}</TableCell>
+                      <TableCell className="py-2 text-right font-mono text-xs font-semibold tabular-nums">{formatRp(item.total_value)}</TableCell>
+                      <TableCell className="py-2 text-[11px] text-neutral-500">
                         {item.supplier || '-'}
                         {item.country_of_origin && <span className="block">{item.country_of_origin}</span>}
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
+                      <TableCell className="py-2">
+                        <div className="flex gap-1 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(item)}>
                             <Pencil size={14} />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => handleDelete(item.id)}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => handleDelete(item)}>
                             <Trash2 size={14} />
                           </Button>
                         </div>
@@ -408,6 +423,23 @@ export function TKDNResourceManager() {
         editItem={editItem}
         loading={saving}
       />
+
+      <AlertDialog open={!!pendingDeleteItem} onOpenChange={(open) => { if (!open) setPendingDeleteItem(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus item TKDN?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDeleteItem
+                ? `Item "${pendingDeleteItem.name}" akan dihapus dari perhitungan TKDN proyek.`
+                : 'Tindakan ini tidak dapat dibatalkan.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Hapus</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

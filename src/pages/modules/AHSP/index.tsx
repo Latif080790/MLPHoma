@@ -45,30 +45,30 @@ function AHSPContent() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 density-compact">
             <AHSPStatsBar />
 
-            <Tabs defaultValue="items" className="space-y-4">
-                <TabsList>
+            <Tabs defaultValue="items" className="space-y-3">
+                <TabsList className="h-auto w-full justify-start gap-2 overflow-x-auto bg-slate-50/70 p-1 dark:bg-slate-950/40">
                     <TabsTrigger value="items">AHSP Items</TabsTrigger>
                     <TabsTrigger value="resources">DKH Resources</TabsTrigger>
                     <TabsTrigger value="analytics">Analytics</TabsTrigger>
                     <TabsTrigger value="settings">Settings</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="items" className="space-y-4">
+                <TabsContent value="items" className="space-y-3 mt-0">
                     <AHSPItemsTab />
                 </TabsContent>
 
-                <TabsContent value="resources" className="space-y-4">
+                <TabsContent value="resources" className="space-y-3 mt-0">
                     <DKHManager />
                 </TabsContent>
 
-                <TabsContent value="analytics" className="space-y-4">
+                <TabsContent value="analytics" className="space-y-3 mt-0">
                     <BenchmarkingDashboard />
                 </TabsContent>
 
-                <TabsContent value="settings" className="space-y-4">
+                <TabsContent value="settings" className="space-y-3 mt-0">
                     <AHSPSettings />
                 </TabsContent>
             </Tabs>
@@ -78,7 +78,7 @@ function AHSPContent() {
 
 export default function AHSPPage() {
     return (
-        <div className="container mx-auto p-6 space-y-6">
+        <div className="space-y-4">
             <ErrorBoundary
                 errorMessage="Failed to load AHSP module"
             >

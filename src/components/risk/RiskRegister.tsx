@@ -4,6 +4,16 @@ import { useRiskStore } from "@/store/riskStore"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Plus, Edit, Trash2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { RiskDialog } from "./RiskDialog"
 import { format } from "date-fns"
@@ -17,6 +27,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
     const { risks, fetchRisks, deleteRisk, loading } = useRiskStore()
     const [dialogOpen, setDialogOpen] = useState(false)
     const [editingRisk, setEditingRisk] = useState<any>(null)
+    const [pendingDeleteRisk, setPendingDeleteRisk] = useState<any>(null)
 
     useEffect(() => {
         if (projectId) {
@@ -34,10 +45,14 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
         setDialogOpen(true)
     }
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Are you sure you want to delete this risk?")) {
-            await deleteRisk(id)
-        }
+    const handleDelete = (risk: any) => {
+        setPendingDeleteRisk(risk)
+    }
+
+    const handleDeleteConfirm = async () => {
+        if (!pendingDeleteRisk) return
+        await deleteRisk(pendingDeleteRisk.id)
+        setPendingDeleteRisk(null)
     }
 
     // Calculate stats
@@ -45,9 +60,9 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
     const mitigatedRisks = risks.filter(r => r.status === 'MITIGATED' || r.status === 'CLOSED').length
 
     return (
-        <div className="space-y-6">
-            <div className="flex gap-4">
-                <Card className="flex-1 bg-red-50 border-red-100">
+        <div className="space-y-4 density-compact">
+            <div className="grid gap-3 md:grid-cols-3">
+                <Card className="flex-1 border-red-100 bg-red-50 hover-interactive">
                     <CardContent className="p-4 flex items-center gap-3">
                         <AlertTriangle className="text-red-500" />
                         <div>
@@ -56,7 +71,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="flex-1 bg-green-50 border-green-100">
+                <Card className="flex-1 border-green-100 bg-green-50 hover-interactive">
                     <CardContent className="p-4 flex items-center gap-3">
                         <ShieldCheck className="text-green-500" />
                         <div>
@@ -65,7 +80,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="flex-1">
+                <Card className="flex-1 hover-interactive">
                     <CardContent className="p-4 flex items-center justify-between">
                         <div className="text-sm text-neutral-500">Total Risks</div>
                         <div className="text-2xl font-bold">{risks.length}</div>
@@ -73,9 +88,9 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                 </Card>
             </div>
 
-            <div className="flex justify-between items-center">
+            <div className="sticky-glass-panel flex items-center justify-between p-3">
                 <h3 className="text-lg font-semibold">Risk Register</h3>
-                <Button size="sm" onClick={handleNew} className="gap-2">
+                <Button size="sm" onClick={handleNew} className="h-8 gap-2 text-xs">
                     <Plus size={16} /> Add Risk
                 </Button>
             </div>
@@ -83,18 +98,19 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
             {risks.length === 0 ? (
                 <EmptyState title="No Risks Logged" description="Identify and track project risks here." imageKeyword="risk" />
             ) : (
-                <div className="border rounded-md overflow-hidden">
+                <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                    <div className="max-h-[560px] overflow-auto">
                     <table className="w-full text-sm">
-                        <thead className="bg-muted/50 text-left">
+                        <thead className="sticky-glass-tablehead z-10 bg-muted/70 text-left">
                             <tr>
-                                <th className="p-3">Risk Description</th>
-                                <th className="p-3">Category</th>
-                                <th className="p-3 text-center">Prob</th>
-                                <th className="p-3 text-center">Imp</th>
-                                <th className="p-3 text-center">Score</th>
-                                <th className="p-3">Mitigation</th>
-                                <th className="p-3">Status</th>
-                                <th className="p-3 text-right">Actions</th>
+                                <th className="p-2.5 text-[11px] font-semibold uppercase tracking-wider">Risk Description</th>
+                                <th className="p-2.5 text-[11px] font-semibold uppercase tracking-wider">Category</th>
+                                <th className="p-2.5 text-center text-[11px] font-semibold uppercase tracking-wider">Prob</th>
+                                <th className="p-2.5 text-center text-[11px] font-semibold uppercase tracking-wider">Imp</th>
+                                <th className="p-2.5 text-center text-[11px] font-semibold uppercase tracking-wider">Score</th>
+                                <th className="p-2.5 text-[11px] font-semibold uppercase tracking-wider">Mitigation</th>
+                                <th className="p-2.5 text-[11px] font-semibold uppercase tracking-wider">Status</th>
+                                <th className="p-2.5 text-right text-[11px] font-semibold uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -105,8 +121,8 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                                 if (score >= 15) scoreColor = "bg-red-100 text-red-800"
 
                                 return (
-                                    <tr key={risk.id} className="border-t hover:bg-muted/50">
-                                        <td className="p-3 max-w-[300px]">
+                                    <tr key={risk.id} className="group border-t transition-colors hover:bg-muted/50">
+                                        <td className="max-w-[300px] p-2.5">
                                             <div className="font-medium">{risk.description}</div>
                                             {risk.wbs_name && (
                                                 <div className="text-xs text-neutral-500 mt-1">
@@ -114,30 +130,30 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="p-3">
-                                            <Badge variant="outline">{risk.category}</Badge>
+                                        <td className="p-2.5">
+                                            <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{risk.category}</Badge>
                                         </td>
-                                        <td className="p-3 text-center">{risk.probability}</td>
-                                        <td className="p-3 text-center">{risk.impact}</td>
-                                        <td className="p-3 text-center">
+                                        <td className="p-2.5 text-center text-xs">{risk.probability}</td>
+                                        <td className="p-2.5 text-center text-xs">{risk.impact}</td>
+                                        <td className="p-2.5 text-center">
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold ${scoreColor}`}>
                                                 {risk.risk_score}
                                             </span>
                                         </td>
-                                        <td className="p-3 max-w-[250px] text-neutral-600 truncate" title={risk.mitigation_plan}>
+                                        <td className="max-w-[250px] truncate p-2.5 text-[11px] text-neutral-600" title={risk.mitigation_plan}>
                                             {risk.mitigation_plan || '-'}
                                         </td>
-                                        <td className="p-3">
-                                            <Badge variant={risk.status === 'OPEN' ? 'destructive' : risk.status === 'MITIGATED' ? 'secondary' : 'outline'}>
+                                        <td className="p-2.5">
+                                            <Badge variant={risk.status === 'OPEN' ? 'destructive' : risk.status === 'MITIGATED' ? 'secondary' : 'outline'} className="text-[10px] uppercase tracking-wider">
                                                 {risk.status}
                                             </Badge>
                                         </td>
-                                        <td className="p-3 text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button size="icon" variant="ghost" onClick={() => handleEdit(risk)}>
+                                        <td className="p-2.5 text-right">
+                                            <div className="flex justify-end gap-1 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
+                                                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(risk)}>
                                                     <Edit size={14} />
                                                 </Button>
-                                                <Button size="icon" variant="ghost" className="text-red-500" onClick={() => handleDelete(risk.id)}>
+                                                <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500" onClick={() => handleDelete(risk)}>
                                                     <Trash2 size={14} />
                                                 </Button>
                                             </div>
@@ -147,6 +163,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                             })}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             )}
 
@@ -156,6 +173,21 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                 projectId={projectId}
                 riskToEdit={editingRisk}
             />
+
+            <AlertDialog open={!!pendingDeleteRisk} onOpenChange={(open) => { if (!open) setPendingDeleteRisk(null) }}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete risk entry?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {pendingDeleteRisk ? `"${pendingDeleteRisk.description}" will be removed from the risk register.` : 'This action cannot be undone.'}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

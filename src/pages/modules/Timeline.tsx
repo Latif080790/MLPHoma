@@ -35,6 +35,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../../components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../components/ui/alert-dialog'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { EmptyState } from '../../components/common/EmptyState'
 
@@ -169,6 +179,7 @@ export default function Timeline() {
   const [importWBSOpen, setImportWBSOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TimelineTask | null>(null)
   const [selectedId, setSelectedId] = useState<string>('')
+  const [pendingDeleteTaskId, setPendingDeleteTaskId] = useState<string | null>(null)
 
   // Toolbar states
   const [criticalOnly, setCriticalOnly] = useState<boolean>(false)
@@ -537,11 +548,7 @@ export default function Timeline() {
               setSelectedId(id)
             }}
             onTaskDelete={(id) => {
-              if (confirm('Delete this task?')) {
-                removeTask(projectId, id)
-                if (selectedId === id) setSelectedId('')
-                toast.success('Task deleted')
-              }
+              setPendingDeleteTaskId(id)
             }}
           />
           <div className="mt-3 text-xs text-neutral-500">
@@ -562,6 +569,31 @@ export default function Timeline() {
           setEditorOpen(false)
         }}
       />
+
+      <AlertDialog open={!!pendingDeleteTaskId} onOpenChange={(open) => { if (!open) setPendingDeleteTaskId(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this task?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the task from the timeline. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!pendingDeleteTaskId) return
+                removeTask(projectId, pendingDeleteTaskId)
+                if (selectedId === pendingDeleteTaskId) setSelectedId('')
+                toast.success('Task deleted')
+                setPendingDeleteTaskId(null)
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <WBSImportDialog
         projectId={projectId}

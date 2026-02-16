@@ -3,12 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { useAHSPStore } from '@/store/ahspStore'
 import { Settings } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function AHSPSettings() {
     const { settings, updateSettings } = useAHSPStore()
+    const [confirmApplyAllOpen, setConfirmApplyAllOpen] = useState(false)
     const [formData, setFormData] = useState({
         overhead: settings.defaultOverhead,
         profit: settings.defaultProfit,
@@ -79,18 +90,34 @@ export function AHSPSettings() {
                 </div>
 
                 <div className="flex justify-between">
-                    <Button variant="outline" onClick={() => {
-                        if (confirm('Are you sure you want to apply these settings to ALL existing AHSP items? This will overwrite their overhead and profit percentages.')) {
-                            useAHSPStore.getState().applySettingsToAll()
-                            toast.success('Settings applied to all items')
-                        }
-                    }}>
+                    <Button variant="outline" onClick={() => setConfirmApplyAllOpen(true)}>
                         Apply to All Items
                     </Button>
                     <Button onClick={handleSave}>
                         Save Changes
                     </Button>
                 </div>
+
+                <AlertDialog open={confirmApplyAllOpen} onOpenChange={setConfirmApplyAllOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Apply settings to all AHSP items?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will overwrite overhead and profit percentages on all existing AHSP items.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => {
+                                useAHSPStore.getState().applySettingsToAll()
+                                toast.success('Settings applied to all items')
+                                setConfirmApplyAllOpen(false)
+                            }}>
+                                Apply
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </CardContent>
         </Card>
     )

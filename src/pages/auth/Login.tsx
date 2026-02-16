@@ -6,6 +6,7 @@ import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Alert, AlertDescription } from '../../components/ui/alert'
 import { AlertCircle, ArrowRight, CheckCircle2, DraftingCompass, HardHat, Loader2, Lock, Mail } from 'lucide-react'
+import { toast } from 'sonner'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -163,7 +164,7 @@ export default function Login() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" disabled={isLoading} onClick={() => alert('Demo only')}>
+            <Button variant="outline" disabled={isLoading} onClick={() => toast.info('Demo only')}>
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Demo Acct
             </Button>

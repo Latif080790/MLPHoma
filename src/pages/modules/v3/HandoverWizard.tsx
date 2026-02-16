@@ -2,6 +2,16 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Check, Download, AlertTriangle, FileText, ArrowRight, Loader2 } from "lucide-react"
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
@@ -22,6 +32,7 @@ export default function HandoverWizard() {
     const [loading, setLoading] = useState(true)
     const [summary, setSummary] = useState<HandoverSummary | null>(null)
     const [outstanding, setOutstanding] = useState<OutstandingIssue[]>([])
+    const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
 
     useEffect(() => {
         if (!projectId) { setLoading(false); return }
@@ -84,8 +95,6 @@ export default function HandoverWizard() {
     }
 
     const handleArchiveProject = async () => {
-        if (!confirm("Are you sure? This will hide the project from the main dashboard.")) return
-
         try {
             const client = assertSupabase()
             const { error } = await client
@@ -98,6 +107,7 @@ export default function HandoverWizard() {
 
             if (error) throw error
             toast.success("Project Archived!")
+            setConfirmArchiveOpen(false)
             window.location.reload() // Force reload to refresh context
         } catch (err: any) {
             toast.error("Archive Failed", { description: err.message })
@@ -247,7 +257,7 @@ export default function HandoverWizard() {
                                             </div>
                                             <Button
                                                 variant="destructive"
-                                                onClick={handleArchiveProject}
+                                                onClick={() => setConfirmArchiveOpen(true)}
                                                 disabled={outstanding.length > 0}
                                             >
                                                 Archive Project
@@ -335,6 +345,21 @@ export default function HandoverWizard() {
                     </div>
                 </div>
             </div>
+
+            <AlertDialog open={confirmArchiveOpen} onOpenChange={setConfirmArchiveOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Archive this project?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will hide the project from the main dashboard and mark it as archived.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleArchiveProject}>Archive</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

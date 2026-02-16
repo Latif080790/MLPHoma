@@ -1059,6 +1059,13 @@ export const useAHSPStore = create<AHSPStore>()(
  * Get AHSP summary statistics
  */
 export function getAHSPSummary(state: AHSPState) {
+  const normalizeResourceType = (type?: string): ResourceType | null => {
+    if (!type) return null
+    if (type === 'subcon') return 'subcontractor'
+    if (type === 'material' || type === 'labor' || type === 'equipment' || type === 'subcontractor') return type
+    return null
+  }
+
   const totalAHSPItems = state.ahspItems.length
   const totalResources = state.resources.length
 
@@ -1068,11 +1075,12 @@ export function getAHSPSummary(state: AHSPState) {
 
   const priceByCategory: Record<string, { count: number; totalPrice: number }> = {}
   state.ahspItems.forEach(item => {
-    if (!priceByCategory[item.category]) {
-      priceByCategory[item.category] = { count: 0, totalPrice: 0 }
+    const categoryKey = item.category || 'Uncategorized'
+    if (!priceByCategory[categoryKey]) {
+      priceByCategory[categoryKey] = { count: 0, totalPrice: 0 }
     }
-    priceByCategory[item.category].count++
-    priceByCategory[item.category].totalPrice += item.finalPrice
+    priceByCategory[categoryKey].count++
+    priceByCategory[categoryKey].totalPrice += item.finalPrice || 0
   })
 
   const resourcesByType: Record<ResourceType, { count: number; totalPrice: number }> = {
@@ -1083,8 +1091,10 @@ export function getAHSPSummary(state: AHSPState) {
   }
 
   state.resources.forEach(resource => {
-    resourcesByType[resource.type].count++
-    resourcesByType[resource.type].totalPrice += resource.unitPrice
+    const normalizedType = normalizeResourceType(resource.type as string)
+    if (!normalizedType) return
+    resourcesByType[normalizedType].count++
+    resourcesByType[normalizedType].totalPrice += resource.unitPrice || 0
   })
 
   return {

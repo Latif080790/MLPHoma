@@ -7,6 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { useProjectStore } from "@/store/projectStore"
 import { useFinanceStore } from "@/store/financeStore"
 import { format } from "date-fns"
@@ -24,6 +34,7 @@ export default function Finance() {
     const [activeTab, setActiveTab] = useState("overview")
     const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
     const [claimDialogOpen, setClaimDialogOpen] = useState(false)
+    const [pendingInvoicePayment, setPendingInvoicePayment] = useState<{ id: string; project_id: string; total_amount: number; invoice_number: string } | null>(null)
 
     const {
         invoices, claims, transactions, loading,
@@ -39,10 +50,14 @@ export default function Finance() {
         }
     }, [activeProjectId])
 
-    const handlePay = async (inv: { id: string; project_id: string; total_amount: number; invoice_number: string }) => {
-        if (confirm(`Mark invoice ${inv.invoice_number} as PAID and record Rp ${inv.total_amount.toLocaleString()} payment?`)) {
-            await payInvoice(inv.id, inv.project_id, inv.total_amount)
-        }
+    const handlePayClick = (inv: { id: string; project_id: string; total_amount: number; invoice_number: string }) => {
+        setPendingInvoicePayment(inv)
+    }
+
+    const handlePayConfirm = async () => {
+        if (!pendingInvoicePayment) return
+        await payInvoice(pendingInvoicePayment.id, pendingInvoicePayment.project_id, pendingInvoicePayment.total_amount)
+        setPendingInvoicePayment(null)
     }
 
     const claimActions = (claim: ClientClaim) => {
@@ -273,7 +288,7 @@ export default function Finance() {
                                                 </TableCell>
                                                 <TableCell className="p-3 text-right">
                                                     {inv.status !== 'PAID' && (
-                                                        <Button size="sm" onClick={() => handlePay(inv)} className="h-7 text-xs">Pay</Button>
+                                                        <Button size="sm" onClick={() => handlePayClick(inv)} className="h-7 text-xs">Pay</Button>
                                                     )}
                                                 </TableCell>
                                             </TableRow>
@@ -408,6 +423,23 @@ export default function Finance() {
                 onOpenChange={setClaimDialogOpen}
                 projectId={activeProjectId!}
             />
+
+            <AlertDialog open={!!pendingInvoicePayment} onOpenChange={(open) => { if (!open) setPendingInvoicePayment(null) }}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm invoice payment?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {pendingInvoicePayment
+                                ? `Mark invoice ${pendingInvoicePayment.invoice_number} as PAID and record Rp ${pendingInvoicePayment.total_amount.toLocaleString()} payment.`
+                                : 'This action updates AP status and creates payment trail.'}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handlePayConfirm}>Confirm Payment</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

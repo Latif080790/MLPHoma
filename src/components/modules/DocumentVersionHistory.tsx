@@ -7,6 +7,16 @@ import React, { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { History, RotateCcw, Check, Loader2, FileText } from "lucide-react"
 import { documentVersionService, DocumentVersion } from "@/services/documentVersionService"
@@ -33,6 +43,7 @@ export function DocumentVersionHistory({
     const [versions, setVersions] = useState<DocumentVersion[]>([])
     const [loading, setLoading] = useState(false)
     const [reverting, setReverting] = useState<string | null>(null)
+    const [pendingRevertVersionId, setPendingRevertVersionId] = useState<string | null>(null)
 
     useEffect(() => {
         if (open && documentGroupId) loadHistory()
@@ -51,7 +62,6 @@ export function DocumentVersionHistory({
     }
 
     const handleRevert = async (docId: string) => {
-        if (!confirm("Revert to this version? The current version will be marked as non-latest.")) return
         setReverting(docId)
         try {
             await documentVersionService.revertToVersion(docId, documentGroupId)
@@ -64,6 +74,8 @@ export function DocumentVersionHistory({
             setReverting(null)
         }
     }
+
+    const pendingRevertVersion = versions.find((v) => v.id === pendingRevertVersionId) || null
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,7 +132,7 @@ export function DocumentVersionHistory({
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                onClick={() => handleRevert(v.id)}
+                                                onClick={() => setPendingRevertVersionId(v.id)}
                                                 disabled={reverting === v.id}
                                             >
                                                 {reverting === v.id ? (
@@ -137,6 +149,31 @@ export function DocumentVersionHistory({
                         </TableBody>
                     </Table>
                 )}
+
+                <AlertDialog open={!!pendingRevertVersionId} onOpenChange={(open) => { if (!open) setPendingRevertVersionId(null) }}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Revert document version?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {pendingRevertVersion
+                                    ? `Version v${pendingRevertVersion.versionNumber} will become the current version.`
+                                    : 'The current version will be marked as non-latest.'}
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={async () => {
+                                    if (!pendingRevertVersionId) return
+                                    await handleRevert(pendingRevertVersionId)
+                                    setPendingRevertVersionId(null)
+                                }}
+                            >
+                                Revert
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </DialogContent>
         </Dialog>
     )

@@ -14,6 +14,16 @@
 import React, { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
 import { useAHSPStore } from '../../store/ahspStore'
 import notify from '../../lib/toast'
 
@@ -97,6 +107,7 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
   const [presets, setPresets] = useState<Record<string, Record<string, string>>>({})
   const [selectedPreset, setSelectedPreset] = useState<string>('')
   const [savePresetName, setSavePresetName] = useState('')
+  const [pendingDeletePreset, setPendingDeletePreset] = useState<string | null>(null)
 
   // load presets on mount
   useEffect(() => {
@@ -241,15 +252,20 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
   }
 
   function handleDeletePreset(name: string) {
-    if (!confirm(`Delete preset '${name}'?`)) return
+    setPendingDeletePreset(name)
+  }
+
+  function handleDeletePresetConfirm() {
+    if (!pendingDeletePreset) return
     const next = { ...presets }
-    delete next[name]
+    delete next[pendingDeletePreset]
     savePresets(next)
-    if (selectedPreset === name) {
+    if (selectedPreset === pendingDeletePreset) {
       setSelectedPreset('')
       setMapping({})
     }
     notify.success('Preset deleted')
+    setPendingDeletePreset(null)
   }
 
   return (
@@ -336,6 +352,21 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
           </div>
         </div>
       )}
+
+      <AlertDialog open={!!pendingDeletePreset} onOpenChange={(open) => { if (!open) setPendingDeletePreset(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete mapping preset?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDeletePreset ? `Preset '${pendingDeletePreset}' will be removed.` : 'This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePresetConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

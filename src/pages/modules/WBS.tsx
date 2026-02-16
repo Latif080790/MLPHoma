@@ -13,6 +13,16 @@ import { WBSEditor } from '../../components/wbs/WBSEditor'
 import { EmptyState } from '../../components/common/EmptyState'
 import { Button } from '../../components/ui/button'
 import { Alert, AlertDescription } from '../../components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../components/ui/alert-dialog'
 import { Download, Upload, AlertTriangle, FileText, Plus } from 'lucide-react'
 import type { WBSItem } from '../../types/wbs'
 
@@ -52,6 +62,7 @@ export default function WBS() {
   const [editorParentId, setEditorParentId] = useState<string | null>(null)
   const [showEditor, setShowEditor] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<WBSItem | null>(null)
 
   /**
    * Handle adding new item
@@ -77,10 +88,14 @@ export default function WBS() {
    * Handle deleting item
    */
   const handleDeleteItem = useCallback((item: WBSItem) => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}" and all its children?`)) {
-      deleteItem(projectId, item.id)
-    }
-  }, [projectId, deleteItem])
+    setPendingDeleteItem(item)
+  }, [])
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (!pendingDeleteItem) return
+    deleteItem(projectId, pendingDeleteItem.id)
+    setPendingDeleteItem(null)
+  }, [projectId, deleteItem, pendingDeleteItem])
 
   /**
    * Handle saving editor
@@ -199,7 +214,7 @@ export default function WBS() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 density-compact">
       <ModuleHeader
         icon={<FileText size={18} />}
         title="WBS"
@@ -209,7 +224,7 @@ export default function WBS() {
             <Button
               variant="outline"
               size="sm"
-              className="bg-transparent"
+              className="h-8 bg-transparent text-xs"
               onClick={handleExport}
               disabled={!items.length}
             >
@@ -220,7 +235,7 @@ export default function WBS() {
             <Button
               variant="outline"
               size="sm"
-              className="bg-transparent"
+              className="h-8 bg-transparent text-xs"
               onClick={() => document.getElementById('wbs-import')?.click()}
               asChild
             >
@@ -239,6 +254,7 @@ export default function WBS() {
 
             <Button
               size="sm"
+              className="h-8 text-xs"
               onClick={() => handleAddItem(null)}
             >
               <Plus size={16} className="mr-2" />
@@ -279,7 +295,7 @@ export default function WBS() {
 
       {/* WBS Tree */}
       <div className="rounded-xl border bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="p-4 border-b dark:border-neutral-800">
+        <div className="sticky top-0 z-10 border-b bg-white/95 p-4 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95">
           <div className="flex items-center justify-between">
             <h3 className="font-medium">WBS Structure</h3>
             <div className="text-sm text-neutral-500">
@@ -313,6 +329,23 @@ export default function WBS() {
         existingItems={items}
         projectId={projectId}
       />
+
+      <AlertDialog open={!!pendingDeleteItem} onOpenChange={(open) => { if (!open) setPendingDeleteItem(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete WBS item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDeleteItem
+                ? `"${pendingDeleteItem.name}" and all child items will be deleted.`
+                : 'This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

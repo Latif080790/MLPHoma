@@ -61,6 +61,7 @@ export default function RAB() {
           icon={<Calculator size={18} />}
           title="RAB Builder"
           description="Manage budget items and calculations"
+          showBackButton={false}
         />
         <div className="p-8 text-center">
           <h2 className="text-lg font-semibold">No Project Selected</h2>
@@ -71,48 +72,49 @@ export default function RAB() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 density-compact">
       <ModuleHeader
         icon={<Calculator size={18} />}
         title="RAB Builder"
         description="Manage budget items and calculations"
+        showBackButton={false}
         actions={
-          <Button onClick={handleSync} disabled={syncing} variant="outline" className="gap-2">
+          <Button onClick={handleSync} disabled={syncing} variant="outline" className="h-8 gap-2 text-xs">
             <CloudUpload className="h-4 w-4" />
             {syncing ? 'Syncing...' : 'Sync to Supabase'}
           </Button>
         }
       />
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
+          <Card className="hover-interactive">
+            <CardHeader className="pb-1 pt-4">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Items</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{items.length}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Subtotal</CardTitle>
+          <Card className="hover-interactive">
+            <CardHeader className="pb-1 pt-4">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Subtotal</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatIDR(summary.subtotal)}</div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Tax (11%)</CardTitle>
+          <Card className="hover-interactive">
+            <CardHeader className="pb-1 pt-4">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tax (11%)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatIDR(summary.tax)}</div>
             </CardContent>
           </Card>
-          <Card className="bg-primary/5 border-primary/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-primary">Final Total</CardTitle>
+          <Card className="bg-primary/5 border-primary/20 hover-interactive">
+            <CardHeader className="pb-1 pt-4">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-primary">Final Total</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">{formatIDR(summary.total)}</div>
@@ -120,8 +122,8 @@ export default function RAB() {
           </Card>
         </div>
 
-        <Card>
-          <CardContent className="p-6">
+        <Card className="panel-compact">
+          <CardContent className="p-0">
             <RABTable projectId={currentProject.id} />
           </CardContent>
         </Card>

@@ -15,6 +15,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 
@@ -29,6 +39,7 @@ export default function ProjectManagement() {
   const [showDialog, setShowDialog] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [pendingDeleteProject, setPendingDeleteProject] = useState<Project | null>(null)
 
   useEffect(() => {
     loadProjects()
@@ -70,10 +81,14 @@ export default function ProjectManagement() {
 
   const handleDelete = (e: React.MouseEvent, p: Project) => {
     e.stopPropagation()
-    if (confirm(`Delete project "${p.name}"?`)) {
-      removeProject(p.id)
-      if (selectedProjectId === p.id) setSelectedProjectId(null)
-    }
+    setPendingDeleteProject(p)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!pendingDeleteProject) return
+    removeProject(pendingDeleteProject.id)
+    if (selectedProjectId === pendingDeleteProject.id) setSelectedProjectId(null)
+    setPendingDeleteProject(null)
   }
 
   const handleSave = (data: Partial<Project>) => {
@@ -315,6 +330,23 @@ export default function ProjectManagement() {
         project={editingProject}
         onSave={handleSave}
       />
+
+      <AlertDialog open={!!pendingDeleteProject} onOpenChange={(open) => { if (!open) setPendingDeleteProject(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete project?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDeleteProject
+                ? `"${pendingDeleteProject.name}" will be removed from your portfolio.`
+                : 'This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </div>
   )

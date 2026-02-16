@@ -124,6 +124,35 @@
   @apply bg-slate-900/70 border-white/10;
 }
 
+/* Dense Engineering Utilities */
+.density-compact {
+  @apply text-xs md:text-sm leading-tight;
+}
+
+.panel-compact {
+  @apply rounded-xl border bg-card p-3 shadow-sm md:p-4;
+}
+
+.hover-interactive {
+  @apply transition-all duration-150 hover:-translate-y-[1px] hover:shadow-md;
+}
+
+.sticky-glass-panel {
+  @apply sticky top-0 z-10 rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90;
+}
+
+.sticky-glass-tablehead {
+  @apply sticky top-0 z-20 bg-slate-50/80 backdrop-blur-sm shadow-sm dark:bg-slate-900/80;
+}
+
+.sticky-glass-footer {
+  @apply sticky bottom-0 z-10 border border-slate-100 bg-slate-50/95 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95;
+}
+
+.control-compact {
+  @apply h-8 text-xs;
+}
+
 /* Custom Scrollbar for Bento Grids */
 ::-webkit-scrollbar {
   width: 6px;

@@ -19,11 +19,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { useAHSPStore } from '../../store/ahspStore'
 import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
 import { importDKHFromFile } from '../../lib/dkhParser'
+import type { ParsedResource } from '../../lib/dkhParser'
 import type { Resource, ResourceType, ResourceUnit } from '../../types/ahsp'
 
 export function ResourceManager() {
@@ -40,6 +51,9 @@ export function ResourceManager() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<ResourceType | 'all'>('all')
   const [syncing, setSyncing] = useState(false)
+  const [pendingDeleteResource, setPendingDeleteResource] = useState<Resource | null>(null)
+  const [pendingImportResources, setPendingImportResources] = useState<ParsedResource[]>([])
+  const [confirmImportOpen, setConfirmImportOpen] = useState(false)
 
   const [formData, setFormData] = useState({
     code: '',
@@ -106,10 +120,14 @@ export function ResourceManager() {
   }
 
   const handleDelete = (resource: Resource) => {
-    if (window.confirm(`Delete resource "${resource.name}"?`)) {
-      deleteResource(resource.id)
-      toast.success('Resource deleted successfully')
-    }
+    setPendingDeleteResource(resource)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!pendingDeleteResource) return
+    deleteResource(pendingDeleteResource.id)
+    toast.success('Resource deleted successfully')
+    setPendingDeleteResource(null)
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -194,37 +212,35 @@ export function ResourceManager() {
 
     try {
       toast.loading('Parsing DKH file...')
-      const resources = await importDKHFromFile(file)
+      const parsedResources = await importDKHFromFile(file)
       
-      if (resources.length === 0) {
+      if (parsedResources.length === 0) {
         toast.error('No valid resources found in file')
         return
       }
-
-      // Show confirmation
-      const confirmed = window.confirm(
-        `Found ${resources.length} resources:\n` +
-        `- Material: ${resources.filter(r => r.type === 'material').length}\n` +
-        `- Labor: ${resources.filter(r => r.type === 'labor').length}\n` +
-        `- Equipment: ${resources.filter(r => r.type === 'equipment').length}\n` +
-        `- Subcontractor: ${resources.filter(r => r.type === 'subcontractor').length}\n\n` +
-        `Import all resources?`
-      )
-
-      if (!confirmed) {
-        toast.info('Import cancelled')
-        return
-      }
-
-      // Import resources
-      importResources(resources)
-      toast.success(`Successfully imported ${resources.length} resources from DKH`)
+      setPendingImportResources(parsedResources)
+      setConfirmImportOpen(true)
     } catch (error) {
       console.error('DKH import error:', error)
       toast.error('Failed to import DKH file. Please check the file format.')
     }
     
     event.target.value = ''
+  }
+
+  const importSummary = useMemo(() => ({
+    material: pendingImportResources.filter(r => r.type === 'material').length,
+    labor: pendingImportResources.filter(r => r.type === 'labor').length,
+    equipment: pendingImportResources.filter(r => r.type === 'equipment').length,
+    subcontractor: pendingImportResources.filter(r => r.type === 'subcontractor').length,
+  }), [pendingImportResources])
+
+  const handleConfirmImport = () => {
+    if (pendingImportResources.length === 0) return
+    importResources(pendingImportResources)
+    toast.success(`Successfully imported ${pendingImportResources.length} resources from DKH`)
+    setConfirmImportOpen(false)
+    setPendingImportResources([])
   }
 
   return (
@@ -543,6 +559,38 @@ export function ResourceManager() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!pendingDeleteResource} onOpenChange={(open) => { if (!open) setPendingDeleteResource(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete resource?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDeleteResource
+                ? `"${pendingDeleteResource.name}" will be removed from the resource list.`
+                : 'This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmImportOpen} onOpenChange={setConfirmImportOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Import parsed DKH resources?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Found {pendingImportResources.length} resources (Material: {importSummary.material}, Labor: {importSummary.labor}, Equipment: {importSummary.equipment}, Subcontractor: {importSummary.subcontractor}).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setPendingImportResources([]); toast.info('Import cancelled') }}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmImport}>Import All</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
