@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Gauge, LayoutList, CalendarClock } from 'lucide-react'
+import { Gauge, LayoutList, CalendarClock, Search } from 'lucide-react'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { useProjectStore } from '../../store/projectStore'
 import { useRapStore } from '../../store/rapStore'
@@ -7,12 +7,12 @@ import { useRabStore } from '../../store/rabStore'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
 import { ProfitHealthWidget } from '../../components/modules/ProfitHealthWidget'
+import { Input } from '../../components/ui/input' // Ensure Input is imported
 
 // Existing Scheduler Components (Keeping them for the "Scheduler" tab)
-import { RapToolbar, PresetKind } from '../../components/rap/RapToolbar'
+import { RapToolbar } from '../../components/rap/RapToolbar'
 import { RapDistributionChart } from '../../components/rap/RapDistributionChart'
 import { RapMonthTable } from '../../components/rap/RapMonthTable'
 import {
@@ -20,8 +20,6 @@ import {
   planFromWeights,
   weightsBell,
   makeMonthKeys,
-  clonePlan,
-  sumPlan
 } from '../../components/rap/RapUtils'
 
 export default function RAP(): JSX.Element {
@@ -36,6 +34,7 @@ export default function RAP(): JSX.Element {
   const [plan, setPlan] = useState<RapPlanItem[]>([])
   const [monthsInput, setMonthsInput] = useState<number>(12)
   const [targetTotal, setTargetTotal] = useState<number>(5_000_000_000)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     if (projectId) {
@@ -60,14 +59,20 @@ export default function RAP(): JSX.Element {
     setPlan(generated)
   }
 
+  const filteredItems = items.filter(item => {
+    if (!searchQuery) return true
+    const name = (item as any).name || item.ahsp_items?.name || item.rab_items?.name || ''
+    return name.toLowerCase().includes(searchQuery.toLowerCase())
+  })
+
   return (
-    <div className="space-y-6">
-      <ModuleHeader
-        icon={<Gauge size={18} />}
-        title="RAP & Budget Control"
-        description="Real-time Budget Control (RAP) and Cash Flow Planning."
-        actions={<div className="hidden md:block text-xs text-neutral-500">Project: {project?.name}</div>}
-      />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <LayoutList size={20} />
+          RAP Budget Control
+        </h3>
+      </div>
 
       <Tabs defaultValue="control" className="w-full">
         <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
@@ -87,93 +92,116 @@ export default function RAP(): JSX.Element {
             {/* Profit Health Widget */}
             {projectId && <ProfitHealthWidget projectId={projectId} compact />}
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Budget Summary</CardTitle>
-                <Button variant="outline" size="sm" onClick={handleInitFromRab} disabled={isLoading || items.length > 0}>
+            <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4">
+                <div className="flex items-center gap-4">
+                  <CardTitle className="text-sm font-bold text-slate-500 uppercase tracking-wider">Budget Summary</CardTitle>
+                  <div className="relative w-64">
+                    <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder="Search items..."
+                      className="h-7 pl-8 text-xs bg-slate-50 border-slate-200"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleInitFromRab} disabled={isLoading || items.length > 0} className="h-7 text-xs">
                   {items.length > 0 ? 'Synced with RAB' : 'Import from RAB'}
                 </Button>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  Rp {Math.round(items.reduce((acc, item) => acc + (item.total_budget || 0), 0)).toLocaleString('id-ID')}
+              <CardContent className="pt-0">
+                <div className="mt-2 flex items-baseline gap-2">
+                  <div className="text-2xl font-bold font-mono text-slate-800 dark:text-slate-100">
+                    Rp {Math.round(items.reduce((acc, item) => acc + (item.total_budget || 0), 0)).toLocaleString('id-ID')}
+                  </div>
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total RAP Budget</p>
                 </div>
-                <p className="text-xs text-muted-foreground">Total Budget Limit</p>
               </CardContent>
             </Card>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Item Name</TableHead>
-                    <TableHead className="text-right">Total Budget</TableHead>
-                    <TableHead className="text-right">Risk Fund</TableHead>
-                    <TableHead className="text-right">Actual Cost</TableHead>
-                    <TableHead className="text-right">Remaining</TableHead>
-                    <TableHead className="text-center">Traffic Light</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        No RAP items found. Click "Import from RAB" to start.
-                      </TableCell>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+              <div className="max-h-[600px] overflow-auto relative">
+                <Table>
+                  <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                    <TableRow className="border-b border-slate-200 dark:border-slate-800 hover:bg-transparent">
+                      <TableHead className="w-[300px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Item Name</TableHead>
+                      <TableHead className="w-[120px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Total Budget</TableHead>
+                      <TableHead className="w-[120px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Risk Fund</TableHead>
+                      <TableHead className="w-[120px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Actual Cost</TableHead>
+                      <TableHead className="w-[120px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Remaining</TableHead>
+                      <TableHead className="w-[100px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Status</TableHead>
                     </TableRow>
-                  ) : (
-                    items.map((item) => {
-                      // Traffic Light Logic
-                      const progress = item.total_budget > 0 ? (item.actual_cost / item.total_budget) : 0
-                      let statusColor = 'bg-green-500' // Safe
-                      let statusText = 'Safe'
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-12 text-slate-400 bg-slate-50/20">
+                          <div className="flex flex-col items-center gap-2">
+                            <Search className="h-8 w-8 opacity-20" />
+                            <p>{items.length === 0 ? 'No RAP items found. Import from RAB to start.' : 'No items match your search.'}</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredItems.map((item, idx) => {
+                        // Traffic Light Logic
+                        const progress = item.total_budget > 0 ? (item.actual_cost / item.total_budget) : 0
+                        let statusColor = 'bg-emerald-500' // Safe
+                        let statusText = 'Safe'
+                        let rowClass = "hover:bg-slate-50 dark:hover:bg-slate-800/50"
 
-                      if (progress > 1.0) {
-                        statusColor = 'bg-red-600 animate-pulse' // Critical Overbudget
-                        statusText = 'CRITICAL'
-                      } else if (progress > 0.9) {
-                        statusColor = 'bg-red-500' // Danger Zone
-                        statusText = 'Danger'
-                      } else if (progress > 0.75) {
-                        statusColor = 'bg-yellow-500' // Warning
-                        statusText = 'Warning'
-                      }
+                        if (progress > 1.0) {
+                          statusColor = 'bg-red-500 animate-pulse' // Critical Overbudget
+                          statusText = 'CRITICAL'
+                          rowClass = "bg-red-50/30 dark:bg-red-900/10 hover:bg-red-50/50 dark:hover:bg-red-900/20"
+                        } else if (progress > 0.9) {
+                          statusColor = 'bg-amber-500' // Danger Zone
+                          statusText = 'Danger'
+                          rowClass = "bg-amber-50/30 dark:bg-amber-900/10 hover:bg-amber-50/50 dark:hover:bg-amber-900/20"
+                        } else if (progress > 0.75) {
+                          statusColor = 'bg-yellow-400' // Warning
+                          statusText = 'Warning'
+                        }
 
-                      // Dummy Risk Fund calc if 0 (Simulated for v3 Demo)
-                      const riskFund = item.risk_buffer_amount || (item.total_budget * 0.05)
+                        // Dummy Risk Fund calc if 0 (Simulated for v3 Demo)
+                        const riskFund = item.risk_buffer_amount || (item.total_budget * 0.05)
 
-                      return (
-                        <TableRow key={item.id}>
-                          <TableCell className="font-medium">
-                            <div className="flex flex-col">
-                              <span>{(item as any).name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
-                              <span className="text-xs text-muted-foreground">Vol: {item.qty_budget}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right font-bold text-blue-600">
-                            {Math.round(item.total_budget ?? (item.qty_budget * item.unit_price_budget)).toLocaleString('id-ID')}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-purple-600">
-                            {Math.round(riskFund).toLocaleString('id-ID')}
-                          </TableCell>
-                          <TableCell className="text-right text-red-600">
-                            {Math.round(item.actual_cost).toLocaleString('id-ID')}
-                          </TableCell>
-                          <TableCell className="text-right font-bold">
-                            {Math.round(item.remaining_budget ?? (item.total_budget - item.actual_cost)).toLocaleString('id-ID')}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <div className={`h-3 w-3 rounded-full ${statusColor}`} title={statusText} />
-                              <span className="text-xs font-medium text-muted-foreground">{statusText}</span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })
-                  )}
-                </TableBody>
-              </Table>
+                        return (
+                          <TableRow key={item.id} className={`${rowClass} border-b border-slate-100 dark:border-slate-800 transition-colors`}>
+                            <TableCell className="font-medium py-2">
+                              <div className="flex flex-col">
+                                <span className="text-sm">{(item as any).name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-[10px] text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Vol: {item.qty_budget}</span>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-slate-700 dark:text-slate-300 font-mono text-xs py-2">
+                              {Math.round(item.total_budget ?? (item.qty_budget * item.unit_price_budget)).toLocaleString('id-ID')}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-xs text-purple-600 dark:text-purple-400 py-2">
+                              {Math.round(riskFund).toLocaleString('id-ID')}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-xs text-red-600 dark:text-red-400 py-2">
+                              {Math.round(item.actual_cost).toLocaleString('id-ID')}
+                            </TableCell>
+                            <TableCell className="text-right font-bold text-xs font-mono py-2">
+                              {Math.round(item.remaining_budget ?? (item.total_budget - item.actual_cost)).toLocaleString('id-ID')}
+                            </TableCell>
+                            <TableCell className="text-center py-2">
+                              <div className="flex flex-col items-center justify-center gap-1">
+                                <div className={`h-2 w-12 rounded-full ${statusColor}`} title={statusText} />
+                                <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wide">{statusText}</span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </div>
         </TabsContent>

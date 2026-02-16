@@ -4,6 +4,7 @@ import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { GitPullRequest, DollarSign, Clock, AlertOctagon, Plus, TrendingUp, Check, X, Loader2, AlertTriangle } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useProjectStore } from "@/store/projectStore"
@@ -108,72 +109,74 @@ export default function ChangeManagement() {
                             imageKeyword="contract"
                         />
                     ) : (
-                        <div className="rounded-md border">
-                            <table className="w-full text-sm">
-                                <thead className="bg-muted/50 text-left">
-                                    <tr>
-                                        <th className="p-3 font-medium">VO Number</th>
-                                        <th className="p-3 font-medium">Title</th>
-                                        <th className="p-3 font-medium">Status</th>
-                                        <th className="p-3 font-medium text-right">Cost Impact</th>
-                                        <th className="p-3 font-medium text-right">Time Impact</th>
-                                        <th className="p-3 font-medium text-right">Created At</th>
-                                        <th className="p-3 font-medium text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {orders.map(order => (
-                                        <tr key={order.id} className="border-t hover:bg-muted/50 cursor-pointer">
-                                            <td className="p-3 font-mono">{order.vo_number}</td>
-                                            <td className="p-3">
-                                                <div className="font-medium">{order.title}</div>
-                                                <div className="text-xs text-neutral-500 truncate max-w-[300px]">{order.description}</div>
-                                            </td>
-                                            <td className="p-3">
-                                                <Badge variant={
-                                                    order.status === 'APPROVED' ? 'default' :
-                                                        order.status === 'REJECTED' ? 'destructive' : 'outline'
-                                                }>
-                                                    {order.status}
-                                                </Badge>
-                                            </td>
-                                            <td className={`p-3 text-right font-medium ${order.cost_impact > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                {order.cost_impact > 0 ? '+' : ''}Rp {order.cost_impact.toLocaleString()}
-                                            </td>
-                                            <td className={`p-3 text-right font-medium ${order.schedule_impact_days > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                {order.schedule_impact_days > 0 ? '+' : ''}{order.schedule_impact_days} Days
-                                            </td>
-                                            <td className="p-3 text-right text-neutral-500">{format(new Date(order.created_at), 'dd MMM yyyy')}</td>
-                                            <td className="p-3 text-center">
-                                                {(order.status === 'DRAFT' || order.status === 'PENDING_APPROVAL') ? (
-                                                    <div className="flex items-center justify-center gap-1">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-7 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                                            disabled={actionLoading === order.id}
-                                                            onClick={(e) => { e.stopPropagation(); handleApproveClick(order.id) }}
-                                                        >
-                                                            {actionLoading === order.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                            disabled={actionLoading === order.id}
-                                                            onClick={(e) => { e.stopPropagation(); handleReject(order.id) }}
-                                                        >
-                                                            <X className="h-3.5 w-3.5" />
-                                                        </Button>
-                                                    </div>
-                                                ) : (
-                                                    <span className="text-xs text-muted-foreground">—</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+                            <div className="max-h-[600px] overflow-auto relative">
+                                <Table>
+                                    <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                                        <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">VO Number</TableHead>
+                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Title</TableHead>
+                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
+                                            <TableHead className="p-3 font-semibold text-right text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Cost Impact</TableHead>
+                                            <TableHead className="p-3 font-semibold text-right text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Time Impact</TableHead>
+                                            <TableHead className="p-3 font-semibold text-right text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Created At</TableHead>
+                                            <TableHead className="p-3 font-semibold text-center text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {orders.map(order => (
+                                            <TableRow key={order.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors">
+                                                <TableCell className="p-3 font-mono text-xs font-medium text-blue-600 dark:text-blue-400 border-r border-transparent">{order.vo_number}</TableCell>
+                                                <TableCell className="p-3">
+                                                    <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{order.title}</div>
+                                                    <div className="text-xs text-slate-500 truncate max-w-[300px]">{order.description}</div>
+                                                </TableCell>
+                                                <TableCell className="p-3">
+                                                    <Badge variant={
+                                                        order.status === 'APPROVED' ? 'default' :
+                                                            order.status === 'REJECTED' ? 'destructive' : 'outline'
+                                                    } className="text-[10px] font-normal px-2 py-0.5">
+                                                        {order.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className={`p-3 text-right font-mono text-xs font-semibold ${order.cost_impact > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                    {order.cost_impact > 0 ? '+' : ''}Rp {order.cost_impact.toLocaleString()}
+                                                </TableCell>
+                                                <TableCell className={`p-3 text-right font-mono text-xs font-semibold ${order.schedule_impact_days > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                    {order.schedule_impact_days > 0 ? '+' : ''}{order.schedule_impact_days} Days
+                                                </TableCell>
+                                                <TableCell className="p-3 text-right text-xs text-slate-500 font-mono">{format(new Date(order.created_at), 'dd MMM yyyy')}</TableCell>
+                                                <TableCell className="p-3 text-center">
+                                                    {(order.status === 'DRAFT' || order.status === 'PENDING_APPROVAL') ? (
+                                                        <div className="flex items-center justify-center gap-1 opacity-100">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 px-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                                disabled={actionLoading === order.id}
+                                                                onClick={(e) => { e.stopPropagation(); handleApproveClick(order.id) }}
+                                                            >
+                                                                {actionLoading === order.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                disabled={actionLoading === order.id}
+                                                                onClick={(e) => { e.stopPropagation(); handleReject(order.id) }}
+                                                            >
+                                                                <X className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-xs text-slate-400">—</span>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </div>
                     )}
                 </TabsContent>

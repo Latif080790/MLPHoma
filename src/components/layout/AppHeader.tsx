@@ -1,9 +1,20 @@
 import React from "react"
-import { ThemeToggle } from "../shared/ThemeToggle"
-import { LogOut, User } from "lucide-react"
-import { useAuthStore } from "../../store/authStore"
+import { ThemeToggle } from "@/components/shared/ThemeToggle"
+import { LogOut, User, Bell, Search, Menu } from "lucide-react"
+import { useAuthStore } from "@/store/authStore"
 import { useNavigate } from "react-router"
-import { NotificationCenter } from "../common/NotificationCenter"
+import { NotificationCenter } from "@/components/common/NotificationCenter"
+import { AppBreadcrumbs } from "./AppBreadcrumbs"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export interface AppHeaderProps {
   projectName?: string
@@ -19,56 +30,78 @@ export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
     navigate('/login')
   }
 
-  return (
-    <header className="glass sticky top-0 z-30 border-b">
-      <div className="flex items-center gap-4 px-6 py-3">
-        {/* Breadcrumb / Page context */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm font-medium text-[hsl(var(--foreground))]">
-            {projectName || "Dashboard"}
-          </span>
-          {projectName && projectName !== "Dashboard" && projectName !== "Welcome" && (
-            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-              Active
-            </span>
-          )}
-        </div>
+  // Get initials for avatar
+  const initials = profile?.full_name
+    ? profile.full_name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'U'
 
-        {/* Right actions */}
-        <div className="ml-auto flex items-center gap-2">
-          {/* Search */}
-          {onSearch && (
+  return (
+    <header className="h-16 flex items-center justify-between px-6 gap-4">
+      {/* Left: Breadcrumbs & Context */}
+      <div className="flex items-center min-w-0 flex-1">
+        <AppBreadcrumbs projectName={projectName} />
+      </div>
+
+      {/* Right: Actions */}
+      <div className="flex items-center gap-2">
+        {/* Search Bar (Collapsible on mobile) */}
+        {onSearch && (
+          <div className="relative hidden md:block group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={16} />
             <input
               type="text"
-              placeholder="Search…"
-              aria-label="Search"
+              placeholder="Search..."
               onChange={(e) => onSearch(e.target.value)}
-              className="w-48 rounded-lg border bg-[hsl(var(--background))] px-3 py-1.5 text-sm outline-none placeholder:text-[hsl(var(--muted-foreground))] focus:ring-2 focus:ring-[hsl(var(--ring))] sm:w-56 transition-shadow"
+              className="h-9 w-64 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
             />
-          )}
-
-          {/* Notifications */}
-          <NotificationCenter />
-
-          {/* Theme toggle */}
-          <ThemeToggle />
-
-          {/* User Profile / Logout */}
-          <div className="flex items-center gap-3 pl-2 border-l ml-1">
-            <div className="flex flex-col items-end hidden sm:flex">
-              <span className="text-xs font-medium">{profile?.full_name || 'User'}</span>
-              <span className="text-[10px] text-muted-foreground">{user?.email || ''}</span>
-            </div>
-
-            <button
-              onClick={handleSignOut}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
-              title="Log Out"
-            >
-              <LogOut size={14} />
-            </button>
           </div>
-        </div>
+        )}
+
+        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2" />
+
+        {/* Notifications */}
+        <NotificationCenter />
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
+        {/* User Profile Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full select-none">
+              <Avatar className="h-9 w-9 border-2 border-white dark:border-slate-800 shadow-sm cursor-pointer transition-transform hover:scale-105">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-medium text-xs">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{profile?.full_name || 'User'}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user?.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/settings')}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/settings#team')}>
+              <User className="mr-2 h-4 w-4" />
+              <span>Team & Organization</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="text-red-600 dark:text-red-400 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )

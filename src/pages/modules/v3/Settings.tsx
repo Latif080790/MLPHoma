@@ -37,24 +37,7 @@ export default function Settings() {
         if (!project || !activeProjectId) return
         setLoading(true)
         try {
-            const client = assertSupabase()
-            const { error } = await client
-                .from('projects')
-                .update({
-                    name: project.name,
-                    location: project.location,
-                    start_date: project.start_date,
-                    end_date: project.end_date,
-                    budget: project.budget,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', activeProjectId)
-
-            if (error) throw error
-
-            toast.success("Project settings saved")
-
-            // Update Store
+            // Updated to use Store only (which handles Sync) to prevent double-writes
             updateProject(activeProjectId, {
                 name: project.name,
                 location: project.location,
@@ -63,6 +46,7 @@ export default function Settings() {
                 budget: project.budget
             })
 
+            toast.success("Project settings saved")
         } catch (err: any) {
             toast.error("Failed to save settings")
         } finally {

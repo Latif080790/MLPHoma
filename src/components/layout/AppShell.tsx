@@ -1,57 +1,7 @@
-/**
- * AppShell.tsx
- * Modern application shell with collapsible sidebar navigation.
- * Provides consistent layout across all pages.
- */
-
-import React, { useState } from "react"
-import { useLocation } from "react-router"
+import React, { useState, useEffect } from "react"
 import { AppHeader } from "./AppHeader"
-import {
-  LayoutDashboard,
-  Calculator,
-  CalendarClock,
-  Truck,
-  Wallet,
-  FileDiff,
-  FolderOpen,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
-  BarChart3,
-  FileBarChart,
-  Flag,
-  Sliders,
-  FolderKanban,
-  ClipboardList,
-} from "lucide-react"
-
-/** Navigation item definition */
-interface NavItem {
-  href: string
-  icon: React.ReactNode
-  label: string
-  color: string
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { href: "#/", icon: <LayoutDashboard size={20} />, label: "Command Center", color: "text-blue-500" },
-  { href: "#/projects", icon: <FolderKanban size={20} />, label: "Projects", color: "text-yellow-600" },
-  { href: "#/project-overview", icon: <ClipboardList size={20} />, label: "Project Overview", color: "text-sky-500" },
-  { href: "#/costing", icon: <Calculator size={20} />, label: "Project Costing", color: "text-emerald-500" },
-  { href: "#/schedule", icon: <CalendarClock size={20} />, label: "Schedule & Ops", color: "text-indigo-500" },
-  { href: "#/supply-chain", icon: <Truck size={20} />, label: "Supply Chain", color: "text-orange-500" },
-  { href: "#/finance", icon: <Wallet size={20} />, label: "Finance", color: "text-teal-500" },
-  { href: "#/change-management", icon: <FileDiff size={20} />, label: "Change Mgmt", color: "text-rose-500" },
-  // { href: "#/progress", icon: <BarChart3 size={20} />, label: "Progress", color: "text-cyan-500" },
-  { href: "#/documents", icon: <FolderOpen size={20} />, label: "Documents", color: "text-slate-500" },
-  // { href: "#/reports", icon: <FileBarChart size={20} />, label: "Reports", color: "text-amber-500" },
-  { href: "#/handover", icon: <ClipboardCheck size={20} />, label: "Handover", color: "text-violet-500" },
-  { href: "#/tkdn", icon: <Flag size={20} />, label: "TKDN", color: "text-green-600" },
-  { href: "#/features", icon: <Sliders size={20} />, label: "Feature Config", color: "text-purple-500" },
-  { href: "#/settings", icon: <Settings size={20} />, label: "Settings", color: "text-gray-500" },
-]
+import { AppSidebar } from "./AppSidebar"
+import { cn } from "@/lib/utils"
 
 export interface AppShellProps {
   projectName?: string
@@ -60,86 +10,45 @@ export interface AppShellProps {
 }
 
 export function AppShell({ projectName, onSearch, children }: AppShellProps) {
-  const [collapsed, setCollapsed] = useState(false)
-  const location = useLocation()
+  // Persist sidebar state
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("sidebar-collapsed") === "true"
+    } catch {
+      return false
+    }
+  })
 
-  // Determine active route from hash
-  const currentPath = location.pathname || "/"
+  // Sync to local storage
+  useEffect(() => {
+    localStorage.setItem("sidebar-collapsed", String(collapsed))
+  }, [collapsed])
 
   return (
-    <div className="flex min-h-screen bg-[hsl(var(--background))]">
-      {/* Sidebar */}
-      <aside
-        className={`sidebar-transition fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border/40 glass ${collapsed ? "w-[68px]" : "w-[260px]"
-          }`}
-      >
-        {/* Logo area */}
-        <div className="flex h-16 items-center gap-3 border-b px-4">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-bold text-sm">
-            CE
-          </div>
-          {!collapsed && (
-            <div className="sidebar-label min-w-0">
-              <div className="truncate text-sm font-semibold text-[hsl(var(--foreground))]">
-                Estimator Pro
-              </div>
-              <div className="truncate text-[11px] text-[hsl(var(--muted-foreground))]">
-                Construction Suite
-              </div>
-            </div>
-          )}
-        </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900/30">
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive = currentPath === item.href.replace("#", "") ||
-              (item.href === "#/" && currentPath === "/")
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                title={item.label}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${isActive
-                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                  : "text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))]"
-                  }`}
-              >
-                <span className={`flex-shrink-0 ${isActive ? "text-blue-600 dark:text-blue-400" : item.color}`}>
-                  {item.icon}
-                </span>
-                {!collapsed && (
-                  <span className="sidebar-label truncate">{item.label}</span>
-                )}
-              </a>
-            )
-          })}
-        </nav>
+      {/* 1. Glass Sidebar */}
+      <AppSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-        {/* Collapse toggle */}
-        <div className="border-t p-3">
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--foreground))] transition-colors"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-            {!collapsed && <span className="sidebar-label">Collapse</span>}
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content area */}
+      {/* 2. Main Content Wrapper */}
       <div
-        className={`main-transition flex flex-1 flex-col ${collapsed ? "ml-[68px]" : "ml-[260px]"
-          }`}
+        className={cn(
+          "relative flex min-h-screen flex-col transition-all duration-300 ease-in-out",
+          collapsed ? "pl-[72px]" : "pl-[280px]"
+        )}
       >
-        <AppHeader projectName={projectName} onSearch={onSearch} />
-        <main className="flex-1 px-6 py-6">
-          <div className="mx-auto w-full max-w-7xl">
+        {/* 3. Sticky Glass Header */}
+        <div className="sticky top-0 z-40 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/70 dark:bg-neutral-950/70 backdrop-blur-md">
+          <AppHeader projectName={projectName} onSearch={onSearch} />
+        </div>
+
+        {/* 4. Scrollable Page Content */}
+        <main className="flex-1 p-6 md:p-8 overflow-x-hidden">
+          <div className="mx-auto max-w-[1600px] w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
             {children}
           </div>
         </main>
+
       </div>
     </div>
   )

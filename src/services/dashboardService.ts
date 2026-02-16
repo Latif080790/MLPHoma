@@ -36,6 +36,7 @@ export interface DashboardStats {
         date: string
         progress: number
     }[]
+    equipmentCost: number // New Field for Automation Data
 }
 
 export const dashboardService = {
@@ -80,6 +81,21 @@ export const dashboardService = {
                 }
             })
         }
+
+        // 1.5. Equipment Rent Stats (Automation Data)
+        const { data: toolLogs } = await supabase
+            .from('tools_usage_logs')
+            .select('rent_cost')
+            .eq('project_id', projectId)
+
+        let equipmentCost = 0
+        if (toolLogs) {
+            equipmentCost = toolLogs.reduce((sum, log) => sum + (log.rent_cost || 0), 0)
+        }
+
+        // Add Equipment Cost to Utilized Budget (Real-time view)
+        utilizedBudget += equipmentCost
+        actualCostTotal += equipmentCost
 
         // 2. Risk Stats
         const { count: criticalRisks, data: activeRisks } = await supabase
@@ -249,7 +265,8 @@ export const dashboardService = {
             cashflow,
             wasteAlerts: wasteAlerts.slice(0, 5),
             activityFeed: activityFeed.slice(0, 5),
-            upcomingTasks
+            upcomingTasks,
+            equipmentCost // Result
         }
     },
 
@@ -266,7 +283,8 @@ export const dashboardService = {
             cashflow: [],
             wasteAlerts: [],
             activityFeed: [],
-            upcomingTasks: []
+            upcomingTasks: [],
+            equipmentCost: 0
         }
     }
 }

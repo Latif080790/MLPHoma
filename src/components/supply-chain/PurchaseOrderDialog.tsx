@@ -74,8 +74,25 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
         }
     }
 
-    const watchedItems = form.watch("items")
-    const totalEstimated = watchedItems?.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.unit_price) || 0)), 0) || 0
+    const searchedItems = form.watch("items")
+    const totalEstimated = searchedItems?.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.unit_price) || 0)), 0) || 0
+
+    // BUDGET CALCULATION LOGIC
+    const { items: rapItems, fetchItems } = useRapStore()
+
+    React.useEffect(() => {
+        if (open && projectId) {
+            fetchItems(projectId)
+        }
+    }, [open, projectId])
+
+    const totalProjectBudget = rapItems.reduce((sum, item) => sum + (item.total_budget || 0), 0)
+    const totalCommitted = rapItems.reduce((sum, item) => sum + (item.committed_cost || 0), 0)
+    const utilizationPercent = totalProjectBudget > 0
+        ? ((totalCommitted + totalEstimated) / totalProjectBudget) * 100
+        : 0
+
+    const isOverBudget = utilizationPercent > 100
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,6 +100,30 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                 <DialogHeader>
                     <DialogTitle>New Purchase Order</DialogTitle>
                 </DialogHeader>
+
+                {/* BUDGET VISUALIZATION */}
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border my-2">
+                    <div className="flex justify-between text-xs mb-1">
+                        <span className="font-medium text-slate-500">Budget Utilization (Real-time)</span>
+                        <span className={`font-bold ${isOverBudget ? 'text-red-600' : 'text-emerald-600'}`}>
+                            {utilizationPercent.toFixed(1)}% {isOverBudget && '(OVER BUDGET)'}
+                        </span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full overflow-hidden flex">
+                        <div
+                            className="bg-emerald-500 h-full"
+                            style={{ width: `${Math.min((totalCommitted / totalProjectBudget) * 100, 100)}%` }}
+                        />
+                        <div
+                            className={`${isOverBudget ? 'bg-red-500' : 'bg-amber-400'} h-full transition-all duration-300`}
+                            style={{ width: `${Math.min((totalEstimated / totalProjectBudget) * 100, 100)}%` }}
+                        />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                        <span>Committed: Rp {totalCommitted.toLocaleString()}</span>
+                        <span>Total Budget: Rp {totalProjectBudget.toLocaleString()}</span>
+                    </div>
+                </div>
 
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
                     <div className="grid grid-cols-2 gap-4">

@@ -281,6 +281,12 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         const updated: Project = { ...proj, paymentTerms: nextTerms }
         return { projects: { ...state.projects, [projectId]: updated } }
       })
+
+      // Fix: Sync to Supabase
+      const updatedProject = get().projects[projectId]
+      if (updatedProject) {
+        syncProj(updatedProject)
+      }
     },
 
     /**

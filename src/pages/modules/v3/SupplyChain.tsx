@@ -173,33 +173,43 @@ export default function SupplyChain() {
                             imageKeyword="purchase order"
                         />
                     ) : (
-                        <div className="rounded-xl border bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
-                            <Table>
-                                <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
-                                    <TableRow>
-                                        <TableHead className="w-[120px]">PO Number</TableHead>
-                                        <TableHead>Vendor</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
-                                        <TableHead className="w-[120px]">Status</TableHead>
-                                        <TableHead className="text-right">Date</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {purchaseOrders.map(po => (
-                                        <TableRow key={po.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer">
-                                            <TableCell className="font-mono font-medium text-blue-600">{po.poNumber}</TableCell>
-                                            <TableCell className="font-medium">{po.vendorName || '-'}</TableCell>
-                                            <TableCell className="text-right font-semibold">Rp {po.totalAmount.toLocaleString()}</TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className={`text-[10px] px-2 border ${getStatusColor(po.status)}`}>
-                                                    {po.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right text-slate-500">{format(new Date(po.createdAt), 'dd MMM yyyy')}</TableCell>
+                        <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+                            <div className="max-h-[600px] overflow-auto relative">
+                                <Table>
+                                    <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                                        <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                            <TableHead className="w-[120px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">PO Number</TableHead>
+                                            <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
+                                            <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
+                                            <TableHead className="w-[120px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
+                                            <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Date</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {purchaseOrders.map(po => (
+                                            <TableRow key={po.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors">
+                                                <TableCell className="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 py-2 border-r border-transparent">
+                                                    {po.poNumber}
+                                                </TableCell>
+                                                <TableCell className="py-2 text-sm text-slate-700 dark:text-slate-300">
+                                                    {po.vendorName || '-'}
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono text-xs font-semibold py-2">
+                                                    Rp {po.totalAmount.toLocaleString('id-ID')}
+                                                </TableCell>
+                                                <TableCell className="text-center py-2">
+                                                    <Badge variant="outline" className={`text-[10px] font-normal px-2 py-0.5 border ${getStatusColor(po.status)}`}>
+                                                        {po.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right text-xs text-slate-500 font-mono py-2">
+                                                    {format(new Date(po.createdAt), 'dd MMM yyyy')}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </div>
                     )}
                 </TabsContent>

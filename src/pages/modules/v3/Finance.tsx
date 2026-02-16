@@ -4,6 +4,7 @@ import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { Receipt, TrendingUp, TrendingDown, FileText, Plus, Zap, AlertTriangle, DollarSign, Clock, CheckCircle, ArrowRightLeft, Send, ShieldCheck } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useProjectStore } from "@/store/projectStore"
@@ -243,41 +244,43 @@ export default function Finance() {
                     {invoices.length === 0 ? (
                         <EmptyState title="No Invoices" description="Record vendor invoices here." imageKeyword="invoice" />
                     ) : (
-                        <div className="rounded-md border">
-                            <table className="w-full text-sm">
-                                <thead className="bg-muted/50 text-left">
-                                    <tr>
-                                        <th className="p-3">Vendor</th>
-                                        <th className="p-3">Inv Number</th>
-                                        <th className="p-3">Due Date</th>
-                                        <th className="p-3 text-right">Amount</th>
-                                        <th className="p-3">Status</th>
-                                        <th className="p-3 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {invoices.map(inv => (
-                                        <tr key={inv.id} className={`border-t ${inv.status === 'OVERDUE' ? 'bg-red-50 dark:bg-red-950/20' : ''}`}>
-                                            <td className="p-3 font-medium">{inv.vendor_name}</td>
-                                            <td className="p-3">{inv.invoice_number}</td>
-                                            <td className="p-3">{format(new Date(inv.due_date || new Date()), 'dd MMM yyyy')}</td>
-                                            <td className="p-3 text-right font-mono">Rp {inv.total_amount.toLocaleString()}</td>
-                                            <td className="p-3">
-                                                <Badge variant={
-                                                    inv.status === 'PAID' ? 'default' :
-                                                    inv.status === 'OVERDUE' ? 'destructive' :
-                                                    'secondary'
-                                                }>{inv.status}</Badge>
-                                            </td>
-                                            <td className="p-3 text-right">
-                                                {inv.status !== 'PAID' && (
-                                                    <Button size="sm" onClick={() => handlePay(inv)}>Pay</Button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+                            <div className="max-h-[600px] overflow-auto relative">
+                                <Table>
+                                    <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                                        <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
+                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Inv Number</TableHead>
+                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Due Date</TableHead>
+                                            <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
+                                            <TableHead className="p-3 text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
+                                            <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {invoices.map(inv => (
+                                            <TableRow key={inv.id} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
+                                                <TableCell className="p-3 font-medium text-slate-700 dark:text-slate-300">{inv.vendor_name}</TableCell>
+                                                <TableCell className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">{inv.invoice_number}</TableCell>
+                                                <TableCell className="p-3 text-xs text-slate-500">{format(new Date(inv.due_date || new Date()), 'dd MMM yyyy')}</TableCell>
+                                                <TableCell className="p-3 text-right font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">Rp {inv.total_amount.toLocaleString()}</TableCell>
+                                                <TableCell className="p-3 text-center">
+                                                    <Badge variant={
+                                                        inv.status === 'PAID' ? 'default' :
+                                                            inv.status === 'OVERDUE' ? 'destructive' :
+                                                                'secondary'
+                                                    } className="text-[10px] font-normal px-2 py-0.5">{inv.status}</Badge>
+                                                </TableCell>
+                                                <TableCell className="p-3 text-right">
+                                                    {inv.status !== 'PAID' && (
+                                                        <Button size="sm" onClick={() => handlePay(inv)} className="h-7 text-xs">Pay</Button>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </div>
                     )}
                 </TabsContent>
@@ -322,8 +325,8 @@ export default function Finance() {
                                                 <div className="text-xl font-bold text-green-600">Rp {claim.amount.toLocaleString()}</div>
                                                 <Badge variant={
                                                     claim.status === 'PAID' ? 'default' :
-                                                    claim.status === 'APPROVED' ? 'secondary' :
-                                                    'outline'
+                                                        claim.status === 'APPROVED' ? 'secondary' :
+                                                            'outline'
                                                 }>{claim.status}</Badge>
                                             </div>
                                             {claimActions(claim)}
@@ -362,28 +365,32 @@ export default function Finance() {
                         <CardHeader><CardTitle>Transaction Ledger</CardTitle></CardHeader>
                         <CardContent>
                             {transactions.length === 0 ? <p className="text-neutral-500 text-sm">No transactions recorded.</p> : (
-                                <table className="w-full text-sm">
-                                    <thead className="bg-muted/50 text-left">
-                                        <tr>
-                                            <th className="p-3">Date</th>
-                                            <th className="p-3">Description</th>
-                                            <th className="p-3">Category</th>
-                                            <th className="p-3 text-right">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {transactions.map(t => (
-                                            <tr key={t.id} className="border-t">
-                                                <td className="p-3">{format(new Date(t.transaction_date), 'dd MMM yyyy')}</td>
-                                                <td className="p-3">{t.description}</td>
-                                                <td className="p-3"><Badge variant="outline">{t.category}</Badge></td>
-                                                <td className={`p-3 text-right font-bold font-mono ${t.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                    Rp {t.amount.toLocaleString()}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                                    <div className="max-h-[400px] overflow-auto relative">
+                                        <Table>
+                                            <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20">
+                                                <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                                    <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Date</TableHead>
+                                                    <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Description</TableHead>
+                                                    <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Category</TableHead>
+                                                    <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {transactions.map(t => (
+                                                    <TableRow key={t.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                                        <TableCell className="p-3 text-xs text-slate-500 font-mono">{format(new Date(t.transaction_date), 'dd MMM yyyy')}</TableCell>
+                                                        <TableCell className="p-3 text-sm text-slate-700 dark:text-slate-300">{t.description}</TableCell>
+                                                        <TableCell className="p-3"><Badge variant="outline" className="text-[10px] font-normal text-slate-500">{t.category}</Badge></TableCell>
+                                                        <TableCell className={`p-3 text-right font-bold font-mono text-xs ${t.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                            Rp {t.amount.toLocaleString()}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                </div>
                             )}
                         </CardContent>
                     </Card>
