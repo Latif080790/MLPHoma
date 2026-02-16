@@ -36,9 +36,9 @@ function exportProgressCSV(rows: any[]) {
     lines.push(
       [
         new Date(r.date).toISOString().split("T")[0],
-        r.plannedProgress.toFixed(1),
-        r.actualProgress.toFixed(1),
-        r.actualCost,
+        (r.plannedProgress ?? 0).toFixed(1),
+        (r.actualProgress ?? 0).toFixed(1),
+        r.actualCost ?? 0,
         (r.notes || "").toString().replace(/"/g, '""'),
       ]
         .map((v) => (typeof v === "string" ? `"${v}"` : String(v)))
@@ -365,9 +365,9 @@ export default function Progress() {
                   {recent.map((r) => (
                     <div key={r.id} className="grid grid-cols-5 border-b p-2 text-sm last:border-b-0 dark:border-neutral-800">
                       <div>{new Date(r.date).toLocaleDateString("id-ID")}</div>
-                      <div className="text-right">{r.plannedProgress.toFixed(1)}%</div>
-                      <div className="text-right">{r.actualProgress.toFixed(1)}%</div>
-                      <div className="text-right">Rp {r.actualCost.toLocaleString("id-ID")}</div>
+                      <div className="text-right">{(r.plannedProgress ?? 0).toFixed(1)}%</div>
+                      <div className="text-right">{(r.actualProgress ?? 0).toFixed(1)}%</div>
+                      <div className="text-right">Rp {(r.actualCost ?? 0).toLocaleString("id-ID")}</div>
                       <div className="truncate">{r.notes || "-"}</div>
                     </div>
                   ))}

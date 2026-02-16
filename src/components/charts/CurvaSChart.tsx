@@ -90,7 +90,7 @@ const PerformanceIndicator = ({
   format?: 'number' | 'percentage'
 }) => {
   const isGood = value >= threshold
-  const displayValue = format === 'percentage' ? `${(value * 100).toFixed(1)}%` : value.toFixed(2)
+  const displayValue = format === 'percentage' ? `${((value ?? 0) * 100).toFixed(1)}%` : (value ?? 0).toFixed(2)
 
   return (
     <div className="flex items-center space-x-2 rounded-lg border p-3 dark:border-neutral-800">
@@ -274,7 +274,7 @@ export function CurvaSChart({
             <TrendingUp className="h-5 w-5 text-blue-600" />
             <div>
               <p className="text-sm font-medium">Progress</p>
-              <p className="text-lg font-bold text-blue-600">{analysis.currentProgress.toFixed(1)}%</p>
+              <p className="text-lg font-bold text-blue-600">{(analysis.currentProgress ?? 0).toFixed(1)}%</p>
             </div>
           </div>
           <div className="flex items-center space-x-2 rounded-lg border p-3 dark:border-neutral-800">
