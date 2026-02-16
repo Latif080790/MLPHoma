@@ -21,6 +21,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from '../ui/sheet'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
 import { useAHSPStore } from '../../store/ahspStore'
 import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
@@ -82,6 +92,7 @@ export function AHSPItemEditor({
   }>>([])
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedSubcategory, setSelectedSubcategory] = useState('')
+  const [pendingDeleteComponentId, setPendingDeleteComponentId] = useState<string | null>(null)
 
   const mainCategories = getMainCategories()
 
@@ -355,9 +366,7 @@ export function AHSPItemEditor({
    * Handle deleting component
    */
   const handleDeleteComponent = (componentId: string) => {
-    if (window.confirm('Are you sure you want to remove this component?')) {
-      deleteComponent(componentId)
-    }
+    setPendingDeleteComponentId(componentId)
   }
 
   // Filter resources by type
@@ -369,9 +378,20 @@ export function AHSPItemEditor({
       subcontractor: [],
     }
 
+    const normalizeType = (type?: string): ResourceType | null => {
+      if (!type) return null
+      if (type === 'subcon') return 'subcontractor'
+      if (type === 'material' || type === 'labor' || type === 'equipment' || type === 'subcontractor') {
+        return type
+      }
+      return null
+    }
+
     resources.forEach(resource => {
       if (resource.isActive) {
-        grouped[resource.type].push(resource)
+        const normalizedType = normalizeType(resource.type as string)
+        if (!normalizedType) return
+        grouped[normalizedType].push(resource)
       }
     })
 
@@ -844,6 +864,29 @@ export function AHSPItemEditor({
             </div>
           </div>
         </form>
+
+        <AlertDialog open={!!pendingDeleteComponentId} onOpenChange={(open) => { if (!open) setPendingDeleteComponentId(null) }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove this component?</AlertDialogTitle>
+              <AlertDialogDescription>
+                The component will be removed from this AHSP analysis.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (!pendingDeleteComponentId) return
+                  deleteComponent(pendingDeleteComponentId)
+                  setPendingDeleteComponentId(null)
+                }}
+              >
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SheetContent>
     </Sheet >
   )

@@ -19,7 +19,7 @@ const ProjectManagement = React.lazy(() => import('./pages/modules/ProjectManage
 
 // v3 Ultra Modules
 const CommandCenter = React.lazy(() => import('./pages/modules/v3/CommandCenter'))
-const ProjectCosting = React.lazy(() => import('./pages/modules/v3/ProjectCosting'))
+const ProjectCosting = React.lazy(() => import('@/pages/modules/v3/ProjectCosting'))
 const ScheduleOps = React.lazy(() => import('./pages/modules/v3/ScheduleOps'))
 const SupplyChain = React.lazy(() => import('./pages/modules/v3/SupplyChain'))
 const Finance = React.lazy(() => import('./pages/modules/v3/Finance'))

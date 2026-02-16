@@ -5,13 +5,24 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History } from 'lucide-react'
+import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, Info } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../ui/alert-dialog'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { useAHSPStore, getAHSPSummary, validateAHSP } from '../../store/ahspStore'
 import { AHSPItemEditor } from './AHSPItemEditor'
 import { ZoneManager } from './ZoneManager'
@@ -19,6 +30,7 @@ import { ZonePriceEditor } from './ZonePriceEditor'
 import { PriceHistoryDialog } from './PriceHistoryDialog'
 import { formatIDR } from '../../lib/utils'
 import type { AHSPItem, Zone } from '../../types/ahsp'
+import { toast } from 'sonner'
 
 /** Props for AHSPCatalog component */
 export interface AHSPCatalogProps {
@@ -47,6 +59,7 @@ export function AHSPCatalog({
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
 
   const [editingItem, setEditingItem] = useState<AHSPItem | null>(null)
+  const [pendingDeleteItem, setPendingDeleteItem] = useState<AHSPItem | null>(null)
 
   const {
     ahspItems,
@@ -132,6 +145,51 @@ export function AHSPCatalog({
     })
   }, [filteredItems, selectedZone, zonePricesByZone])
 
+  const groupedDisplayRows = useMemo(() => {
+    const groups = new Map<string, AHSPItem[]>()
+    displayItems.forEach((item) => {
+      const cat = item.category || 'Uncategorized'
+      if (!groups.has(cat)) groups.set(cat, [])
+      groups.get(cat)!.push(item)
+    })
+
+    const categoriesSorted = Array.from(groups.keys()).sort()
+    const rows: Array<{ type: 'section'; label: string } | { type: 'item'; item: AHSPItem; rowNumber: number }> = []
+    let rowNumber = 1
+
+    categoriesSorted.forEach((category, idx) => {
+      const prefix = String.fromCharCode(65 + (idx % 26))
+      rows.push({ type: 'section', label: `${prefix}. ${category.toUpperCase()}` })
+      groups.get(category)!.forEach((item) => {
+        rows.push({ type: 'item', item, rowNumber })
+        rowNumber += 1
+      })
+    })
+
+    return rows
+  }, [displayItems])
+
+  const totals = useMemo(() => {
+    let supplyTotal = 0
+    let installTotal = 0
+    let grandTotal = 0
+
+    displayItems.forEach((item) => {
+      const coefficient = (item as any).coefficient || 1
+      const supplyUnit = (item as any).price_material || 0
+      const installUnit = ((item as any).price_labor || 0) + ((item as any).price_equipment || 0) + ((item as any).price_subcon || 0)
+      const itemSupply = supplyUnit * coefficient
+      const itemInstall = installUnit * coefficient
+      const itemTotal = itemSupply + itemInstall > 0 ? itemSupply + itemInstall : item.finalPrice * coefficient
+
+      supplyTotal += itemSupply
+      installTotal += itemInstall
+      grandTotal += itemTotal
+    })
+
+    return { supplyTotal, installTotal, grandTotal }
+  }, [displayItems])
+
   // Handle actions
   const handleAddItem = () => {
     setEditingItem(null)
@@ -153,9 +211,14 @@ export function AHSPCatalog({
   }
 
   const handleDeleteItem = (item: AHSPItem) => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      deleteAHSPItem(item.id)
-    }
+    setPendingDeleteItem(item)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (!pendingDeleteItem) return
+    deleteAHSPItem(pendingDeleteItem.id)
+    toast.success('AHSP item deleted')
+    setPendingDeleteItem(null)
   }
 
   const handleExport = () => {
@@ -196,7 +259,7 @@ export function AHSPCatalog({
         )
 
         if (validItems.length !== data.length) {
-          alert('Some items were skipped due to missing required fields')
+          toast.warning('Some items were skipped due to missing required fields')
         }
 
         validItems.forEach(item => {
@@ -219,7 +282,7 @@ export function AHSPCatalog({
         })
       } catch (error) {
         console.error('Failed to import AHSP catalog:', error)
-        alert('Failed to import AHSP catalog. Please check the file format.')
+        toast.error('Failed to import AHSP catalog. Please check the file format.')
       }
     }
     reader.readAsText(file)
@@ -227,7 +290,7 @@ export function AHSPCatalog({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 density-compact">
       {/* Summary Cards */}
       {!compact && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -286,71 +349,73 @@ export function AHSPCatalog({
       )}
 
       {/* Search and Filters */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-1 gap-2">
-          <div className="relative flex-1 max-w-md">
+      <div className="sticky-glass-panel flex flex-col gap-3 p-3">
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-1 flex-wrap gap-2">
+            <div className="relative flex-1 min-w-[220px] max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search AHSP items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="h-9 pl-10"
             />
           </div>
 
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-48">
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map(category => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
 
           {/* Zone Selector */}
-          <Select value={selectedZone} onValueChange={setSelectedZone}>
-            <SelectTrigger className="w-48 border-blue-200 dark:border-blue-900">
+            <Select value={selectedZone} onValueChange={setSelectedZone}>
+              <SelectTrigger className="w-[180px] border-blue-200 dark:border-blue-900">
               <SelectValue placeholder="Select Zone" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="default">Default (Master)</SelectItem>
-              {zones.map(z => (
-                <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <ZoneManager />
-        </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">Default (Master)</SelectItem>
+                {zones.map(z => (
+                  <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <ZoneManager />
+          </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport}>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={handleExport} className="h-8 text-xs">
             <Download className="h-4 w-4 mr-2" />
             Export
-          </Button>
+            </Button>
 
-          <Button variant="outline" size="sm" asChild>
-            <label className="cursor-pointer">
-              <Upload className="h-4 w-4 mr-2" />
-              Import
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImport}
-                className="hidden"
-              />
-            </label>
-          </Button>
+            <Button variant="outline" size="sm" asChild className="h-8 text-xs">
+              <label className="cursor-pointer">
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImport}
+                  className="hidden"
+                />
+              </label>
+            </Button>
 
-          <Button size="sm" onClick={handleAddItem}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Item
-          </Button>
+            <Button size="sm" onClick={handleAddItem} className="h-8 text-xs">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Item
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -375,7 +440,50 @@ export function AHSPCatalog({
       }
 
       {/* AHSP Items Table */}
-      <div className={`rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900 ${compact ? 'border-0 shadow-none' : ''}`}>
+      <div className="space-y-2 md:hidden">
+        {loading.ahspItems ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : filteredItems.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground rounded-lg border border-slate-200 dark:border-slate-800">
+            <p className="text-sm">No AHSP items found.</p>
+            <Button variant="link" onClick={handleAddItem} className="mt-2 text-blue-600">Create new item</Button>
+          </div>
+        ) : (
+          displayItems.map((item) => (
+            <div key={item.id} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900" onClick={() => handleEditItem(item)}>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="inline-flex rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-300">{item.code}</div>
+                  <div className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-200">{item.name}</div>
+                  {item.description && <div className="mt-0.5 text-[11px] text-slate-500 line-clamp-2">{item.description}</div>}
+                </div>
+                <div className={`h-2.5 w-2.5 rounded-full ${item.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                <div><span className="text-slate-500">Category:</span> <span className="font-medium">{item.category}</span></div>
+                <div><span className="text-slate-500">Unit:</span> <span className="font-medium">{item.unit}</span></div>
+                <div><span className="text-slate-500">Base:</span> <span className="font-mono">{formatIDR(item.basePrice)}</span></div>
+                <div><span className="text-slate-500">Final:</span> <span className="font-mono font-semibold">{formatIDR(item.finalPrice)}</span></div>
+              </div>
+              <div className="mt-2 flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleHistoryClick(item)} title="Price History">
+                  <History className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditItem(item)}>
+                  <Edit2 className="h-3.5 w-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600" onClick={() => handleDeleteItem(item)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className={`hidden rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900 md:block ${compact ? 'border-0 shadow-none' : ''}`}>
         <div className="max-h-[600px] overflow-auto relative">
           {loading.ahspItems ? (
             <div className="flex items-center justify-center py-8">
@@ -387,98 +495,161 @@ export function AHSPCatalog({
               <Button variant="link" onClick={handleAddItem} className="mt-2 text-blue-600">Create new item</Button>
             </div>
           ) : (
+            <TooltipProvider delayDuration={120}>
             <Table>
-              <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+              <TableHeader className="sticky-glass-tablehead">
                 <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
-                  <TableHead className="w-[100px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Code</TableHead>
-                  <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Description</TableHead>
-                  <TableHead className="w-[120px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Category</TableHead>
-                  <TableHead className="w-[80px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Unit</TableHead>
-                  <TableHead className="w-[120px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Base Price</TableHead>
-                  <TableHead className="w-[120px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Final Price</TableHead>
-                  <TableHead className="w-[80px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="w-[100px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
+                  <TableHead className="w-[56px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">No.</TableHead>
+                  <TableHead className="min-w-[280px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Resource Description</TableHead>
+                  <TableHead className="w-[70px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Unit</TableHead>
+                  <TableHead className="w-[90px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Coeff.</TableHead>
+                  <TableHead className="text-center bg-blue-50/60 dark:bg-blue-900/20 border-l border-blue-100 dark:border-blue-900/30 font-semibold text-blue-700 dark:text-blue-300 h-9 text-xs uppercase tracking-wider" colSpan={2}>Supply (Material)</TableHead>
+                  <TableHead className="text-center bg-orange-50/60 dark:bg-orange-900/20 border-l border-orange-100 dark:border-orange-900/30 font-semibold text-orange-700 dark:text-orange-300 h-9 text-xs uppercase tracking-wider" colSpan={2}>Install (Labor/Tool)</TableHead>
+                  <TableHead className="w-[130px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Total Price</TableHead>
+                  <TableHead className="w-[90px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
+                </TableRow>
+                <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800 text-[10px] text-slate-400">
+                  <TableHead />
+                  <TableHead />
+                  <TableHead />
+                  <TableHead />
+                  <TableHead className="text-right bg-blue-50/40 dark:bg-blue-900/10 border-l border-blue-100 dark:border-blue-900/30">Unit Price</TableHead>
+                  <TableHead className="text-right bg-blue-50/40 dark:bg-blue-900/10">Total</TableHead>
+                  <TableHead className="text-right bg-orange-50/40 dark:bg-orange-900/10 border-l border-orange-100 dark:border-orange-900/30">Unit Price</TableHead>
+                  <TableHead className="text-right bg-orange-50/40 dark:bg-orange-900/10">Total</TableHead>
+                  <TableHead />
+                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayItems.map((item, idx) => (
-                  <TableRow
-                    key={item.id}
-                    className="group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800"
-                    onClick={() => handleEditItem(item)}
-                  >
-                    <TableCell className="font-mono text-[11px] font-medium text-slate-600 dark:text-slate-400 py-1.5 border-r border-transparent">
-                      <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">
-                        {item.code}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-1.5">
-                      <div className="flex flex-col">
-                        <span className="font-medium text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
-                        {item.description && (
-                          <span className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
-                            {item.description}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-1.5">
-                      <Badge variant="outline" className="text-[10px] font-normal h-5 border-slate-200 text-slate-500">
-                        {item.category}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center text-[11px] text-slate-500 py-1.5 font-medium bg-slate-50/50 dark:bg-slate-900/50">
-                      {item.unit}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs text-slate-500 py-1.5">
-                      {formatIDR(item.basePrice)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-xs font-bold text-slate-700 dark:text-slate-300 py-1.5 bg-slate-50/50 dark:bg-slate-900/50">
-                      {formatIDR(item.finalPrice)}
-                      {(item as any).originalFinalPrice && (item as any).originalFinalPrice !== item.finalPrice && (
-                        <div className="text-[9px] text-red-400 line-through mt-0.5">
-                          {formatIDR((item as any).originalFinalPrice)}
+                {groupedDisplayRows.map((row) => {
+                  if (row.type === 'section') {
+                    return (
+                      <TableRow key={`section-${row.label}`} className="bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/40">
+                        <TableCell colSpan={10} className="py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                          {row.label}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  }
+
+                  const item = row.item
+                  const coefficient = (item as any).coefficient || 1
+                  const supplyUnit = (item as any).price_material || 0
+                  const installUnit = ((item as any).price_labor || 0) + ((item as any).price_equipment || 0) + ((item as any).price_subcon || 0)
+                  const supplyTotal = supplyUnit * coefficient
+                  const installTotal = installUnit * coefficient
+                  const totalPrice = supplyTotal + installTotal > 0 ? supplyTotal + installTotal : item.finalPrice * coefficient
+                  const hasZoneOverride = selectedZone !== 'default' && (item as any).originalFinalPrice !== undefined
+                  const coefficientNote = `Coefficient ${coefficient.toFixed(3)} multiplies unit rates for quantity-based pricing.`
+
+                  return (
+                    <TableRow
+                      key={item.id}
+                      className="group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800"
+                      onClick={() => handleEditItem(item)}
+                    >
+                      <TableCell className="text-center font-mono text-[10px] text-slate-400 py-1.5">{row.rowNumber}</TableCell>
+                      <TableCell className="py-1.5">
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-medium text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
+                            {hasZoneOverride && (
+                              <Badge variant="secondary" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">Zone Adj</Badge>
+                            )}
+                            {!item.isActive && (
+                              <Badge variant="outline" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">Inactive</Badge>
+                            )}
+                          </div>
+                          <span className="text-[10px] font-mono text-slate-400">{item.code}</span>
+                          {item.description && (
+                            <span className="text-[10px] text-slate-400 line-clamp-1 mt-0.5">
+                              {item.description}
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center py-1.5">
-                      <div className={`w-2 h-2 rounded-full mx-auto ${item.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`} title={item.isActive ? 'Active' : 'Inactive'} />
-                    </TableCell>
-                    <TableCell className="py-1.5 text-right">
-                      <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
-                          onClick={() => handleHistoryClick(item)}
-                          title="Price History"
-                        >
-                          <History className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-slate-400 hover:text-amber-600 hover:bg-amber-50"
-                          onClick={() => handleEditItem(item)}
-                        >
-                          <Edit2 className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-slate-400 hover:text-red-600 hover:bg-red-50"
-                          onClick={() => handleDeleteItem(item)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell className="text-center text-[11px] text-slate-500 py-1.5 font-medium">{item.unit}</TableCell>
+                      <TableCell className="py-1.5">
+                        <div className="flex items-center justify-end gap-1 text-xs text-slate-600">
+                          <span className="font-mono">{coefficient.toFixed(3)}</span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                                onClick={(event) => event.stopPropagation()}
+                                aria-label="Coefficient details"
+                              >
+                                <Info className="h-3 w-3" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-[240px] text-[11px] leading-snug">
+                              {coefficientNote}
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-blue-50/20 dark:bg-blue-900/5 border-l border-slate-100 dark:border-slate-800">{supplyUnit > 0 ? formatIDR(supplyUnit) : '-'}</TableCell>
+                      <TableCell className="text-right font-mono text-xs font-semibold text-blue-700 dark:text-blue-400 py-1.5 bg-blue-50/20 dark:bg-blue-900/5">{supplyUnit > 0 ? formatIDR(supplyTotal) : '-'}</TableCell>
+                      <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-orange-50/20 dark:bg-orange-900/5 border-l border-slate-100 dark:border-slate-800">{installUnit > 0 ? formatIDR(installUnit) : '-'}</TableCell>
+                      <TableCell className="text-right font-mono text-xs font-semibold text-orange-700 dark:text-orange-400 py-1.5 bg-orange-50/20 dark:bg-orange-900/5">{installUnit > 0 ? formatIDR(installTotal) : '-'}</TableCell>
+                      <TableCell className="text-right font-mono text-xs font-bold text-slate-800 dark:text-slate-200 py-1.5">{formatIDR(totalPrice)}</TableCell>
+                      <TableCell className="py-1.5 text-right">
+                        <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-blue-50"
+                            onClick={() => handleHistoryClick(item)}
+                            title="Price History"
+                          >
+                            <History className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-slate-400 hover:text-amber-600 hover:bg-amber-50"
+                            onClick={() => handleEditItem(item)}
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDeleteItem(item)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
+            </TooltipProvider>
           )}
         </div>
+        {!loading.ahspItems && displayItems.length > 0 && (
+          <div className="border-t border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/50">
+            <div className="grid grid-cols-1 gap-2 text-right md:grid-cols-3 md:gap-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400">Supply Total</div>
+                <div className="font-mono text-sm font-bold text-blue-700 dark:text-blue-400">{formatIDR(totals.supplyTotal)}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400">Install Total</div>
+                <div className="font-mono text-sm font-bold text-orange-700 dark:text-orange-400">{formatIDR(totals.installTotal)}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-slate-400">Grand Total</div>
+                <div className="font-mono text-base font-extrabold text-slate-900 dark:text-slate-100">{formatIDR(totals.grandTotal)}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* AHSP Item Editor */}
@@ -516,6 +687,21 @@ export function AHSPCatalog({
         zoneId={selectedZone === 'default' ? undefined : selectedZone}
         itemName={editingItem?.name || ''}
       />
+
+      <AlertDialog open={!!pendingDeleteItem} onOpenChange={(open) => { if (!open) setPendingDeleteItem(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete AHSP item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDeleteItem ? `"${pendingDeleteItem.name}" will be removed from the AHSP catalog.` : 'This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div >
   )
 }

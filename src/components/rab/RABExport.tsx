@@ -8,6 +8,7 @@
 import React from 'react'
 import { Button } from '../ui/button'
 import { Download } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface RABExportProps {
   projectId?: string
@@ -17,7 +18,7 @@ interface RABExportProps {
 export default function RABExport({ projectId, tableRef }: RABExportProps) {
   const handleExport = () => {
     // Placeholder export logic
-    alert('RAB export not yet implemented')
+    toast.info('RAB export not yet implemented')
   }
 
   return (

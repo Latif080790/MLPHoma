@@ -10,6 +10,16 @@ import { documentService, ProjectDocument } from "@/services/documentService"
 import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
@@ -33,6 +43,7 @@ export default function Documents() {
 
     // Version History State
     const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
+    const [pendingDeleteDoc, setPendingDeleteDoc] = useState<ProjectDocument | null>(null)
 
     useEffect(() => {
         if (activeProjectId) loadDocs()
@@ -79,11 +90,11 @@ export default function Documents() {
         }
     }
 
-    async function handleDelete(id: string) {
-        if (confirm("Delete this document?")) {
-            await documentService.deleteDocument(id)
-            loadDocs()
-        }
+    async function handleDelete() {
+        if (!pendingDeleteDoc) return
+        await documentService.deleteDocument(pendingDeleteDoc.id)
+        setPendingDeleteDoc(null)
+        loadDocs()
     }
 
     const filteredDocs = documents.filter(doc => {
@@ -162,7 +173,7 @@ export default function Documents() {
                                             variant="ghost"
                                             size="icon"
                                             className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={() => handleDelete(doc.id)}
+                                            onClick={() => setPendingDeleteDoc(doc)}
                                         >
                                             <Trash2 size={14} />
                                         </Button>
@@ -237,6 +248,21 @@ export default function Documents() {
                     onReverted={loadDocs}
                 />
             )}
+
+            <AlertDialog open={!!pendingDeleteDoc} onOpenChange={(open) => { if (!open) setPendingDeleteDoc(null) }}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this document?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {pendingDeleteDoc ? `"${pendingDeleteDoc.title}" will be deleted from the repository.` : 'This action cannot be undone.'}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

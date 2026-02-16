@@ -21,7 +21,9 @@ export default function ChangeManagement() {
     const [activeTab, setActiveTab] = useState("log")
     const [dialogOpen, setDialogOpen] = useState(false)
     const [confirmOpen, setConfirmOpen] = useState(false)
+    const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false)
     const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null)
+    const [pendingRejectId, setPendingRejectId] = useState<string | null>(null)
     const [actionLoading, setActionLoading] = useState<string | null>(null)
 
     useEffect(() => {
@@ -55,20 +57,25 @@ export default function ChangeManagement() {
         }
     }
 
-    const handleReject = async (orderId: string) => {
-        if (!confirm('Reject this Change Order? This cannot be undone.')) return
-        setActionLoading(orderId)
+    const handleRejectClick = (orderId: string) => {
+        setPendingRejectId(orderId)
+        setRejectConfirmOpen(true)
+    }
+
+    const handleRejectConfirm = async () => {
+        if (!pendingRejectId) return
+        setActionLoading(pendingRejectId)
         try {
-            await updateStatus(orderId, 'REJECTED')
+            await updateStatus(pendingRejectId, 'REJECTED')
             toast.success('Change Order rejected')
         } catch (err: any) {
             toast.error('Rejection failed: ' + err.message)
         } finally {
             setActionLoading(null)
+            setRejectConfirmOpen(false)
+            setPendingRejectId(null)
         }
     }
-
-    if (!activeProjectId) return <EmptyState title="No Project Selected" description="Please select a project to manage changes." />
 
     // Calculate Impact Analysis
     const totalCostImpact = orders.reduce((sum, o) => sum + (o.cost_impact || 0), 0)
@@ -89,7 +96,7 @@ export default function ChangeManagement() {
                 }
             />
 
-            <ChangeOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} projectId={activeProjectId} />
+            <ChangeOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} projectId={activeProjectId!} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="mb-4">
@@ -163,7 +170,7 @@ export default function ChangeManagement() {
                                                                 size="sm"
                                                                 className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                                                                 disabled={actionLoading === order.id}
-                                                                onClick={(e) => { e.stopPropagation(); handleReject(order.id) }}
+                                                                onClick={(e) => { e.stopPropagation(); handleRejectClick(order.id) }}
                                                             >
                                                                 <X className="h-3.5 w-3.5" />
                                                             </Button>
@@ -306,6 +313,21 @@ export default function ChangeManagement() {
                             {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
                             Confirm Approval
                         </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={rejectConfirmOpen} onOpenChange={setRejectConfirmOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Reject Change Order?</DialogTitle>
+                        <DialogDescription>
+                            This action cannot be undone and will mark the selected change order as rejected.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setRejectConfirmOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleRejectConfirm}>Reject</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

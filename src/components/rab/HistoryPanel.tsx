@@ -7,6 +7,7 @@
 import React from 'react'
 import { Button } from '../ui/button'
 import useRabStore from '../../store/rabStore'
+import { toast } from 'sonner'
 
 /**
  * HistoryPanelProps
@@ -33,8 +34,8 @@ export default function HistoryPanel({ projectId = 'default' }: HistoryPanelProp
       </div>
 
       <div className="flex gap-2 mb-3">
-        <Button size="sm" onClick={() => { const ok = undo(projectId); if (!ok) alert('Nothing to undo') }}>Undo</Button>
-        <Button size="sm" variant="outline" className="bg-transparent" onClick={() => { const ok = redo(projectId); if (!ok) alert('Nothing to redo') }}>Redo</Button>
+        <Button size="sm" onClick={() => { const ok = undo(projectId); if (!ok) toast.info('Nothing to undo') }}>Undo</Button>
+        <Button size="sm" variant="outline" className="bg-transparent" onClick={() => { const ok = redo(projectId); if (!ok) toast.info('Nothing to redo') }}>Redo</Button>
         <Button size="sm" variant="ghost" className="bg-transparent" onClick={() => clearHistory(projectId)}>Clear History</Button>
       </div>
 
