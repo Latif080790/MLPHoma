@@ -322,7 +322,7 @@ export function AHSPCatalog({
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const content = e.target?.result as string
         const data = JSON.parse(content)
@@ -356,26 +356,8 @@ export function AHSPCatalog({
           }
         })
 
-        // Clear localStorage for large imports to prevent quota exceeded
-        if (itemsToImport.length > 1000) {
-          try {
-            const keys = Object.keys(localStorage)
-            keys.forEach(key => {
-              if (key.includes('mlphoma:rab:') || key.includes('import-presets') || key.includes('sync-queue')) {
-                try {
-                  localStorage.removeItem(key)
-                } catch (e) {
-                  console.error(`Failed to remove ${key}:`, e)
-                }
-              }
-            })
-            toast.info(`Import besar (${itemsToImport.length} items) - membersihkan cache lama...`)
-          } catch (e) {
-            console.warn('Failed to clear old cache:', e)
-          }
-        }
-
-        importAHSPItems(itemsToImport)
+        // Import AHSP items (now async - direct to Supabase for large imports >100 items)
+        await importAHSPItems(itemsToImport)
         toast.success(`Imported ${itemsToImport.length} AHSP items`)
       } catch (error) {
         console.error('Failed to import AHSP catalog:', error)

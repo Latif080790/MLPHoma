@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand'
-import { assertSupabase, fetchResources, fetchAhspItems } from '../lib/supabaseClient'
+import { assertSupabase, fetchResources, fetchAhspItems, bulkImportAHSPDirect } from '../lib/supabaseClient'
 import type {
   AhspItemRow,
   ResourceRow,
@@ -462,7 +462,9 @@ export const useAHSPStore = create<AHSPStore>()(
           syncDelete('ahsp_items', id)
         },
 
-        importAHSPItems: (items) => {
+        importAHSPItems: async (items) => {
+          const DIRECT_IMPORT_THRESHOLD = 100 // Use direct Supabase import for >100 items
+
           const newItems: AHSPItem[] = []
           const allNewComponents: AHSPComponent[] = []
           const allNewResources: Resource[] = []
@@ -572,20 +574,93 @@ export const useAHSPStore = create<AHSPStore>()(
               .reduce((sum, c) => sum + c.subtotal, 0)
           })
 
-          set((state) => ({
-            resources: allNewResources.length > 0 ? [...state.resources, ...allNewResources] : state.resources,
-            ahspItems: [...state.ahspItems, ...newItems],
-            componentsByAHSP: { ...state.componentsByAHSP, ...componentsByAHSP },
-          }))
+          // Decision: Direct Supabase or Sync Queue?
+          if (items.length > DIRECT_IMPORT_THRESHOLD) {
+            // LARGE IMPORT: Direct to Supabase (bypass localStorage)
+            toast.info(`Import besar (${items.length} items) - langsung ke Supabase tanpa cache...`)
 
-          // Persist to Supabase
-          if (allNewResources.length > 0) {
-            syncResources(allNewResources)
+            try {
+              // Convert to Supabase format
+              const ahspRows: AhspItemRow[] = newItems.map(item => ({
+                id: item.id,
+                code: item.code,
+                name: item.name,
+                description: item.description || '',
+                unit: item.unit,
+                category: item.category || 'Imported',
+                base_price: item.basePrice,
+                final_price: item.finalPrice,
+                overhead_percentage: item.overheadPercentage || 0,
+                profit_percentage: item.profitPercentage || 0,
+                price_material: item.price_material || 0,
+                price_labor: item.price_labor || 0,
+                price_equipment: item.price_equipment || 0,
+                price_subcon: item.price_subcon || 0,
+                created_at: item.createdAt,
+                updated_at: item.updatedAt,
+              }))
+
+              const resourceRows: ResourceRow[] = allNewResources.map(res => ({
+                id: res.id,
+                code: res.code,
+                name: res.name,
+                type: res.type.toUpperCase(),
+                unit: res.unit,
+                unit_price: res.unitPrice,
+                created_at: res.createdAt,
+                updated_at: res.updatedAt,
+              }))
+
+              const componentRows: AhspComponentRow[] = allNewComponents.map(comp => ({
+                id: comp.id,
+                ahsp_id: comp.ahspId,
+                resource_id: comp.resourceId,
+                type: comp.type.toUpperCase(),
+                coefficient: comp.coefficient,
+                unit: comp.unit,
+                unit_price: comp.unitPrice,
+                subtotal: comp.subtotal,
+                created_at: comp.createdAt,
+                updated_at: comp.updatedAt,
+              }))
+
+              const result = await bulkImportAHSPDirect(ahspRows, resourceRows, componentRows)
+
+              if (!result.success) {
+                throw new Error(result.error || 'Unknown error')
+              }
+
+              // After successful import, refresh from Supabase
+              toast.success(`Berhasil import ${items.length} items ke Supabase!`)
+              
+              // Update local store by fetching fresh data
+              const { fetchAHSPItems: refresh } = get()
+              await refresh()
+
+            } catch (error) {
+              console.error('Direct import failed:', error)
+              toast.error(`Gagal import ke Supabase: ${error instanceof Error ? error.message : 'Unknown error'}`)
+              // Don't update local store on failure
+              return
+            }
+
+          } else {
+            // SMALL IMPORT: Use sync queue (normal flow with localStorage)
+            set((state) => ({
+              resources: allNewResources.length > 0 ? [...state.resources, ...allNewResources] : state.resources,
+              ahspItems: [...state.ahspItems, ...newItems],
+              componentsByAHSP: { ...state.componentsByAHSP, ...componentsByAHSP },
+            }))
+
+            // Persist to Supabase via sync queue
+            if (allNewResources.length > 0) {
+              syncResources(allNewResources)
+            }
+            // Sync AHSP items with components sequentially to avoid FK constraint error
+            syncAHSPItemsWithComponents(newItems, allNewComponents).catch(error => {
+              console.error('Failed to sync AHSP data:', error)
+            })
           }
-          // Sync AHSP items with components sequentially to avoid FK constraint error
-          syncAHSPItemsWithComponents(newItems, allNewComponents).catch(error => {
-            console.error('Failed to sync AHSP data:', error)
-          })
         },
 
         exportAHSPItems: () => {

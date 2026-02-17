@@ -185,7 +185,7 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
     notify.success('File parsed. Confirm mapping and import.')
   }
 
-  function commitImport() {
+  async function commitImport() {
     if (!rows || rows.length === 0) {
       notify.error('No rows to import')
       return
@@ -220,26 +220,8 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
       return
     }
 
-    // Clear localStorage for large imports to prevent quota exceeded
-    if (toAdd.length > 1000) {
-      try {
-        const keys = Object.keys(localStorage)
-        keys.forEach(key => {
-          if (key.includes('mlphoma:rab:') || key.includes('import-presets') || key.includes('sync-queue')) {
-            try {
-              localStorage.removeItem(key)
-            } catch (e) {
-              console.error(`Failed to remove ${key}:`, e)
-            }
-          }
-        })
-        notify.info(`Import besar (${toAdd.length} items) - membersihkan cache lama...`)
-      } catch (e) {
-        console.warn('Failed to clear old cache:', e)
-      }
-    }
-
-    importAHSPItems(toAdd as any)
+    // Import AHSP items (now async - direct to Supabase for large imports >100 items)
+    await importAHSPItems(toAdd as any)
     notify.success(`Imported ${toAdd.length} AHSP items`)
     // clear preview
     setFileName(null)

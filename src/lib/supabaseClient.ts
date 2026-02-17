@@ -115,6 +115,67 @@ export async function batchUpsertAhspComponents(items: AhspComponentRow[]) {
   return client.from('ahsp_components').upsert(items, { onConflict: 'id' })
 }
 
+/**
+ * Direct bulk import for large AHSP datasets
+ * Bypasses localStorage sync queue - inserts directly to Supabase
+ * Use for imports > 100 items to avoid localStorage quota issues
+ */
+export async function bulkImportAHSPDirect(
+  items: AhspItemRow[],
+  resources: ResourceRow[],
+  components: AhspComponentRow[]
+): Promise<{ success: boolean; error?: string }> {
+  if (!items.length) return { success: true }
+  
+  const client = assertSupabase()
+  
+  try {
+    // Step 1: Insert resources first (if any)
+    if (resources.length > 0) {
+      const { error: resourceError } = await client
+        .from('resources')
+        .upsert(resources, { onConflict: 'code' })
+      
+      if (resourceError) {
+        throw new Error(`Failed to insert resources: ${resourceError.message}`)
+      }
+    }
+
+    // Step 2: Insert AHSP items (parent records)
+    const { error: itemsError } = await client
+      .from('ahsp_items')
+      .upsert(items, { onConflict: 'code' })
+    
+    if (itemsError) {
+      throw new Error(`Failed to insert AHSP items: ${itemsError.message}`)
+    }
+
+    // Step 3: Insert components (child records)
+    if (components.length > 0) {
+      // Split into batches of 500 to avoid request size limits
+      const batchSize = 500
+      for (let i = 0; i < components.length; i += batchSize) {
+        const batch = components.slice(i, i + batchSize)
+        const { error: componentError } = await client
+          .from('ahsp_components')
+          .upsert(batch, { onConflict: 'id' })
+        
+        if (componentError) {
+          throw new Error(`Failed to insert components batch ${i / batchSize + 1}: ${componentError.message}`)
+        }
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Bulk import error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error during bulk import'
+    }
+  }
+}
+
 export async function fetchAhspItems() {
   const client = assertSupabase()
   return client.from('ahsp_items').select('*')
