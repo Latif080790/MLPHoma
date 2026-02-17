@@ -3,6 +3,7 @@
 import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
 import { Invoice, ClientClaim, FinanceTransaction } from '../types/finance'
+import { auditTrail } from '../lib/auditTrail'
 
 export const financeService = {
     // --- Invoices (AP) ---
@@ -21,7 +22,7 @@ export const financeService = {
         return data || []
     },
 
-    async createInvoice(invoice: Partial<Invoice>) {
+    async createInvoice(invoice: Partial<Invoice>, userId?: string, userName?: string) {
         const client = assertSupabase()
         const id = generateId()
 
@@ -35,6 +36,19 @@ export const financeService = {
             .single()
 
         if (error) throw error
+        
+        // Audit log
+        if (userId && userName) {
+            await auditTrail.logInvoiceCreated(
+                data.id,
+                data.invoice_number,
+                data.vendor_name,
+                data.total_amount,
+                userId,
+                userName
+            )
+        }
+        
         return data
     },
 
@@ -115,7 +129,21 @@ export const financeService = {
     },
 
     // Helper: Auto-record payment transaction when Invoice is PAID
-    async payInvoice(invoiceId: string, projectId: string, amount: number) {
+    async payInvoice(
+        invoiceId: string, 
+        projectId: string, 
+        amount: number,
+        userId?: string,
+        userName?: string
+    ) {
+        // Get invoice details for audit log
+        const client = assertSupabase()
+        const { data: invoice } = await client
+            .from('invoices')
+            .select('*')
+            .eq('id', invoiceId)
+            .single()
+        
         // 1. Update Invoice Status
         await this.updateInvoiceStatus(invoiceId, 'PAID')
 
@@ -128,17 +156,70 @@ export const financeService = {
             reference_type: 'INVOICE',
             reference_id: invoiceId
         })
+        
+        // 3. Audit log
+        if (userId && userName && invoice) {
+            await auditTrail.logInvoicePayment(
+                invoiceId,
+                invoice.invoice_number,
+                amount,
+                userId,
+                userName
+            )
+        }
     },
 
     // --- Claims status transition ---
-    async updateClaimStatus(id: string, status: string) {
+    async updateClaimStatus(
+        id: string, 
+        status: string,
+        userId?: string,
+        userName?: string
+    ) {
         const client = assertSupabase()
+        
+        // Get claim details for audit log
+        const { data: claim } = await client
+            .from('client_claims')
+            .select('*')
+            .eq('id', id)
+            .single()
+        
         const { error } = await client
             .from('client_claims')
             .update({ status })
             .eq('id', id)
 
         if (error) throw error
+        
+        // Audit log based on status transition
+        if (userId && userName && claim) {
+            if (status === 'SUBMITTED') {
+                await auditTrail.logClaimSubmitted(
+                    id,
+                    claim.claim_number,
+                    claim.amount,
+                    userId,
+                    userName
+                )
+            } else if (status === 'APPROVED') {
+                await auditTrail.logClaimApproved(
+                    id,
+                    claim.claim_number,
+                    claim.amount,
+                    userId,
+                    userName
+                )
+            } else if (status === 'PAID') {
+                await auditTrail.logClaimPaid(
+                    id,
+                    claim.claim_number,
+                    claim.amount,
+                    userId,
+                    userName
+                )
+            }
+        }
     },
 
     // --- Invoice update ---

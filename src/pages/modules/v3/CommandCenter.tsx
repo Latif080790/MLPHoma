@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ApprovalQueueWidget } from '@/components/common/ApprovalQueueWidget'
 
 export default function CommandCenter() {
     const { activeProjectId, projects } = useProjectStore()
@@ -250,7 +251,12 @@ export default function CommandCenter() {
                         </div>
                     </CardContent>
                 </Card>
+    {/* F. APPROVAL QUEUE WIDGET */}
+                <div className="md:col-span-1">
+                    <ApprovalQueueWidget />
+                </div>
 
+            
             </div>
         </div>
     )

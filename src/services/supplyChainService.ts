@@ -19,6 +19,7 @@ import {
 } from '../lib/supabaseClient'
 import { MaterialRequest, PurchaseOrder, InventoryTransaction, MrStatus, PoStatus, PoItem } from '../types/supply-chain'
 import { generateId } from '../lib/idGenerator'
+import { checkBudgetAvailability, commitBudget, CheckableItem } from './budgetGuardService'
 
 export const supplyChainService = {
 
@@ -63,58 +64,26 @@ export const supplyChainService = {
     // --- Purchase Orders ---
 
     async createPurchaseOrder(data: Omit<PurchaseOrderRow, 'id' | 'created_at'>, items: Omit<PoItemRow, 'id' | 'po_id'>[]) {
-        // 1. Validate Budget (Strict Locking)
-        const rapItemIds = items.map(i => i.rap_item_id).filter(Boolean) as string[]
-        const rapMap = new Map<string, any>()
-
-        if (rapItemIds.length > 0) {
-            // Fetch RAP Items directly using Supabase client
-            const { data: dbRapItems, error: dbError } = await assertSupabase()
-                .from('rap_items')
-                .select(`
-                    id, 
-                    qty_budget, 
-                    unit_price_budget, 
-                    committed_cost, 
-                    actual_cost,
-                    ahsp_items ( name ), 
-                    rab_items ( name )
-                `)
-                .in('id', rapItemIds)
-
-            if (dbError) throw new Error("Failed to validate budget: " + dbError.message)
-            if (dbRapItems) {
-                dbRapItems.forEach((r: any) => rapMap.set(r.id, r))
-            }
-        }
-
-        // START VALIDATION
+        // 1. Validate Budget using Budget Guard Service
         if (items.length === 0) throw new Error("PO must have at least one item")
 
-        for (const item of items) {
-            if (!item.rap_item_id) continue
+        // Map items to CheckableItem format
+        const checkableItems: CheckableItem[] = items.map(item => ({
+            rapItemId: item.rap_item_id,
+            itemName: item.item_name || 'Unnamed Item',
+            quantity: item.quantity,
+            unitPrice: item.unit_price
+        }))
 
-            const rapItem = rapMap.get(item.rap_item_id)
-            if (!rapItem) throw new Error(`RAP Item not found for item: ${item.item_name}`)
+        // Run budget check
+        const budgetCheck = await checkBudgetAvailability(data.project_id, checkableItems)
 
-            const requestedTotal = item.quantity * item.unit_price
-
-            // Calculate remaining: Budget - (Committed + Actual)
-            const totalBudget = (rapItem.qty_budget || 0) * (rapItem.unit_price_budget || 0)
-            const committed = rapItem.committed_cost || 0
-            const actual = rapItem.actual_cost || 0
-            const remaining = totalBudget - (committed + actual)
-
-            if (requestedTotal > remaining) {
-                const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })
-                const itemName = rapItem.ahsp_items?.name || rapItem.rab_items?.name || item.item_name
-                throw new Error(
-                    `Budget Exceeded for ${itemName}!\n` +
-                    `Requested: ${formatter.format(requestedTotal)}\n` +
-                    `Remaining: ${formatter.format(remaining)}`
-                )
-            }
+        if (budgetCheck.hasExceeded) {
+            throw new Error(budgetCheck.message)
         }
+
+        // If requires approval but status is DRAFT, allow creation with warning
+        // (Can be enhanced later with approval workflow)
 
         const poId = generateId()
 
@@ -137,21 +106,11 @@ export const supplyChainService = {
                 })
             ))
 
-            // 4. Update Committed Cost in RAP (await for reliability)
+            // 4. Commit Budget for each RAP-linked item
             for (const item of items) {
                 if (item.rap_item_id) {
-                    const rapItem = rapMap.get(item.rap_item_id)
-                    if (rapItem) {
-                        const newCommitted = (rapItem.committed_cost || 0) + (item.quantity * item.unit_price)
-                        const { error: updateErr } = await assertSupabase()
-                            .from('rap_items')
-                            .update({ committed_cost: newCommitted })
-                            .eq('id', rapItem.id)
-                        if (updateErr) {
-                            console.error('Failed to update committed cost for', rapItem.id, updateErr)
-                            throw new Error(`Failed to lock budget for RAP item: ${updateErr.message}`)
-                        }
-                    }
+                    const amount = item.quantity * item.unit_price
+                    await commitBudget(item.rap_item_id, amount)
                 }
             }
 

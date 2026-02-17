@@ -1,11 +1,13 @@
 
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Folder, FileText, Upload, Download, Trash2, Search, History } from "lucide-react"
+import { Folder, FileText, Upload, Download, Trash2, Search, History, Lock, LockOpen, Archive, ArchiveRestore } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useProjectStore } from "@/store/projectStore"
+import { useAuthStore } from "@/store/authStore"
 import { documentService, ProjectDocument } from "@/services/documentService"
 import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
@@ -29,6 +31,7 @@ const CATEGORIES = ["Contracts", "Drawings", "Reports", "Invoices", "Corresponde
 
 export default function Documents() {
     const { activeProjectId } = useProjectStore()
+    const { user } = useAuthStore()
     const [documents, setDocuments] = useState<ProjectDocument[]>([])
     const [loading, setLoading] = useState(false)
     const [search, setSearch] = useState("")
@@ -53,7 +56,7 @@ export default function Documents() {
         if (!activeProjectId) return
         setLoading(true)
         try {
-            const data = await documentService.getDocuments(activeProjectId)
+            const data = await documentService.getDocuments(activeProjectId, true) // Include archived
             setDocuments(data)
         } catch (err: any) {
             toast.error("Failed to load documents")
@@ -87,6 +90,36 @@ export default function Documents() {
             window.open(doc.file_url, '_blank')
         } else {
             toast.error('No file URL available')
+        }
+    }
+
+    async function handleToggleLock(doc: ProjectDocument) {
+        try {
+            if (doc.is_locked) {
+                await documentService.unlockDocument(doc.id)
+                toast.success("Document unlocked")
+            } else {
+                await documentService.lockDocument(doc.id, user?.id || '', user?.name || 'User')
+                toast.success("Document locked")
+            }
+            loadDocs()
+        } catch (err: any) {
+            toast.error(err.message)
+        }
+    }
+
+    async function handleToggleArchive(doc: ProjectDocument) {
+        try {
+            if (doc.status === 'ARCHIVED') {
+                await documentService.unarchiveDocument(doc.id)
+                toast.success("Document restored")
+            } else {
+                await documentService.archiveDocument(doc.id)
+                toast.success("Document archived")
+            }
+            loadDocs()
+        } catch (err: any) {
+            toast.error(err.message)
         }
     }
 
@@ -143,53 +176,113 @@ export default function Documents() {
                 <EmptyState title="No Documents Found" description="Upload contracts, drawings, or reports." imageKeyword="files" />
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {filteredDocs.map(doc => (
-                        <Card key={doc.id} className="hover:border-blue-500 transition-colors group">
-                            <CardContent className="p-4 flex flex-col justify-between h-full min-h-[140px]">
-                                <div className="flex items-start justify-between">
-                                    <div className="bg-blue-50 p-2 rounded text-blue-600">
-                                        <FileText size={20} />
+                    {filteredDocs.map(doc => {
+                        const isArchived = doc.status === 'ARCHIVED'
+                        const isSuperseded = doc.status === 'SUPERSEDED'
+                        const isLocked = doc.is_locked
+                        
+                        return (
+                            <Card 
+                                key={doc.id} 
+                                className={`hover:border-blue-500 transition-colors group ${
+                                    isArchived ? 'opacity-60 border-slate-300' : 
+                                    isSuperseded ? 'opacity-50 border-yellow-300' : ''
+                                }`}
+                            >
+                                <CardContent className="p-4 flex flex-col justify-between h-full min-h-[140px]">
+                                    <div className="flex items-start justify-between">
+                                        <div className={`p-2 rounded ${
+                                            isArchived ? 'bg-slate-50 text-slate-400' :
+                                            isSuperseded ? 'bg-yellow-50 text-yellow-600' :
+                                            'bg-blue-50 text-blue-600'
+                                        }`}>
+                                            <FileText size={20} />
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-neutral-400 hover:text-green-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => handleDownload(doc)}
+                                                title="Download"
+                                            >
+                                                <Download size={14} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className={`text-neutral-400 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity ${isLocked ? 'text-orange-500 opacity-100' : ''}`}
+                                                onClick={() => handleToggleLock(doc)}
+                                                title={isLocked ? `Locked by ${doc.locked_by}` : 'Lock document'}
+                                            >
+                                                {isLocked ? <Lock size={14} /> : <LockOpen size={14} />}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className={`text-neutral-400 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity ${isArchived ? 'text-slate-500 opacity-100' : ''}`}
+                                                onClick={() => handleToggleArchive(doc)}
+                                                title={isArchived ? 'Restore from archive' : 'Archive document'}
+                                            >
+                                                {isArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-neutral-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => setVersionDoc(doc)}
+                                                title="Version History"
+                                            >
+                                                <History size={14} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => setPendingDeleteDoc(doc)}
+                                            >
+                                                <Trash2 size={14} />
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-1">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-neutral-400 hover:text-green-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={() => handleDownload(doc)}
-                                            title="Download"
-                                        >
-                                            <Download size={14} />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-neutral-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={() => setVersionDoc(doc)}
-                                            title="Version History"
-                                        >
-                                            <History size={14} />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            onClick={() => setPendingDeleteDoc(doc)}
-                                        >
-                                            <Trash2 size={14} />
-                                        </Button>
+                                    <div>
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                            <h4 className="font-semibold truncate flex-1" title={doc.title}>{doc.title}</h4>
+                                            {(isArchived || isSuperseded || isLocked) && (
+                                                <div className="flex gap-1">
+                                                    {isLocked && (
+                                                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-orange-50 text-orange-700 border-orange-200">
+                                                            <Lock className="h-2 w-2 mr-0.5" /> LOCKED
+                                                        </Badge>
+                                                    )}
+                                                    {isArchived && (
+                                                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-slate-100 text-slate-600 border-slate-300">
+                                                            ARCHIVED
+                                                        </Badge>
+                                                    )}
+                                                    {isSuperseded && (
+                                                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
+                                                            SUPERSEDED
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-neutral-500">{doc.category} • v{doc.version_number}</p>
+                                        <div className="text-xs text-neutral-400 mt-1">
+                                            {format(new Date(doc.created_at), 'dd MMM yyyy')}
+                                            {doc.file_size ? ` • ${(doc.file_size / 1024).toFixed(0)} KB` : ''}
+                                        </div>
+                                        {isLocked && doc.locked_by && (
+                                            <div className="text-[10px] text-orange-600 mt-1">
+                                                🔒 {doc.locked_by}
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                                <div>
-                                    <h4 className="font-semibold truncate" title={doc.title}>{doc.title}</h4>
-                                    <p className="text-xs text-neutral-500">{doc.category} • v{doc.version_number}</p>
-                                    <div className="text-xs text-neutral-400 mt-1">
-                                        {format(new Date(doc.created_at), 'dd MMM yyyy')}
-                                        {doc.file_size ? ` • ${(doc.file_size / 1024).toFixed(0)} KB` : ''}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+                                </CardContent>
+                            </Card>
+                        )
+                    })}
                 </div>
             )}
 
