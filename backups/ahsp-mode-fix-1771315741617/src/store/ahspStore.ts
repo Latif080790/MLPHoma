@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand'
-import { assertSupabase, fetchResources, fetchAhspItems, bulkImportAHSPDirect, getCreationLog, getAhspCount, getResourceCount } from '../lib/supabaseClient'
+import { assertSupabase, fetchResources, fetchAhspItems, bulkImportAHSPDirect } from '../lib/supabaseClient'
 import type {
   AhspItemRow,
   ResourceRow,
@@ -55,9 +55,7 @@ export const useAHSPStore = create<AHSPStore>()(
       (set, get) => ({
         // Initial state
         resources: [],
-        totalResourceCount: 0,
         ahspItems: [],
-        totalAhspCount: 0,
         componentsByAHSP: {},
         loading: {
           resources: false,
@@ -86,7 +84,7 @@ export const useAHSPStore = create<AHSPStore>()(
         fetchResources: async () => {
           set((state) => ({ loading: { ...state.loading, resources: true }, errors: { ...state.errors, resources: null } }))
           try {
-            const { data, error } = await fetchResources(5000)
+            const { data, error } = await fetchResources()
             if (error) throw error
 
             const rows = (data as ResourceRow[]) || []
@@ -117,11 +115,6 @@ export const useAHSPStore = create<AHSPStore>()(
               resources,
               loading: { ...state.loading, resources: false },
             }))
-
-            // Fetch total resource count in background
-            getResourceCount().then(({ count }) => {
-              if (count !== null) set({ totalResourceCount: count })
-            })
           } catch (error: any) {
             const errorMsg = error.message || 'Failed to fetch resources'
             set((state) => ({
@@ -141,61 +134,34 @@ export const useAHSPStore = create<AHSPStore>()(
           }))
 
           try {
-            // Increase fetch limit to 5000 for current "simplified" app
-            const { data, error } = await fetchAhspItems(5000)
+            const { data, error } = await fetchAhspItems()
 
             if (error) throw error
 
             const items = (data as AhspItemRow[]) || []
-            const mappedItems = items.map((item) => ({
-              ...item,
-              // Ensure property mapping if names differ, though AhspItemRow mostly matches AHSPItem except for camelCase?
-              // AHSPItem: id, code, name, category, unit, basePrice, finalPrice
-              // AhspItemRow: id, code, name, category, unit, base_price, final_price
-              // We need to map snake_case to camelCase
-              basePrice: item.base_price || 0,
-              finalPrice: item.final_price || 0,
-
-              // Map split cost fields
-              price_material: item.price_material || 0,
-              price_labor: item.price_labor || 0,
-              price_equipment: item.price_equipment || 0,
-              price_subcon: item.price_subcon || 0,
-
-              overheadPercentage: item.overhead_percentage || 0,
-              profitPercentage: item.profit_percentage || 0,
-              createdAt: item.created_at,
-              updatedAt: item.updated_at
-            })) as AHSPItem[]
-
-            // Fetch creation logs for all items
-            const itemsWithLogs = await Promise.all(
-              mappedItems.map(async (item) => {
-                try {
-                  const { data: log, error } = await getCreationLog(item.id)
-                  if (!error && log) {
-                    return {
-                      ...item,
-                      creationMode: log.creation_mode as 'sni' | 'custom' | 'historical',
-                      sourceReference: log.source_reference
-                    }
-                  }
-                } catch (error) {
-                  // Silently ignore - old items won't have logs
-                }
-                return item
-              })
-            )
-
             set((state) => ({
-              ahspItems: itemsWithLogs,
+              ahspItems: items.map((item) => ({
+                ...item,
+                // Ensure property mapping if names differ, though AhspItemRow mostly matches AHSPItem except for camelCase?
+                // AHSPItem: id, code, name, category, unit, basePrice, finalPrice
+                // AhspItemRow: id, code, name, category, unit, base_price, final_price
+                // We need to map snake_case to camelCase
+                basePrice: item.base_price || 0,
+                finalPrice: item.final_price || 0,
+
+                // Map split cost fields
+                price_material: item.price_material || 0,
+                price_labor: item.price_labor || 0,
+                price_equipment: item.price_equipment || 0,
+                price_subcon: item.price_subcon || 0,
+
+                overheadPercentage: item.overhead_percentage || 0,
+                profitPercentage: item.profit_percentage || 0,
+                createdAt: item.created_at,
+                updatedAt: item.updated_at
+              })) as AHSPItem[],
               loading: { ...state.loading, ahspItems: false },
             }))
-
-            // Fetch total AHSP count in background
-            getAhspCount().then(({ count }) => {
-              if (count !== null) set({ totalAhspCount: count })
-            })
           } catch (error: any) {
             const errorMsg = error.message || 'Failed to fetch AHSP items'
             set((state) => ({
@@ -333,8 +299,6 @@ export const useAHSPStore = create<AHSPStore>()(
 
           // Queue-based sync with retry logic
           syncResource(newResource)
-
-          return newResource.id
         },
 
         updateResource: (id, updates) => {
@@ -1295,9 +1259,7 @@ export const useAHSPStore = create<AHSPStore>()(
             // Update local state
             set({
               resources: [],
-              totalResourceCount: 0,
               ahspItems: [],
-              totalAhspCount: 0,
               componentsByAHSP: {},
               zones: [],
               zonePricesByZone: {},
@@ -1345,8 +1307,8 @@ export function getAHSPSummary(state: AHSPState) {
     return null
   }
 
-  const totalAHSPItems = state.totalAhspCount || state.ahspItems.length
-  const totalResources = state.totalResourceCount || state.resources.length
+  const totalAHSPItems = state.ahspItems.length
+  const totalResources = state.resources.length
 
   const averagePrice = totalAHSPItems > 0
     ? state.ahspItems.reduce((sum, item) => sum + item.finalPrice, 0) / totalAHSPItems

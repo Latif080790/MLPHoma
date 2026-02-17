@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { X, Save, Plus, Trash2, Calculator, Edit2, Check, Database, Search, Info, FileText } from 'lucide-react'
+import { X, Save, Plus, Trash2, Calculator, Edit2, Check, Database, Search, Info } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
@@ -35,8 +35,6 @@ import { useAHSPStore } from '../../store/ahspStore'
 import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
 import type { AHSPItem, AHSPComponent, ResourceType, ResourceUnit } from '../../types/ahsp'
-import type { AHSPCreationMode } from './AHSPCreationModeDialog'
-import { SNI_PRESETS, type SNIPreset, getSNIPreset } from '../../lib/sniPresets'
 import { getMainCategories, getSubcategories, getCategoryPath } from '../../lib/workCategories'
 
 /** Props for AHSPItemEditor component */
@@ -49,10 +47,6 @@ export interface AHSPItemEditorProps {
   onClose: () => void
   /** Save handler - returns the saved item ID for new items */
   onSave: (item: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'>) => string | Promise<string>
-  /** Creation mode (SNI/Custom/Historical) */
-  mode?: AHSPCreationMode
-  /** Source reference for SNI or historical items */
-  sourceReference?: string
 }
 
 /**
@@ -63,8 +57,6 @@ export function AHSPItemEditor({
   open,
   onClose,
   onSave,
-  mode,
-  sourceReference,
 }: AHSPItemEditorProps) {
   const [formData, setFormData] = useState<{
     code: string
@@ -102,8 +94,6 @@ export function AHSPItemEditor({
   const [selectedSubcategory, setSelectedSubcategory] = useState('')
   const [pendingDeleteComponentId, setPendingDeleteComponentId] = useState<string | null>(null)
   const [resourceSearch, setResourceSearch] = useState('')
-  const [selectedSNIPreset, setSelectedSNIPreset] = useState<string | null>(null)
-  const [showSNIHelp, setShowSNIHelp] = useState(mode === 'sni')
 
   const mainCategories = getMainCategories()
 
@@ -403,58 +393,6 @@ export function AHSPItemEditor({
     setPendingDeleteComponentId(componentId)
   }
 
-  /**
-   * Handle applying SNI preset
-   */
-  const handleApplySNIPreset = (preset: SNIPreset) => {
-    // Auto-fill master data
-    setFormData(prev => ({
-      ...prev,
-      code: preset.code,
-      name: preset.name,
-      category: preset.category,
-      unit: preset.unit as ResourceUnit,
-      description: preset.description || '',
-    }))
-
-    // Auto-add components from SNI
-    preset.components.forEach(comp => {
-      // Check if resource exists
-      let resource = resources.find(r => r.code === comp.code)
-      
-      if (!resource) {
-        // Create new resource
-        const newResourceId = addResource({
-          code: comp.code,
-          name: comp.name,
-          type: comp.type,
-          unit: comp.unit as ResourceUnit,
-          unitPrice: comp.estimatedPrice,
-          specifications: comp.notes || `SNI preset component`,
-          isActive: true,
-        })
-        resource = resources.find(r => r.id === newResourceId)
-      }
-
-      if (resource) {
-        // Add component with SNI coefficient
-        addComponent(currentAHSPId, {
-          resourceId: resource.id,
-          type: comp.type,
-          coefficient: comp.coefficient,
-          unit: comp.unit as ResourceUnit,
-          unitPrice: comp.estimatedPrice,
-          subtotal: comp.coefficient * comp.estimatedPrice,
-        })
-      }
-    })
-
-    toast.success(`SNI Preset "${preset.code}" diterapkan dengan ${preset.components.length} components`, {
-      description: preset.name
-    })
-    setShowSNIHelp(false)
-  }
-
   // Filter resources by type
   const resourcesByType = React.useMemo(() => {
     const grouped: Record<ResourceType, typeof resources> = {
@@ -528,47 +466,6 @@ export function AHSPItemEditor({
                     <div className="h-4 w-1 bg-blue-600 rounded-full" />
                     General Identification
                   </div>
-
-                  {/* SNI Preset Selector - only show if mode is 'sni' */}
-                  {mode === 'sni' && !item && (
-                    <div className="bg-blue-50 p-6 rounded-3xl border border-blue-200 space-y-4 mb-6">
-                      <div className="flex items-center gap-2 text-blue-800 font-bold text-sm">
-                        <FileText className="h-4 w-4" />
-                        SNI Preset Library
-                      </div>
-                      <p className="text-xs text-blue-600">
-                        Pilih preset SNI untuk auto-fill component & coefficient berdasarkan standar
-                      </p>
-                      <Select 
-                        value={selectedSNIPreset || undefined}
-                        onValueChange={(code) => {
-                          setSelectedSNIPreset(code)
-                          const preset = getSNIPreset(code)
-                          if (preset) handleApplySNIPreset(preset)
-                        }}
-                      >
-                        <SelectTrigger className="h-12 rounded-2xl border-blue-200 bg-white font-bold">
-                          <SelectValue placeholder="Pilih SNI Preset..." />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-blue-200 shadow-xl max-h-80">
-                          {SNI_PRESETS.map(preset => (
-                            <SelectItem key={preset.code} value={preset.code} className="py-3 font-semibold">
-                              {preset.code} - {preset.name}
-                              <span className="block text-xs text-slate-500">{preset.category}</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {selectedSNIPreset && (
-                        <div className="p-3 bg-white rounded-xl border border-blue-100">
-                          <p className="text-xs text-blue-600 font-bold mb-1">Components Auto-Loaded:</p>
-                          <p className="text-xs text-slate-600">
-                            {getSNIPreset(selectedSNIPreset)?.components.length || 0} items dari SNI
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="code" className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">AHSP Code</Label>

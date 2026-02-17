@@ -5,20 +5,23 @@ import { Calculator, Filter } from 'lucide-react'
 import { formatIDR } from '@/lib/utils'
 
 export function AHSPStatsBar() {
-    const { ahspItems, resources } = useAHSPStore()
+    const { ahspItems, resources, totalAhspCount, totalResourceCount } = useAHSPStore()
 
     const summary = useMemo(() => {
+        const totalAHSP = totalAhspCount || ahspItems.length
+        const totalRes = totalResourceCount || resources.length
+
         return {
-            totalAHSPItems: ahspItems.length,
-            totalResources: resources.length,
+            totalAHSPItems: totalAHSP,
+            totalResources: totalRes,
             activeItems: ahspItems.filter(i => i.isActive).length,
             activeResources: resources.filter(r => r.isActive).length,
-            averagePrice: ahspItems.length > 0
-                ? ahspItems.reduce((acc, item) => acc + (item.finalPrice || 0), 0) / ahspItems.length
+            averagePrice: totalAHSP > 0
+                ? ahspItems.reduce((acc, item) => acc + (item.finalPrice || 0), 0) / totalAHSP
                 : 0,
             categories: new Set(ahspItems.map(item => item.category)).size
         }
-    }, [ahspItems, resources])
+    }, [ahspItems, resources, totalAhspCount, totalResourceCount])
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
