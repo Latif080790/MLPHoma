@@ -423,7 +423,7 @@ export function AHSPItemEditor({
   }, [resources])
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-5xl p-0 gap-0 border-l border-slate-200 flex flex-col h-full max-h-[100dvh] overflow-hidden bg-white shadow-2xl">
+      <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] p-0 gap-0 border-l border-slate-200 flex flex-col h-screen max-h-screen overflow-hidden bg-white shadow-2xl">
         <SheetHeader className="px-8 py-6 border-b shrink-0 bg-white z-20 shadow-sm relative">
           <div className="flex items-center gap-4">
             <div className="bg-blue-600 p-3 rounded-2xl text-white shadow-xl shadow-blue-100 ring-4 ring-blue-50">
@@ -438,8 +438,8 @@ export function AHSPItemEditor({
           </div>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-col h-full flex-1 overflow-hidden">
-          <Tabs defaultValue="master" className="flex-1 flex flex-col overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+          <Tabs defaultValue="master" className="flex-1 flex flex-col overflow-hidden min-h-0">
             <div className="bg-slate-50/50 p-2 border-b shrink-0">
               <TabsList className="flex w-full bg-slate-200/50 p-1 h-11 rounded-xl">
                 <TabsTrigger value="master" className="flex-1 rounded-lg font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 transition-all">
@@ -458,7 +458,7 @@ export function AHSPItemEditor({
             </div>
 
             {/* Tab 1: Master Data */}
-            <TabsContent value="master" className="flex-1 overflow-y-auto p-8 space-y-8 m-0 bg-white">
+            <TabsContent value="master" className="flex-1 overflow-y-auto p-8 space-y-8 m-0 bg-white" style={{ maxHeight: 'calc(100vh - 260px)' }}>
               <div className="grid gap-8">
                 {/* Identification Grid */}
                 <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 space-y-6">
@@ -624,8 +624,8 @@ export function AHSPItemEditor({
             </TabsContent>
 
             {/* Tab 2: Components Analysis */}
-            <TabsContent value="components" className="flex-1 overflow-hidden p-0 m-0 flex flex-col bg-slate-50/50">
-              <div className="flex-1 flex flex-col min-h-0">
+            <TabsContent value="components" className="flex-1 overflow-hidden p-0 m-0 flex flex-col bg-slate-50/50" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div className="px-8 py-4 border-b bg-white flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">
                     <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
@@ -649,19 +649,20 @@ export function AHSPItemEditor({
                 </div>
 
                 <div className="flex-1 overflow-auto p-4 md:p-8">
-                  <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden min-w-[800px]">
-                    <Table>
-                      <TableHeader className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10 border-b">
-                        <TableRow className="hover:bg-transparent">
-                          <TableHead className="w-24 text-[10px] font-black uppercase tracking-widest text-slate-500 py-4 pl-6">Type</TableHead>
-                          <TableHead className="min-w-[300px] text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Resource Description</TableHead>
-                          <TableHead className="w-20 text-center text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Unit</TableHead>
-                          <TableHead className="w-32 text-right text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Rate</TableHead>
-                          <TableHead className="w-28 text-center text-[10px] font-black uppercase tracking-widest text-slate-800 py-4 bg-blue-50/50 italic">Coeff</TableHead>
-                          <TableHead className="w-32 text-right text-[10px] font-black uppercase tracking-widest text-slate-900 py-4 pr-6">Subtotal</TableHead>
-                          <TableHead className="w-12"></TableHead>
-                        </TableRow>
-                      </TableHeader>
+                  <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[1200px]">
+                        <TableHeader className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10 border-b">
+                          <TableRow className="hover:bg-transparent">
+                            <TableHead className="w-32 text-[10px] font-black uppercase tracking-widest text-slate-500 py-4 pl-6">Type</TableHead>
+                            <TableHead className="min-w-[400px] text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Resource Description</TableHead>
+                            <TableHead className="w-24 text-center text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Unit</TableHead>
+                            <TableHead className="w-40 text-right text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Rate</TableHead>
+                            <TableHead className="w-36 text-center text-[10px] font-black uppercase tracking-widest text-slate-800 py-4 bg-blue-50/50 italic">Coeff</TableHead>
+                            <TableHead className="w-40 text-right text-[10px] font-black uppercase tracking-widest text-slate-900 py-4 pr-6">Subtotal</TableHead>
+                            <TableHead className="w-20"></TableHead>
+                          </TableRow>
+                        </TableHeader>
                       <TableBody>
                         {manualComponents.length === 0 && components.length === 0 ? (
                           <TableRow>
@@ -780,6 +781,7 @@ export function AHSPItemEditor({
                         )}
                       </TableBody>
                     </Table>
+                    </div>
                   </div>
                 </div>
 
@@ -857,7 +859,7 @@ export function AHSPItemEditor({
             </TabsContent>
 
             {/* Tab 3: Visual Summary */}
-            <TabsContent value="summary" className="flex-1 overflow-y-auto p-8 space-y-8 bg-white m-0">
+            <TabsContent value="summary" className="flex-1 overflow-y-auto p-8 space-y-8 bg-white m-0" style={{ maxHeight: 'calc(100vh - 260px)' }}>
               <div className="grid gap-8">
                 <div className="flex flex-col items-center justify-center py-12 px-6 rounded-[3rem] bg-slate-900 text-white relative overflow-hidden shadow-2xl">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />

@@ -30,6 +30,7 @@ export interface SyncTask {
   timestamp: number
   retryCount: number
   maxRetries: number
+  onConflict?: string // Optional conflict resolution column (default: 'id')
 }
 
 /**
@@ -52,11 +53,18 @@ class SyncQueueManager {
   private processing: boolean = false
   private maxRetries: number = 3
   private retryDelay: number = 1000 // Base delay in ms
+  private maxQueueSize: number = 100 // Maximum queue size to prevent quota exceeded
 
   /**
    * Add task to sync queue
    */
   enqueue(task: Omit<SyncTask, 'id' | 'timestamp' | 'retryCount'>): string {
+    // Check queue size to prevent quota exceeded
+    if (this.queue.length >= this.maxQueueSize) {
+      console.warn('Queue is full, clearing old processed tasks')
+      this.clearProcessedTasks()
+    }
+
     const id = this.generateTaskId()
     const fullTask: SyncTask = {
       ...task,
@@ -145,7 +153,7 @@ class SyncQueueManager {
 
         case 'upsert':
           result = await supabase.from(task.table)
-            .upsert(task.data, { onConflict: 'id' })
+            .upsert(task.data, { onConflict: task.onConflict || 'id' })
           break
 
         default:
@@ -179,7 +187,7 @@ class SyncQueueManager {
 
     try {
       const result = await supabase.from(task.table)
-        .upsert(task.data, { onConflict: 'id' })
+        .upsert(task.data, { onConflict: task.onConflict || 'id' })
 
       if (result.error) return { success: false, error: result.error.message }
       return { success: true, data: result.data }
@@ -223,9 +231,27 @@ class SyncQueueManager {
    */
   private saveQueue() {
     try {
+      // Limit queue size before saving to prevent quota exceeded
+      if (this.queue.length > this.maxQueueSize) {
+        console.warn(`Queue too large (${this.queue.length}), keeping only last ${this.maxQueueSize} tasks`)
+        this.queue = this.queue.slice(-this.maxQueueSize)
+      }
       localStorage.setItem('supabase-sync-queue', JSON.stringify(this.queue))
     } catch (error) {
-      console.error('Failed to save sync queue:', error)
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        console.error('LocalStorage quota exceeded, clearing sync queue')
+        // Clear the queue to prevent infinite loop
+        this.queue = []
+        try {
+          localStorage.removeItem('supabase-sync-queue')
+          localStorage.removeItem('supabase-sync-failed-queue')
+        } catch (e) {
+          console.error('Failed to clear storage:', e)
+        }
+        toast.error('Storage full. Queue cleared. Please refresh and try again with smaller imports.')
+      } else {
+        console.error('Failed to save sync queue:', error)
+      }
     }
   }
 
@@ -237,12 +263,34 @@ class SyncQueueManager {
       const saved = localStorage.getItem('supabase-sync-queue')
       if (saved) {
         this.queue = JSON.parse(saved)
+        // Limit loaded queue size
+        if (this.queue.length > this.maxQueueSize) {
+          console.warn(`Loaded queue too large (${this.queue.length}), keeping only last ${this.maxQueueSize} tasks`)
+          this.queue = this.queue.slice(-this.maxQueueSize)
+        }
         if (this.queue.length > 0) {
           this.processQueue()
         }
       }
     } catch (error) {
       console.error('Failed to load sync queue:', error)
+      // Clear corrupted data
+      try {
+        localStorage.removeItem('supabase-sync-queue')
+      } catch (e) {
+        console.error('Failed to clear corrupted queue:', e)
+      }
+    }
+  }
+
+  /**
+   * Clear processed tasks to free up space
+   */
+  private clearProcessedTasks() {
+    // Keep only tasks that are being actively processed (first 10)
+    if (this.queue.length > 10) {
+      this.queue = this.queue.slice(0, 10)
+      this.saveQueue()
     }
   }
 
@@ -407,6 +455,7 @@ export function syncAHSPItems(items: any[]): string {
       updated_at: new Date().toISOString(),
     })),
     maxRetries: 3,
+    onConflict: 'code', // Use code as unique identifier to prevent duplicates
   })
 }
 
@@ -515,6 +564,80 @@ export function syncAHSPComponents(components: any[]): string {
     maxRetries: 3,
   })
 }
+
+/**
+ * Sync AHSP Items with Components (Sequential)
+ * This ensures parent AHSP items are synced BEFORE their components
+ * to avoid foreign key constraint violations
+ */
+export async function syncAHSPItemsWithComponents(items: any[], components: any[]): Promise<void> {
+  if (!items.length) return
+
+  try {
+    // Step 1: Sync all AHSP items first
+    const itemsData = items.map(item => ({
+      id: item.id,
+      code: item.code,
+      name: item.name,
+      description: item.description,
+      unit: item.unit,
+      category: item.category,
+      base_price: item.basePrice,
+      final_price: item.finalPrice,
+      overhead_percentage: item.overheadPercentage,
+      profit_percentage: item.profitPercentage,
+      price_material: item.price_material || 0,
+      price_labor: item.price_labor || 0,
+      price_equipment: item.price_equipment || 0,
+      price_subcon: item.price_subcon || 0,
+      created_at: item.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }))
+
+    if (!supabase) {
+      throw new Error('Supabase not initialized')
+    }
+
+    const { error: itemsError } = await supabase
+      .from('ahsp_items')
+      .upsert(itemsData, { onConflict: 'code' })
+
+    if (itemsError) {
+      throw new Error(`Failed to sync AHSP items: ${itemsError.message}`)
+    }
+
+    // Step 2: Only after items are synced, sync their components
+    if (components.length > 0) {
+      const componentsData = components.map(component => ({
+        id: component.id,
+        ahsp_id: component.ahspId,
+        resource_id: component.resourceId,
+        type: component.type,
+        coefficient: component.coefficient,
+        unit: component.unit,
+        unit_price: component.unitPrice,
+        subtotal: component.subtotal,
+        created_at: component.createdAt || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }))
+
+      const { error: componentsError } = await supabase
+        .from('ahsp_components')
+        .upsert(componentsData, { onConflict: 'id' })
+
+      if (componentsError) {
+        throw new Error(`Failed to sync AHSP components: ${componentsError.message}`)
+      }
+    }
+
+    toast.success(`Synced ${items.length} AHSP items with ${components.length} components`)
+  } catch (error) {
+    console.error('Failed to sync AHSP items with components:', error)
+    toast.error(error instanceof Error ? error.message : 'Failed to sync AHSP data')
+    throw error
+  }
+}
+
 
 /**
  * Sync RAB item
@@ -945,8 +1068,10 @@ export default {
   syncQueue,
   syncAHSPItem,
   syncAHSPItems,
+  syncAHSPItemsWithComponents,
   syncResource,
   syncAHSPComponent,
+  syncAHSPComponents,
   syncRABItem,
   syncRABItems,
   syncProject,

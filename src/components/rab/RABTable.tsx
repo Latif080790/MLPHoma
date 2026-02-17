@@ -4,8 +4,9 @@ import {
 } from '../ui/table'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { Trash2, Plus, Search, ChevronDown, ChevronRight, Info, MapPin, Calculator } from 'lucide-react'
+import { Trash2, Plus, Search, ChevronDown, ChevronRight, Info, MapPin, Calculator, History, Save, CheckCircle2 } from 'lucide-react'
 import { Badge } from '../ui/badge'
+import { Checkbox } from '../ui/checkbox'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useRabStore, RABItem, calculatePareto } from '../../store/rabStore'
 import { formatIDR } from '../../lib/utils'
@@ -31,6 +32,7 @@ import {
 } from '../ui/alert-dialog'
 import { ScrollArea } from '../ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+import { RABVersionHistory } from './RABVersionHistory'
 
 import { useTimelineStore } from '../../store/timelineStore'
 import { generateScheduleFromRAB } from '../../lib/autoScheduler'
@@ -64,8 +66,10 @@ export function RABTable({ projectId }: RABTableProps) {
     loading
   } = useAHSPStore()
 
-  const { getItems, addItem, updateItem, removeItem } = useRabStore()
+  const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved } = useRabStore()
   const items = getItems(projectId)
+  const draftCount = getDraftCount(projectId)
+  const hasUnsavedChanges = hasUnsaved(projectId)
 
   // Get tasks for linking
   const { getTasks, setTasks } = useTimelineStore()
@@ -82,16 +86,23 @@ export function RABTable({ projectId }: RABTableProps) {
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedUnit, setSelectedUnit] = useState<string>('all')
   const [showDetails, setShowDetails] = useState(false)
   const [confirmScheduleOpen, setConfirmScheduleOpen] = useState(false)
+  const [visibleItemsCount, setVisibleItemsCount] = useState(50) // Start with 50 items
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+  const [showVersionHistory, setShowVersionHistory] = useState(false)
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false)
 
-  // Seed AHSP store with sample data if empty
-  useEffect(() => {
-    if (ahspItems.length === 0 && resources.length === 0) {
-      importResources(SAMPLE_RESOURCES as any)
-      importAHSPItems(SAMPLE_AHSP_ITEMS as any)
-    }
-  }, [ahspItems.length, resources.length, importResources, importAHSPItems])
+  // Seed AHSP store with sample data if empty (DISABLED - User requested clean start)
+  // useEffect(() => {
+  //   if (ahspItems.length === 0 && resources.length === 0) {
+  //     importResources(SAMPLE_RESOURCES as any)
+  //     importAHSPItems(SAMPLE_AHSP_ITEMS as any)
+  //   }
+  // }, [ahspItems.length, resources.length, importResources, importAHSPItems])
 
   // Fetch Zone Prices if needed
   useEffect(() => {
@@ -100,8 +111,53 @@ export function RABTable({ projectId }: RABTableProps) {
     }
   }, [project?.zoneId])
 
+  // Reset visible items when search changes
+  useEffect(() => {
+    setVisibleItemsCount(50)
+    setSelectedItems(new Set()) // Clear selection on filter change
+  }, [searchQuery, selectedCategory, selectedUnit])
+
+  // Checkbox handlers for RAB items
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedItems(new Set(items.map(i => i.id)))
+    } else {
+      setSelectedItems(new Set())
+    }
+  }
+
+  const handleSelectOne = (itemId: string, checked: boolean) => {
+    const newSelected = new Set(selectedItems)
+    if (checked) {
+      newSelected.add(itemId)
+    } else {
+      newSelected.delete(itemId)
+    }
+    setSelectedItems(newSelected)
+  }
+
+  const handleBulkDelete = () => {
+    selectedItems.forEach(id => removeItem(projectId, id))
+    setSelectedItems(new Set())
+    setConfirmBulkDelete(false)
+    toast.success(`Deleted ${selectedItems.size} items`)
+  }
+
+  const isAllSelected = items.length > 0 && selectedItems.size === items.length
+  const isSomeSelected = selectedItems.size > 0 && selectedItems.size < items.length
+
   const filteredAHSP = useMemo(() => {
-    const baseItems = searchQuery ? searchAHSPItems(searchQuery) : ahspItems
+    let baseItems = searchQuery ? searchAHSPItems(searchQuery) : ahspItems
+
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      baseItems = baseItems.filter(item => item.category === selectedCategory)
+    }
+
+    // Apply unit filter
+    if (selectedUnit !== 'all') {
+      baseItems = baseItems.filter(item => item.unit === selectedUnit)
+    }
 
     if (!project?.zoneId) return baseItems
 
@@ -123,7 +179,12 @@ export function RABTable({ projectId }: RABTableProps) {
       }
       return item
     })
-  }, [searchQuery, ahspItems, project?.zoneId, zonePricesByZone, searchAHSPItems])
+  }, [searchQuery, ahspItems, project?.zoneId, zonePricesByZone, searchAHSPItems, selectedCategory, selectedUnit])
+
+  // Slice for pagination to improve performance
+  const visibleAHSP = useMemo(() => {
+    return filteredAHSP.slice(0, visibleItemsCount)
+  }, [filteredAHSP, visibleItemsCount])
 
   const handleVolumeChange = (id: string, val: string) => {
     const num = parseFloat(val)
@@ -307,6 +368,47 @@ export function RABTable({ projectId }: RABTableProps) {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={confirmBulkDelete} onOpenChange={setConfirmBulkDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedItems.size} RAB items?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedItems.size} selected item(s) from the RAB. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive">
+              Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showPublishConfirm} onOpenChange={setShowPublishConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Publish {draftCount} Draft Items?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will publish all draft items to the database and make them permanent. Draft status will be removed and items will be synced to Supabase.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                publishDrafts(projectId)
+                setShowPublishConfirm(false)
+              }} 
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Publish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="sticky-glass-panel flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <Button variant="ghost" size="sm" className="control-compact" onClick={() => setShowDetails(!showDetails)}>
@@ -316,15 +418,57 @@ export function RABTable({ projectId }: RABTableProps) {
           <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-2" />
           <h3 className="text-sm font-semibold tracking-tight text-slate-700 dark:text-slate-300 uppercase">Cost Items</h3>
           <Badge variant="secondary" className="ml-2 font-mono text-xs text-slate-500 bg-slate-100 dark:bg-slate-800">{items.length}</Badge>
+          {draftCount > 0 && (
+            <Badge variant="outline" className="ml-2 font-mono text-xs text-yellow-700 bg-yellow-50 border-yellow-300">
+              <Save className="h-3 w-3 mr-1" />
+              {draftCount} Draft{draftCount > 1 ? 's' : ''}
+            </Badge>
+          )}
+          {hasUnsavedChanges && (
+            <Badge variant="outline" className="ml-2 font-mono text-xs text-orange-700 bg-orange-50 border-orange-300 animate-pulse">
+              Unsaved
+            </Badge>
+          )}
           {loading.zonePrices && (
             <LoadingSpinner size="sm" text="Loading zone prices..." className="ml-2" />
           )}
         </div>
         <div className="flex gap-2">
+          {selectedItems.size > 0 && (
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={() => setConfirmBulkDelete(true)}
+              className="gap-2 text-xs h-8"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete {selectedItems.size} Selected
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="gap-2 text-xs h-8" onClick={handleAutoSchedule}>
             <CalendarClock className="h-3.5 w-3.5" />
             Auto-Schedule
           </Button>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="gap-2 text-xs h-8" 
+            onClick={() => setShowVersionHistory(true)}
+          >
+            <History className="h-3.5 w-3.5" />
+            Version History
+          </Button>
+          {draftCount > 0 && (
+            <Button 
+              size="sm" 
+              variant="default" 
+              className="gap-2 text-xs h-8 bg-green-600 hover:bg-green-700" 
+              onClick={() => setShowPublishConfirm(true)}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Publish {draftCount} Draft{draftCount > 1 ? 's' : ''}
+            </Button>
+          )}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2 text-xs h-8">
@@ -348,42 +492,95 @@ export function RABTable({ projectId }: RABTableProps) {
                     </Badge>
                   )}
                 </DialogTitle>
-                <div className="mt-4 flex flex-col sm:flex-row gap-4 items-center">
-                  <div className="relative flex-1 group w-full">
-                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                    <Input
-                      placeholder="Search by code, name, or category..."
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      className="pl-12 h-12 text-lg border-slate-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl bg-slate-50/50 focus:bg-white"
-                    />
+                <div className="mt-4 flex flex-col gap-4">
+                  {/* Search Bar */}
+                  <div className="flex flex-col sm:flex-row gap-4 items-center">
+                    <div className="relative flex-1 group w-full">
+                      <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                      <Input
+                        placeholder="Search by code, name, or category..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="pl-12 h-12 text-lg border-slate-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition-all rounded-xl bg-slate-50/50 focus:bg-white"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="outline" className="bg-white px-3 py-2 text-slate-600 border-slate-200 font-mono">
+                        {filteredAHSP.length} Items Found
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge variant="outline" className="bg-white px-3 py-2 text-slate-600 border-slate-200 font-mono">
-                      {filteredAHSP.length} Items Found
-                    </Badge>
+
+                  {/* Filter Controls */}
+                  <div className="flex gap-3 items-center">
+                    <div className="flex-1 flex gap-3">
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="w-48 bg-white border-slate-200">
+                          <SelectValue placeholder="All Categories" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Categories</SelectItem>
+                          <SelectItem value="PERSIAPAN">Persiapan</SelectItem>
+                          <SelectItem value="RANGKA ATAP">Rangka Atap</SelectItem>
+                          <SelectItem value="BETON">Beton</SelectItem>
+                          <SelectItem value="PLESTERAN">Plesteran</SelectItem>
+                          <SelectItem value="FINISHING">Finishing</SelectItem>
+                          <SelectItem value="MEKANIKAL">Mekanikal</SelectItem>
+                          <SelectItem value="ELEKTRIKAL">Elektrikal</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+                        <SelectTrigger className="w-32 bg-white border-slate-200">
+                          <SelectValue placeholder="All Units" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Units</SelectItem>
+                          <SelectItem value="M3">M3</SelectItem>
+                          <SelectItem value="M2">M2</SelectItem>
+                          <SelectItem value="M1">M1</SelectItem>
+                          <SelectItem value="KG">KG</SelectItem>
+                          <SelectItem value="LS">LS</SelectItem>
+                          <SelectItem value="UNIT">Unit</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {(selectedCategory !== 'all' || selectedUnit !== 'all') && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setSelectedCategory('all')
+                          setSelectedUnit('all')
+                        }}
+                        className="text-slate-500 hover:text-slate-900"
+                      >
+                        Clear Filters
+                      </Button>
+                    )}
                   </div>
                 </div>
               </DialogHeader>
 
-              <div className="flex-1 overflow-hidden p-0">
-                <ScrollArea className="h-full w-full">
+              {/* Main Content Area with Controlled Height */}
+              <div className="flex-1 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(85vh - 240px)', minHeight: '400px' }}>
+                <ScrollArea className="flex-1 w-full">
                   <div className="p-6 pt-2">
                     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                      <Table>
-                        <TableHeader className="sticky top-0 bg-slate-50/95 backdrop-blur-md z-20 shadow-sm">
-                          <TableRow className="hover:bg-transparent border-b">
-                            <TableHead className="w-[120px] font-bold text-slate-900 py-4 px-6">Code</TableHead>
-                            <TableHead className="min-w-[400px] font-bold text-slate-900 py-4">Pekerjaan / Item Description</TableHead>
-                            <TableHead className="w-[100px] text-center font-bold text-slate-900 py-4">Unit</TableHead>
-                            <TableHead className="text-right w-[150px] font-bold text-slate-900 py-4">Material</TableHead>
-                            <TableHead className="text-right w-[150px] font-bold text-slate-900 py-4">Labor</TableHead>
-                            <TableHead className="text-right w-[150px] font-bold text-slate-900 py-4">Tools & Others</TableHead>
-                            <TableHead className="text-right w-[200px] font-bold text-slate-900 py-4 px-6">Total Unit Price</TableHead>
-                            <TableHead className="w-[100px] py-4 px-6"></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader className="sticky top-0 bg-slate-50/95 backdrop-blur-md z-20 shadow-sm">
+                            <TableRow className="hover:bg-transparent border-b">
+                              <TableHead className="w-[120px] font-bold text-slate-900 py-4 px-6">Code</TableHead>
+                              <TableHead className="min-w-[400px] font-bold text-slate-900 py-4">Pekerjaan / Item Description</TableHead>
+                              <TableHead className="w-[100px] text-center font-bold text-slate-900 py-4">Unit</TableHead>
+                              <TableHead className="text-right w-[150px] font-bold text-slate-900 py-4">Material</TableHead>
+                              <TableHead className="text-right w-[150px] font-bold text-slate-900 py-4">Labor</TableHead>
+                              <TableHead className="text-right w-[150px] font-bold text-slate-900 py-4">Tools & Others</TableHead>
+                              <TableHead className="text-right w-[200px] font-bold text-slate-900 py-4 px-6">Total Unit Price</TableHead>
+                              <TableHead className="w-[100px] py-4 px-6"></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
                           {filteredAHSP.length === 0 ? (
                             <TableRow>
                               <TableCell colSpan={8} className="h-64 text-center text-slate-400">
@@ -395,7 +592,7 @@ export function RABTable({ projectId }: RABTableProps) {
                               </TableCell>
                             </TableRow>
                           ) : (
-                            filteredAHSP.map(ahsp => (
+                            visibleAHSP.map(ahsp => (
                               <TableRow key={ahsp.id} className="group hover:bg-blue-50/30 transition-colors border-b border-slate-100 last:border-0" onClick={() => handleAddFromAhsp(ahsp)}>
                                 <TableCell className="py-4 px-6 font-mono text-[11px] text-slate-500 group-hover:text-blue-600 font-semibold">{ahsp.code}</TableCell>
                                 <TableCell className="py-4">
@@ -442,8 +639,26 @@ export function RABTable({ projectId }: RABTableProps) {
                           )}
                         </TableBody>
                       </Table>
+                      </div>
                     </div>
                   </div>
+
+                  {/* Load More Button */}
+                  {visibleItemsCount < filteredAHSP.length && (
+                    <div className="px-6 py-4 text-center border-t bg-slate-50">
+                      <Button 
+                        variant="outline" 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setVisibleItemsCount(prev => Math.min(prev + 50, filteredAHSP.length))
+                        }}
+                        className="min-w-[200px] font-semibold"
+                      >
+                        Load More ({filteredAHSP.length - visibleItemsCount} items remaining)
+                      </Button>
+                    </div>
+                  )}
+
                 </ScrollArea>
               </div>
               <div className="px-6 py-4 bg-white border-t shrink-0 flex justify-end gap-3">
@@ -526,6 +741,12 @@ export function RABTable({ projectId }: RABTableProps) {
             <Table>
               <TableHeader className="sticky-glass-tablehead">
                 <TableRow className="border-b-2 border-slate-200 dark:border-slate-700 hover:bg-transparent">
+                  <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">
+                    <Checkbox 
+                      checked={isAllSelected}
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead className="w-[50px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">No</TableHead>
                   <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">
                     <div className="inline-flex items-center gap-1">
@@ -567,7 +788,7 @@ export function RABTable({ projectId }: RABTableProps) {
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={showDetails ? 13 : 9} className="text-center py-12 text-slate-400 bg-slate-50/20">
+                    <TableCell colSpan={showDetails ? 14 : 10} className="text-center py-12 text-slate-400 bg-slate-50/20">
                       <div className="flex flex-col items-center gap-2">
                         <Search className="h-8 w-8 opacity-20" />
                         <p>No items in RAB. Click "Add Item" to start.</p>
@@ -588,6 +809,12 @@ export function RABTable({ projectId }: RABTableProps) {
 
                     return (
                       <TableRow key={item.id} className={`${rowClass} group transition-colors border-b border-slate-100 dark:border-slate-800`}>
+                        <TableCell className="text-center py-2">
+                          <Checkbox
+                            checked={selectedItems.has(item.id)}
+                            onCheckedChange={(checked) => handleSelectOne(item.id, checked as boolean)}
+                          />
+                        </TableCell>
                         <TableCell className="text-center text-[10px] font-mono text-slate-400 py-2">{idx + 1}</TableCell>
                         <TableCell className="text-center py-2">
                           <Badge variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} className={`h-4 w-4 p-0 flex items-center justify-center text-[9px] font-mono ${pClass === 'B' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 border-0' : ''}`}>
@@ -599,12 +826,19 @@ export function RABTable({ projectId }: RABTableProps) {
                         </TableCell>
                         <TableCell className="py-2">
                           <div className="space-y-1">
-                            <Input
-                              value={item.name || ''}
-                              onChange={e => updateItem(projectId, item.id, { name: e.target.value })}
-                              className="h-7 text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 font-medium px-2 shadow-none transition-all"
-                              placeholder="Item Name"
-                            />
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={item.name || ''}
+                                onChange={e => updateItem(projectId, item.id, { name: e.target.value })}
+                                className="h-7 text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 font-medium px-2 shadow-none transition-all"
+                                placeholder="Item Name"
+                              />
+                              {(item as any).isDraft && (
+                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0">
+                                  DRAFT
+                                </Badge>
+                              )}
+                            </div>
                             <Input
                               value={item.notes || ''}
                               onChange={e => updateItem(projectId, item.id, { notes: e.target.value })}
@@ -726,6 +960,12 @@ export function RABTable({ projectId }: RABTableProps) {
           <div className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-0.5">{formatIDR(total)}</div>
         </div>
       </div>
+
+      <RABVersionHistory 
+        projectId={projectId} 
+        open={showVersionHistory} 
+        onClose={() => setShowVersionHistory(false)} 
+      />
     </div>
   )
 }

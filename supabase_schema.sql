@@ -48,6 +48,23 @@ create table if not exists public.ahsp_components (
   updated_at timestamptz default now()
 );
 
+-- 3B. AHSP Price History Table
+create table if not exists public.ahsp_price_history (
+  id uuid default uuid_generate_v4() primary key,
+  ahsp_id text references public.ahsp_items(id) on delete cascade,
+  zone_id uuid,
+  old_price numeric,
+  new_price numeric,
+  price_material numeric default 0,
+  price_labor numeric default 0,
+  price_equipment numeric default 0,
+  price_subcon numeric default 0,
+  change_type text,
+  change_reason text,
+  changed_by uuid,
+  created_at timestamptz default now()
+);
+
 -- 4. RAB Items Table (Existing or New)
 create table if not exists public.rab_items (
   id text primary key,
@@ -67,6 +84,7 @@ create table if not exists public.rab_items (
 alter table public.resources enable row level security;
 alter table public.ahsp_items enable row level security;
 alter table public.ahsp_components enable row level security;
+alter table public.ahsp_price_history enable row level security;
 alter table public.rab_items enable row level security;
 
 -- Create policies to allow public access (for development)
@@ -85,6 +103,11 @@ create policy "Allow public select ahsp_components" on public.ahsp_components fo
 create policy "Allow public insert ahsp_components" on public.ahsp_components for insert with check (true);
 create policy "Allow public update ahsp_components" on public.ahsp_components for update using (true);
 create policy "Allow public delete ahsp_components" on public.ahsp_components for delete using (true);
+
+create policy "Allow public select ahsp_price_history" on public.ahsp_price_history for select using (true);
+create policy "Allow public insert ahsp_price_history" on public.ahsp_price_history for insert with check (true);
+create policy "Allow public update ahsp_price_history" on public.ahsp_price_history for update using (true);
+create policy "Allow public delete ahsp_price_history" on public.ahsp_price_history for delete using (true);
 
 -- 5. Projects Table
 create table if not exists public.projects (
@@ -155,12 +178,59 @@ create table if not exists public.rap_data (
   updated_at timestamptz default now()
 );
 
+-- 10. RAB Versions Table (Version Control)
+create table if not exists public.rab_versions (
+  id text primary key,
+  project_id text references public.projects(id) on delete cascade,
+  version integer not null,
+  created_at timestamptz default now(),
+  created_by text,
+  created_by_name text,
+  description text,
+  change_type text check (change_type in ('create', 'update', 'delete', 'bulk_update', 'import', 'restore')),
+  changes jsonb, -- Array of change logs
+  snapshot jsonb, -- Full state snapshot
+  status text default 'draft' check (status in ('draft', 'published')),
+  tags text[],
+  unique(project_id, version)
+);
+
+-- 11. RAB Approvals Table (Approval Workflow)
+create table if not exists public.rab_approvals (
+  id text primary key,
+  project_id text references public.projects(id) on delete cascade,
+  rab_version_id text references public.rab_versions(id),
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected', 'cancelled')),
+  submitted_at timestamptz default now(),
+  submitted_by text,
+  submitted_by_name text,
+  current_step integer default 1,
+  rejection_reason text,
+  approval_chain jsonb, -- Array of approval steps
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- 12. AHSP Creation Modes Table (Track how AHSP was created)
+create table if not exists public.ahsp_creation_logs (
+  id text primary key,
+  ahsp_id text references public.ahsp_items(id) on delete cascade,
+  creation_mode text check (creation_mode in ('sni', 'custom', 'historical')),
+  source_reference text, -- SNI code or historical project ID
+  created_at timestamptz default now(),
+  created_by text,
+  metadata jsonb -- Additional tracking data
+);
+
 -- Enable RLS for new tables
 alter table public.projects enable row level security;
 alter table public.wbs_items enable row level security;
 alter table public.timeline_tasks enable row level security;
 alter table public.task_dependencies enable row level security;
 alter table public.rap_data enable row level security;
+alter table public.rab_versions enable row level security;
+alter table public.rab_approvals enable row level security;
+alter table public.ahsp_creation_logs enable row level security;
 
 -- Public policies for new tables (Dev only)
 create policy "Allow public all projects" on public.projects for all using (true);
@@ -168,6 +238,9 @@ create policy "Allow public all wbs_items" on public.wbs_items for all using (tr
 create policy "Allow public all timeline_tasks" on public.timeline_tasks for all using (true);
 create policy "Allow public all task_dependencies" on public.task_dependencies for all using (true);
 create policy "Allow public all rap_data" on public.rap_data for all using (true);
+create policy "Allow public all rab_versions" on public.rab_versions for all using (true);
+create policy "Allow public all rab_approvals" on public.rab_approvals for all using (true);
+create policy "Allow public all ahsp_creation_logs" on public.ahsp_creation_logs for all using (true);
 
 -- ============================================================
 -- MIGRATION NOTES

@@ -93,20 +93,20 @@ export interface RabItemRow {
 // Upsert single AHSP item
 export async function upsertAhspItem(row: AhspItemRow) {
   const client = assertSupabase()
-  return client.from('ahsp_items').upsert(row, { onConflict: 'id' })
+  return client.from('ahsp_items').upsert(row, { onConflict: 'code' })
 }
 
 // Batch upsert AHSP items
 export async function batchUpsertAhsp(items: AhspItemRow[]) {
   if (!items.length) return { error: null }
   const client = assertSupabase()
-  return client.from('ahsp_items').upsert(items, { onConflict: 'id' })
+  return client.from('ahsp_items').upsert(items, { onConflict: 'code' })
 }
 
 export async function batchUpsertResources(items: ResourceRow[]) {
   if (!items.length) return { error: null }
   const client = assertSupabase()
-  return client.from('resources').upsert(items, { onConflict: 'id' })
+  return client.from('resources').upsert(items, { onConflict: 'code' })
 }
 
 export async function batchUpsertAhspComponents(items: AhspComponentRow[]) {

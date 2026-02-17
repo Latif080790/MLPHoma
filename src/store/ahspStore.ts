@@ -13,7 +13,7 @@ import type {
 } from '../lib/supabaseClient'
 import { devtools, persist } from 'zustand/middleware'
 import { calculateAHSPPrice as calcAHSPPrice } from '../lib/calculationService'
-import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncAHSPComponents, syncDelete, syncAHSPItems } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncAHSPComponents, syncDelete, syncAHSPItems, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -575,10 +575,10 @@ export const useAHSPStore = create<AHSPStore>()(
           if (allNewResources.length > 0) {
             syncResources(allNewResources)
           }
-          syncAHSPItems(newItems)
-          if (allNewComponents.length > 0) {
-            syncAHSPComponents(allNewComponents)
-          }
+          // Sync AHSP items with components sequentially to avoid FK constraint error
+          syncAHSPItemsWithComponents(newItems, allNewComponents).catch(error => {
+            console.error('Failed to sync AHSP data:', error)
+          })
         },
 
         exportAHSPItems: () => {
