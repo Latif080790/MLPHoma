@@ -164,9 +164,26 @@ export function DKHManager() {
     const handleSyncToSupabase = async () => {
         setSyncing(true)
         try {
-            // Trigger sync for all resources
-            toast.success('Resources synced to Supabase successfully')
+            // Get all current resources
+            const currentResources = resources
+            if (currentResources.length === 0) {
+                toast.info('No resources to sync')
+                return
+            }
+
+            // Import syncResources dynamically or use from a hook if we moved it to store
+            // Since syncResources is exported from service, we can import it.
+            // However, best practice is to expose it via store or import directly.
+            // We'll import it at top of file. 
+            // EDIT: better to move this logic to store? 
+            // For now, importing service directly as per plan.
+            const { syncResources } = await import('@/lib/supabaseSyncService')
+
+            syncResources(currentResources)
+
+            toast.success(`Sync queued for ${currentResources.length} resources`)
         } catch (error) {
+            console.error('Sync error:', error)
             toast.error('Failed to sync resources')
         } finally {
             setSyncing(false)

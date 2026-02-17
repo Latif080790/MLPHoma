@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { Receipt, TrendingUp, TrendingDown, FileText, Plus, Zap, AlertTriangle, DollarSign, Clock, CheckCircle, ArrowRightLeft, Send, ShieldCheck } from "lucide-react"
@@ -29,6 +28,7 @@ import { ClaimDialog } from "@/components/finance/ClaimDialog"
 import { AgingReport } from "@/components/finance/AgingReport"
 import { ThreeWayMatch } from "@/components/finance/ThreeWayMatch"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
+import { CashflowForecastWidget } from "@/components/finance/CashflowForecastWidget"
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
@@ -248,6 +248,12 @@ export default function Finance() {
                             </CardContent>
                         </Card>
                     )}
+
+                    {/* Cashflow Forecast Widget */}
+                    <CashflowForecastWidget 
+                        projectId={activeProjectId}
+                        forecastWeeks={4}
+                    />
                 </TabsContent>
 
                 {/* --- AP (INVOICES) --- */}

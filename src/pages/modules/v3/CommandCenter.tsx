@@ -10,6 +10,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ApprovalQueueWidget } from '@/components/common/ApprovalQueueWidget'
+import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
 
 export default function CommandCenter() {
     const { activeProjectId, projects } = useProjectStore()
@@ -254,6 +255,14 @@ export default function CommandCenter() {
     {/* F. APPROVAL QUEUE WIDGET */}
                 <div className="md:col-span-1">
                     <ApprovalQueueWidget />
+                </div>
+
+                {/* G. CRITICAL PATH WARNING PANEL */}
+                <div className="md:col-span-4">
+                    <CriticalPathWarningPanel 
+                        projectId={activeProjectId} 
+                        maxAlerts={5}
+                    />
                 </div>
 
             

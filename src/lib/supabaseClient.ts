@@ -117,7 +117,7 @@ export async function batchUpsertAhspComponents(items: AhspComponentRow[]) {
 
 export async function fetchAhspItems() {
   const client = assertSupabase()
-  return client.from('ahsp_items').select('*').order('updated_at', { ascending: false })
+  return client.from('ahsp_items').select('*')
 }
 
 export async function upsertRabItems(rows: RabItemRow[]) {
@@ -130,7 +130,7 @@ export async function fetchRabItems(projectId?: string) {
   const client = assertSupabase()
   let q = client.from('rab_items').select('*')
   if (projectId) q = q.eq('project_id', projectId)
-  return q.order('updated_at', { ascending: false })
+  return q
 }
 
 // Delete AHSP item by ID
@@ -166,7 +166,7 @@ export async function deleteResource(id: string) {
 // Projects
 export async function fetchProjects() {
   const client = assertSupabase()
-  return client.from('projects').select('*').order('updated_at', { ascending: false })
+  return client.from('projects').select('*')
 }
 
 export async function upsertProject(project: any) {
@@ -316,4 +316,7 @@ export async function upsertInventoryTransaction(row: Partial<InventoryTransacti
   const client = assertSupabase()
   return client.from('inventory_transactions').upsert(row).select().single()
 }
-
+export async function fetchResources() {
+  const client = assertSupabase()
+  return client.from('resources').select('*')
+}
