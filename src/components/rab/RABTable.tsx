@@ -149,14 +149,18 @@ export function RABTable({ projectId }: RABTableProps) {
   const filteredAHSP = useMemo(() => {
     let baseItems = searchQuery ? searchAHSPItems(searchQuery) : ahspItems
 
-    // Apply category filter
+    // Apply category filter (Case-Insensitive)
     if (selectedCategory !== 'all') {
-      baseItems = baseItems.filter(item => item.category === selectedCategory)
+      baseItems = baseItems.filter(item =>
+        item.category?.toUpperCase() === selectedCategory.toUpperCase()
+      )
     }
 
-    // Apply unit filter
+    // Apply unit filter (Case-Insensitive)
     if (selectedUnit !== 'all') {
-      baseItems = baseItems.filter(item => item.unit === selectedUnit)
+      baseItems = baseItems.filter(item =>
+        item.unit?.toUpperCase() === selectedUnit.toUpperCase()
+      )
     }
 
     if (!project?.zoneId) return baseItems
@@ -395,11 +399,11 @@ export function RABTable({ projectId }: RABTableProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => {
                 publishDrafts(projectId)
                 setShowPublishConfirm(false)
-              }} 
+              }}
               className="bg-green-600 hover:bg-green-700"
             >
               <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -435,8 +439,8 @@ export function RABTable({ projectId }: RABTableProps) {
         </div>
         <div className="flex gap-2">
           {selectedItems.size > 0 && (
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               size="sm"
               onClick={() => setConfirmBulkDelete(true)}
               className="gap-2 text-xs h-8"
@@ -449,20 +453,20 @@ export function RABTable({ projectId }: RABTableProps) {
             <CalendarClock className="h-3.5 w-3.5" />
             Auto-Schedule
           </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            className="gap-2 text-xs h-8" 
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-2 text-xs h-8"
             onClick={() => setShowVersionHistory(true)}
           >
             <History className="h-3.5 w-3.5" />
             Version History
           </Button>
           {draftCount > 0 && (
-            <Button 
-              size="sm" 
-              variant="default" 
-              className="gap-2 text-xs h-8 bg-green-600 hover:bg-green-700" 
+            <Button
+              size="sm"
+              variant="default"
+              className="gap-2 text-xs h-8 bg-green-600 hover:bg-green-700"
               onClick={() => setShowPublishConfirm(true)}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -545,9 +549,9 @@ export function RABTable({ projectId }: RABTableProps) {
                       </Select>
                     </div>
                     {(selectedCategory !== 'all' || selectedUnit !== 'all') && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           setSelectedCategory('all')
                           setSelectedUnit('all')
@@ -581,64 +585,64 @@ export function RABTable({ projectId }: RABTableProps) {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                          {filteredAHSP.length === 0 ? (
-                            <TableRow>
-                              <TableCell colSpan={8} className="h-64 text-center text-slate-400">
-                                <div className="flex flex-col items-center gap-2">
-                                  <Search className="h-10 w-10 opacity-20" />
-                                  <p className="text-lg font-medium">No matching items found.</p>
-                                  <p className="text-sm">Try adjusting your search criteria.</p>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ) : (
-                            visibleAHSP.map(ahsp => (
-                              <TableRow key={ahsp.id} className="group hover:bg-blue-50/30 transition-colors border-b border-slate-100 last:border-0" onClick={() => handleAddFromAhsp(ahsp)}>
-                                <TableCell className="py-4 px-6 font-mono text-[11px] text-slate-500 group-hover:text-blue-600 font-semibold">{ahsp.code}</TableCell>
-                                <TableCell className="py-4">
-                                  <div className="flex flex-col gap-1">
-                                    <span className="font-bold text-slate-800 leading-snug group-hover:text-blue-700 transition-colors">{ahsp.name}</span>
-                                    {ahsp.category && (
-                                      <span className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold flex items-center gap-1">
-                                        <div className="h-1 w-1 rounded-full bg-slate-300" />
-                                        {ahsp.category}
-                                      </span>
-                                    )}
+                            {filteredAHSP.length === 0 ? (
+                              <TableRow>
+                                <TableCell colSpan={8} className="h-64 text-center text-slate-400">
+                                  <div className="flex flex-col items-center gap-2">
+                                    <Search className="h-10 w-10 opacity-20" />
+                                    <p className="text-lg font-medium">No matching items found.</p>
+                                    <p className="text-sm">Try adjusting your search criteria.</p>
                                   </div>
                                 </TableCell>
-                                <TableCell className="py-4 text-center">
-                                  <Badge variant="outline" className="text-[10px] h-6 bg-slate-50 font-black uppercase text-slate-600 border-slate-200">
-                                    {ahsp.unit}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="py-4 text-right font-mono text-[11px] text-slate-500">
-                                  {formatIDR(ahsp.price_material || 0)}
-                                </TableCell>
-                                <TableCell className="py-4 text-right font-mono text-[11px] text-slate-500">
-                                  {formatIDR(ahsp.price_labor || 0)}
-                                </TableCell>
-                                <TableCell className="py-4 text-right font-mono text-[11px] text-slate-500">
-                                  {formatIDR((ahsp.price_equipment || 0) + (ahsp.price_subcon || 0))}
-                                </TableCell>
-                                <TableCell className="py-4 text-right px-6">
-                                  <span className="font-mono text-sm font-black text-slate-900 group-hover:text-blue-700 transition-colors">
-                                    {formatIDR(ahsp.finalPrice || 0)}
-                                  </span>
-                                </TableCell>
-                                <TableCell className="py-4 px-6 text-right">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-9 w-9 p-0 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all"
-                                  >
-                                    <Plus className="h-5 w-5" />
-                                  </Button>
-                                </TableCell>
                               </TableRow>
-                            ))
-                          )}
-                        </TableBody>
-                      </Table>
+                            ) : (
+                              visibleAHSP.map(ahsp => (
+                                <TableRow key={ahsp.id} className="group hover:bg-blue-50/30 transition-colors border-b border-slate-100 last:border-0" onClick={() => handleAddFromAhsp(ahsp)}>
+                                  <TableCell className="py-4 px-6 font-mono text-[11px] text-slate-500 group-hover:text-blue-600 font-semibold">{ahsp.code}</TableCell>
+                                  <TableCell className="py-4">
+                                    <div className="flex flex-col gap-1">
+                                      <span className="font-bold text-slate-800 leading-snug group-hover:text-blue-700 transition-colors">{ahsp.name}</span>
+                                      {ahsp.category && (
+                                        <span className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold flex items-center gap-1">
+                                          <div className="h-1 w-1 rounded-full bg-slate-300" />
+                                          {ahsp.category}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="py-4 text-center">
+                                    <Badge variant="outline" className="text-[10px] h-6 bg-slate-50 font-black uppercase text-slate-600 border-slate-200">
+                                      {ahsp.unit}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="py-4 text-right font-mono text-[11px] text-slate-500">
+                                    {formatIDR(ahsp.price_material || 0)}
+                                  </TableCell>
+                                  <TableCell className="py-4 text-right font-mono text-[11px] text-slate-500">
+                                    {formatIDR(ahsp.price_labor || 0)}
+                                  </TableCell>
+                                  <TableCell className="py-4 text-right font-mono text-[11px] text-slate-500">
+                                    {formatIDR((ahsp.price_equipment || 0) + (ahsp.price_subcon || 0))}
+                                  </TableCell>
+                                  <TableCell className="py-4 text-right px-6">
+                                    <span className="font-mono text-sm font-black text-slate-900 group-hover:text-blue-700 transition-colors">
+                                      {formatIDR(ahsp.finalPrice || 0)}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="py-4 px-6 text-right">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-9 w-9 p-0 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all"
+                                    >
+                                      <Plus className="h-5 w-5" />
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
                       </div>
                     </div>
                   </div>
@@ -646,8 +650,8 @@ export function RABTable({ projectId }: RABTableProps) {
                   {/* Load More Button */}
                   {visibleItemsCount < filteredAHSP.length && (
                     <div className="px-6 py-4 text-center border-t bg-slate-50">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={(e) => {
                           e.stopPropagation()
                           setVisibleItemsCount(prev => Math.min(prev + 50, filteredAHSP.length))
@@ -742,7 +746,7 @@ export function RABTable({ projectId }: RABTableProps) {
               <TableHeader className="sticky-glass-tablehead">
                 <TableRow className="border-b-2 border-slate-200 dark:border-slate-700 hover:bg-transparent">
                   <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">
-                    <Checkbox 
+                    <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
                     />
@@ -961,10 +965,10 @@ export function RABTable({ projectId }: RABTableProps) {
         </div>
       </div>
 
-      <RABVersionHistory 
-        projectId={projectId} 
-        open={showVersionHistory} 
-        onClose={() => setShowVersionHistory(false)} 
+      <RABVersionHistory
+        projectId={projectId}
+        open={showVersionHistory}
+        onClose={() => setShowVersionHistory(false)}
       />
     </div>
   )

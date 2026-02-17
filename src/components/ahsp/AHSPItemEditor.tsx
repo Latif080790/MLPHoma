@@ -458,7 +458,7 @@ export function AHSPItemEditor({
             </div>
 
             {/* Tab 1: Master Data */}
-            <TabsContent value="master" className="flex-1 overflow-y-auto p-8 space-y-8 m-0 bg-white" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+            <TabsContent value="master" className="flex-1 overflow-y-auto p-8 space-y-8 m-0 bg-white">
               <div className="grid gap-8">
                 {/* Identification Grid */}
                 <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 space-y-6">
@@ -624,7 +624,7 @@ export function AHSPItemEditor({
             </TabsContent>
 
             {/* Tab 2: Components Analysis */}
-            <TabsContent value="components" className="flex-1 overflow-hidden p-0 m-0 flex flex-col bg-slate-50/50" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+            <TabsContent value="components" className="flex-1 overflow-hidden p-0 m-0 flex flex-col bg-slate-50/50">
               <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                 <div className="px-8 py-4 border-b bg-white flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-3">
@@ -859,7 +859,7 @@ export function AHSPItemEditor({
             </TabsContent>
 
             {/* Tab 3: Visual Summary */}
-            <TabsContent value="summary" className="flex-1 overflow-y-auto p-8 space-y-8 bg-white m-0" style={{ maxHeight: 'calc(100vh - 260px)' }}>
+            <TabsContent value="summary" className="flex-1 overflow-y-auto p-8 space-y-8 bg-white m-0">
               <div className="grid gap-8">
                 <div className="flex flex-col items-center justify-center py-12 px-6 rounded-[3rem] bg-slate-900 text-white relative overflow-hidden shadow-2xl">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />

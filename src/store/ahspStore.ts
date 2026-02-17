@@ -484,12 +484,19 @@ export const useAHSPStore = create<AHSPStore>()(
             // Process components if they exist in the import
             if ((item as any).components && Array.isArray((item as any).components)) {
               (item as any).components.forEach((comp: any) => {
-                // Determine resource type safely
+                // Determine resource type safely - handle Indonesian terms and variations
                 const typeRaw = (comp.category || comp.type || 'material').toLowerCase()
-                const type: ResourceType =
-                  typeRaw.includes('labor') || typeRaw.includes('tenaga') ? 'labor' :
-                    typeRaw.includes('equipment') || typeRaw.includes('alat') ? 'equipment' :
-                      typeRaw.includes('subcon') ? 'subcontractor' : 'material'
+                let type: ResourceType = 'material'
+
+                if (typeRaw.includes('labor') || typeRaw.includes('tenaga') || typeRaw.includes('mandor') || typeRaw.includes('tukang')) {
+                  type = 'labor'
+                } else if (typeRaw.includes('equipment') || typeRaw.includes('alat') || typeRaw.includes('machine') || typeRaw.includes('sewa')) {
+                  type = 'equipment'
+                } else if (typeRaw.includes('subcon') || typeRaw.includes('kontraktor') || typeRaw.includes('pihak ketiga')) {
+                  type = 'subcontractor'
+                } else {
+                  type = 'material'
+                }
 
                 // Map/Generate Resource
                 const resCode = comp.code || generateId('res-code').substring(0, 8)
