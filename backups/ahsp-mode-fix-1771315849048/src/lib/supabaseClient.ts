@@ -126,16 +126,16 @@ export async function bulkImportAHSPDirect(
   components: AhspComponentRow[]
 ): Promise<{ success: boolean; error?: string }> {
   if (!items.length) return { success: true }
-
+  
   const client = assertSupabase()
-
+  
   try {
     // Step 1: Insert resources first (if any)
     if (resources.length > 0) {
       const { error: resourceError } = await client
         .from('resources')
         .upsert(resources, { onConflict: 'code' })
-
+      
       if (resourceError) {
         throw new Error(`Failed to insert resources: ${resourceError.message}`)
       }
@@ -145,7 +145,7 @@ export async function bulkImportAHSPDirect(
     const { error: itemsError } = await client
       .from('ahsp_items')
       .upsert(items, { onConflict: 'code' })
-
+    
     if (itemsError) {
       throw new Error(`Failed to insert AHSP items: ${itemsError.message}`)
     }
@@ -159,7 +159,7 @@ export async function bulkImportAHSPDirect(
         const { error: componentError } = await client
           .from('ahsp_components')
           .upsert(batch, { onConflict: 'id' })
-
+        
         if (componentError) {
           throw new Error(`Failed to insert components batch ${i / batchSize + 1}: ${componentError.message}`)
         }
@@ -176,23 +176,9 @@ export async function bulkImportAHSPDirect(
   }
 }
 
-export async function fetchAhspItems(limit = 1000, offset = 0) {
+export async function fetchAhspItems() {
   const client = assertSupabase()
-  return client
-    .from('ahsp_items')
-    .select('*')
-    .range(offset, offset + limit - 1)
-    .order('code', { ascending: true })
-}
-
-/**
- * Get total count of AHSP items in database
- */
-export async function getAhspCount() {
-  const client = assertSupabase()
-  return client
-    .from('ahsp_items')
-    .select('*', { count: 'exact', head: true })
+  return client.from('ahsp_items').select('*')
 }
 
 export async function upsertRabItems(rows: RabItemRow[]) {
@@ -391,24 +377,11 @@ export async function upsertInventoryTransaction(row: Partial<InventoryTransacti
   const client = assertSupabase()
   return client.from('inventory_transactions').upsert(row).select().single()
 }
-export async function fetchResources(limit = 1000, offset = 0) {
+export async function fetchResources() {
   const client = assertSupabase()
-  return client
-    .from('resources')
-    .select('*')
-    .range(offset, offset + limit - 1)
-    .order('code', { ascending: true })
+  return client.from('resources').select('*')
 }
 
-/**
- * Get total count of resources in database
- */
-export async function getResourceCount() {
-  const client = assertSupabase()
-  return client
-    .from('resources')
-    .select('*', { count: 'exact', head: true })
-}
 
 /**
  * Save AHSP creation log

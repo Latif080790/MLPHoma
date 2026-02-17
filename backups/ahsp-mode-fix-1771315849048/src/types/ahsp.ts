@@ -96,9 +96,8 @@ export interface AHSPItem {
   createdAt: string
   /** Last update timestamp */
   updatedAt: string
-  /** Creation mode tracking */
+  // Creation tracking
   creationMode?: 'sni' | 'custom' | 'historical'
-  /** Source reference (e.g., SNI code or historical project ID) */
   sourceReference?: string
 }
 
@@ -108,12 +107,8 @@ export interface AHSPItem {
 export interface AHSPState {
   /** All resources */
   resources: Resource[]
-  /** Total resources in database */
-  totalResourceCount: number
   /** All AHSP items */
   ahspItems: AHSPItem[]
-  /** Total AHSP items in database */
-  totalAhspCount: number
   /** Components indexed by AHSP ID */
   componentsByAHSP: Record<string, AHSPComponent[]>
   /** Zones */
@@ -153,7 +148,7 @@ export interface AHSPActions {
   fetchZonePrices: (zoneId: string) => Promise<void>
 
   // Resource actions
-  addResource: (resource: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => string | undefined
+  addResource: (resource: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => void
   updateResource: (id: string, updates: Partial<Resource>) => void
   deleteResource: (id: string) => void
   importResources: (resources: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>[]) => void
