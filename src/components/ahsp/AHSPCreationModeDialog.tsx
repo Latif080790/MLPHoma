@@ -4,7 +4,7 @@
  */
 
 import React from 'react'
-import { FileText, Wrench, History, ChevronRight, Sparkles } from 'lucide-react'
+import { Database, Sparkles, History, ChevronRight, Zap, CalendarDays, Boxes, CircleDollarSign } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,8 @@ import {
   DialogDescription,
 } from '../ui/dialog'
 import { Button } from '../ui/button'
-import { Card, CardContent } from '../ui/card'
+import { Badge } from '../ui/badge'
+import { formatIDR } from '../../lib/utils'
 
 export type AHSPCreationMode = 'sni' | 'custom' | 'historical'
 
@@ -21,91 +22,121 @@ interface AHSPCreationModeDialogProps {
   open: boolean
   onClose: () => void
   onSelect: (mode: AHSPCreationMode) => void
+  sniItemsPreview?: Array<{
+    id: string
+    code: string
+    name: string
+    category: string
+    unit: string
+    finalPrice: number
+    componentCount: number
+    updatedAt: string
+  }>
 }
 
-export function AHSPCreationModeDialog({ open, onClose, onSelect }: AHSPCreationModeDialogProps) {
+export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPreview = [] }: AHSPCreationModeDialogProps) {
+  const [selectedMode, setSelectedMode] = React.useState<AHSPCreationMode>('sni')
+
+  const averageSNIPrice = React.useMemo(() => {
+    if (sniItemsPreview.length === 0) return 0
+    const total = sniItemsPreview.reduce((sum, item) => sum + item.finalPrice, 0)
+    return total / sniItemsPreview.length
+  }, [sniItemsPreview])
+
+  React.useEffect(() => {
+    if (open) setSelectedMode('sni')
+  }, [open])
+
   const modes = [
     {
       id: 'sni' as AHSPCreationMode,
-      icon: FileText,
+      icon: Database,
       title: 'AHSP SNI',
-      description: 'Pre-configured dengan component & coefficient dari standar SNI',
+      subtitle: 'Template dari Database',
+      description: 'Salin dari AHSP SNI yang sudah ada di database proyek Anda',
       features: [
-        'Resource sudah tersedia otomatis',
-        'Coefficient sudah terstandarisasi',
-        'Sesuai standar nasional Indonesia',
-        'Tinggal pilih dan gunakan'
+        'Data real dari project lain',
+        'Component & coefficient teruji',
+        'Hemat waktu analisa',
+        'Konsisten dengan project sebelumnya'
       ],
       color: 'blue',
-      badge: 'Recommended'
+      badge: 'Direkomendasikan',
+      cta: 'Lanjut pakai AHSP SNI'
     },
     {
       id: 'custom' as AHSPCreationMode,
-      icon: Wrench,
-      title: 'Custom',
-      description: 'Full manual entry - buat analisa dari awal',
+      icon: Zap,
+      title: 'Kustom',
+      subtitle: 'Buat dari Nol',
+      description: 'Buat analisa baru dengan kontrol penuh atas semua komponen',
       features: [
-        'Kontrol penuh atas semua komponen',
+        'Kontrol penuh atas detail',
         'Definisi resource manual',
-        'Coefficient custom sesuai kebutuhan',
-        'Fleksibel untuk kasus khusus'
+        'Koefisien kustom',
+        'Fleksibel untuk kasus unik'
       ],
       color: 'purple',
-      badge: 'Flexible'
+      badge: 'Fleksibel',
+      cta: 'Lanjut mode Kustom'
     },
     {
       id: 'historical' as AHSPCreationMode,
       icon: History,
-      title: 'Historical',
-      description: 'Gunakan data dari project sebelumnya',
+      title: 'Historis',
+      subtitle: 'Import dari Project Lama',
+      description: 'Gunakan data historis dari project yang sudah selesai',
       features: [
-        'Ambil dari project yang sudah ada',
-        'Data real dari lapangan',
-        'Sudah teruji di project sebelumnya',
-        'Hemat waktu analisa'
+        'Data aktual dari lapangan',
+        'Sudah teruji dan terbukti',
+        'Replikasi project sukses',
+        'Benchmark untuk estimasi'
       ],
       color: 'green',
-      badge: 'Proven'
+      badge: 'Terverifikasi',
+      cta: 'Lanjut mode Historis'
     }
   ]
+
+  const selectedModeData = modes.find((mode) => mode.id === selectedMode) || modes[0]
 
   const handleSelect = (mode: AHSPCreationMode) => {
     onSelect(mode)
     onClose()
   }
 
-  const getColorClasses = (color: string) => {
+  const getColorClasses = (color: string, isActive = false) => {
     switch (color) {
       case 'blue':
         return {
-          bg: 'bg-blue-50 hover:bg-blue-100',
-          border: 'border-blue-200 hover:border-blue-400',
-          icon: 'bg-blue-600',
-          text: 'text-blue-700',
+          bg: isActive ? 'bg-gradient-to-br from-blue-100 via-indigo-100 to-blue-200' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 hover:from-blue-100 hover:via-indigo-100 hover:to-blue-200',
+          border: isActive ? 'border-blue-500 shadow-blue-200' : 'border-blue-300 hover:border-blue-500 hover:shadow-blue-200',
+          icon: 'bg-gradient-to-br from-blue-600 to-indigo-700',
+          text: 'text-blue-800',
           badge: 'bg-blue-600'
         }
       case 'purple':
         return {
-          bg: 'bg-purple-50 hover:bg-purple-100',
-          border: 'border-purple-200 hover:border-purple-400',
-          icon: 'bg-purple-600',
-          text: 'text-purple-700',
+          bg: isActive ? 'bg-gradient-to-br from-purple-100 via-pink-100 to-purple-200' : 'bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 hover:from-purple-100 hover:via-pink-100 hover:to-purple-200',
+          border: isActive ? 'border-purple-500 shadow-purple-200' : 'border-purple-300 hover:border-purple-500 hover:shadow-purple-200',
+          icon: 'bg-gradient-to-br from-purple-600 to-pink-700',
+          text: 'text-purple-800',
           badge: 'bg-purple-600'
         }
       case 'green':
         return {
-          bg: 'bg-green-50 hover:bg-green-100',
-          border: 'border-green-200 hover:border-green-400',
-          icon: 'bg-green-600',
-          text: 'text-green-700',
+          bg: isActive ? 'bg-gradient-to-br from-green-100 via-emerald-100 to-green-200' : 'bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 hover:from-green-100 hover:via-emerald-100 hover:to-green-200',
+          border: isActive ? 'border-green-500 shadow-green-200' : 'border-green-300 hover:border-green-500 hover:shadow-green-200',
+          icon: 'bg-gradient-to-br from-green-600 to-emerald-700',
+          text: 'text-green-800',
           badge: 'bg-green-600'
         }
       default:
         return {
-          bg: 'bg-slate-50 hover:bg-slate-100',
-          border: 'border-slate-200 hover:border-slate-400',
-          icon: 'bg-slate-600',
-          text: 'text-slate-700',
+          bg: 'bg-gradient-to-br from-slate-50 to-slate-100',
+          border: 'border-slate-300',
+          icon: 'bg-gradient-to-br from-slate-600 to-slate-700',
+          text: 'text-slate-800',
           badge: 'bg-slate-600'
         }
     }
@@ -113,81 +144,145 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect }: AHSPCreation
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Sparkles className="h-6 w-6 text-blue-600" />
-            Pilih Mode Pembuatan AHSP
-          </DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-h-[92vh] max-w-5xl overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="space-y-3 pb-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-3 shadow-lg">
+              <Sparkles className="h-6 w-6 text-white sm:h-7 sm:w-7" />
+            </div>
+            <DialogTitle className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-xl font-black text-transparent sm:text-3xl">
+              Pilih Mode Pembuatan AHSP
+            </DialogTitle>
+          </div>
+          <DialogDescription className="mx-auto max-w-2xl px-2 text-center text-xs leading-relaxed text-slate-600 sm:text-sm">
             Pilih metode pembuatan Analisa Harga Satuan Pekerjaan yang sesuai dengan kebutuhan Anda
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {modes.map((mode) => {
-            const colors = getColorClasses(mode.color)
-            const Icon = mode.icon
+        <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
+          <div className="space-y-3">
+            {modes.map((mode) => {
+              const isActive = selectedMode === mode.id
+              const colors = getColorClasses(mode.color, isActive)
+              const Icon = mode.icon
 
-            return (
-              <Card
-                key={mode.id}
-                className={`cursor-pointer transition-all duration-200 ${colors.bg} ${colors.border} border-2 hover:shadow-lg group`}
-                onClick={() => handleSelect(mode.id)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex flex-col h-full">
-                    {/* Icon & Badge */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className={`${colors.icon} p-3 rounded-xl text-white shadow-lg`}>
+              return (
+                <button
+                  key={mode.id}
+                  type="button"
+                  onClick={() => setSelectedMode(mode.id)}
+                  className={`w-full rounded-2xl border-2 p-4 text-left transition-all duration-200 ${colors.bg} ${colors.border} ${isActive ? 'shadow-lg' : 'shadow-sm'}`}
+                >
+                  <div className="mb-3 flex items-start justify-between">
+                    <div className={`${colors.icon} rounded-xl p-2.5 text-white shadow-md`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className={`${colors.badge} rounded-full px-2 py-1 text-[10px] font-black text-white`}>
+                      {mode.badge}
+                    </span>
+                  </div>
+                  <div className={`text-base font-black sm:text-lg ${colors.text}`}>{mode.title}</div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{mode.subtitle}</div>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-600">{mode.description}</p>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            {(() => {
+              const colors = getColorClasses(selectedModeData.color, true)
+              const Icon = selectedModeData.icon
+
+              return (
+                <>
+                  <div className="mb-4 flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`${colors.icon} rounded-xl p-3 text-white shadow-md`}>
                         <Icon className="h-6 w-6" />
                       </div>
-                      <span className={`${colors.badge} text-white text-xs font-bold px-2 py-1 rounded-full`}>
-                        {mode.badge}
-                      </span>
+                      <div>
+                        <h3 className={`text-xl font-black ${colors.text}`}>{selectedModeData.title}</h3>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{selectedModeData.subtitle}</p>
+                      </div>
                     </div>
-
-                    {/* Title & Description */}
-                    <h3 className={`font-bold text-lg mb-2 ${colors.text}`}>
-                      {mode.title}
-                    </h3>
-                    <p className="text-sm text-slate-600 mb-4 flex-grow">
-                      {mode.description}
-                    </p>
-
-                    {/* Features */}
-                    <ul className="space-y-2 mb-4">
-                      {mode.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-xs text-slate-600">
-                          <ChevronRight className={`h-4 w-4 ${colors.text} flex-shrink-0 mt-0.5`} />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* Select Button */}
-                    <Button
-                      className={`w-full ${colors.icon} hover:opacity-90 group-hover:scale-105 transition-transform`}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleSelect(mode.id)
-                      }}
-                    >
-                      Pilih {mode.title}
-                    </Button>
+                    <Badge className={`${colors.badge} text-white`}>{selectedModeData.badge}</Badge>
                   </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
 
-        <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-          <p className="text-sm text-slate-600">
-            <strong>Tips:</strong> Untuk pekerjaan standar, gunakan <strong>AHSP SNI</strong>. 
-            Untuk kebutuhan spesial atau perhitungan khusus, gunakan <strong>Custom</strong>. 
-            Untuk replikasi dari project lama, gunakan <strong>Historical</strong>.
-          </p>
+                  <ul className="mb-4 grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    {selectedModeData.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs text-slate-700">
+                        <ChevronRight className={`mt-0.5 h-4 w-4 ${colors.text} flex-shrink-0`} />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {selectedMode === 'sni' && (
+                    <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-xs font-black uppercase tracking-widest text-blue-700">Sumber dari Total AHSP Item</p>
+                        <Badge variant="outline" className="border-blue-300 text-blue-700">{sniItemsPreview.length} item</Badge>
+                      </div>
+
+                      {sniItemsPreview.length > 0 && (
+                        <div className="mb-3 grid grid-cols-2 gap-2">
+                          <div className="rounded-lg border border-blue-100 bg-white p-2">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Rata-rata Harga</p>
+                            <p className="text-xs font-black text-slate-800">{formatIDR(averageSNIPrice)}</p>
+                          </div>
+                          <div className="rounded-lg border border-blue-100 bg-white p-2">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Total Komponen</p>
+                            <p className="text-xs font-black text-slate-800">
+                              {sniItemsPreview.reduce((sum, item) => sum + item.componentCount, 0)}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
+                        {sniItemsPreview.length === 0 ? (
+                          <div className="rounded-lg border border-dashed border-blue-300 bg-white p-3">
+                            <p className="text-xs text-blue-700">Belum ada data AHSP SNI aktif.</p>
+                            <p className="mt-1 text-[11px] text-slate-600">Gunakan mode Kustom untuk membuat item pertama, lalu tandai sebagai SNI.</p>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              className="mt-2 h-8 border-blue-300 text-blue-700"
+                              onClick={() => setSelectedMode('custom')}
+                            >
+                              Pindah ke Kustom
+                            </Button>
+                          </div>
+                        ) : (
+                          sniItemsPreview.map((item) => (
+                            <div key={item.id} className="rounded-lg border border-blue-100 bg-white p-2.5">
+                              <p className="text-xs font-black text-slate-900">{item.code} - {item.name}</p>
+                              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+                                <span className="rounded bg-slate-100 px-1.5 py-0.5">{item.category}</span>
+                                <span>{item.unit}</span>
+                                <span className="flex items-center gap-1"><CircleDollarSign className="h-3 w-3" />{formatIDR(item.finalPrice)}</span>
+                                <span className="flex items-center gap-1"><Boxes className="h-3 w-3" />{item.componentCount} komponen</span>
+                                <span className="flex items-center gap-1"><CalendarDays className="h-3 w-3" />{new Date(item.updatedAt).toLocaleDateString('id-ID')}</span>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    className={`h-11 w-full ${colors.icon} text-white hover:opacity-95`}
+                    onClick={() => handleSelect(selectedMode)}
+                  >
+                    {selectedModeData.cta}
+                  </Button>
+                </>
+              )
+            })()}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

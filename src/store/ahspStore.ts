@@ -86,42 +86,58 @@ export const useAHSPStore = create<AHSPStore>()(
         fetchResources: async () => {
           set((state) => ({ loading: { ...state.loading, resources: true }, errors: { ...state.errors, resources: null } }))
           try {
-            const { data, error } = await fetchResources(5000)
-            if (error) throw error
+            const allResources: Resource[] = []
+            let offset = 0
+            const batchSize = 1000
+            let hasMore = true
 
-            const rows = (data as ResourceRow[]) || []
-            const resources: Resource[] = rows.map(r => {
-              const dbType = (r.type || '').toUpperCase()
-              const type: ResourceType =
-                dbType === 'LABOR' ? 'labor' :
-                  dbType === 'EQUIPMENT' ? 'equipment' :
-                    dbType === 'SUBCON' || dbType === 'SUBCONTRACTOR' ? 'subcontractor' :
-                      'material'
+            while (hasMore) {
+              const { data, error } = await fetchResources(batchSize, offset)
+              if (error) throw error
 
-              return {
-                id: r.id,
-                code: r.code,
-                name: r.name,
-                type,
-                unit: r.unit as ResourceUnit,
-                unitPrice: r.unit_price,
-                isActive: r.is_active ?? true,
-                supplier: r.supplier,
-                specifications: r.specifications,
-                createdAt: r.created_at || new Date().toISOString(),
-                updatedAt: r.updated_at || new Date().toISOString()
+              const rows = (data as ResourceRow[]) || []
+              if (rows.length === 0) {
+                hasMore = false
+                break
               }
-            })
+
+              const mapped = rows.map(r => {
+                const dbType = (r.type || '').toUpperCase()
+                const type: ResourceType =
+                  dbType === 'LABOR' ? 'labor' :
+                    dbType === 'EQUIPMENT' ? 'equipment' :
+                      dbType === 'SUBCON' || dbType === 'SUBCONTRACTOR' ? 'subcontractor' :
+                        'material'
+
+                return {
+                  id: r.id,
+                  code: r.code,
+                  name: r.name,
+                  type,
+                  unit: r.unit as ResourceUnit,
+                  unitPrice: r.unit_price,
+                  isActive: r.is_active ?? true,
+                  supplier: r.supplier,
+                  specifications: r.specifications,
+                  createdAt: r.created_at || new Date().toISOString(),
+                  updatedAt: r.updated_at || new Date().toISOString()
+                }
+              })
+
+              allResources.push(...mapped)
+              offset += batchSize
+
+              // If we got fewer than requested, we're at the end
+              if (rows.length < batchSize) {
+                hasMore = false
+              }
+            }
 
             set((state) => ({
-              resources,
+              resources: allResources,
               loading: { ...state.loading, resources: false },
+              totalResourceCount: allResources.length
             }))
-
-            // Fetch total resource count in background
-            getResourceCount().then(({ count }) => {
-              if (count !== null) set({ totalResourceCount: count })
-            })
           } catch (error: any) {
             const errorMsg = error.message || 'Failed to fetch resources'
             set((state) => ({
@@ -141,61 +157,71 @@ export const useAHSPStore = create<AHSPStore>()(
           }))
 
           try {
-            // Increase fetch limit to 5000 for current "simplified" app
-            const { data, error } = await fetchAhspItems(5000)
+            const allItems: AHSPItem[] = []
+            let offset = 0
+            const batchSize = 1000
+            let hasMore = true
 
-            if (error) throw error
+            while (hasMore) {
+              const { data, error } = await fetchAhspItems(batchSize, offset)
+              if (error) throw error
 
-            const items = (data as AhspItemRow[]) || []
-            const mappedItems = items.map((item) => ({
-              ...item,
-              // Ensure property mapping if names differ, though AhspItemRow mostly matches AHSPItem except for camelCase?
-              // AHSPItem: id, code, name, category, unit, basePrice, finalPrice
-              // AhspItemRow: id, code, name, category, unit, base_price, final_price
-              // We need to map snake_case to camelCase
-              basePrice: item.base_price || 0,
-              finalPrice: item.final_price || 0,
+              const rows = (data as AhspItemRow[]) || []
+              if (rows.length === 0) {
+                hasMore = false
+                break
+              }
 
-              // Map split cost fields
-              price_material: item.price_material || 0,
-              price_labor: item.price_labor || 0,
-              price_equipment: item.price_equipment || 0,
-              price_subcon: item.price_subcon || 0,
+              const mappedItems = rows.map((item) => ({
+                ...item,
+                basePrice: item.base_price || 0,
+                finalPrice: item.final_price || 0,
+                isActive: item.is_active ?? true, // Corrected: missing isActive mapping
+                price_material: item.price_material || 0,
+                price_labor: item.price_labor || 0,
+                price_equipment: item.price_equipment || 0,
+                price_subcon: item.price_subcon || 0,
+                overheadPercentage: item.overhead_percentage || 0,
+                profitPercentage: item.profit_percentage || 0,
+                createdAt: item.created_at,
+                updatedAt: item.updated_at
+              })) as AHSPItem[]
 
-              overheadPercentage: item.overhead_percentage || 0,
-              profitPercentage: item.profit_percentage || 0,
-              createdAt: item.created_at,
-              updatedAt: item.updated_at
-            })) as AHSPItem[]
+              allItems.push(...mappedItems)
+              offset += batchSize
+              if (rows.length < batchSize) hasMore = false
+            }
 
-            // Fetch creation logs for all items
-            const itemsWithLogs = await Promise.all(
-              mappedItems.map(async (item) => {
-                try {
-                  const { data: log, error } = await getCreationLog(item.id)
-                  if (!error && log) {
-                    return {
-                      ...item,
-                      creationMode: log.creation_mode as 'sni' | 'custom' | 'historical',
-                      sourceReference: log.source_reference
+            // Fetch creation logs in batches to avoid overwhelming the network
+            // Note: In high-performance systems, this should be a single join query or bulk fetch
+            const itemsWithLogs: AHSPItem[] = []
+            const LOG_BATCH_SIZE = 50
+
+            for (let i = 0; i < allItems.length; i += LOG_BATCH_SIZE) {
+              const batch = allItems.slice(i, i + LOG_BATCH_SIZE)
+              const batchResults = await Promise.all(
+                batch.map(async (item) => {
+                  try {
+                    const { data: log, error } = await getCreationLog(item.id)
+                    if (!error && log) {
+                      return {
+                        ...item,
+                        creationMode: log.creation_mode as 'sni' | 'custom' | 'historical',
+                        sourceReference: log.source_reference
+                      }
                     }
-                  }
-                } catch (error) {
-                  // Silently ignore - old items won't have logs
-                }
-                return item
-              })
-            )
+                  } catch (e) { /* ignore */ }
+                  return item
+                })
+              )
+              itemsWithLogs.push(...batchResults)
+            }
 
             set((state) => ({
               ahspItems: itemsWithLogs,
               loading: { ...state.loading, ahspItems: false },
+              totalAhspCount: itemsWithLogs.length
             }))
-
-            // Fetch total AHSP count in background
-            getAhspCount().then(({ count }) => {
-              if (count !== null) set({ totalAhspCount: count })
-            })
           } catch (error: any) {
             const errorMsg = error.message || 'Failed to fetch AHSP items'
             set((state) => ({
@@ -216,59 +242,71 @@ export const useAHSPStore = create<AHSPStore>()(
 
           try {
             const client = assertSupabase()
-            let query = client
-              .from('ahsp_components')
-              .select(`
-              *,
-              resource:resources(*)
-            `)
-              .order('created_at', { ascending: true })
-
-            if (ahspId) {
-              query = query.eq('ahsp_id', ahspId)
-            }
-
-            const { data, error } = await query
-
-            if (error) throw error
-
-            // Group components by AHSP ID
             const componentsByAHSP: Record<string, AHSPComponent[]> = {}
 
-            const rows = (data as (AhspComponentRow & { resource: ResourceRow | null })[]) || []
+            let offset = 0
+            const batchSize = 1000
+            let hasMore = true
 
-            rows.forEach((comp: AhspComponentRow & { resource: ResourceRow | null }) => {
-              const component: AHSPComponent = {
-                id: comp.id,
-                ahspId: comp.ahsp_id,
-                type: comp.type as ResourceType,
-                resourceId: comp.resource_id,
-                coefficient: comp.coefficient,
-                unit: comp.unit as ResourceUnit,
-                unitPrice: comp.unit_price,
-                subtotal: comp.subtotal,
-                resource: comp.resource ? {
-                  id: comp.resource.id,
-                  code: comp.resource.code,
-                  name: comp.resource.name,
-                  type: comp.resource.type as ResourceType,
-                  unit: comp.resource.unit as ResourceUnit,
-                  unitPrice: comp.resource.unit_price,
-                  isActive: comp.resource.is_active ?? true,
-                  supplier: comp.resource.supplier,
-                  specifications: comp.resource.specifications,
-                  createdAt: comp.resource.created_at || new Date().toISOString(),
-                  updatedAt: comp.resource.updated_at || new Date().toISOString()
-                } : undefined,
-                createdAt: comp.created_at || new Date().toISOString(),
-                updatedAt: comp.updated_at || new Date().toISOString(),
+            while (hasMore) {
+              let query = client
+                .from('ahsp_components')
+                .select(`
+                *,
+                resource:resources(*)
+              `)
+                .range(offset, offset + batchSize - 1)
+                .order('created_at', { ascending: true })
+
+              if (ahspId) {
+                query = query.eq('ahsp_id', ahspId)
               }
 
-              if (!componentsByAHSP[comp.ahsp_id]) {
-                componentsByAHSP[comp.ahsp_id] = []
+              const { data, error } = await query
+              if (error) throw error
+
+              const rows = (data as (AhspComponentRow & { resource: ResourceRow | null })[]) || []
+              if (rows.length === 0) {
+                hasMore = false
+                break
               }
-              componentsByAHSP[comp.ahsp_id].push(component)
-            })
+
+              rows.forEach((comp) => {
+                const component: AHSPComponent = {
+                  id: comp.id,
+                  ahspId: comp.ahsp_id,
+                  type: comp.type as ResourceType,
+                  resourceId: comp.resource_id,
+                  coefficient: comp.coefficient,
+                  unit: comp.unit as ResourceUnit,
+                  unitPrice: comp.unit_price,
+                  subtotal: comp.subtotal,
+                  resource: comp.resource ? {
+                    id: comp.resource.id,
+                    code: comp.resource.code,
+                    name: comp.resource.name,
+                    type: comp.resource.type as ResourceType,
+                    unit: comp.resource.unit as ResourceUnit,
+                    unitPrice: comp.resource.unit_price,
+                    isActive: comp.resource.is_active ?? true,
+                    supplier: comp.resource.supplier,
+                    specifications: comp.resource.specifications,
+                    createdAt: comp.resource.created_at || new Date().toISOString(),
+                    updatedAt: comp.resource.updated_at || new Date().toISOString()
+                  } : undefined,
+                  createdAt: comp.created_at || new Date().toISOString(),
+                  updatedAt: comp.updated_at || new Date().toISOString(),
+                }
+
+                if (!componentsByAHSP[comp.ahsp_id]) {
+                  componentsByAHSP[comp.ahsp_id] = []
+                }
+                componentsByAHSP[comp.ahsp_id].push(component)
+              })
+
+              offset += batchSize
+              if (rows.length < batchSize) hasMore = false
+            }
 
             set((state) => ({
               componentsByAHSP: ahspId
@@ -643,6 +681,7 @@ export const useAHSPStore = create<AHSPStore>()(
                 type: res.type.toUpperCase(),
                 unit: res.unit,
                 unit_price: res.unitPrice,
+                is_active: true, // Explicitly set active
                 created_at: res.createdAt,
                 updated_at: res.updatedAt,
               }))
@@ -666,12 +705,15 @@ export const useAHSPStore = create<AHSPStore>()(
                 throw new Error(result.error || 'Unknown error')
               }
 
-              // After successful import, refresh from Supabase
+              // After successful import, refresh everything from Supabase
               toast.success(`Berhasil import ${items.length} items ke Supabase!`)
 
-              // Update local store by fetching fresh data
-              const { fetchAHSPItems: refresh } = get()
-              await refresh()
+              const state = get()
+              await Promise.all([
+                state.fetchAHSPItems(),
+                state.fetchResources(),
+                state.fetchComponents()
+              ])
 
             } catch (error) {
               console.error('Direct import failed:', error)

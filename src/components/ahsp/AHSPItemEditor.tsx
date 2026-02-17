@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { X, Save, Plus, Trash2, Calculator, Edit2, Check, Database, Search, Info, FileText } from 'lucide-react'
+import { X, Save, Plus, Trash2, Calculator, Edit2, Check, Database, Search, Info } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Badge } from '../ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import {
   Sheet,
   SheetContent,
@@ -36,7 +35,6 @@ import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
 import type { AHSPItem, AHSPComponent, ResourceType, ResourceUnit } from '../../types/ahsp'
 import type { AHSPCreationMode } from './AHSPCreationModeDialog'
-import { SNI_PRESETS, type SNIPreset, getSNIPreset } from '../../lib/sniPresets'
 import { getMainCategories, getSubcategories, getCategoryPath } from '../../lib/workCategories'
 
 /** Props for AHSPItemEditor component */
@@ -103,19 +101,31 @@ export function AHSPItemEditor({
   const [pendingDeleteComponentId, setPendingDeleteComponentId] = useState<string | null>(null)
   const [resourceSearch, setResourceSearch] = useState('')
   const [selectedSNIPreset, setSelectedSNIPreset] = useState<string | null>(null)
-  const [showSNIHelp, setShowSNIHelp] = useState(mode === 'sni')
+  const [showSNIHelp, setShowSNIHelp] = useState(false)
+
+  // Update SNI help visibility when mode changes
+  useEffect(() => {
+    setShowSNIHelp(mode === 'sni' && !item)
+  }, [mode, item])
 
   const mainCategories = getMainCategories()
 
   const {
     resources,
+    ahspItems,
     componentsByAHSP,
     addComponent,
     updateComponent,
     deleteComponent,
     calculateAHSPPrice,
     addResource,
+    fetchComponents,
   } = useAHSPStore()
+
+  // Get SNI AHSP items from database (not presets)
+  const sniAHSPItems = React.useMemo(() => {
+    return ahspItems.filter(item => item.creationMode === 'sni' && item.isActive)
+  }, [ahspItems])
 
   const currentAHSPId = item?.id || 'temp'
   const components = componentsByAHSP[currentAHSPId] || []
@@ -404,55 +414,51 @@ export function AHSPItemEditor({
   }
 
   /**
-   * Handle applying SNI preset
+   * Handle applying SNI AHSP item from database
    */
-  const handleApplySNIPreset = (preset: SNIPreset) => {
-    // Auto-fill master data
-    setFormData(prev => ({
-      ...prev,
-      code: preset.code,
-      name: preset.name,
-      category: preset.category,
-      unit: preset.unit as ResourceUnit,
-      description: preset.description || '',
-    }))
+  const handleApplySNIItem = async (sniItem: AHSPItem) => {
+    try {
+      // Auto-fill master data from selected SNI item
+      setFormData(prev => ({
+        ...prev,
+        code: sniItem.code,
+        name: sniItem.name,
+        category: sniItem.category,
+        unit: sniItem.unit,
+        description: sniItem.description || '',
+        overheadPercentage: sniItem.overheadPercentage || 0,
+        profitPercentage: sniItem.profitPercentage || 0,
+      }))
 
-    // Auto-add components from SNI
-    preset.components.forEach(comp => {
-      // Check if resource exists
-      let resource = resources.find(r => r.code === comp.code)
+      // Fetch components from the selected SNI item
+      await fetchComponents(sniItem.id)
       
-      if (!resource) {
-        // Create new resource
-        const newResourceId = addResource({
-          code: comp.code,
-          name: comp.name,
-          type: comp.type,
-          unit: comp.unit as ResourceUnit,
-          unitPrice: comp.estimatedPrice,
-          specifications: comp.notes || `SNI preset component`,
-          isActive: true,
-        })
-        resource = resources.find(r => r.id === newResourceId)
-      }
-
-      if (resource) {
-        // Add component with SNI coefficient
+      // Get the fetched components
+      const sniComponents = componentsByAHSP[sniItem.id] || []
+      
+      // Copy components to new AHSP
+      sniComponents.forEach(comp => {
         addComponent(currentAHSPId, {
-          resourceId: resource.id,
+          resourceId: comp.resourceId,
           type: comp.type,
           coefficient: comp.coefficient,
-          unit: comp.unit as ResourceUnit,
-          unitPrice: comp.estimatedPrice,
-          subtotal: comp.coefficient * comp.estimatedPrice,
+          unit: comp.unit,
+          unitPrice: comp.unitPrice,
+          subtotal: comp.subtotal,
+          notes: comp.notes,
         })
-      }
-    })
+      })
 
-    toast.success(`SNI Preset "${preset.code}" diterapkan dengan ${preset.components.length} components`, {
-      description: preset.name
-    })
-    setShowSNIHelp(false)
+      toast.success(`SNI AHSP "${sniItem.code}" diterapkan dengan ${sniComponents.length} components`, {
+        description: sniItem.name
+      })
+      setShowSNIHelp(false)
+    } catch (error) {
+      console.error('Error applying SNI item:', error)
+      toast.error('Gagal menerapkan SNI AHSP', {
+        description: 'Terjadi kesalahan saat memuat components'
+      })
+    }
   }
 
   // Filter resources by type
@@ -491,79 +497,111 @@ export function AHSPItemEditor({
             <div className="bg-blue-600 p-3 rounded-2xl text-white shadow-xl shadow-blue-100 ring-4 ring-blue-50">
               <Edit2 className="h-6 w-6" />
             </div>
-            <div>
-              <SheetTitle className="text-2xl font-black tracking-tight text-slate-900">
-                {item ? 'Edit AHSP Analysis' : 'Create New AHSP'}
-              </SheetTitle>
-              <p className="text-sm text-slate-400 font-medium">Configure item details and cost components</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <SheetTitle className="text-2xl font-black tracking-tight text-slate-900">
+                  {item ? 'Ubah Analisa AHSP' : 'Buat AHSP Baru'}
+                </SheetTitle>
+                {mode && !item && (
+                  <Badge 
+                    variant="secondary" 
+                    className={`uppercase font-bold text-[10px] tracking-wider ${
+                      mode === 'sni' ? 'bg-blue-100 text-blue-700' : 
+                      mode === 'historical' ? 'bg-green-100 text-green-700' : 
+                      'bg-purple-100 text-purple-700'
+                    }`}
+                  >
+                    MODE {mode.toUpperCase()}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-slate-400 font-medium">Atur detail item dan komponen biaya</p>
             </div>
           </div>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
-          <Tabs defaultValue="master" className="flex-1 flex flex-col overflow-hidden min-h-0">
-            <div className="bg-slate-50/50 p-2 border-b shrink-0">
-              <TabsList className="flex w-full bg-slate-200/50 p-1 h-11 rounded-xl">
-                <TabsTrigger value="master" className="flex-1 rounded-lg font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 transition-all">
-                  <Database className="h-3.5 w-3.5 mr-2" />
-                  Master Data
-                </TabsTrigger>
-                <TabsTrigger value="components" className="flex-1 rounded-lg font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 transition-all">
-                  <Calculator className="h-3.5 w-3.5 mr-2" />
-                  Component Analysis
-                </TabsTrigger>
-                <TabsTrigger value="summary" className="flex-1 rounded-lg font-bold text-xs uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-blue-600 transition-all">
-                  <Check className="h-3.5 w-3.5 mr-2" />
-                  Cost Distribution
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            {/* Tab 1: Master Data */}
-            <TabsContent value="master" className="flex-1 overflow-y-auto p-8 space-y-8 m-0 bg-white">
+          {/* Unified Content - All sections visible */}
+          <div className="flex-1 overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-0">
+            {/* Section 1: Master Data */}
+            <div className="border-b-4 border-slate-100 bg-white p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 lg:col-[1]">
+              <div className="flex items-center gap-3 pb-4 border-b-2 border-blue-100">
+                <div className="bg-blue-600 p-2 rounded-xl text-white">
+                  <Database className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-lg text-slate-900 uppercase tracking-wide">Master Data</h3>
+                  <p className="text-xs text-slate-500 font-medium">Identifikasi umum dan kategorisasi</p>
+                </div>
+              </div>
               <div className="grid gap-8">
                 {/* Identification Grid */}
-                <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 space-y-6">
+                <div className="bg-slate-50/50 p-4 sm:p-6 rounded-3xl border border-slate-100 space-y-6">
                   <div className="flex items-center gap-2 text-slate-800 font-bold text-sm mb-4">
                     <div className="h-4 w-1 bg-blue-600 rounded-full" />
-                    General Identification
+                    Identifikasi Umum
                   </div>
 
-                  {/* SNI Preset Selector - only show if mode is 'sni' */}
+                  {/* SNI AHSP Selector - pull from database items with creationMode='sni' */}
                   {mode === 'sni' && !item && (
-                    <div className="bg-blue-50 p-6 rounded-3xl border border-blue-200 space-y-4 mb-6">
-                      <div className="flex items-center gap-2 text-blue-800 font-bold text-sm">
-                        <FileText className="h-4 w-4" />
-                        SNI Preset Library
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-3xl border-2 border-blue-200 shadow-sm space-y-4 mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-blue-600 p-2 rounded-xl shadow-lg">
+                          <Database className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-blue-900 font-black text-sm">Pilih dari AHSP SNI yang Ada</h3>
+                          <p className="text-blue-600 text-xs">Template dari database proyek Anda</p>
+                        </div>
                       </div>
-                      <p className="text-xs text-blue-600">
-                        Pilih preset SNI untuk auto-fill component & coefficient berdasarkan standar
+                      <p className="text-xs text-blue-700 leading-relaxed">
+                        Pilih AHSP SNI yang sudah ada untuk menyalin semua component & coefficient-nya
                       </p>
                       <Select 
                         value={selectedSNIPreset || undefined}
-                        onValueChange={(code) => {
-                          setSelectedSNIPreset(code)
-                          const preset = getSNIPreset(code)
-                          if (preset) handleApplySNIPreset(preset)
+                        onValueChange={async (itemId) => {
+                          setSelectedSNIPreset(itemId)
+                          const sniItem = sniAHSPItems.find(i => i.id === itemId)
+                          if (sniItem) await handleApplySNIItem(sniItem)
                         }}
                       >
-                        <SelectTrigger className="h-12 rounded-2xl border-blue-200 bg-white font-bold">
-                          <SelectValue placeholder="Pilih SNI Preset..." />
+                        <SelectTrigger className="h-14 rounded-2xl border-2 border-blue-300 bg-white hover:bg-blue-50 font-bold shadow-sm transition-all">
+                          <SelectValue placeholder="🔍 Pilih AHSP SNI dari database..." />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-blue-200 shadow-xl max-h-80">
-                          {SNI_PRESETS.map(preset => (
-                            <SelectItem key={preset.code} value={preset.code} className="py-3 font-semibold">
-                              {preset.code} - {preset.name}
-                              <span className="block text-xs text-slate-500">{preset.category}</span>
-                            </SelectItem>
-                          ))}
+                        <SelectContent className="rounded-2xl border-2 border-blue-200 shadow-2xl max-h-96">
+                          {sniAHSPItems.length === 0 ? (
+                            <div className="p-4 text-center text-slate-500 text-sm">
+                              <Database className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>Belum ada AHSP SNI di database</p>
+                              <p className="text-xs mt-1">Gunakan mode Custom untuk membuat yang pertama</p>
+                            </div>
+                          ) : (
+                            sniAHSPItems.map(item => (
+                              <SelectItem key={item.id} value={item.id} className="py-4 font-semibold hover:bg-blue-50">
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-blue-900">{item.code} - {item.name}</span>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      {item.category}
+                                    </Badge>
+                                    <span className="text-xs text-slate-500">
+                                      {item.unit} • {formatIDR(item.finalPrice)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                       {selectedSNIPreset && (
-                        <div className="p-3 bg-white rounded-xl border border-blue-100">
-                          <p className="text-xs text-blue-600 font-bold mb-1">Components Auto-Loaded:</p>
-                          <p className="text-xs text-slate-600">
-                            {getSNIPreset(selectedSNIPreset)?.components.length || 0} items dari SNI
+                        <div className="p-4 bg-white rounded-2xl border-2 border-green-200 shadow-sm">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Check className="h-4 w-4 text-green-600" />
+                            <p className="text-xs text-green-700 font-black">Components Ter-load:</p>
+                          </div>
+                          <p className="text-sm text-slate-700 font-bold">
+                            {componentsByAHSP[selectedSNIPreset]?.length || 0} komponen berhasil disalin
                           </p>
                         </div>
                       )}
@@ -584,7 +622,7 @@ export function AHSPItemEditor({
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="unit" className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Unit of Measure</Label>
+                      <Label htmlFor="unit" className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Satuan</Label>
                       <Select value={formData.unit} onValueChange={(value: any) => handleChange('unit', value)}>
                         <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white font-bold transition-all focus:ring-4 focus:ring-blue-100">
                           <SelectValue />
@@ -606,7 +644,7 @@ export function AHSPItemEditor({
 
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Classification / Category</Label>
+                      <Label className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Klasifikasi / Kategori</Label>
                       <Select
                         value={selectedCategory}
                         onValueChange={(value) => {
@@ -617,7 +655,7 @@ export function AHSPItemEditor({
                         }}
                       >
                         <SelectTrigger className={`h-12 rounded-2xl border-slate-200 bg-white font-bold transition-all focus:ring-4 focus:ring-blue-100 ${errors.category ? 'border-red-500 shadow-sm' : ''}`}>
-                          <SelectValue placeholder="Select work category..." />
+                          <SelectValue placeholder="Pilih kategori pekerjaan..." />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-slate-200 shadow-xl max-h-80">
                           {mainCategories.map(cat => (
@@ -645,7 +683,7 @@ export function AHSPItemEditor({
                           }}
                         >
                           <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white font-bold transition-all focus:ring-4 focus:ring-blue-100">
-                            <SelectValue placeholder="Select specialized sub-type..." />
+                            <SelectValue placeholder="Pilih sub-klasifikasi..." />
                           </SelectTrigger>
                           <SelectContent className="rounded-xl border-slate-200 shadow-xl max-h-80">
                             {getSubcategories(selectedCategory).map(subcat => (
@@ -662,7 +700,7 @@ export function AHSPItemEditor({
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Item Title / Work Description</Label>
+                    <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Judul Item / Uraian Pekerjaan</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -675,7 +713,7 @@ export function AHSPItemEditor({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Detailed Technical Specifications</Label>
+                    <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Spesifikasi Teknis Detail</Label>
                     <Textarea
                       id="description"
                       value={formData.description}
@@ -688,11 +726,11 @@ export function AHSPItemEditor({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-8 border-t pt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 border-t pt-6 sm:pt-8">
                   <div className="bg-blue-50/30 p-6 rounded-3xl border border-blue-100 space-y-4">
                     <div className="flex items-center gap-2 text-blue-800 font-bold text-sm">
                       <Calculator className="h-4 w-4" />
-                      Overhead Factor
+                      Faktor Overhead
                     </div>
                     <div className="relative">
                       <Input
@@ -703,13 +741,13 @@ export function AHSPItemEditor({
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-blue-400">%</span>
                     </div>
-                    <p className="text-[10px] text-blue-400 leading-tight font-medium uppercase tracking-wider">Costs for project management and site logistics</p>
+                    <p className="text-[10px] text-blue-400 leading-tight font-medium uppercase tracking-wider">Biaya untuk manajemen proyek dan logistik lapangan</p>
                   </div>
 
                   <div className="bg-emerald-50/30 p-6 rounded-3xl border border-emerald-100 space-y-4">
                     <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
                       <Check className="h-4 w-4" />
-                      Profit Margin
+                      Margin Keuntungan
                     </div>
                     <div className="relative">
                       <Input
@@ -720,25 +758,25 @@ export function AHSPItemEditor({
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-emerald-400">%</span>
                     </div>
-                    <p className="text-[10px] text-emerald-400 leading-tight font-medium uppercase tracking-wider">Net profit margin for the overall AHSP item</p>
+                    <p className="text-[10px] text-emerald-400 leading-tight font-medium uppercase tracking-wider">Margin keuntungan bersih untuk keseluruhan item AHSP</p>
                   </div>
                 </div>
               </div>
-            </TabsContent>
+            </div>
 
-            {/* Tab 2: Components Analysis */}
-            <TabsContent value="components" className="flex-1 overflow-hidden p-0 m-0 flex flex-col bg-slate-50/50">
-              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                <div className="px-8 py-4 border-b bg-white flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
-                      <Calculator className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Component Breakdown</h3>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-left">Detail labor, materials, and equipment factors</p>
-                    </div>
-                  </div>
+            {/* Section 2: Component Analysis */}
+            <div className="min-h-[600px] border-b-4 border-slate-100 bg-slate-50/50 lg:col-[1]">
+              <div className="px-4 sm:px-6 lg:px-8 py-6 bg-white border-b flex items-center gap-3">
+                <div className="bg-blue-600 p-2 rounded-xl text-white">
+                  <Calculator className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-lg text-slate-900 uppercase tracking-wide">Analisa Komponen</h3>
+                  <p className="text-xs text-slate-500 font-medium">Struktur rincian biaya pekerjaan</p>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <div className="px-4 sm:px-6 lg:px-8 py-4 border-b bg-white flex items-center justify-end shrink-0">
                   <Button
                     type="button"
                     variant="outline"
@@ -747,13 +785,13 @@ export function AHSPItemEditor({
                     className="h-9 px-4 rounded-xl border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 font-bold text-xs"
                   >
                     <Plus className="h-3.5 w-3.5 mr-2" />
-                    Custom Component
+                    Komponen Kustom
                   </Button>
                 </div>
 
-                <div className="flex-1 overflow-auto p-4 md:p-8">
+                <div className="p-4 md:p-8 min-h-[400px]">
                   <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                       <Table className="min-w-[1200px]">
                         <TableHeader className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10 border-b">
                           <TableRow className="hover:bg-transparent">
@@ -772,8 +810,8 @@ export function AHSPItemEditor({
                             <TableCell colSpan={7} className="h-48 text-center bg-slate-50/50">
                               <div className="flex flex-col items-center gap-2 opacity-30">
                                 <Plus className="h-10 w-10" />
-                                <p className="font-bold text-slate-400 uppercase tracking-widest text-xs">No analysis components added yet.</p>
-                                <p className="text-[10px] text-slate-400">Search for resources below to begin your analysis.</p>
+                                <p className="font-bold text-slate-400 uppercase tracking-widest text-xs">Belum ada komponen analisa.</p>
+                                <p className="text-[10px] text-slate-400">Cari resource di bawah untuk memulai analisa.</p>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -889,21 +927,21 @@ export function AHSPItemEditor({
                 </div>
 
                 {/* Integrated Import / Resource Search */}
-                <div className="shrink-0 p-8 border-t bg-white z-10 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
+                <div className="shrink-0 p-4 sm:p-6 lg:p-8 border-t bg-white z-10 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
                   <div className="max-w-4xl mx-auto space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Search className="h-4 w-4 text-blue-600" />
-                        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Library Resources Integration</h4>
+                        <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Integrasi Resource Library</h4>
                       </div>
                       <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest text-slate-400 border-slate-200">
-                        {filteredResources.length} Available in Catalog
+                        {filteredResources.length} tersedia di katalog
                       </Badge>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <Select value={selectedComponentType} onValueChange={(value: any) => setSelectedComponentType(value)}>
-                        <SelectTrigger className="w-40 h-12 rounded-2xl border-slate-200 bg-slate-50 font-bold text-xs uppercase tracking-wider">
+                        <SelectTrigger className="w-full sm:w-40 h-12 rounded-2xl border-slate-200 bg-slate-50 font-bold text-xs uppercase tracking-wider">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-slate-200 shadow-xl">
@@ -917,7 +955,7 @@ export function AHSPItemEditor({
                       <div className="relative flex-1 group">
                         <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                         <Input
-                          placeholder={`Search ${selectedComponentType} resources...`}
+                          placeholder={`Cari resource ${selectedComponentType}...`}
                           value={resourceSearch}
                           onChange={(e) => setResourceSearch(e.target.value)}
                           className="h-12 pl-12 pr-4 rounded-2xl border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all font-medium"
@@ -949,7 +987,7 @@ export function AHSPItemEditor({
                             <div className="flex flex-col items-end">
                               <span className="font-mono text-sm font-black text-slate-900">{formatIDR(res.unitPrice)}</span>
                               <Button size="sm" variant="ghost" className="h-8 px-4 text-[10px] font-black uppercase text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                                Add to Analysis
+                                Tambahkan
                               </Button>
                             </div>
                           </div>
@@ -959,37 +997,46 @@ export function AHSPItemEditor({
                   </div>
                 </div>
               </div>
-            </TabsContent>
+            </div>
 
-            {/* Tab 3: Visual Summary */}
-            <TabsContent value="summary" className="flex-1 overflow-y-auto p-8 space-y-8 bg-white m-0">
+            {/* Section 3: Cost Distribution Summary */}
+            <div className="bg-white p-4 sm:p-6 space-y-6 lg:col-[2] lg:row-[1/span_2] lg:border-l lg:border-slate-200 lg:sticky lg:top-0 lg:h-fit lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
+              <div className="flex items-center gap-3 pb-4 border-b-2 border-blue-100">
+                <div className="bg-blue-600 p-2 rounded-xl text-white">
+                  <Check className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-lg text-slate-900 uppercase tracking-wide">Distribusi Biaya</h3>
+                  <p className="text-xs text-slate-500 font-medium">Ringkasan komposisi dan harga</p>
+                </div>
+              </div>
               <div className="grid gap-8">
                 <div className="flex flex-col items-center justify-center py-12 px-6 rounded-[3rem] bg-slate-900 text-white relative overflow-hidden shadow-2xl">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
                   <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-600/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4" />
 
                   <div className="relative z-10 flex flex-col items-center text-center">
-                    <Label className="text-[10px] uppercase font-black tracking-[0.3em] text-blue-400 mb-4 opacity-80 decoration-blue-500/30 underline-offset-8 underline">Final AHSP Calculation</Label>
-                    <div className="text-6xl font-black font-mono tracking-tighter tabular-nums mb-2">
+                    <Label className="text-[10px] uppercase font-black tracking-[0.3em] text-blue-400 mb-4 opacity-80 decoration-blue-500/30 underline-offset-8 underline">Kalkulasi Akhir AHSP</Label>
+                    <div className="text-4xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tighter tabular-nums mb-2 break-all">
                       {formatIDR(totals.final)}
                     </div>
                     <div className="flex items-center gap-2 text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">
-                      Unit Price Per <span className="text-white bg-white/10 px-2 py-1 rounded-lg">{formData.unit}</span>
+                      Harga Satuan per <span className="text-white bg-white/10 px-2 py-1 rounded-lg">{formData.unit}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 gap-6 lg:gap-8">
                   <div className="space-y-6">
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-1 bg-blue-500 rounded-full" />
-                      <h3 className="text-sm font-black uppercase tracking-tight text-slate-900">Base Cost Breakdown</h3>
+                      <h3 className="text-sm font-black uppercase tracking-tight text-slate-900">Rincian Biaya Dasar</h3>
                     </div>
 
                     <div className="space-y-4 bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100">
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Material Cost</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Biaya Material</span>
                           <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.material)}</span>
                         </div>
                         <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -999,7 +1046,7 @@ export function AHSPItemEditor({
 
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Labor Cost</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Biaya Tenaga Kerja</span>
                           <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.labor)}</span>
                         </div>
                         <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -1009,7 +1056,7 @@ export function AHSPItemEditor({
 
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tools / Equipment</span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Alat / Peralatan</span>
                           <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.equipment + totals.subcontractor)}</span>
                         </div>
                         <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -1018,7 +1065,7 @@ export function AHSPItemEditor({
                       </div>
 
                       <div className="pt-4 mt-4 border-t border-slate-200 flex justify-between items-center">
-                        <span className="text-sm font-black text-slate-900 uppercase">Subtotal Base Cost</span>
+                        <span className="text-sm font-black text-slate-900 uppercase">Subtotal Biaya Dasar</span>
                         <span className="text-lg font-black font-mono text-blue-600">{formatIDR(totals.base)}</span>
                       </div>
                     </div>
@@ -1027,14 +1074,14 @@ export function AHSPItemEditor({
                   <div className="space-y-6">
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-1 bg-emerald-500 rounded-full" />
-                      <h3 className="text-sm font-black uppercase tracking-tight text-slate-900">Overhead & Profit</h3>
+                      <h3 className="text-sm font-black uppercase tracking-tight text-slate-900">Overhead & Keuntungan</h3>
                     </div>
 
                     <div className="bg-emerald-50/20 p-8 rounded-[2rem] border border-emerald-100 space-y-6 h-full flex flex-col justify-between">
                       <div className="space-y-6">
                         <div className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-emerald-100/50">
                           <div className="flex flex-col text-left">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Overhead Adjusted</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Penyesuaian Overhead</span>
                             <span className="text-xs font-bold text-slate-400">{formData.overheadPercentage}% of base</span>
                           </div>
                           <span className="font-mono font-bold text-emerald-700 text-sm">+{formatIDR(totals.base * (formData.overheadPercentage / 100))}</span>
@@ -1042,7 +1089,7 @@ export function AHSPItemEditor({
 
                         <div className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-emerald-100/50">
                           <div className="flex flex-col text-left">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Target Profit</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Target Keuntungan</span>
                             <span className="text-xs font-bold text-slate-400">{formData.profitPercentage}% of base</span>
                           </div>
                           <span className="font-mono font-bold text-emerald-700 text-sm">+{formatIDR(totals.base * (formData.profitPercentage / 100))}</span>
@@ -1050,40 +1097,40 @@ export function AHSPItemEditor({
                       </div>
 
                       <div className="p-4 bg-emerald-600 rounded-2xl text-white text-center">
-                        <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-1 opacity-80">Total Surcharge</div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-1 opacity-80">Total Penyesuaian</div>
                         <div className="text-2xl font-black font-mono">{formatIDR(totals.final - totals.base)}</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
 
-          <div className="shrink-0 px-8 py-6 border-t bg-white flex items-center justify-between z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+          <div className="shrink-0 px-4 sm:px-8 py-4 sm:py-6 border-t bg-white flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
             <Button
               type="button"
               variant="ghost"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-12 px-6 font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl"
+              className="h-11 sm:h-12 w-full sm:w-auto px-6 font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl"
             >
-              Discard Changes
+              Batalkan Perubahan
             </Button>
-            <div className="flex gap-4">
+            <div className="flex w-full sm:w-auto flex-col-reverse sm:flex-row gap-3 sm:gap-4">
               {errors.submit && (
                 <p className="text-sm text-red-500 self-center font-bold mr-4 animate-bounce">⚠️ {errors.submit}</p>
               )}
-              <Button type="submit" size="lg" className="h-12 px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black shadow-xl shadow-blue-200 transition-all hover:-translate-y-1 active:scale-95" disabled={isSubmitting}>
+              <Button type="submit" size="lg" className="h-11 sm:h-12 w-full sm:w-auto px-8 sm:px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black shadow-xl shadow-blue-200 transition-all hover:-translate-y-1 active:scale-95" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <span className="flex items-center gap-3">
                     <Database className="animate-spin h-5 w-5" />
-                    Saving...
+                    Menyimpan...
                   </span>
                 ) : (
                   <span className="flex items-center gap-3">
                     <Check className="h-5 w-5" />
-                    Finalize & Save
+                    Simpan Perubahan
                   </span>
                 )}
               </Button>
@@ -1094,13 +1141,13 @@ export function AHSPItemEditor({
         <AlertDialog open={!!pendingDeleteComponentId} onOpenChange={(open) => { if (!open) setPendingDeleteComponentId(null) }}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove this component?</AlertDialogTitle>
+              <AlertDialogTitle>Hapus komponen ini?</AlertDialogTitle>
               <AlertDialogDescription>
-                The component will be removed from this AHSP analysis.
+                Komponen akan dihapus dari analisa AHSP ini.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
                   if (!pendingDeleteComponentId) return
@@ -1108,7 +1155,7 @@ export function AHSPItemEditor({
                   setPendingDeleteComponentId(null)
                 }}
               >
-                Remove
+                Hapus
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
