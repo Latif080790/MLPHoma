@@ -8,7 +8,7 @@
 export type ResourceType = 'material' | 'labor' | 'equipment' | 'subcontractor'
 
 /** Resource unit types */
-export type ResourceUnit = 'kg' | 'm3' | 'm2' | 'm' | 'ltr' | 'bh' | 'oh' | 'jam' | 'hr' | 'hari' | 'unit'
+export type ResourceUnit = 'kg' | 'm3' | 'm2' | 'm' | "m'" | 'ltr' | 'bh' | 'oh' | 'jam' | 'hr' | 'hari' | 'unit'
 
 /** Resource */
 export interface Resource {

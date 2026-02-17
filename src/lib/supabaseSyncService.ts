@@ -368,6 +368,10 @@ export function syncAHSPItem(item: any): string {
       final_price: item.finalPrice,
       overhead_percentage: item.overheadPercentage,
       profit_percentage: item.profitPercentage,
+      price_material: item.price_material || 0,
+      price_labor: item.price_labor || 0,
+      price_equipment: item.price_equipment || 0,
+      price_subcon: item.price_subcon || 0,
       created_at: item.createdAt,
       updated_at: new Date().toISOString(),
     },
@@ -378,8 +382,32 @@ export function syncAHSPItem(item: any): string {
 /**
  * Sync multiple AHSP items
  */
-export function syncAHSPItems(items: any[]): string[] {
-  return items.map(item => syncAHSPItem(item))
+export function syncAHSPItems(items: any[]): string {
+  if (!items.length) return ''
+
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'ahsp_items',
+    data: items.map(item => ({
+      id: item.id,
+      code: item.code,
+      name: item.name,
+      description: item.description,
+      unit: item.unit,
+      category: item.category,
+      base_price: item.basePrice,
+      final_price: item.finalPrice,
+      overhead_percentage: item.overheadPercentage,
+      profit_percentage: item.profitPercentage,
+      price_material: item.price_material || 0,
+      price_labor: item.price_labor || 0,
+      price_equipment: item.price_equipment || 0,
+      price_subcon: item.price_subcon || 0,
+      created_at: item.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })),
+    maxRetries: 3,
+  })
 }
 
 /**
@@ -393,12 +421,49 @@ export function syncResource(resource: any): string {
       id: resource.id,
       code: resource.code,
       name: resource.name,
-      type: resource.type,
+      type: (() => {
+        const t = (resource.type || 'MATERIAL').toUpperCase()
+        if (t === 'SUBCONTRACTOR' || t === 'SUBCON') return 'SUBCON'
+        return t
+      })(),
       unit: resource.unit,
       unit_price: resource.unitPrice,
+      supplier: resource.supplier,
+      specifications: resource.specifications,
+      is_active: resource.isActive,
       created_at: resource.createdAt,
       updated_at: new Date().toISOString(),
     },
+    maxRetries: 3,
+  })
+}
+
+/**
+ * Sync multiple resources (Batch)
+ */
+export function syncResources(resources: any[]): string {
+  if (!resources.length) return ''
+
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'resources',
+    data: resources.map(resource => ({
+      id: resource.id,
+      code: resource.code,
+      name: resource.name,
+      type: (() => {
+        const t = (resource.type || 'MATERIAL').toUpperCase()
+        if (t === 'SUBCONTRACTOR' || t === 'SUBCON') return 'SUBCON'
+        return t
+      })(),
+      unit: resource.unit,
+      unit_price: resource.unitPrice,
+      supplier: resource.supplier,
+      specifications: resource.specifications,
+      is_active: resource.isActive ?? true,
+      created_at: resource.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })),
     maxRetries: 3,
   })
 }
@@ -422,6 +487,31 @@ export function syncAHSPComponent(component: any): string {
       created_at: component.createdAt,
       updated_at: new Date().toISOString(),
     },
+    maxRetries: 3,
+  })
+}
+
+/**
+ * Sync multiple AHSP components (Batch)
+ */
+export function syncAHSPComponents(components: any[]): string {
+  if (!components.length) return ''
+
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'ahsp_components',
+    data: components.map(component => ({
+      id: component.id,
+      ahsp_id: component.ahspId,
+      resource_id: component.resourceId,
+      type: component.type,
+      coefficient: component.coefficient,
+      unit: component.unit,
+      unit_price: component.unitPrice,
+      subtotal: component.subtotal,
+      created_at: component.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })),
     maxRetries: 3,
   })
 }
@@ -575,24 +665,24 @@ export function syncWBSItems(items: any[], projectId: string): string {
  */
 export function syncTimelineTask(task: any): string {
   const data: Record<string, any> = {
-      id: task.id,
-      project_id: task.projectId,
-      wbs_id: task.wbsId,
-      rab_id: task.rabId,
-      name: task.name,
-      description: task.description,
-      duration: task.duration,
-      start_date: task.startDate,
-      end_date: task.endDate,
-      progress: task.progress,
-      status: task.status,
-      dependencies: JSON.stringify(task.dependencies || []),
-      assigned_resources: task.assignedResources,
-      priority: task.priority,
-      baseline_start_date: task.baselineStartDate,
-      baseline_end_date: task.baselineEndDate,
-      created_at: task.createdAt,
-      updated_at: task.updatedAt || new Date().toISOString(),
+    id: task.id,
+    project_id: task.projectId,
+    wbs_id: task.wbsId,
+    rab_id: task.rabId,
+    name: task.name,
+    description: task.description,
+    duration: task.duration,
+    start_date: task.startDate,
+    end_date: task.endDate,
+    progress: task.progress,
+    status: task.status,
+    dependencies: JSON.stringify(task.dependencies || []),
+    assigned_resources: task.assignedResources,
+    priority: task.priority,
+    baseline_start_date: task.baselineStartDate,
+    baseline_end_date: task.baselineEndDate,
+    created_at: task.createdAt,
+    updated_at: task.updatedAt || new Date().toISOString(),
   }
   return syncQueue.enqueue({
     operation: 'upsert',

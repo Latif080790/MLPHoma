@@ -54,6 +54,7 @@ export function ResourceManager() {
   const [pendingDeleteResource, setPendingDeleteResource] = useState<Resource | null>(null)
   const [pendingImportResources, setPendingImportResources] = useState<ParsedResource[]>([])
   const [confirmImportOpen, setConfirmImportOpen] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(50)
 
   const [formData, setFormData] = useState({
     code: '',
@@ -84,6 +85,10 @@ export function ResourceManager() {
 
     return filtered
   }, [resources, selectedType, searchQuery])
+
+  const visibleResources = useMemo(() => {
+    return filteredResources.slice(0, visibleCount)
+  }, [filteredResources, visibleCount])
 
   // Group by type for summary
   const summary = useMemo(() => {
@@ -183,12 +188,12 @@ export function ResourceManager() {
       try {
         const content = e.target?.result as string
         const data = JSON.parse(content)
-        
+
         if (!Array.isArray(data)) {
           throw new Error('Invalid file format')
         }
 
-        const validResources = data.filter(item => 
+        const validResources = data.filter(item =>
           item.code && item.name && item.type && item.unit && item.unitPrice
         )
 
@@ -213,7 +218,7 @@ export function ResourceManager() {
     try {
       toast.loading('Parsing DKH file...')
       const parsedResources = await importDKHFromFile(file)
-      
+
       if (parsedResources.length === 0) {
         toast.error('No valid resources found in file')
         return
@@ -224,7 +229,7 @@ export function ResourceManager() {
       console.error('DKH import error:', error)
       toast.error('Failed to import DKH file. Please check the file format.')
     }
-    
+
     event.target.value = ''
   }
 
@@ -370,6 +375,11 @@ export function ResourceManager() {
         </Select>
       </div>
 
+      {/* Reset visible count on search/filter change */}
+      {React.useEffect(() => {
+        setVisibleCount(50)
+      }, [searchQuery, selectedType])}
+
       {/* Resources Table */}
       <Card>
         <CardContent className="p-0">
@@ -393,7 +403,7 @@ export function ResourceManager() {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredResources.map((resource) => (
+                visibleResources.map((resource) => (
                   <TableRow key={resource.id}>
                     <TableCell className="font-mono text-sm">{resource.code}</TableCell>
                     <TableCell>
@@ -437,6 +447,20 @@ export function ResourceManager() {
                     </TableCell>
                   </TableRow>
                 ))
+              )}
+              {visibleCount < filteredResources.length && (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={7} className="py-4 text-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setVisibleCount(prev => prev + 100)}
+                      className="w-full max-w-xs mx-auto"
+                    >
+                      Load More ({filteredResources.length - visibleCount} items remaining)
+                    </Button>
+                  </TableCell>
+                </TableRow>
               )}
             </TableBody>
           </Table>

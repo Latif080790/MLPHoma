@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "label": "Struktur Beton"
+  },
+  {
+    "id": 2,
+    "label": "Struktur Baja"
+  },
+  {
+    "id": 3,
+    "label": "Arsitektur Standart"
+  },
+  {
+    "id": 4,
+    "label": "Arsitektur Non Standart"
+  },
+  {
+    "id": 5,
+    "label": "Mekanikal Plumbing"
+  },
+  {
+    "id": 6,
+    "label": "Electrical"
+  },
+  {
+    "id": 7,
+    "label": "Landscape"
+  },
+  {
+    "id": 8,
+    "label": "Uncategorized"
+  }
+]

@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand'
-import { assertSupabase } from '../lib/supabaseClient'
+import { assertSupabase, fetchResources, fetchAhspItems } from '../lib/supabaseClient'
 import type {
   AhspItemRow,
   ResourceRow,
@@ -13,7 +13,7 @@ import type {
 } from '../lib/supabaseClient'
 import { devtools, persist } from 'zustand/middleware'
 import { calculateAHSPPrice as calcAHSPPrice } from '../lib/calculationService'
-import { syncAHSPItem, syncResource, syncAHSPComponent, syncDelete } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncAHSPComponents, syncDelete, syncAHSPItems } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -82,34 +82,34 @@ export const useAHSPStore = create<AHSPStore>()(
 
         // Data fetching actions
         fetchResources: async () => {
-          set((state) => ({
-            loading: { ...state.loading, resources: true },
-            errors: { ...state.errors, resources: null },
-          }))
-
+          set((state) => ({ loading: { ...state.loading, resources: true }, errors: { ...state.errors, resources: null } }))
           try {
-            const client = assertSupabase()
-            const { data, error } = await client
-              .from('resources')
-              .select('*')
-              .order('updated_at', { ascending: false })
-
+            const { data, error } = await fetchResources()
             if (error) throw error
 
             const rows = (data as ResourceRow[]) || []
-            const resources: Resource[] = rows.map(r => ({
-              id: r.id,
-              code: r.code,
-              name: r.name,
-              type: r.type as ResourceType,
-              unit: r.unit as ResourceUnit,
-              unitPrice: r.unit_price,
-              isActive: r.is_active ?? true,
-              supplier: r.supplier,
-              specifications: r.specifications,
-              createdAt: r.created_at || new Date().toISOString(),
-              updatedAt: r.updated_at || new Date().toISOString()
-            }))
+            const resources: Resource[] = rows.map(r => {
+              const dbType = (r.type || '').toUpperCase()
+              const type: ResourceType =
+                dbType === 'LABOR' ? 'labor' :
+                  dbType === 'EQUIPMENT' ? 'equipment' :
+                    dbType === 'SUBCON' || dbType === 'SUBCONTRACTOR' ? 'subcontractor' :
+                      'material'
+
+              return {
+                id: r.id,
+                code: r.code,
+                name: r.name,
+                type,
+                unit: r.unit as ResourceUnit,
+                unitPrice: r.unit_price,
+                isActive: r.is_active ?? true,
+                supplier: r.supplier,
+                specifications: r.specifications,
+                createdAt: r.created_at || new Date().toISOString(),
+                updatedAt: r.updated_at || new Date().toISOString()
+              }
+            })
 
             set((state) => ({
               resources,
@@ -134,11 +134,7 @@ export const useAHSPStore = create<AHSPStore>()(
           }))
 
           try {
-            const client = assertSupabase()
-            const { data, error } = await client
-              .from('ahsp_items')
-              .select('*')
-              .order('updated_at', { ascending: false })
+            const { data, error } = await fetchAhspItems()
 
             if (error) throw error
 
@@ -363,6 +359,9 @@ export const useAHSPStore = create<AHSPStore>()(
           set((state) => ({
             resources: [...state.resources, ...newResources],
           }))
+
+          // Persist to Supabase
+          syncResources(newResources)
         },
 
         exportResources: () => {
@@ -464,23 +463,122 @@ export const useAHSPStore = create<AHSPStore>()(
         },
 
         importAHSPItems: (items) => {
-          const newItems: AHSPItem[] = items.map(item => ({
-            ...item,
-            id: generateId('ahsp'),
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }))
+          const newItems: AHSPItem[] = []
+          const allNewComponents: AHSPComponent[] = []
+          const allNewResources: Resource[] = []
+          const resourceMap = new Map<string, string>() // code -> id
+
+          items.forEach(item => {
+            const newItemId = generateId('ahsp')
+            const newItem: AHSPItem = {
+              ...item,
+              id: newItemId,
+              basePrice: item.basePrice || 0,
+              finalPrice: item.finalPrice || 0,
+              isActive: item.isActive !== false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            }
+            newItems.push(newItem)
+
+            // Process components if they exist in the import
+            if ((item as any).components && Array.isArray((item as any).components)) {
+              (item as any).components.forEach((comp: any) => {
+                // Determine resource type safely
+                const typeRaw = (comp.category || comp.type || 'material').toLowerCase()
+                const type: ResourceType =
+                  typeRaw.includes('labor') || typeRaw.includes('tenaga') ? 'labor' :
+                    typeRaw.includes('equipment') || typeRaw.includes('alat') ? 'equipment' :
+                      typeRaw.includes('subcon') ? 'subcontractor' : 'material'
+
+                // Map/Generate Resource
+                const resCode = comp.code || generateId('res-code').substring(0, 8)
+                let resourceId = resourceMap.get(resCode)
+
+                if (!resourceId) {
+                  // Check if resource already exists in store by code
+                  const existingRes = get().resources.find(r => r.code === resCode)
+                  if (existingRes) {
+                    resourceId = existingRes.id
+                  } else {
+                    const resPrice = Number(comp.price || comp.unitPrice || 0)
+                    const validResPrice = isNaN(resPrice) ? 0 : resPrice
+
+                    resourceId = `res-${resCode.toLowerCase().replace(/[^a-z0-9]/g, '-')}`
+                    const newResource: Resource = {
+                      id: resourceId,
+                      code: resCode,
+                      name: comp.name || 'Unknown Resource',
+                      type,
+                      unit: comp.unit || 'unit',
+                      unitPrice: validResPrice,
+                      isActive: true,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString()
+                    }
+                    allNewResources.push(newResource)
+                    resourceMap.set(resCode, resourceId)
+                  }
+                }
+
+                const price = Number(comp.price || comp.unitPrice || 0)
+                const validPrice = isNaN(price) ? 0 : price
+                const coeff = Number(comp.coefficient || 0)
+                const validCoeff = isNaN(coeff) ? 0 : coeff
+
+                const newComponent: AHSPComponent = {
+                  id: generateId('comp'),
+                  ahspId: newItemId,
+                  resourceId: resourceId!,
+                  type,
+                  coefficient: validCoeff,
+                  unit: comp.unit || 'unit',
+                  unitPrice: validPrice,
+                  subtotal: validCoeff * validPrice,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString()
+                }
+                allNewComponents.push(newComponent)
+              })
+            }
+          })
 
           const componentsByAHSP: Record<string, AHSPComponent[]> = {}
 
+          // Re-group for store state and calculate split costs
           newItems.forEach(item => {
-            componentsByAHSP[item.id] = []
+            const itemComponents = allNewComponents.filter(c => c.ahspId === item.id)
+            componentsByAHSP[item.id] = itemComponents
+
+            // Calculate split cost fields for the item
+            item.price_material = itemComponents
+              .filter(c => c.type === 'material')
+              .reduce((sum, c) => sum + c.subtotal, 0)
+            item.price_labor = itemComponents
+              .filter(c => c.type === 'labor')
+              .reduce((sum, c) => sum + c.subtotal, 0)
+            item.price_equipment = itemComponents
+              .filter(c => c.type === 'equipment')
+              .reduce((sum, c) => sum + c.subtotal, 0)
+            item.price_subcon = itemComponents
+              .filter(c => ((c.type as string) === 'subcontractor' || (c.type as string) === 'subcon'))
+              .reduce((sum, c) => sum + c.subtotal, 0)
           })
 
           set((state) => ({
+            resources: allNewResources.length > 0 ? [...state.resources, ...allNewResources] : state.resources,
             ahspItems: [...state.ahspItems, ...newItems],
             componentsByAHSP: { ...state.componentsByAHSP, ...componentsByAHSP },
           }))
+
+          // Persist to Supabase
+          if (allNewResources.length > 0) {
+            syncResources(allNewResources)
+          }
+          syncAHSPItems(newItems)
+          if (allNewComponents.length > 0) {
+            syncAHSPComponents(allNewComponents)
+          }
         },
 
         exportAHSPItems: () => {
