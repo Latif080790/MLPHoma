@@ -632,7 +632,7 @@ export const useAHSPStore = create<AHSPStore>()(
 
               // After successful import, refresh from Supabase
               toast.success(`Berhasil import ${items.length} items ke Supabase!`)
-              
+
               // Update local store by fetching fresh data
               const { fetchAHSPItems: refresh } = get()
               await refresh()
@@ -1225,6 +1225,67 @@ export const useAHSPStore = create<AHSPStore>()(
           setTimeout(() => {
             get().recalculateAllPrices()
           }, 0)
+        },
+
+        clearAllData: async () => {
+          set((state) => ({
+            loading: { ...state.loading, ahspItems: true, resources: true },
+          }))
+
+          const client = assertSupabase()
+
+          try {
+            // Delete in order of dependencies (child first, parent later)
+            // Using .gt('created_at', '1970-01-01Z') as a universal filter instead of .neq('id', '0')
+            // because neq id '0' might fail if id is a uuid.
+
+            const filterValue = '1970-01-01Z'
+
+            // 1. Clear Zone Prices
+            await client.from('ahsp_zone_prices').delete().gt('created_at', filterValue)
+
+            // 2. Clear Price History
+            await client.from('ahsp_price_history').delete().gt('created_at', filterValue)
+
+            // 3. Clear Components (FK to ahsp_items and resources)
+            await client.from('ahsp_components').delete().gt('created_at', filterValue)
+
+            // 4. Clear AHSP Items
+            await client.from('ahsp_items').delete().gt('created_at', filterValue)
+
+            // 5. Clear Resources
+            await client.from('resources').delete().gt('created_at', filterValue)
+
+            // Update local state
+            set({
+              resources: [],
+              ahspItems: [],
+              componentsByAHSP: {},
+              zones: [],
+              zonePricesByZone: {},
+              loading: {
+                resources: false,
+                ahspItems: false,
+                components: false,
+                priceHistory: false,
+                zones: false,
+                zonePrices: false,
+              }
+            })
+
+            toast.success('Berhasil menghapus semua data AHSP dan DKH.')
+          } catch (error) {
+            console.error('Failed to clear AHSP data:', error)
+            toast.error('Gagal menghapus data. Silakan periksa koneksi atau hak akses Anda.')
+
+            set((state) => ({
+              loading: {
+                ...state.loading,
+                ahspItems: false,
+                resources: false,
+              }
+            }))
+          }
         },
       }),
       {

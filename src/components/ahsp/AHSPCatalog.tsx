@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, Info, X } from 'lucide-react'
+import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, Info, X, RotateCcw } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -66,6 +66,7 @@ export function AHSPCatalog({
   const [selectedMode, setSelectedMode] = useState<AHSPCreationMode | null>(null)
   const [visibleCount, setVisibleCount] = useState(50)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
 
   const {
     ahspItems,
@@ -82,7 +83,8 @@ export function AHSPCatalog({
     exportAHSPItems,
     importAHSPItems,
     fetchZones,
-    fetchZonePrices
+    fetchZonePrices,
+    clearAllData
   } = useAHSPStore()
 
   // Load zones on mount
@@ -486,6 +488,17 @@ export function AHSPCatalog({
               <Plus className="h-4 w-4 mr-2" />
               Add Item
             </Button>
+
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowResetConfirm(true)}
+              className="h-8 text-xs"
+              disabled={ahspItems.length === 0 && resources.length === 0}
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-2" />
+              Reset System
+            </Button>
           </div>
         </div>
 
@@ -767,6 +780,33 @@ export function AHSPCatalog({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 focus:ring-red-600">
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+        <AlertDialogContent className="max-w-[400px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <RotateCcw className="h-5 w-5" />
+              Reset Semua Data?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini akan <strong>menghapus permanen</strong> semua data AHSP, Komponen, dan Resources (DKH) dari database.
+              Data yang sudah ada di RAB proyek tidak akan terhapus, namun referensi ke katalog akan hilang.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                await clearAllData()
+                setShowResetConfirm(false)
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Ya, Hapus Semua
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
