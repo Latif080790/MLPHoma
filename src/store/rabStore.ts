@@ -67,6 +67,8 @@ interface RabState {
   historyByProject: Record<string, RABItem[][]> // past snapshots (oldest..latest)
   futureByProject: Record<string, RABItem[][]> // redo stack (latest..oldest)
   audit: AuditEntry[]
+  hasUnsavedChanges: Record<string, boolean> // track unsaved changes per project
+  autoSaveTimers: Record<string, NodeJS.Timeout> // auto-save timers per project
   addItem: (projectId: string, item: Partial<RABItem>) => string
   updateItem: (projectId: string, id: string, updates: Partial<RABItem>) => void
   getItems: (projectId: string) => RABItem[]
@@ -81,6 +83,11 @@ interface RabState {
   getHistory: (projectId: string) => { past: number; future: number }
   clearHistory: (projectId: string) => void
   syncProjectToSupabase?: (projectId: string) => Promise<void>
+  // Draft mode functions
+  markUnsaved: (projectId: string) => void
+  publishDrafts: (projectId: string) => void
+  getDraftCount: (projectId: string) => number
+  hasUnsaved: (projectId: string) => boolean
 }
 
 const STORAGE_KEY = 'rabStore:v2'
@@ -138,6 +145,8 @@ export const useRabStore = create<RabState>((set, get) => {
     historyByProject: {},
     futureByProject: {},
     audit: persisted?.audit || [],
+    hasUnsavedChanges: {},
+    autoSaveTimers: {},
 
     addItem: (projectId, item) => {
       // Validate input
@@ -168,6 +177,7 @@ export const useRabStore = create<RabState>((set, get) => {
         finalPrice: (item as any).finalPrice ?? (item as any).finalTotal,
         taskId: (item as any).taskId,
         tkdn_percent: (item as any).tkdn_percent ?? 0,
+        isDraft: true, // new items start as draft
         createdAt: now,
         updatedAt: now,
         ...item,
@@ -178,8 +188,9 @@ export const useRabStore = create<RabState>((set, get) => {
         return next
       })
       get().logAction({ projectId, action: 'addItem', payload: newItem })
+      get().markUnsaved(projectId)
       get().persist()
-      syncRABItem(newItem, projectId)
+      // Don't sync drafts to Supabase immediately
       return id
     },
 
@@ -202,11 +213,9 @@ export const useRabStore = create<RabState>((set, get) => {
         return { itemsByProject: { ...s.itemsByProject, [projectId]: updated } }
       })
       get().logAction({ projectId, action: 'updateItem', payload: { id, updates } })
+      get().markUnsaved(projectId)
       get().persist()
-      const item = get().itemsByProject[projectId]?.find(i => i.id === id)
-      if (item) {
-        syncRABItem(item, projectId)
-      }
+      // Don't sync drafts to Supabase immediately
     },
 
     getItems: (projectId) => {
@@ -335,6 +344,73 @@ export const useRabStore = create<RabState>((set, get) => {
       // Use batch sync for better performance
       syncRABItems(items, projectId)
       get().logAction({ projectId, action: 'syncProjectToSupabase', payload: { count: items.length } })
+    },
+
+    // Draft mode functions
+    markUnsaved: (projectId: string) => {
+      set((s) => ({
+        hasUnsavedChanges: { ...s.hasUnsavedChanges, [projectId]: true }
+      }))
+      
+      // Set up auto-save after 30 seconds
+      const existing = get().autoSaveTimers[projectId]
+      if (existing) clearTimeout(existing)
+      
+      const timer = setTimeout(() => {
+        get().persist()
+        toast.info('Changes auto-saved', { duration: 2000 })
+      }, 30000) // 30 seconds
+      
+      set((s) => ({
+        autoSaveTimers: { ...s.autoSaveTimers, [projectId]: timer }
+      }))
+    },
+
+    publishDrafts: (projectId: string) => {
+      const items = get().itemsByProject[projectId] || []
+      const draftItems = items.filter(item => (item as any).isDraft)
+      
+      if (draftItems.length === 0) {
+        toast.info('No draft items to publish')
+        return
+      }
+
+      // Mark all items as published
+      set((s) => {
+        const arr = s.itemsByProject[projectId] || []
+        const updated = arr.map(item => {
+          if ((item as any).isDraft) {
+            return { ...item, isDraft: false, updatedAt: new Date().toISOString() }
+          }
+          return item
+        })
+        return {
+          itemsByProject: { ...s.itemsByProject, [projectId]: updated },
+          hasUnsavedChanges: { ...s.hasUnsavedChanges, [projectId]: false }
+        }
+      })
+
+      // Clear auto-save timer
+      const timer = get().autoSaveTimers[projectId]
+      if (timer) clearTimeout(timer)
+
+      get().persist()
+      
+      // Sync to Supabase
+      const updatedItems = get().itemsByProject[projectId] || []
+      syncRABItems(updatedItems, projectId)
+      
+      toast.success(`Published ${draftItems.length} items to database`)
+      get().logAction({ projectId, action: 'publishDrafts', payload: { count: draftItems.length } })
+    },
+
+    getDraftCount: (projectId: string) => {
+      const items = get().itemsByProject[projectId] || []
+      return items.filter(item => (item as any).isDraft).length
+    },
+
+    hasUnsaved: (projectId: string) => {
+      return get().hasUnsavedChanges[projectId] || false
     },
   }
 })

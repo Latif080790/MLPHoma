@@ -29,6 +29,7 @@ import { AHSPItemEditor } from './AHSPItemEditor'
 import { ZoneManager } from './ZoneManager'
 import { ZonePriceEditor } from './ZonePriceEditor'
 import { PriceHistoryDialog } from './PriceHistoryDialog'
+import { AHSPCreationModeDialog, type AHSPCreationMode } from './AHSPCreationModeDialog'
 import { formatIDR } from '../../lib/utils'
 import type { AHSPItem, Zone } from '../../types/ahsp'
 import { toast } from 'sonner'
@@ -58,9 +59,11 @@ export function AHSPCatalog({
   const [showEditor, setShowEditor] = useState(false)
   const [showZoneEditor, setShowZoneEditor] = useState(false)
   const [showHistoryDialog, setShowHistoryDialog] = useState(false)
+  const [showModeDialog, setShowModeDialog] = useState(false)
 
   const [editingItem, setEditingItem] = useState<AHSPItem | null>(null)
   const [pendingDeleteItem, setPendingDeleteItem] = useState<AHSPItem | null>(null)
+  const [selectedMode, setSelectedMode] = useState<AHSPCreationMode | null>(null)
   const [visibleCount, setVisibleCount] = useState(50)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
@@ -259,8 +262,15 @@ export function AHSPCatalog({
 
   // Handle actions
   const handleAddItem = () => {
+    setShowModeDialog(true)
+  }
+
+  const handleModeSelect = (mode: AHSPCreationMode) => {
+    setSelectedMode(mode)
     setEditingItem(null)
+    setShowModeDialog(false)
     setShowEditor(true)
+    toast.info(`Creating AHSP in ${mode.toUpperCase()} mode`)
   }
 
   const handleEditItem = (item: AHSPItem) => {
@@ -701,10 +711,19 @@ export function AHSPCatalog({
         )}
       </div>
 
+      <AHSPCreationModeDialog
+        open={showModeDialog}
+        onClose={() => setShowModeDialog(false)}
+        onSelect={handleModeSelect}
+      />
+
       <AHSPItemEditor
         item={editingItem}
         open={showEditor}
-        onClose={() => setShowEditor(false)}
+        onClose={() => {
+          setShowEditor(false)
+          setSelectedMode(null)
+        }}
         onSave={(data) => {
           if (editingItem) {
             updateAHSPItem(editingItem.id, data)

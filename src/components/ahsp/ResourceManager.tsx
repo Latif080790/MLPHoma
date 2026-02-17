@@ -7,6 +7,7 @@
 import React, { useState, useMemo } from 'react'
 import { Plus, Edit2, Trash2, Save, X, Upload, CloudUpload, Search, Filter, FileText } from 'lucide-react'
 import { Button } from '../ui/button'
+import { Checkbox } from '../ui/checkbox'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
@@ -55,6 +56,8 @@ export function ResourceManager() {
   const [pendingImportResources, setPendingImportResources] = useState<ParsedResource[]>([])
   const [confirmImportOpen, setConfirmImportOpen] = useState(false)
   const [visibleCount, setVisibleCount] = useState(50)
+  const [selectedResources, setSelectedResources] = useState<Set<string>>(new Set())
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
 
   const [formData, setFormData] = useState({
     code: '',
@@ -89,6 +92,41 @@ export function ResourceManager() {
   const visibleResources = useMemo(() => {
     return filteredResources.slice(0, visibleCount)
   }, [filteredResources, visibleCount])
+
+  // Reset visible count on search/filter change
+  React.useEffect(() => {
+    setVisibleCount(50)
+    setSelectedResources(new Set()) // Clear selection on filter change
+  }, [searchQuery, selectedType])
+
+  // Checkbox handlers
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedResources(new Set(visibleResources.map(r => r.id)))
+    } else {
+      setSelectedResources(new Set())
+    }
+  }
+
+  const handleSelectOne = (resourceId: string, checked: boolean) => {
+    const newSelected = new Set(selectedResources)
+    if (checked) {
+      newSelected.add(resourceId)
+    } else {
+      newSelected.delete(resourceId)
+    }
+    setSelectedResources(newSelected)
+  }
+
+  const handleBulkDelete = () => {
+    selectedResources.forEach(id => deleteResource(id))
+    setSelectedResources(new Set())
+    setConfirmBulkDelete(false)
+    toast.success(`Deleted ${selectedResources.size} resources`)
+  }
+
+  const isAllSelected = visibleResources.length > 0 && selectedResources.size === visibleResources.length
+  const isSomeSelected = selectedResources.size > 0 && selectedResources.size < visibleResources.length
 
   // Group by type for summary
   const summary = useMemo(() => {
@@ -373,12 +411,17 @@ export function ResourceManager() {
             <SelectItem value="subcontractor">Subcontractor</SelectItem>
           </SelectContent>
         </Select>
+        {selectedResources.size > 0 && (
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={() => setConfirmBulkDelete(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete {selectedResources.size} Selected
+          </Button>
+        )}
       </div>
-
-      {/* Reset visible count on search/filter change */}
-      {React.useEffect(() => {
-        setVisibleCount(50)
-      }, [searchQuery, selectedType])}
 
       {/* Resources Table */}
       <Card>
@@ -386,6 +429,12 @@ export function ResourceManager() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12">
+                  <Checkbox 
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
                 <TableHead>Code</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
@@ -398,13 +447,19 @@ export function ResourceManager() {
             <TableBody>
               {filteredResources.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     No resources found. Add your first resource to get started.
                   </TableCell>
                 </TableRow>
               ) : (
                 visibleResources.map((resource) => (
                   <TableRow key={resource.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedResources.has(resource.id)}
+                        onCheckedChange={(checked) => handleSelectOne(resource.id, checked as boolean)}
+                      />
+                    </TableCell>
                     <TableCell className="font-mono text-sm">{resource.code}</TableCell>
                     <TableCell>
                       <div>
@@ -612,6 +667,23 @@ export function ResourceManager() {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => { setPendingImportResources([]); toast.info('Import cancelled') }}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmImport}>Import All</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={confirmBulkDelete} onOpenChange={setConfirmBulkDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedResources.size} resources?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {selectedResources.size} selected resource(s). This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive">
+              Delete All
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
