@@ -7,13 +7,16 @@
 import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
-import { Calculator, CloudUpload } from 'lucide-react'
+import { Badge } from '../../components/ui/badge'
+import { Calculator, CloudUpload, MapPin } from 'lucide-react'
 import { useRabStore } from '../../store/rabStore'
 import { useProjectStore } from '../../store/projectStore'
+import { useAHSPStore } from '../../store/ahspStore'
 import { toast } from 'sonner'
 import { RABTable } from '../../components/rab/RABTable'
 import { formatIDR } from '../../lib/utils'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
+import { CardSkeleton } from '../../components/common/LoadingSkeleton'
 
 const EMPTY_ARRAY: any[] = []
 
@@ -23,7 +26,11 @@ export default function RAB() {
   // Use direct state selection to ensure stability
   const currentProject = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const items = useRabStore(s => currentProject ? s.getItems(currentProject.id) : EMPTY_ARRAY)
+  const { zones, loading } = useAHSPStore()
   const [syncing, setSyncing] = React.useState(false)
+
+  // Get zone name if project has zoneId
+  const currentZone = currentProject?.zoneId ? zones.find(z => z.id === currentProject.zoneId) : null
 
   const handleSync = async () => {
     if (!currentProject?.id) {
@@ -87,6 +94,18 @@ export default function RAB() {
       />
 
       <div className="space-y-4">
+        {/* Zone Badge */}
+        {currentZone && (
+          <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50/50 px-3 py-2 dark:border-blue-900 dark:bg-blue-950/30">
+            <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Zone Pricing Active:</span>
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+              {currentZone.name}
+            </Badge>
+            <span className="text-xs text-blue-600 dark:text-blue-400">Prices adjusted for this zone</span>
+          </div>
+        )}
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="hover-interactive">
             <CardHeader className="pb-1 pt-4">
@@ -124,7 +143,11 @@ export default function RAB() {
 
         <Card className="panel-compact">
           <CardContent className="p-0">
-            <RABTable projectId={currentProject.id} />
+            {loading.ahspItems ? (
+              <CardSkeleton />
+            ) : (
+              <RABTable projectId={currentProject.id} />
+            )}
           </CardContent>
         </Card>
       </div>

@@ -1,36 +1,19 @@
 /**
  * progressEvidenceService.ts
- * FASE 3.6: Progress Evidence-Based — GPS Coordinates & EXIF Extraction
- *
- * When field users submit progress photos:
- * 1. Extract EXIF metadata (GPS coords, timestamp, device) from photos
- * 2. Validate GPS coords against project site location (within radius)
- * 3. Store evidence with progress record for QC audit
- * 4. Flag suspicious entries (too far from site, missing GPS, future timestamps)
+ * Service for managing progress evidence validation and requirements.
+ * Enforces quality gates on progress updates.
  */
 
 import { assertSupabase } from '../lib/supabaseClient'
+import { generateId } from '../lib/idGenerator'
+import type {
+    ProgressEvidence,
+    EvidenceRequirement,
+    EvidenceValidationResult,
+    UploadEvidenceInput,
+} from '../types/progressEvidence'
 
 // ---------- Types ----------
-
-export interface PhotoEvidence {
-    id: string
-    progressDate: string
-    photoUrl: string
-    latitude: number | null
-    longitude: number | null
-    capturedAt: string | null
-    deviceInfo: string | null
-    distanceFromSite: number | null  // meters
-    validationStatus: 'valid' | 'warning' | 'invalid' | 'pending'
-    validationNotes: string
-}
-
-export interface EvidenceValidationResult {
-    isValid: boolean
-    distanceFromSite: number | null
-    warnings: string[]
-}
 
 export interface GpsCoords {
     latitude: number
@@ -39,8 +22,7 @@ export interface GpsCoords {
 
 // ---------- Constants ----------
 
-const MAX_SITE_DISTANCE_METERS = 500 // 500m radius from project site
-const MAX_FUTURE_MINUTES = 30        // Don't accept photos > 30 min in the future
+const MAX_FUTURE_MINUTES = 30 // Don't accept photos > 30 min in the future
 
 // ---------- Helpers ----------
 
@@ -60,41 +42,6 @@ function haversineDistance(
         Math.sin(dLon / 2) * Math.sin(dLon / 2)
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
     return R * c
-}
-
-/**
- * Parse EXIF-style GPS coordinates from a Blob/File.
- * Uses the browser's native capabilities.
- * Falls back gracefully if EXIF data unavailable.
- */
-async function extractGpsFromFile(file: File): Promise<{
-    latitude: number | null
-    longitude: number | null
-    capturedAt: string | null
-    deviceInfo: string | null
-}> {
-    // In a browser environment, we can't easily read EXIF without a library.
-    // However, we can request GPS from the browser's Geolocation API as a fallback
-    // and extract image metadata from canvas if available.
-    // For a robust implementation, the backend would use ExifTool or sharp.
-    
-    // Client-side approach: read EXIF using ArrayBuffer parsing
-    try {
-        const buffer = await file.arrayBuffer()
-        const view = new DataView(buffer)
-        
-        // Quick JPEG check + EXIF header scan
-        if (view.getUint16(0) !== 0xFFD8) {
-            return { latitude: null, longitude: null, capturedAt: null, deviceInfo: null }
-        }
-
-        // For production, use a library like exif-js or piexifjs
-        // Simplified: skip EXIF parsing and rely on Geolocation API
-    } catch {
-        // Parsing failed — expected in most browser environments
-    }
-
-    return { latitude: null, longitude: null, capturedAt: null, deviceInfo: null }
 }
 
 // ---------- Service ----------

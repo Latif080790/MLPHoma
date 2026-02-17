@@ -28,6 +28,7 @@ import { InvoiceDialog } from "@/components/finance/InvoiceDialog"
 import { ClaimDialog } from "@/components/finance/ClaimDialog"
 import { AgingReport } from "@/components/finance/AgingReport"
 import { ThreeWayMatch } from "@/components/finance/ThreeWayMatch"
+import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
@@ -266,6 +267,7 @@ export default function Finance() {
                                         <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Inv Number</TableHead>
+                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Trace</TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Due Date</TableHead>
                                             <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
                                             <TableHead className="p-3 text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
@@ -273,26 +275,48 @@ export default function Finance() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {invoices.map(inv => (
-                                            <TableRow key={inv.id} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
-                                                <TableCell className="p-3 font-medium text-slate-700 dark:text-slate-300">{inv.vendor_name}</TableCell>
-                                                <TableCell className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">{inv.invoice_number}</TableCell>
-                                                <TableCell className="p-3 text-xs text-slate-500">{format(new Date(inv.due_date || new Date()), 'dd MMM yyyy')}</TableCell>
-                                                <TableCell className="p-3 text-right font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">Rp {inv.total_amount.toLocaleString()}</TableCell>
-                                                <TableCell className="p-3 text-center">
-                                                    <Badge variant={
-                                                        inv.status === 'PAID' ? 'default' :
-                                                            inv.status === 'OVERDUE' ? 'destructive' :
-                                                                'secondary'
-                                                    } className="text-[10px] font-normal px-2 py-0.5">{inv.status}</Badge>
-                                                </TableCell>
-                                                <TableCell className="p-3 text-right">
-                                                    {inv.status !== 'PAID' && (
-                                                        <Button size="sm" onClick={() => handlePayClick(inv)} className="h-7 text-xs">Pay</Button>
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {invoices.map((inv, idx) => {
+                                            // Mock trace data - show invoice lineage back to GRN → PO
+                                            const hasTrace = inv.po_id || idx % 2 === 0
+                                            const mockTrace = hasTrace ? [
+                                                { type: 'PO' as const, ref: inv.po_id?.slice(0, 12) || `PO-${String(idx + 1).padStart(4, '0')}` },
+                                                { type: 'GRN' as const, ref: `GRN-${String(idx).padStart(3, '0')}` },
+                                            ] : []
+
+                                            return (
+                                                <TableRow key={inv.id} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
+                                                    <TableCell className="p-3 font-medium text-slate-700 dark:text-slate-300">{inv.vendor_name}</TableCell>
+                                                    <TableCell className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">{inv.invoice_number}</TableCell>
+                                                    <TableCell className="p-3">
+                                                        {mockTrace.length > 0 ? (
+                                                            <div className="flex items-center gap-1.5">
+                                                                <TraceCountBadge count={mockTrace.length} direction="upstream" />
+                                                                <TraceChain 
+                                                                    chain={mockTrace}
+                                                                    size="sm"
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-xs text-slate-400">-</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="p-3 text-xs text-slate-500">{format(new Date(inv.due_date || new Date()), 'dd MMM yyyy')}</TableCell>
+                                                    <TableCell className="p-3 text-right font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">Rp {inv.total_amount.toLocaleString()}</TableCell>
+                                                    <TableCell className="p-3 text-center">
+                                                        <Badge variant={
+                                                            inv.status === 'PAID' ? 'default' :
+                                                                inv.status === 'OVERDUE' ? 'destructive' :
+                                                                    'secondary'
+                                                        } className="text-[10px] font-normal px-2 py-0.5">{inv.status}</Badge>
+                                                    </TableCell>
+                                                    <TableCell className="p-3 text-right">
+                                                        {inv.status !== 'PAID' && (
+                                                            <Button size="sm" onClick={() => handlePayClick(inv)} className="h-7 text-xs">Pay</Button>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>

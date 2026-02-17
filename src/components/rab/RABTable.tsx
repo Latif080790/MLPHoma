@@ -4,8 +4,9 @@ import {
 } from '../ui/table'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { Trash2, Plus, Search, ChevronDown, ChevronRight, Info } from 'lucide-react'
+import { Trash2, Plus, Search, ChevronDown, ChevronRight, Info, MapPin } from 'lucide-react'
 import { Badge } from '../ui/badge'
+import { LoadingSpinner } from '../common/LoadingSpinner'
 import { useRabStore, RABItem, calculatePareto } from '../../store/rabStore'
 import { formatIDR } from '../../lib/utils'
 import { useAHSPStore } from '../../store/ahspStore'
@@ -58,7 +59,9 @@ export function RABTable({ projectId }: RABTableProps) {
     resources,
     componentsByAHSP,
     zonePricesByZone,
-    fetchZonePrices
+    fetchZonePrices,
+    zones,
+    loading
   } = useAHSPStore()
 
   const { getItems, addItem, updateItem, removeItem } = useRabStore()
@@ -70,6 +73,9 @@ export function RABTable({ projectId }: RABTableProps) {
 
   // Get Project for Zone Info
   const project = useProjectStore(s => s.projects[projectId])
+  
+  // Get zone name
+  const currentZone = project?.zoneId ? zones.find(z => z.id === project.zoneId) : null
 
   // WBS Store
   const { importWBS } = useWBSStore()
@@ -302,7 +308,7 @@ export function RABTable({ projectId }: RABTableProps) {
       </AlertDialog>
 
       <div className="sticky-glass-panel flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="ghost" size="sm" className="control-compact" onClick={() => setShowDetails(!showDetails)}>
             {showDetails ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             {showDetails ? 'Hide Split Costs' : 'Show Split Costs'}
@@ -310,6 +316,9 @@ export function RABTable({ projectId }: RABTableProps) {
           <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-2" />
           <h3 className="text-sm font-semibold tracking-tight text-slate-700 dark:text-slate-300 uppercase">Cost Items</h3>
           <Badge variant="secondary" className="ml-2 font-mono text-xs text-slate-500 bg-slate-100 dark:bg-slate-800">{items.length}</Badge>
+          {loading.zonePrices && (
+            <LoadingSpinner size="sm" text="Loading zone prices..." className="ml-2" />
+          )}
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" className="gap-2 text-xs h-8" onClick={handleAutoSchedule}>
@@ -325,9 +334,14 @@ export function RABTable({ projectId }: RABTableProps) {
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
               <DialogHeader>
-                <DialogTitle>
-                  Add Item from AHSP
-                  {project?.zoneId && <span className="ml-2 text-sm font-normal text-muted-foreground">(Zone Pricing Active)</span>}
+                <DialogTitle className="flex items-center gap-2">
+                  <span>Add Item from AHSP</span>
+                  {currentZone && (
+                    <Badge variant="secondary" className="flex items-center gap-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                      <MapPin className="h-3 w-3" />
+                      {currentZone.name}
+                    </Badge>
+                  )}
                 </DialogTitle>
               </DialogHeader>
               <div className="p-4 border-b">
@@ -439,9 +453,9 @@ export function RABTable({ projectId }: RABTableProps) {
         <div className="max-h-[600px] overflow-auto relative">
           <Table>
             <TableHeader className="sticky-glass-tablehead">
-              <TableRow className="border-b border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                <TableHead className="w-[50px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">No</TableHead>
-                <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">
+              <TableRow className="border-b-2 border-slate-200 dark:border-slate-700 hover:bg-transparent">
+                <TableHead className="w-[50px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">No</TableHead>
+                <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">
                   <div className="inline-flex items-center gap-1">
                     <span>Cls</span>
                     <Tooltip>
@@ -461,21 +475,21 @@ export function RABTable({ projectId }: RABTableProps) {
                     </Tooltip>
                   </div>
                 </TableHead>
-                <TableHead className="w-[100px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Code</TableHead>
-                <TableHead className="min-w-[250px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Description & Spec</TableHead>
-                <TableHead className="w-[150px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Linked Task</TableHead>
-                <TableHead className="w-[60px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Unit</TableHead>
-                <TableHead className="w-[100px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Volume</TableHead>
-                <TableHead className="w-[80px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">TKDN %</TableHead>
+                <TableHead className="w-[100px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3 border-l border-slate-200 dark:border-slate-700">Code</TableHead>
+                <TableHead className="min-w-[250px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">Description & Spec</TableHead>
+                <TableHead className="w-[150px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">Linked Task</TableHead>
+                <TableHead className="w-[60px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3 border-l border-slate-200 dark:border-slate-700">Unit</TableHead>
+                <TableHead className="w-[100px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">Volume</TableHead>
+                <TableHead className="w-[80px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">TKDN %</TableHead>
 
-                {showDetails && <TableHead className="w-[110px] text-right bg-blue-50/50 dark:bg-blue-900/20 font-bold text-blue-700 dark:text-blue-300 text-xs uppercase">Material</TableHead>}
-                {showDetails && <TableHead className="w-[110px] text-right bg-green-50/50 dark:bg-green-900/20 font-bold text-green-700 dark:text-green-300 text-xs uppercase">Labor</TableHead>}
-                {showDetails && <TableHead className="w-[110px] text-right bg-orange-50/50 dark:bg-orange-900/20 font-bold text-orange-700 dark:text-orange-300 text-xs uppercase">Equip</TableHead>}
-                {showDetails && <TableHead className="w-[110px] text-right bg-purple-50/50 dark:bg-purple-900/20 font-bold text-purple-700 dark:text-purple-300 text-xs uppercase">Subcon</TableHead>}
+                {showDetails && <TableHead className="w-[110px] text-right bg-blue-50/50 dark:bg-blue-900/20 font-bold text-blue-700 dark:text-blue-300 text-xs uppercase py-3 border-l-2 border-blue-200 dark:border-blue-800">Material</TableHead>}
+                {showDetails && <TableHead className="w-[110px] text-right bg-green-50/50 dark:bg-green-900/20 font-bold text-green-700 dark:text-green-300 text-xs uppercase py-3">Labor</TableHead>}
+                {showDetails && <TableHead className="w-[110px] text-right bg-orange-50/50 dark:bg-orange-900/20 font-bold text-orange-700 dark:text-orange-300 text-xs uppercase py-3">Equip</TableHead>}
+                {showDetails && <TableHead className="w-[110px] text-right bg-purple-50/50 dark:bg-purple-900/20 font-bold text-purple-700 dark:text-purple-300 text-xs uppercase py-3">Subcon</TableHead>}
 
-                <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Unit Price</TableHead>
-                <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent">Total</TableHead>
-                <TableHead className="w-[40px] bg-transparent"></TableHead>
+                <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3 border-l border-slate-200 dark:border-slate-700">Unit Price</TableHead>
+                <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">Total</TableHead>
+                <TableHead className="w-[40px] bg-transparent py-3"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -502,16 +516,16 @@ export function RABTable({ projectId }: RABTableProps) {
 
                   return (
                     <TableRow key={item.id} className={`${rowClass} group transition-colors border-b border-slate-100 dark:border-slate-800`}>
-                      <TableCell className="text-center text-[10px] font-mono text-slate-400 py-1">{idx + 1}</TableCell>
-                      <TableCell className="text-center py-1">
+                      <TableCell className="text-center text-[10px] font-mono text-slate-400 py-2">{idx + 1}</TableCell>
+                      <TableCell className="text-center py-2">
                         <Badge variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} className={`h-4 w-4 p-0 flex items-center justify-center text-[9px] font-mono ${pClass === 'B' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 border-0' : ''}`}>
                           {pClass}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-mono text-[10px] text-slate-500 py-1">
+                      <TableCell className="font-mono text-[10px] text-slate-500 py-2 border-l border-slate-100 dark:border-slate-800">
                         {item.item_code || '-'}
                       </TableCell>
-                      <TableCell className="py-1">
+                      <TableCell className="py-2">
                         <div className="space-y-1">
                           <Input
                             value={item.name || ''}
@@ -527,7 +541,7 @@ export function RABTable({ projectId }: RABTableProps) {
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="py-1">
+                      <TableCell className="py-2">
                         <Select
                           value={item.taskId || 'unassigned'}
                           onValueChange={(val) => updateItem(projectId, item.id, { taskId: val === 'unassigned' ? undefined : val })}
@@ -543,14 +557,14 @@ export function RABTable({ projectId }: RABTableProps) {
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell className="py-1">
+                      <TableCell className="py-2 border-l border-slate-100 dark:border-slate-800">
                         <Input
                           value={item.unit || ''}
                           onChange={e => updateItem(projectId, item.id, { unit: e.target.value })}
                           className="h-7 text-xs text-center border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none"
                         />
                       </TableCell>
-                      <TableCell className="py-1">
+                      <TableCell className="py-2">
                         <Input
                           type="number"
                           value={item.volume || ''}
@@ -558,7 +572,7 @@ export function RABTable({ projectId }: RABTableProps) {
                           className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none"
                         />
                       </TableCell>
-                      <TableCell className="py-1">
+                      <TableCell className="py-2">
                         <Input
                           type="number"
                           placeholder="0"
@@ -570,25 +584,25 @@ export function RABTable({ projectId }: RABTableProps) {
 
                       {showDetails && (
                         <>
-                          <TableCell className="bg-blue-50/30 dark:bg-blue-900/5 py-1">
+                          <TableCell className="bg-blue-50/30 dark:bg-blue-900/5 py-2 border-l-2 border-blue-200 dark:border-blue-900">
                             <Input type="number" className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-blue-200 focus:border-blue-500 shadow-none text-blue-700 dark:text-blue-300"
                               value={item.cost_material || 0}
                               onChange={(e) => handleSplitCostChange(item.id, 'cost_material', e.target.value)}
                             />
                           </TableCell>
-                          <TableCell className="bg-green-50/30 dark:bg-green-900/5 py-1">
+                          <TableCell className="bg-green-50/30 dark:bg-green-900/5 py-2">
                             <Input type="number" className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-green-200 focus:border-green-500 shadow-none text-green-700 dark:text-green-300"
                               value={item.cost_labor || 0}
                               onChange={(e) => handleSplitCostChange(item.id, 'cost_labor', e.target.value)}
                             />
                           </TableCell>
-                          <TableCell className="bg-orange-50/30 dark:bg-orange-900/5 py-1">
+                          <TableCell className="bg-orange-50/30 dark:bg-orange-900/5 py-2">
                             <Input type="number" className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-orange-200 focus:border-orange-500 shadow-none text-orange-700 dark:text-orange-300"
                               value={item.cost_equipment || 0}
                               onChange={(e) => handleSplitCostChange(item.id, 'cost_equipment', e.target.value)}
                             />
                           </TableCell>
-                          <TableCell className="bg-purple-50/30 dark:bg-purple-900/5 py-1">
+                          <TableCell className="bg-purple-50/30 dark:bg-purple-900/5 py-2">
                             <Input type="number" className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-purple-200 focus:border-purple-500 shadow-none text-purple-700 dark:text-purple-300"
                               value={item.cost_subcon || 0}
                               onChange={(e) => handleSplitCostChange(item.id, 'cost_subcon', e.target.value)}
@@ -597,7 +611,7 @@ export function RABTable({ projectId }: RABTableProps) {
                         </>
                       )}
 
-                      <TableCell className="py-1">
+                      <TableCell className="py-2 border-l border-slate-100 dark:border-slate-800">
                         <Input
                           type="number"
                           value={item.unit_price || ''}
@@ -605,10 +619,10 @@ export function RABTable({ projectId }: RABTableProps) {
                           className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none font-medium"
                         />
                       </TableCell>
-                      <TableCell className="text-right font-mono text-xs font-semibold text-slate-700 dark:text-slate-300 py-1">
+                      <TableCell className="text-right font-mono text-xs font-semibold text-slate-700 dark:text-slate-300 py-2">
                         {formatIDR(lineTotal)}
                       </TableCell>
-                      <TableCell className="py-1">
+                      <TableCell className="py-2">
                         <Button
                           size="icon"
                           variant="ghost"

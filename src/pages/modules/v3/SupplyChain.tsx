@@ -18,6 +18,7 @@ import { InventoryTransactionDialog } from "@/components/supply-chain/InventoryT
 import { GRNDialog } from "@/components/supply-chain/GRNDialog"
 import { MaterialTransferDialog } from "@/components/supply-chain/MaterialTransferDialog"
 import { WorkOrderPanel } from "@/components/modules/WorkOrderPanel"
+import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 
 export default function SupplyChain() {
     const { activeProjectId } = useProjectStore()
@@ -134,32 +135,43 @@ export default function SupplyChain() {
                         />
                     ) : (
                         <div className="grid gap-3">
-                            {materialRequests.map(mr => (
-                                <div key={mr.id} className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-md transition-all hover:border-blue-200 dark:hover:border-blue-800">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-10 w-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
-                                            <Package size={20} />
+                            {materialRequests.map((mr, idx) => {
+                                // Mock trace data - show if MR converted to PO
+                                const hasDownstream = mr.status === 'PO_CREATED' || (mr.status === 'APPROVED' && idx % 3 === 0)
+                                const mockTrace = hasDownstream ? [
+                                    { type: 'PO' as const, ref: `PO-${String(idx + 10).padStart(4, '0')}` }
+                                ] : []
+
+                                return (
+                                    <div key={mr.id} className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-md transition-all hover:border-blue-200 dark:hover:border-blue-800">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-10 w-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
+                                                <Package size={20} />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">{mr.itemName}</h3>
+                                                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border ${getStatusColor(mr.status)}`}>
+                                                        {mr.status}
+                                                    </Badge>
+                                                    {mockTrace.length > 0 && (
+                                                        <TraceChain chain={mockTrace} size="sm" />
+                                                    )}
+                                                </div>
+                                                <div className="text-sm text-slate-500 flex items-center gap-3 mt-0.5">
+                                                    <span className="font-medium text-slate-700 dark:text-slate-300">Qty: {mr.quantityRequested} {mr.unit}</span>
+                                                    <span className="text-slate-300">•</span>
+                                                    <span>{mr.wbsName || 'General Request'}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-semibold text-slate-900 dark:text-slate-100">{mr.itemName}</h3>
-                                                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border ${getStatusColor(mr.status)}`}>
-                                                    {mr.status}
-                                                </Badge>
-                                            </div>
-                                            <div className="text-sm text-slate-500 flex items-center gap-3 mt-0.5">
-                                                <span className="font-medium text-slate-700 dark:text-slate-300">Qty: {mr.quantityRequested} {mr.unit}</span>
-                                                <span className="text-slate-300">•</span>
-                                                <span>{mr.wbsName || 'General Request'}</span>
-                                            </div>
+                                        <div className="text-right text-xs text-slate-400">
+                                            <div className="font-medium text-slate-600 dark:text-slate-400">Required: {mr.dateRequired || 'ASAP'}</div>
+                                            <div>ID: {mr.id.slice(0, 8)}</div>
                                         </div>
                                     </div>
-                                    <div className="text-right text-xs text-slate-400">
-                                        <div className="font-medium text-slate-600 dark:text-slate-400">Required: {mr.dateRequired || 'ASAP'}</div>
-                                        <div>ID: {mr.id.slice(0, 8)}</div>
-                                    </div>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     )}
                 </TabsContent>
@@ -180,33 +192,65 @@ export default function SupplyChain() {
                                         <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
                                             <TableHead className="w-[120px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">PO Number</TableHead>
                                             <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
+                                            <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Trace</TableHead>
                                             <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
                                             <TableHead className="w-[120px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
                                             <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Date</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {purchaseOrders.map(po => (
-                                            <TableRow key={po.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors">
-                                                <TableCell className="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 py-2 border-r border-transparent">
-                                                    {po.poNumber}
-                                                </TableCell>
-                                                <TableCell className="py-2 text-sm text-slate-700 dark:text-slate-300">
-                                                    {po.vendorName || '-'}
-                                                </TableCell>
-                                                <TableCell className="text-right font-mono text-xs font-semibold py-2">
-                                                    Rp {po.totalAmount.toLocaleString('id-ID')}
-                                                </TableCell>
-                                                <TableCell className="text-center py-2">
-                                                    <Badge variant="outline" className={`text-[10px] font-normal px-2 py-0.5 border ${getStatusColor(po.status)}`}>
-                                                        {po.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right text-xs text-slate-500 font-mono py-2">
-                                                    {format(new Date(po.createdAt), 'dd MMM yyyy')}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {purchaseOrders.map((po, idx) => {
+                                            // Mock trace data - will be replaced with real backend data
+                                            const hasUpstream = idx % 3 === 0
+                                            const hasDownstream = po.status === 'APPROVED' && idx % 2 === 0
+                                            const mockTrace = hasUpstream || hasDownstream ? {
+                                                upstream: hasUpstream ? [{ type: 'MR' as const, ref: `MR-${String(idx + 1).padStart(4, '0')}` }] : [],
+                                                downstream: hasDownstream ? [
+                                                    { type: 'GRN' as const, ref: `GRN-${String(idx).padStart(3, '0')}` },
+                                                    ...(idx % 4 === 0 ? [{ type: 'INVOICE' as const, ref: `INV-${String(idx).padStart(3, '0')}` }] : [])
+                                                ] : []
+                                            } : null
+
+                                            return (
+                                                <TableRow key={po.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors">
+                                                    <TableCell className="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 py-2 border-r border-transparent">
+                                                        {po.poNumber}
+                                                    </TableCell>
+                                                    <TableCell className="py-2 text-sm text-slate-700 dark:text-slate-300">
+                                                        {po.vendorName || '-'}
+                                                    </TableCell>
+                                                    <TableCell className="py-2">
+                                                        {mockTrace && (mockTrace.upstream.length > 0 || mockTrace.downstream.length > 0) ? (
+                                                            <div className="flex items-center gap-1.5">
+                                                                {mockTrace.upstream.length > 0 && (
+                                                                    <TraceCountBadge count={mockTrace.upstream.length} direction="upstream" />
+                                                                )}
+                                                                <TraceChain 
+                                                                    chain={[...mockTrace.upstream, ...mockTrace.downstream]}
+                                                                    size="sm"
+                                                                />
+                                                                {mockTrace.downstream.length > 0 && (
+                                                                    <TraceCountBadge count={mockTrace.downstream.length} direction="downstream" />
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-xs text-slate-400">-</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-mono text-xs font-semibold py-2">
+                                                        Rp {po.totalAmount.toLocaleString('id-ID')}
+                                                    </TableCell>
+                                                    <TableCell className="text-center py-2">
+                                                        <Badge variant="outline" className={`text-[10px] font-normal px-2 py-0.5 border ${getStatusColor(po.status)}`}>
+                                                            {po.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-xs text-slate-500 font-mono py-2">
+                                                        {format(new Date(po.createdAt), 'dd MMM yyyy')}
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>
