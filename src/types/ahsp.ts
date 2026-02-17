@@ -191,6 +191,9 @@ export interface AHSPActions {
 
   // History
   fetchPriceHistory: (ahspId: string, zoneId?: string) => Promise<PriceHistory[]>
+
+  // Clear all
+  clearAllData: () => Promise<void>
 }
 
 /** AHSP Store Interface */

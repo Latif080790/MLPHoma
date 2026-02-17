@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo } from 'react'
-import { Plus, Edit2, Trash2, Save, X, Upload, CloudUpload, Search, Filter, FileText } from 'lucide-react'
+import { Plus, Edit2, Trash2, Save, X, Upload, CloudUpload, Search, Filter, FileText, RotateCcw } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
 import { Input } from '../ui/input'
@@ -45,6 +45,7 @@ export function ResourceManager() {
     updateResource,
     deleteResource,
     importResources,
+    clearAllData,
   } = useAHSPStore()
 
   const [showEditor, setShowEditor] = useState(false)
@@ -58,6 +59,7 @@ export function ResourceManager() {
   const [visibleCount, setVisibleCount] = useState(50)
   const [selectedResources, setSelectedResources] = useState<Set<string>>(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
 
   const [formData, setFormData] = useState({
     code: '',
@@ -341,6 +343,16 @@ export function ResourceManager() {
             <Plus className="h-4 w-4 mr-2" />
             Add Resource
           </Button>
+
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowResetConfirm(true)}
+            disabled={resources.length === 0}
+          >
+            <RotateCcw className="h-3.5 w-3.5 mr-2" />
+            Reset System
+          </Button>
         </div>
       </div>
 
@@ -412,8 +424,8 @@ export function ResourceManager() {
           </SelectContent>
         </Select>
         {selectedResources.size > 0 && (
-          <Button 
-            variant="destructive" 
+          <Button
+            variant="destructive"
             size="sm"
             onClick={() => setConfirmBulkDelete(true)}
           >
@@ -430,7 +442,7 @@ export function ResourceManager() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">
-                  <Checkbox 
+                  <Checkbox
                     checked={isAllSelected}
                     onCheckedChange={handleSelectAll}
                   />
@@ -683,6 +695,33 @@ export function ResourceManager() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive">
               Delete All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+        <AlertDialogContent className="max-w-[400px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <RotateCcw className="h-5 w-5" />
+              Reset Semua Data?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini akan <strong>menghapus permanen</strong> semua data AHSP, Komponen, dan Resources (DKH) dari database.
+              Data yang sudah ada di RAB proyek tidak akan terhapus, namun referensi ke katalog akan hilang.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                await clearAllData()
+                setShowResetConfirm(false)
+              }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Ya, Hapus Semua
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
