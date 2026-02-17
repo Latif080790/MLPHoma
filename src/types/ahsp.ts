@@ -155,7 +155,7 @@ export interface AHSPActions {
   addAHSPItem: (item: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => string
   updateAHSPItem: (id: string, updates: Partial<AHSPItem>) => void
   deleteAHSPItem: (id: string) => void
-  importAHSPItems: (items: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'>[]) => void
+  importAHSPItems: (items: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'>[]) => Promise<void>
   exportAHSPItems: () => AHSPItem[]
 
   // Component actions
