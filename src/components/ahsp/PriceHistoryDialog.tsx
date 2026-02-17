@@ -50,41 +50,41 @@ export function PriceHistoryDialog({
     }
 
     const getZoneName = (zoneId?: string) => {
-        if (!zoneId) return 'Master Price'
+        if (!zoneId) return 'Harga Master'
         const zone = zones.find((z) => z.id === zoneId)
-        return zone ? zone.name : 'Unknown Zone'
+        return zone ? zone.name : 'Zona Tidak Diketahui'
     }
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[700px]">
                 <DialogHeader>
-                    <DialogTitle>Price History: {itemName}</DialogTitle>
+                    <DialogTitle>Riwayat Harga: {itemName}</DialogTitle>
                 </DialogHeader>
 
                 <ScrollArea className="h-[400px] w-full rounded-md border p-4">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Zone</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead className="text-right">Old Price</TableHead>
-                                <TableHead className="text-right">New Price</TableHead>
-                                <TableHead className="text-right">Change</TableHead>
+                                <TableHead>Tanggal</TableHead>
+                                <TableHead>Zona</TableHead>
+                                <TableHead>Tipe</TableHead>
+                                <TableHead className="text-right">Harga Lama</TableHead>
+                                <TableHead className="text-right">Harga Baru</TableHead>
+                                <TableHead className="text-right">Perubahan</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading.priceHistory ? (
                                 <TableRow>
                                     <TableCell colSpan={6} className="text-center py-4">
-                                        Loading history...
+                                        Memuat riwayat...
                                     </TableCell>
                                 </TableRow>
                             ) : history.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
-                                        No price changes recorded yet.
+                                        Belum ada perubahan harga yang tercatat.
                                     </TableCell>
                                 </TableRow>
                             ) : (

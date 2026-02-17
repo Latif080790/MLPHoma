@@ -89,24 +89,52 @@ alter table public.rab_items enable row level security;
 
 -- Create policies to allow public access (for development)
 -- WARNING: In production, restrict this to authenticated users
+drop policy if exists "Allow public select resources" on public.resources;
 create policy "Allow public select resources" on public.resources for select using (true);
+
+drop policy if exists "Allow public insert resources" on public.resources;
 create policy "Allow public insert resources" on public.resources for insert with check (true);
+
+drop policy if exists "Allow public update resources" on public.resources;
 create policy "Allow public update resources" on public.resources for update using (true);
+
+drop policy if exists "Allow public delete resources" on public.resources;
 create policy "Allow public delete resources" on public.resources for delete using (true);
 
+drop policy if exists "Allow public select ahsp_items" on public.ahsp_items;
 create policy "Allow public select ahsp_items" on public.ahsp_items for select using (true);
+
+drop policy if exists "Allow public insert ahsp_items" on public.ahsp_items;
 create policy "Allow public insert ahsp_items" on public.ahsp_items for insert with check (true);
+
+drop policy if exists "Allow public update ahsp_items" on public.ahsp_items;
 create policy "Allow public update ahsp_items" on public.ahsp_items for update using (true);
+
+drop policy if exists "Allow public delete ahsp_items" on public.ahsp_items;
 create policy "Allow public delete ahsp_items" on public.ahsp_items for delete using (true);
 
+drop policy if exists "Allow public select ahsp_components" on public.ahsp_components;
 create policy "Allow public select ahsp_components" on public.ahsp_components for select using (true);
+
+drop policy if exists "Allow public insert ahsp_components" on public.ahsp_components;
 create policy "Allow public insert ahsp_components" on public.ahsp_components for insert with check (true);
+
+drop policy if exists "Allow public update ahsp_components" on public.ahsp_components;
 create policy "Allow public update ahsp_components" on public.ahsp_components for update using (true);
+
+drop policy if exists "Allow public delete ahsp_components" on public.ahsp_components;
 create policy "Allow public delete ahsp_components" on public.ahsp_components for delete using (true);
 
+drop policy if exists "Allow public select ahsp_price_history" on public.ahsp_price_history;
 create policy "Allow public select ahsp_price_history" on public.ahsp_price_history for select using (true);
+
+drop policy if exists "Allow public insert ahsp_price_history" on public.ahsp_price_history;
 create policy "Allow public insert ahsp_price_history" on public.ahsp_price_history for insert with check (true);
+
+drop policy if exists "Allow public update ahsp_price_history" on public.ahsp_price_history;
 create policy "Allow public update ahsp_price_history" on public.ahsp_price_history for update using (true);
+
+drop policy if exists "Allow public delete ahsp_price_history" on public.ahsp_price_history;
 create policy "Allow public delete ahsp_price_history" on public.ahsp_price_history for delete using (true);
 
 -- 5. Projects Table
@@ -233,13 +261,28 @@ alter table public.rab_approvals enable row level security;
 alter table public.ahsp_creation_logs enable row level security;
 
 -- Public policies for new tables (Dev only)
+drop policy if exists "Allow public all projects" on public.projects;
 create policy "Allow public all projects" on public.projects for all using (true);
+
+drop policy if exists "Allow public all wbs_items" on public.wbs_items;
 create policy "Allow public all wbs_items" on public.wbs_items for all using (true);
+
+drop policy if exists "Allow public all timeline_tasks" on public.timeline_tasks;
 create policy "Allow public all timeline_tasks" on public.timeline_tasks for all using (true);
+
+drop policy if exists "Allow public all task_dependencies" on public.task_dependencies;
 create policy "Allow public all task_dependencies" on public.task_dependencies for all using (true);
+
+drop policy if exists "Allow public all rap_data" on public.rap_data;
 create policy "Allow public all rap_data" on public.rap_data for all using (true);
+
+drop policy if exists "Allow public all rab_versions" on public.rab_versions;
 create policy "Allow public all rab_versions" on public.rab_versions for all using (true);
+
+drop policy if exists "Allow public all rab_approvals" on public.rab_approvals;
 create policy "Allow public all rab_approvals" on public.rab_approvals for all using (true);
+
+drop policy if exists "Allow public all ahsp_creation_logs" on public.ahsp_creation_logs;
 create policy "Allow public all ahsp_creation_logs" on public.ahsp_creation_logs for all using (true);
 
 -- ============================================================

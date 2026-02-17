@@ -82,14 +82,14 @@ export function ZonePriceEditor({ item, zoneId, currentPrice, open, onClose }: Z
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Edit Zone Price: {item.name}</DialogTitle>
-                    <p className="text-sm text-muted-foreground">Override base prices for this zone.</p>
+                    <DialogTitle>Ubah Harga Zona: {item.name}</DialogTitle>
+                    <p className="text-sm text-muted-foreground">Timpa harga dasar khusus untuk zona ini.</p>
                 </DialogHeader>
 
                 <div className="grid gap-4 py-4">
                     {/* Cost Components */}
                     <div className="space-y-2 border p-3 rounded-md">
-                        <h4 className="font-medium text-sm">Base Costs</h4>
+                        <h4 className="font-medium text-sm">Biaya Dasar</h4>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
                                 <Label className="text-xs">Material</Label>
@@ -132,7 +132,7 @@ export function ZonePriceEditor({ item, zoneId, currentPrice, open, onClose }: Z
 
                     {/* Markups */}
                     <div className="space-y-2 border p-3 rounded-md">
-                        <h4 className="font-medium text-sm">Markups (%)</h4>
+                        <h4 className="font-medium text-sm">Markup (%)</h4>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
                                 <Label className="text-xs">Overhead %</Label>
@@ -157,14 +157,14 @@ export function ZonePriceEditor({ item, zoneId, currentPrice, open, onClose }: Z
 
                     {/* Summary */}
                     <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                        <span className="font-semibold text-sm">Final Zone Price:</span>
+                        <span className="font-semibold text-sm">Harga Akhir Zona:</span>
                         <span className="font-bold text-lg">{formatIDR(finalPrice)}</span>
                     </div>
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose}>Cancel</Button>
-                    <Button onClick={handleSave}>Save Zone Price</Button>
+                    <Button variant="outline" onClick={onClose}>Batal</Button>
+                    <Button onClick={handleSave}>Simpan Harga Zona</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

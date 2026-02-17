@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, Info, X, RotateCcw } from 'lucide-react'
+import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, Info, X, RotateCcw, FileText, Wrench } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -30,6 +30,7 @@ import { ZoneManager } from './ZoneManager'
 import { ZonePriceEditor } from './ZonePriceEditor'
 import { PriceHistoryDialog } from './PriceHistoryDialog'
 import { AHSPCreationModeDialog, type AHSPCreationMode } from './AHSPCreationModeDialog'
+import { saveCreationLog } from '../../lib/supabaseClient'
 import { formatIDR } from '../../lib/utils'
 import type { AHSPItem, Zone } from '../../types/ahsp'
 import { toast } from 'sonner'
@@ -64,6 +65,7 @@ export function AHSPCatalog({
   const [editingItem, setEditingItem] = useState<AHSPItem | null>(null)
   const [pendingDeleteItem, setPendingDeleteItem] = useState<AHSPItem | null>(null)
   const [selectedMode, setSelectedMode] = useState<AHSPCreationMode | null>(null)
+  const [sourceReference, setSourceReference] = useState<string | undefined>(undefined)
   const [visibleCount, setVisibleCount] = useState(50)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showResetConfirm, setShowResetConfirm] = useState(false)
@@ -72,6 +74,7 @@ export function AHSPCatalog({
     ahspItems,
     resources,
     zones,
+    componentsByAHSP,
     zonePricesByZone,
     loading,
     errors,
@@ -84,6 +87,7 @@ export function AHSPCatalog({
     importAHSPItems,
     fetchZones,
     fetchZonePrices,
+    fetchComponents,
     clearAllData
   } = useAHSPStore()
 
@@ -115,6 +119,22 @@ export function AHSPCatalog({
     const cats = Array.from(new Set(ahspItems.map(item => item.category)))
     return cats.sort()
   }, [ahspItems])
+
+  const sniItemsPreview = useMemo(() => {
+    return ahspItems
+      .filter(item => item.isActive && item.creationMode === 'sni')
+      .slice(0, 8)
+      .map(item => ({
+        id: item.id,
+        code: item.code,
+        name: item.name,
+        category: item.category,
+        unit: item.unit,
+        finalPrice: item.finalPrice,
+        componentCount: (componentsByAHSP[item.id] || []).length,
+        updatedAt: item.updatedAt,
+      }))
+  }, [ahspItems, componentsByAHSP])
 
   // Filter and search items
   const filteredItems = useMemo(() => {
@@ -255,10 +275,10 @@ export function AHSPCatalog({
     const idsToDelete = Array.from(selectedIds)
 
     // In a real app, we might want a bulk delete confirmation
-    if (confirm(`Are you sure you want to delete ${selectedIds.size} items?`)) {
+    if (confirm(`Yakin ingin menghapus ${selectedIds.size} item?`)) {
       idsToDelete.forEach(id => deleteAHSPItem(id))
       setSelectedIds(new Set())
-      toast.success(`Deleted ${idsToDelete.length} items`)
+      toast.success(`${idsToDelete.length} item berhasil dihapus`)
     }
   }
 
@@ -269,14 +289,24 @@ export function AHSPCatalog({
 
   const handleModeSelect = (mode: AHSPCreationMode) => {
     setSelectedMode(mode)
+    // Set source reference based on mode
+    if (mode === 'sni') {
+      setSourceReference('SNI') // Will be updated when specific preset is selected
+    } else if (mode === 'historical') {
+      setSourceReference('historical') // Will be updated when project is selected
+    } else {
+      setSourceReference('custom')
+    }
     setEditingItem(null)
     setShowModeDialog(false)
     setShowEditor(true)
-    toast.info(`Creating AHSP in ${mode.toUpperCase()} mode`)
+    toast.info(`Membuat AHSP dengan mode ${mode.toUpperCase()}`)
   }
 
-  const handleEditItem = (item: AHSPItem) => {
+  const handleEditItem = async (item: AHSPItem) => {
     setEditingItem(item)
+    // Fetch components for this AHSP item
+    await fetchComponents(item.id)
     if (selectedZone !== 'default') {
       setShowZoneEditor(true)
     } else {
@@ -296,7 +326,7 @@ export function AHSPCatalog({
   const handleDeleteConfirm = () => {
     if (!pendingDeleteItem) return
     deleteAHSPItem(pendingDeleteItem.id)
-    toast.success('AHSP item deleted')
+    toast.success('Item AHSP berhasil dihapus')
     setPendingDeleteItem(null)
   }
 
@@ -401,23 +431,23 @@ export function AHSPCatalog({
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Price</CardTitle>
+              <CardTitle className="text-sm font-medium">Harga Rata-rata</CardTitle>
               <Calculator className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatIDR(summary.averagePrice)}</div>
-              <p className="text-xs text-muted-foreground">Per AHSP item</p>
+              <p className="text-xs text-muted-foreground">Per item AHSP</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
+              <CardTitle className="text-sm font-medium">Kategori</CardTitle>
               <Filter className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{categories.length}</div>
-              <p className="text-xs text-muted-foreground">Different categories</p>
+              <p className="text-xs text-muted-foreground">Jumlah kategori berbeda</p>
             </CardContent>
           </Card>
         </div>
@@ -430,7 +460,7 @@ export function AHSPCatalog({
             <div className="relative flex-1 min-w-[220px] max-w-md">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search AHSP items..."
+                placeholder="Cari item AHSP..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-9 pl-10"
@@ -439,10 +469,10 @@ export function AHSPCatalog({
 
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select category" />
+                <SelectValue placeholder="Pilih kategori" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">Semua Kategori</SelectItem>
                 {categories.map(category => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -453,7 +483,7 @@ export function AHSPCatalog({
 
             <Select value={selectedZone} onValueChange={setSelectedZone}>
               <SelectTrigger className="w-[180px] border-blue-200 dark:border-blue-900">
-                <SelectValue placeholder="Select Zone" />
+                <SelectValue placeholder="Pilih zona" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="default">Default (Master)</SelectItem>
@@ -468,13 +498,13 @@ export function AHSPCatalog({
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" onClick={() => handleExport()} className="h-8 text-xs">
               <Download className="h-4 w-4 mr-2" />
-              Export
+              Ekspor
             </Button>
 
             <Button variant="outline" size="sm" asChild className="h-8 text-xs">
               <label className="cursor-pointer">
                 <Upload className="h-4 w-4 mr-2" />
-                Import
+                Impor
                 <input
                   type="file"
                   accept=".json"
@@ -486,7 +516,7 @@ export function AHSPCatalog({
 
             <Button size="sm" onClick={handleAddItem} className="h-8 text-xs">
               <Plus className="h-4 w-4 mr-2" />
-              Add Item
+              Tambah Item
             </Button>
 
             <Button
@@ -497,7 +527,7 @@ export function AHSPCatalog({
               disabled={ahspItems.length === 0 && resources.length === 0}
             >
               <RotateCcw className="h-3.5 w-3.5 mr-2" />
-              Reset System
+              Reset Sistem
             </Button>
           </div>
         </div>
@@ -505,8 +535,8 @@ export function AHSPCatalog({
         {selectedZone !== 'default' && (
           <div className="bg-blue-50 dark:bg-blue-950/30 p-2 rounded text-sm text-blue-700 dark:text-blue-300 flex items-center">
             <Calculator className="h-4 w-4 mr-2" />
-            Showing prices for zone: <strong>{zones.find(z => z.id === selectedZone)?.name}</strong>.
-            Edits will override base prices for this zone.
+            Menampilkan harga untuk zona: <strong>{zones.find(z => z.id === selectedZone)?.name}</strong>.
+            Perubahan akan menimpa harga dasar pada zona ini.
           </div>
         )}
       </div>
@@ -526,8 +556,8 @@ export function AHSPCatalog({
             </div>
           ) : displayItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <p className="text-sm">No AHSP items found.</p>
-              <Button variant="link" onClick={handleAddItem} className="mt-2 text-blue-600">Create new item</Button>
+              <p className="text-sm">Belum ada item AHSP.</p>
+              <Button variant="link" onClick={handleAddItem} className="mt-2 text-blue-600">Buat item baru</Button>
             </div>
           ) : (
             <TooltipProvider delayDuration={120}>
@@ -543,14 +573,14 @@ export function AHSPCatalog({
                       />
                     </TableHead>
                     <TableHead className="w-[56px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">No.</TableHead>
-                    <TableHead className="min-w-[280px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Resource Description</TableHead>
+                    <TableHead className="min-w-[280px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Deskripsi Resource</TableHead>
                     <TableHead className="w-[70px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Unit</TableHead>
                     <TableHead className="w-[110px] text-right font-semibold text-blue-600 dark:text-blue-400 h-9 text-xs uppercase tracking-wider bg-blue-50/30">Material</TableHead>
                     <TableHead className="w-[110px] text-right font-semibold text-orange-600 dark:text-orange-400 h-9 text-xs uppercase tracking-wider bg-orange-50/30">Labor</TableHead>
                     <TableHead className="w-[110px] text-right font-semibold text-indigo-600 dark:text-indigo-400 h-9 text-xs uppercase tracking-wider bg-indigo-50/30">Equipment</TableHead>
                     <TableHead className="w-[110px] text-right font-semibold text-purple-600 dark:text-purple-400 h-9 text-xs uppercase tracking-wider bg-purple-50/30">Subcon</TableHead>
-                    <TableHead className="w-[130px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Total Price</TableHead>
-                    <TableHead className="w-[90px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
+                    <TableHead className="w-[130px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Total Harga</TableHead>
+                    <TableHead className="w-[90px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -597,7 +627,7 @@ export function AHSPCatalog({
                           <div className="flex flex-col">
                             <div className="flex items-center gap-1.5">
                               <span className="font-medium text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
-                              {hasZoneOverride && <Badge variant="secondary" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">Zone Adj</Badge>}
+                              {hasZoneOverride && <Badge variant="secondary" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">Adj Zona</Badge>}
                             </div>
                             <span className="text-[10px] font-mono text-slate-400">{item.code}</span>
                           </div>
@@ -605,7 +635,7 @@ export function AHSPCatalog({
                         <TableCell className="text-center text-[11px] text-slate-500 py-1.5">{item.unit}</TableCell>
                         <TableCell className="text-right font-mono text-[11px] text-slate-600 py-1.5 bg-blue-50/10">
                           {isUnallocated ? (
-                            <span className="text-amber-600 font-bold" title="Components not linked. Price from master data.">
+                            <span className="text-amber-600 font-bold" title="Komponen belum terhubung. Harga berasal dari data master.">
                               {formatIDR(item.finalPrice)} (!)
                             </span>
                           ) : (
@@ -631,7 +661,7 @@ export function AHSPCatalog({
                     <TableRow className="hover:bg-transparent">
                       <TableCell colSpan={9} className="py-4 text-center">
                         <Button variant="outline" size="sm" onClick={() => setVisibleCount(prev => prev + 100)}>
-                          Load More ({groupedDisplayRows.length - visibleCount} items remaining)
+                          Muat Lagi ({groupedDisplayRows.length - visibleCount} item tersisa)
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -649,7 +679,7 @@ export function AHSPCatalog({
               <div className="flex items-center gap-3 pr-6 border-r border-slate-700">
                 <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
                 <span className="text-sm font-bold tracking-tight">
-                  <span className="text-blue-400 pr-1">{selectedIds.size}</span> Items Selected
+                  <span className="text-blue-400 pr-1">{selectedIds.size}</span> Item Dipilih
                 </span>
               </div>
 
@@ -661,7 +691,7 @@ export function AHSPCatalog({
                   onClick={() => setSelectedIds(new Set())}
                 >
                   <X className="h-3.5 w-3.5" />
-                  Clear
+                  Bersihkan
                 </Button>
 
                 <Button
@@ -670,7 +700,7 @@ export function AHSPCatalog({
                   onClick={handleBulkDelete}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Delete Selected
+                  Hapus Terpilih
                 </Button>
 
                 <Button
@@ -678,11 +708,11 @@ export function AHSPCatalog({
                   className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-9 px-4 font-bold text-xs shadow-lg shadow-blue-900/20"
                   onClick={() => {
                     handleExport(displayItems.filter(i => selectedIds.has(i.id)))
-                    toast.success('Exporting selected items...')
+                    toast.success('Mengekspor item terpilih...')
                   }}
                 >
                   <Download className="h-3.5 w-3.5" />
-                  Export
+                  Ekspor
                 </Button>
               </div>
             </div>
@@ -710,12 +740,12 @@ export function AHSPCatalog({
               </div>
               {totals.unallocatedTotal > 0 && (
                 <div className="md:col-span-1">
-                  <div className="text-[10px] uppercase font-bold tracking-widest text-red-400 mb-1">Unallocated</div>
+                  <div className="text-[10px] uppercase font-bold tracking-widest text-red-400 mb-1">Belum Teralokasi</div>
                   <div className="font-mono text-xs font-bold text-red-600">{formatIDR(totals.unallocatedTotal)}</div>
                 </div>
               )}
               <div className={totals.unallocatedTotal > 0 ? "md:col-span-1 text-right" : "md:col-span-2 text-right"}>
-                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Grand Total Catalog</div>
+                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Grand Total Katalog</div>
                 <div className="font-mono text-lg font-black text-slate-900 dark:text-white tabular-nums">
                   {formatIDR(totals.grandTotal)}
                 </div>
@@ -729,22 +759,45 @@ export function AHSPCatalog({
         open={showModeDialog}
         onClose={() => setShowModeDialog(false)}
         onSelect={handleModeSelect}
+        sniItemsPreview={sniItemsPreview}
       />
 
       <AHSPItemEditor
         item={editingItem}
+        mode={selectedMode || undefined}
+        sourceReference={sourceReference}
         open={showEditor}
         onClose={() => {
           setShowEditor(false)
           setSelectedMode(null)
+          setSourceReference(undefined)
         }}
-        onSave={(data) => {
+        onSave={async (data) => {
+          let itemId: string
           if (editingItem) {
             updateAHSPItem(editingItem.id, data)
-            return editingItem.id
+            itemId = editingItem.id
           } else {
-            return addAHSPItem(data)
+            itemId = addAHSPItem(data)
+            
+            // Save creation log for new items
+            if (selectedMode) {
+              try {
+                await saveCreationLog({
+                  ahsp_id: itemId,
+                  creation_mode: selectedMode,
+                  source_reference: sourceReference || '',
+                  metadata: {
+                    created_via: 'ahsp_catalog',
+                    timestamp: new Date().toISOString()
+                  }
+                })
+              } catch (error) {
+                console.error('Failed to save creation log:', error)
+              }
+            }
           }
+          return itemId
         }}
       />
 
@@ -770,16 +823,16 @@ export function AHSPCatalog({
       <AlertDialog open={!!pendingDeleteItem} onOpenChange={(open) => !open && setPendingDeleteItem(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the AHSP item
-              "{pendingDeleteItem?.name}" and all its component mappings.
+              Tindakan ini tidak dapat dibatalkan. Ini akan menghapus permanen item AHSP
+              "{pendingDeleteItem?.name}" beserta seluruh mapping komponennya.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 focus:ring-red-600">
-              Delete
+              Hapus
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

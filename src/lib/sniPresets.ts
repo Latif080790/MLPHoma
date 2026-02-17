@@ -27,7 +27,7 @@ export const SNI_PRESETS: SNIPreset[] = [
     code: 'A.2.2.1',
     name: 'Pemasangan 1m2 Dinding Bata Merah',
     category: 'PEKERJAAN DINDING',
-    unit: 'M2',
+    unit: 'm2',
     description: 'Pemasangan dinding bata merah standar SNI dengan spesi 1:4',
     components: [
       {
@@ -52,7 +52,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'material',
         code: 'M.03',
         name: 'Pasir Pasang',
-        unit: 'M3',
+        unit: 'm3',
         coefficient: 0.043,
         estimatedPrice: 200000
       },
@@ -60,7 +60,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.01',
         name: 'Pekerja',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.3,
         estimatedPrice: 150000
       },
@@ -68,7 +68,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.02',
         name: 'Tukang Batu',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.1,
         estimatedPrice: 200000
       },
@@ -76,7 +76,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.03',
         name: 'Kepala Tukang',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.01,
         estimatedPrice: 250000
       }
@@ -86,7 +86,7 @@ export const SNI_PRESETS: SNIPreset[] = [
     code: 'A.2.3.1',
     name: 'Plesteran 1m2 Dinding',
     category: 'PEKERJAAN PLESTERAN',
-    unit: 'M2',
+    unit: 'm2',
     description: 'Plesteran dinding 1:4 tebal 15mm',
     components: [
       {
@@ -101,7 +101,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'material',
         code: 'M.03',
         name: 'Pasir Pasang',
-        unit: 'M3',
+        unit: 'm3',
         coefficient: 0.024,
         estimatedPrice: 200000
       },
@@ -109,7 +109,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.01',
         name: 'Pekerja',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.3,
         estimatedPrice: 150000
       },
@@ -117,7 +117,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.02',
         name: 'Tukang Batu',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.15,
         estimatedPrice: 200000
       },
@@ -125,7 +125,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.03',
         name: 'Kepala Tukang',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.015,
         estimatedPrice: 250000
       }
@@ -135,7 +135,7 @@ export const SNI_PRESETS: SNIPreset[] = [
     code: 'B.1.1.1',
     name: 'Pembuatan 1 m³ Beton K-225',
     category: 'PEKERJAAN BETON',
-    unit: 'M3',
+    unit: 'm3',
     description: 'Beton mutu K-225 dengan slump 12cm',
     components: [
       {
@@ -150,7 +150,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'material',
         code: 'M.04',
         name: 'Pasir Beton',
-        unit: 'M3',
+        unit: 'm3',
         coefficient: 0.54,
         estimatedPrice: 250000
       },
@@ -158,7 +158,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'material',
         code: 'M.05',
         name: 'Kerikil (Split)',
-        unit: 'M3',
+        unit: 'm3',
         coefficient: 0.81,
         estimatedPrice: 300000
       },
@@ -174,7 +174,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.01',
         name: 'Pekerja',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 2.1,
         estimatedPrice: 150000
       },
@@ -182,7 +182,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.02',
         name: 'Tukang Batu',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.7,
         estimatedPrice: 200000
       },
@@ -190,7 +190,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.03',
         name: 'Kepala Tukang',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.07,
         estimatedPrice: 250000
       },
@@ -215,7 +215,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'material',
         code: 'M.07',
         name: 'Papan Kayu 3/20',
-        unit: 'M3',
+        unit: 'm3',
         coefficient: 0.04,
         estimatedPrice: 3500000
       },
@@ -239,7 +239,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.04',
         name: 'Tukang Kayu',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.33,
         estimatedPrice: 200000
       },
@@ -247,7 +247,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.03',
         name: 'Kepala Tukang',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.033,
         estimatedPrice: 250000
       },
@@ -255,7 +255,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.01',
         name: 'Pekerja',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.66,
         estimatedPrice: 150000
       }
@@ -265,7 +265,7 @@ export const SNI_PRESETS: SNIPreset[] = [
     code: 'D.1.1.1',
     name: 'Pemasangan 1 m² Rangka Atap Baja Ringan',
     category: 'RANGKA ATAP',
-    unit: 'M2',
+    unit: 'm2',
     description: 'Rangka atap dengan baja ringan CNP 75mm',
     components: [
       {
@@ -296,7 +296,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.05',
         name: 'Tukang Besi',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.2,
         estimatedPrice: 200000
       },
@@ -304,7 +304,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.03',
         name: 'Kepala Tukang',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.02,
         estimatedPrice: 250000
       },
@@ -312,7 +312,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.01',
         name: 'Pekerja',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.4,
         estimatedPrice: 150000
       }
@@ -322,7 +322,7 @@ export const SNI_PRESETS: SNIPreset[] = [
     code: 'E.1.1.1',
     name: 'Pengecatan 1 m² Dinding (2 Lapis)',
     category: 'FINISHING',
-    unit: 'M2',
+    unit: 'm2',
     description: 'Pengecatan tembok dengan cat emulsi 2 lapis',
     components: [
       {
@@ -353,7 +353,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.06',
         name: 'Tukang Cat',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.2,
         estimatedPrice: 180000
       },
@@ -361,7 +361,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.03',
         name: 'Kepala Tukang',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.02,
         estimatedPrice: 250000
       },
@@ -369,7 +369,7 @@ export const SNI_PRESETS: SNIPreset[] = [
         type: 'labor',
         code: 'L.01',
         name: 'Pekerja',
-        unit: 'OH',
+        unit: 'oh',
         coefficient: 0.1,
         estimatedPrice: 150000
       }
@@ -410,3 +410,5 @@ export function getSNIPresetsByCategory(category: string): SNIPreset[] {
 export function getSNICategories(): string[] {
   return Array.from(new Set(SNI_PRESETS.map(p => p.category)))
 }
+
+

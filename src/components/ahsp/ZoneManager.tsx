@@ -37,19 +37,19 @@ export function ZoneManager() {
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                     <MapPin className="mr-2 h-4 w-4" />
-                    Manage Zones
+                    Kelola Zona
                 </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>Pricing Zones</DialogTitle>
+                    <DialogTitle>Zona Harga</DialogTitle>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     <div className="flex justify-end">
                         <Button size="sm" onClick={() => setEditingZone({ name: '', description: '' })}>
                             <Plus className="mr-2 h-4 w-4" />
-                            Add Zone
+                            Tambah Zona
                         </Button>
                     </div>
 
@@ -57,25 +57,25 @@ export function ZoneManager() {
                         <div className="p-4 border rounded-md bg-muted/30 space-y-3">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label>Zone Name</Label>
+                                    <Label>Nama Zona</Label>
                                     <Input
                                         value={editingZone.name}
                                         onChange={e => setEditingZone({ ...editingZone, name: e.target.value })}
-                                        placeholder="e.g. Jakarta, Remote Site A"
+                                        placeholder="contoh: Jakarta, Site Remote A"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label>Description</Label>
+                                    <Label>Deskripsi</Label>
                                     <Input
                                         value={editingZone.description}
                                         onChange={e => setEditingZone({ ...editingZone, description: e.target.value })}
-                                        placeholder="Optional details"
+                                        placeholder="Detail opsional"
                                     />
                                 </div>
                             </div>
                             <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="sm" onClick={() => setEditingZone(null)}>Cancel</Button>
-                                <Button size="sm" onClick={handleSave}>Save</Button>
+                                <Button variant="ghost" size="sm" onClick={() => setEditingZone(null)}>Batal</Button>
+                                <Button size="sm" onClick={handleSave}>Simpan</Button>
                             </div>
                         </div>
                     )}
@@ -84,16 +84,16 @@ export function ZoneManager() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Zone Name</TableHead>
-                                    <TableHead>Description</TableHead>
-                                    <TableHead className="w-[100px]">Actions</TableHead>
+                                    <TableHead>Nama Zona</TableHead>
+                                    <TableHead>Deskripsi</TableHead>
+                                    <TableHead className="w-[100px]">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {zones.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={3} className="text-center text-muted-foreground h-24">
-                                            No pricing zones defined.
+                                            Belum ada zona harga.
                                         </TableCell>
                                     </TableRow>
                                 ) : (

@@ -36,6 +36,7 @@ export interface AhspItemRow {
   price_subcon?: number
   overhead_percentage?: number
   profit_percentage?: number
+  is_active?: boolean
   created_at?: string
   updated_at?: string
 }

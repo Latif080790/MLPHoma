@@ -190,6 +190,12 @@ export function RABTable({ projectId }: RABTableProps) {
     return filteredAHSP.slice(0, visibleItemsCount)
   }, [filteredAHSP, visibleItemsCount])
 
+  // Get unique categories from AHSP items dynamically
+  const ahspCategories = useMemo(() => {
+    const cats = Array.from(new Set(ahspItems.map(item => item.category).filter(Boolean)))
+    return cats.sort()
+  }, [ahspItems])
+
   const handleVolumeChange = (id: string, val: string) => {
     const num = parseFloat(val)
     if (isNaN(num)) return
@@ -522,15 +528,13 @@ export function RABTable({ projectId }: RABTableProps) {
                         <SelectTrigger className="w-48 bg-white border-slate-200">
                           <SelectValue placeholder="All Categories" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-80 overflow-y-auto">
                           <SelectItem value="all">All Categories</SelectItem>
-                          <SelectItem value="PERSIAPAN">Persiapan</SelectItem>
-                          <SelectItem value="RANGKA ATAP">Rangka Atap</SelectItem>
-                          <SelectItem value="BETON">Beton</SelectItem>
-                          <SelectItem value="PLESTERAN">Plesteran</SelectItem>
-                          <SelectItem value="FINISHING">Finishing</SelectItem>
-                          <SelectItem value="MEKANIKAL">Mekanikal</SelectItem>
-                          <SelectItem value="ELEKTRIKAL">Elektrikal</SelectItem>
+                          {ahspCategories.map(cat => (
+                            <SelectItem key={cat} value={cat || ''}>
+                              {cat}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <Select value={selectedUnit} onValueChange={setSelectedUnit}>
@@ -539,12 +543,14 @@ export function RABTable({ projectId }: RABTableProps) {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Units</SelectItem>
-                          <SelectItem value="M3">M3</SelectItem>
-                          <SelectItem value="M2">M2</SelectItem>
-                          <SelectItem value="M1">M1</SelectItem>
-                          <SelectItem value="KG">KG</SelectItem>
-                          <SelectItem value="LS">LS</SelectItem>
-                          <SelectItem value="UNIT">Unit</SelectItem>
+                          <SelectItem value="m3">m³</SelectItem>
+                          <SelectItem value="m2">m²</SelectItem>
+                          <SelectItem value="m">m</SelectItem>
+                          <SelectItem value="kg">kg</SelectItem>
+                          <SelectItem value="ltr">ltr</SelectItem>
+                          <SelectItem value="bh">bh</SelectItem>
+                          <SelectItem value="oh">oh</SelectItem>
+                          <SelectItem value="unit">unit</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
