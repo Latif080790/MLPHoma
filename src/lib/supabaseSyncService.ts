@@ -53,7 +53,7 @@ class SyncQueueManager {
   private processing: boolean = false
   private maxRetries: number = 3
   private retryDelay: number = 1000 // Base delay in ms
-  private maxQueueSize: number = 100 // Maximum queue size to prevent quota exceeded
+  private maxQueueSize: number = 30 // Maximum queue size to prevent quota exceeded
 
   /**
    * Add task to sync queue
@@ -243,12 +243,25 @@ class SyncQueueManager {
         // Clear the queue to prevent infinite loop
         this.queue = []
         try {
+          // Clear all sync-related storage
           localStorage.removeItem('supabase-sync-queue')
           localStorage.removeItem('supabase-sync-failed-queue')
+          localStorage.removeItem('supabase-failed-queue')
+          // Clear old RAB storage that might be large
+          const keys = Object.keys(localStorage)
+          keys.forEach(key => {
+            if (key.includes('mlphoma:rab:') || key.includes('import-presets')) {
+              try {
+                localStorage.removeItem(key)
+              } catch (e) {
+                console.error(`Failed to remove ${key}:`, e)
+              }
+            }
+          })
         } catch (e) {
           console.error('Failed to clear storage:', e)
         }
-        toast.error('Storage full. Queue cleared. Please refresh and try again with smaller imports.')
+        toast.error('Penyimpanan penuh. Data sementara dibersihkan. Silakan refresh halaman dan import dengan ukuran lebih kecil (max 1000 items per import).')
       } else {
         console.error('Failed to save sync queue:', error)
       }
