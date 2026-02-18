@@ -42,7 +42,7 @@ import type {
  * Validate unit format
  */
 function validateUnit(unit: string): unit is ResourceUnit {
-  const validUnits: ResourceUnit[] = ['kg', 'm3', 'm2', 'm', 'ltr', 'bh', 'oh', 'jam', 'hr', 'hari', 'unit']
+  const validUnits: ResourceUnit[] = ['kg', 'm3', 'm2', 'm', 'ltr', 'bh', 'oh', 'jam', 'hr', 'hari', 'unit', 'ha', 'set', 'ls', 'btg', 'lembar']
   return validUnits.includes(unit as ResourceUnit)
 }
 

@@ -70,9 +70,9 @@ export const ahspSnapshotService = {
             return { itemsSnapshotted: 0, totalBaselineValue: 0, timestamp: new Date().toISOString() }
         }
 
+        const timestamp = new Date().toISOString()
         let itemsSnapshotted = 0
         let totalBaselineValue = 0
-
         for (const item of (rabItems || [])) {
             const ahsp = (item as any).ahsp_items
             const basePrice = ahsp?.base_price || Number(item.unit_price) || 0
@@ -81,7 +81,14 @@ export const ahspSnapshotService = {
                 const { error: updateErr } = await client
                     .from('rab_items')
                     .update({
-                        snapshot_price: basePrice,
+                        snapshot_price: {
+                            total: basePrice,
+                            material: Number((item as any).cost_material || 0),
+                            labor: Number((item as any).cost_labor || 0),
+                            equipment: Number((item as any).cost_equipment || 0),
+                            subcon: Number((item as any).cost_subcon || 0),
+                            at: timestamp
+                        },
                         base_price: basePrice,
                     })
                     .eq('id', item.id)
@@ -92,8 +99,6 @@ export const ahspSnapshotService = {
                 }
             }
         }
-
-        const timestamp = new Date().toISOString()
 
         // Audit the snapshot
         try {
@@ -174,10 +179,11 @@ export const ahspSnapshotService = {
 
         for (const item of (rabItems || [])) {
             const ahsp = (item as any).ahsp_items
-            const snapshotPrice = Number(item.snapshot_price)
+            const snapshot = item.snapshot_price as any
+            const snapshotPrice = typeof snapshot === 'object' ? Number(snapshot?.total || 0) : Number(snapshot || 0)
             const currentPrice = Number(ahsp?.base_price || 0)
 
-            if (snapshotPrice > 0 && currentPrice > 0 && snapshotPrice !== currentPrice) {
+            if (snapshotPrice > 0 && currentPrice > 0 && Math.abs(snapshotPrice - currentPrice) > 0.01) {
                 const drift = currentPrice - snapshotPrice
                 const driftPct = (drift / snapshotPrice) * 100
                 const volume = Number(item.volume || 0)

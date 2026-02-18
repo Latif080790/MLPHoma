@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/common/EmptyState'
-import { ApprovalQueueWidget } from '@/components/common/ApprovalQueueWidget'
+import { ApprovalInbox } from '@/components/dashboard/ApprovalInbox'
 import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
 
 export default function CommandCenter() {
@@ -108,8 +108,8 @@ export default function CommandCenter() {
 
                 {/* B. SAFETY / RISKS (Alert Block) */}
                 <Card className={`md:col-span-1 border-l-4 shadow-sm ${(stats?.criticalRisks || 0) > 0
-                        ? 'border-l-red-500 bg-red-50/50 dark:bg-red-950/10'
-                        : 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/10'
+                    ? 'border-l-red-500 bg-red-50/50 dark:bg-red-950/10'
+                    : 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/10'
                     }`}>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center justify-between text-slate-600 dark:text-slate-400">
@@ -252,20 +252,20 @@ export default function CommandCenter() {
                         </div>
                     </CardContent>
                 </Card>
-    {/* F. APPROVAL QUEUE WIDGET */}
-                <div className="md:col-span-1">
-                    <ApprovalQueueWidget />
+                {/* F. APPROVAL INBOX (Full Width) */}
+                <div className="md:col-span-2">
+                    <ApprovalInbox />
                 </div>
 
                 {/* G. CRITICAL PATH WARNING PANEL */}
                 <div className="md:col-span-4">
-                    <CriticalPathWarningPanel 
-                        projectId={activeProjectId} 
+                    <CriticalPathWarningPanel
+                        projectId={activeProjectId}
                         maxAlerts={5}
                     />
                 </div>
 
-            
+
             </div>
         </div>
     )

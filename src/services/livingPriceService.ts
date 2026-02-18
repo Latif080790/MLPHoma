@@ -1,0 +1,124 @@
+/**
+ * livingPriceService.ts
+ * Integrates Procurement (PO/GRN) prices back into RAB for "Living Price" analysis.
+ */
+
+import { assertSupabase } from '../lib/supabaseClient'
+import { ahspSnapshotService } from './ahspSnapshotService'
+
+export interface HistoricalPrice {
+    poId: string
+    poNumber: string
+    vendorName: string
+    date: string
+    unitPrice: number
+    quantity: number
+}
+
+export interface PriceComparison {
+    rabId: string
+    itemCode: string
+    itemName: string
+    volume: number
+    unit: string
+    baselinePrice: number // Snapshot or current AHSP when snapshotted
+    currentAhspPrice: number
+    livingPrice: number | null // Latest historical procurement price
+    drift: number // currentAhsp - baseline
+    potentialImpact: number // drift * volume
+}
+
+export const livingPriceService = {
+    /**
+     * Fetch procurement history for a specific RAB item (matched by code or name)
+     */
+    async getProcurementHistory(projectId: string, itemCode?: string, itemName?: string): Promise<HistoricalPrice[]> {
+        const client = assertSupabase()
+
+        // We search po_items that link to the same project
+        // Search by item_code or item_name
+        let query = client
+            .from('po_items')
+            .select(`
+        unit_price,
+        quantity,
+        purchase_orders (
+          id,
+          po_number,
+          vendor_name,
+          created_at
+        )
+      `)
+            .eq('purchase_orders.project_id', projectId)
+
+        if (itemCode) {
+            query = query.eq('item_code', itemCode)
+        } else if (itemName) {
+            query = query.eq('item_name', itemName)
+        } else {
+            return []
+        }
+
+        const { data, error } = await query.order('created_at', { foreignTable: 'purchase_orders', ascending: false }).limit(5)
+
+        if (error) {
+            console.error('[livingPriceService] fetch history error:', error)
+            return []
+        }
+
+        return (data || []).map((row: any) => ({
+            poId: row.purchase_orders?.id,
+            poNumber: row.purchase_orders?.po_number,
+            vendorName: row.purchase_orders?.vendor_name,
+            date: row.purchase_orders?.created_at,
+            unitPrice: Number(row.unit_price || 0),
+            quantity: Number(row.quantity || 0)
+        }))
+    },
+
+    /**
+     * Get detailed price drift analysis for an entire project
+     */
+    async getProjectPriceAnalysis(projectId: string): Promise<PriceComparison[]> {
+        const client = assertSupabase()
+
+        // 1. Get drift using the snapshot service logic
+        const drifts = await ahspSnapshotService.getPriceDrift(projectId)
+
+        // 2. Fetch all RAB items to get more context
+        const { data: rabItems } = await client
+            .from('rab_items')
+            .select('id, item_code, name, unit, volume, snapshot_price, unit_price')
+            .eq('project_id', projectId)
+
+        const analysis: PriceComparison[] = []
+
+        for (const item of (rabItems || [])) {
+            const driftItem = drifts.find(d => d.rabItemId === item.id)
+
+            // Get the "Living Price" (Latest PO price)
+            // Note: In a real enterprise app, we might pre-summarize this in a materialized view or cache
+            const history = await this.getProcurementHistory(projectId, item.item_code, item.name)
+            const livingPrice = history.length > 0 ? history[0].unitPrice : null
+
+            const snapshot = item.snapshot_price as any
+            const baseline = typeof snapshot === 'object' ? Number(snapshot?.total || 0) : Number(snapshot || item.unit_price || 0)
+
+            analysis.push({
+                rabId: item.id,
+                itemCode: item.item_code || '',
+                itemName: item.name || '',
+                volume: Number(item.volume || 0),
+                unit: item.unit || '',
+                baselinePrice: baseline,
+                currentAhspPrice: driftItem ? driftItem.currentPrice : baseline,
+                livingPrice,
+                drift: driftItem ? (driftItem.currentPrice - driftItem.snapshotPrice) : 0,
+                potentialImpact: driftItem ? driftItem.impactOnBudget : 0
+            })
+        }
+
+
+        return analysis
+    }
+}

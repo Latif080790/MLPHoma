@@ -69,6 +69,11 @@ interface RabState {
   audit: AuditEntry[]
   hasUnsavedChanges: Record<string, boolean> // track unsaved changes per project
   autoSaveTimers: Record<string, NodeJS.Timeout> // auto-save timers per project
+  priceDrift: Record<string, {
+    totalDrift: number
+    details: any[]
+    lastChecked: string
+  }>
   addItem: (projectId: string, item: Partial<RABItem>) => string
   updateItem: (projectId: string, id: string, updates: Partial<RABItem>) => void
   getItems: (projectId: string) => RABItem[]
@@ -88,6 +93,9 @@ interface RabState {
   publishDrafts: (projectId: string) => void
   getDraftCount: (projectId: string) => number
   hasUnsaved: (projectId: string) => boolean
+  takeSnapshot: (projectId: string) => Promise<void>
+  isLocked: (projectId: string) => boolean
+  refreshDrift: (projectId: string) => Promise<void>
 }
 
 const STORAGE_KEY = 'rabStore:v2'
@@ -147,8 +155,14 @@ export const useRabStore = create<RabState>((set, get) => {
     audit: persisted?.audit || [],
     hasUnsavedChanges: {},
     autoSaveTimers: {},
+    priceDrift: {},
 
     addItem: (projectId, item) => {
+      if (get().isLocked(projectId)) {
+        toast.error('Project is locked. Cannot add items.')
+        return ''
+      }
+
       // Validate input
       const validation = validate(rabItemInputSchema, { ...item, projectId })
       if (!validation.success) {
@@ -195,6 +209,11 @@ export const useRabStore = create<RabState>((set, get) => {
     },
 
     updateItem: (projectId, id, updates) => {
+      if (get().isLocked(projectId)) {
+        toast.error('Project is locked. Cannot update items.')
+        return
+      }
+
       // Validate updates
       const validation = validate(rabItemUpdateSchema, updates)
       if (!validation.success) {
@@ -255,6 +274,10 @@ export const useRabStore = create<RabState>((set, get) => {
     },
 
     removeItem: (projectId, id) => {
+      if (get().isLocked(projectId)) {
+        toast.error('Project is locked. Cannot remove items.')
+        return
+      }
       snapshotForHistory(projectId)
       set((s) => {
         const arr = s.itemsByProject[projectId] || []
@@ -351,16 +374,16 @@ export const useRabStore = create<RabState>((set, get) => {
       set((s) => ({
         hasUnsavedChanges: { ...s.hasUnsavedChanges, [projectId]: true }
       }))
-      
+
       // Set up auto-save after 30 seconds
       const existing = get().autoSaveTimers[projectId]
       if (existing) clearTimeout(existing)
-      
+
       const timer = setTimeout(() => {
         get().persist()
         toast.info('Changes auto-saved', { duration: 2000 })
       }, 30000) // 30 seconds
-      
+
       set((s) => ({
         autoSaveTimers: { ...s.autoSaveTimers, [projectId]: timer }
       }))
@@ -369,7 +392,7 @@ export const useRabStore = create<RabState>((set, get) => {
     publishDrafts: (projectId: string) => {
       const items = get().itemsByProject[projectId] || []
       const draftItems = items.filter(item => (item as any).isDraft)
-      
+
       if (draftItems.length === 0) {
         toast.info('No draft items to publish')
         return
@@ -395,11 +418,11 @@ export const useRabStore = create<RabState>((set, get) => {
       if (timer) clearTimeout(timer)
 
       get().persist()
-      
+
       // Sync to Supabase
       const updatedItems = get().itemsByProject[projectId] || []
       syncRABItems(updatedItems, projectId)
-      
+
       toast.success(`Published ${draftItems.length} items to database`)
       get().logAction({ projectId, action: 'publishDrafts', payload: { count: draftItems.length } })
     },
@@ -411,6 +434,36 @@ export const useRabStore = create<RabState>((set, get) => {
 
     hasUnsaved: (projectId: string) => {
       return get().hasUnsavedChanges[projectId] || false
+    },
+    takeSnapshot: async (projectId: string) => {
+      const { ahspSnapshotService } = await import('../services/ahspSnapshotService')
+      const result = await ahspSnapshotService.takeSnapshot(projectId)
+      if (result.itemsSnapshotted > 0) {
+        toast.success(`Snapshot taken: ${result.itemsSnapshotted} items baseline locked.`)
+        // Refetch or update local state
+        const sync = get().syncProjectToSupabase
+        if (sync) sync(projectId)
+      }
+    },
+    isLocked: (projectId: string) => {
+      const items = get().itemsByProject[projectId] || []
+      return items.some(item => !!item.snapshot_price)
+    },
+    refreshDrift: async (projectId: string) => {
+      const { livingPriceService } = await import('../services/livingPriceService')
+      const analysis = await livingPriceService.getProjectPriceAnalysis(projectId)
+      const totalDrift = analysis.reduce((sum, item) => sum + item.potentialImpact, 0)
+
+      set((s) => ({
+        priceDrift: {
+          ...s.priceDrift,
+          [projectId]: {
+            totalDrift,
+            details: analysis,
+            lastChecked: new Date().toISOString()
+          }
+        }
+      }))
     },
   }
 })
