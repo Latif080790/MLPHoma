@@ -41,7 +41,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
     const { createPurchaseOrder, loading } = useSupplyChainStore()
     const { items: rapItems, fetchItems } = useRapStore()
     const [budgetCheck, setBudgetCheck] = useState<BudgetCheckResult | null>(null)
-    const [isCheckingBudget, setIsCheckingBudget] = useState(false) 
+    const [isCheckingBudget, setIsCheckingBudget] = useState(false)
 
     const form = useForm<PoFormValues>({
         resolver: zodResolver(poSchema),
@@ -196,28 +196,66 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                             </Button>
                         </div>
 
-                        <div className="space-y-2 border rounded-md p-4 bg-muted/20">
+                        <div className="space-y-4 border rounded-md p-4 bg-slate-50/50 dark:bg-slate-900/50">
                             {fields.map((field, index) => (
-                                <div key={field.id} className="grid grid-cols-12 gap-2 items-end">
+                                <div key={field.id} className="grid grid-cols-12 gap-3 items-start pb-4 border-b last:border-0 last:pb-0">
                                     <div className="col-span-4">
-                                        <Label className="text-xs">Item Name</Label>
-                                        <Input {...form.register(`items.${index}.item_name`)} placeholder="Item description" />
-                                    </div>
-                                    <div className="col-span-2">
-                                        <Label className="text-xs">Qty</Label>
-                                        <Input type="number" step="any" {...form.register(`items.${index}.quantity`)} />
+                                        <Label className="text-[10px] font-bold uppercase text-slate-500 mb-1 block">RAP Budget Item (Linkage)</Label>
+                                        <Select
+                                            value={form.watch(`items.${index}.rap_item_id`)}
+                                            onValueChange={(val) => {
+                                                const selected = rapItems.find(r => r.id === val)
+                                                form.setValue(`items.${index}.rap_item_id`, val)
+                                                if (selected) {
+                                                    const currentName = form.getValues(`items.${index}.item_name`)
+                                                    if (!currentName) {
+                                                        const name = (selected as any).name || selected.ahsp_items?.name || selected.rab_items?.name || ''
+                                                        form.setValue(`items.${index}.item_name`, name)
+                                                    }
+                                                    form.setValue(`items.${index}.unit_price`, selected.unit_price_budget || 0)
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="h-9 text-xs bg-white border-slate-200">
+                                                <SelectValue placeholder="Link to Budget..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {rapItems.map(ri => {
+                                                    const name = (ri as any).name || ri.ahsp_items?.name || ri.rab_items?.name || 'Item'
+                                                    const rem = (ri.total_budget || 0) - (ri.committed_cost || 0) - (ri.actual_cost || 0)
+                                                    return (
+                                                        <SelectItem key={ri.id} value={ri.id} className="text-xs">
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold">{name}</span>
+                                                                <span className="text-[10px] text-slate-400">Rem: Rp {Math.round(rem).toLocaleString()}</span>
+                                                            </div>
+                                                        </SelectItem>
+                                                    )
+                                                })}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="col-span-3">
-                                        <Label className="text-xs">Unit Price</Label>
-                                        <Input type="number" step="any" {...form.register(`items.${index}.unit_price`)} />
+                                        <Label className="text-[10px] font-bold uppercase text-slate-500 mb-1 block">Item Description</Label>
+                                        <Input {...form.register(`items.${index}.item_name`)} placeholder="e.g. Semen Padang" className="h-9 text-xs bg-white" />
                                     </div>
-                                    <div className="col-span-2 text-right text-xs font-mono py-2.5">
-                                        {(Number(form.watch(`items.${index}.quantity`) || 0) * Number(form.watch(`items.${index}.unit_price`) || 0)).toLocaleString()}
+                                    <div className="col-span-2">
+                                        <Label className="text-[10px] font-bold uppercase text-slate-500 mb-1 block">Qty</Label>
+                                        <Input type="number" step="any" {...form.register(`items.${index}.quantity`)} className="h-9 text-xs bg-white" />
                                     </div>
-                                    <div className="col-span-1">
-                                        <Button type="button" size="icon" variant="ghost" onClick={() => remove(index)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                    <div className="col-span-2">
+                                        <Label className="text-[10px] font-bold uppercase text-slate-500 mb-1 block">Price</Label>
+                                        <Input type="number" step="any" {...form.register(`items.${index}.unit_price`)} className="h-9 text-xs bg-white" />
+                                    </div>
+                                    <div className="col-span-1 flex flex-col justify-end h-full">
+                                        <Button type="button" size="icon" variant="ghost" onClick={() => remove(index)} className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50">
                                             <Trash2 size={16} />
                                         </Button>
+                                    </div>
+                                    <div className="col-span-12 flex justify-end">
+                                        <span className="text-[11px] font-mono font-bold text-slate-500">
+                                            Subtotal: Rp {((Number(form.watch(`items.${index}.quantity`) || 0) * Number(form.watch(`items.${index}.unit_price`) || 0))).toLocaleString('id-ID')}
+                                        </span>
                                     </div>
                                 </div>
                             ))}
@@ -233,8 +271,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancel
                         </Button>
-                        <Button 
-                            type="submit" 
+                        <Button
+                            type="submit"
                             disabled={loading.po || isCheckingBudget || (budgetCheck?.hasExceeded ?? false)}
                             className={budgetCheck?.requiresApproval ? "bg-yellow-600 hover:bg-yellow-700" : ""}
                         >
@@ -243,6 +281,6 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                     </DialogFooter>
                 </form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     )
 }

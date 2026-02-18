@@ -17,6 +17,7 @@ import { PurchaseOrderDialog } from "@/components/supply-chain/PurchaseOrderDial
 import { InventoryTransactionDialog } from "@/components/supply-chain/InventoryTransactionDialog"
 import { GRNDialog } from "@/components/supply-chain/GRNDialog"
 import { MaterialTransferDialog } from "@/components/supply-chain/MaterialTransferDialog"
+import { MaterialTransferPanel } from "@/components/supply-chain/MaterialTransferPanel"
 import { WorkOrderPanel } from "@/components/modules/WorkOrderPanel"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 
@@ -29,7 +30,8 @@ export default function SupplyChain() {
         loading,
         fetchMaterialRequests,
         fetchPurchaseOrders,
-        fetchInventory
+        fetchInventory,
+        fetchTransfers
     } = useSupplyChainStore()
 
     const [activeTab, setActiveTab] = useState("requests")
@@ -46,6 +48,7 @@ export default function SupplyChain() {
             if (activeTab === "requests") fetchMaterialRequests(activeProjectId)
             if (activeTab === "orders") fetchPurchaseOrders(activeProjectId)
             if (activeTab === "inventory") fetchInventory(activeProjectId)
+            if (activeTab === "transfers") fetchTransfers(activeProjectId)
         }
     }, [activeProjectId, activeTab])
 
@@ -108,6 +111,9 @@ export default function SupplyChain() {
                         </TabsTrigger>
                         <TabsTrigger value="inventory" className="gap-2">
                             <Warehouse size={14} /> Inventory
+                        </TabsTrigger>
+                        <TabsTrigger value="transfers" className="gap-2">
+                            <ArrowRightLeft size={14} /> Transfers
                         </TabsTrigger>
                         <TabsTrigger value="spk" className="gap-2">
                             <ClipboardList size={14} /> SPK / Opname
@@ -225,7 +231,7 @@ export default function SupplyChain() {
                                                                 {mockTrace.upstream.length > 0 && (
                                                                     <TraceCountBadge count={mockTrace.upstream.length} direction="upstream" />
                                                                 )}
-                                                                <TraceChain 
+                                                                <TraceChain
                                                                     chain={[...mockTrace.upstream, ...mockTrace.downstream]}
                                                                     size="sm"
                                                                 />
@@ -318,6 +324,11 @@ export default function SupplyChain() {
                             </div>
                         )}
                     </div>
+                </TabsContent>
+
+                {/* --- MATERIAL TRANSFERS --- */}
+                <TabsContent value="transfers" className="space-y-4">
+                    <MaterialTransferPanel />
                 </TabsContent>
 
                 {/* --- SPK / OPNAME --- */}

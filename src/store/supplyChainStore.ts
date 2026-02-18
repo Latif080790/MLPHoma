@@ -2,6 +2,9 @@
 import { create } from 'zustand'
 import { supplyChainService } from '../services/supplyChainService'
 import { MaterialRequest, PurchaseOrder, InventoryTransaction, InventoryStock, PoItem, MrStatus, PoStatus } from '../types/supply-chain'
+import { checkBudgetAvailability, type BudgetCheckResult, type CheckableItem } from '../services/budgetGuardService'
+import { materialTransferService } from '../services/materialTransferService'
+import type { MaterialTransferRequest } from '../types/material-transfer'
 
 interface SupplyChainState {
     materialRequests: MaterialRequest[]
@@ -11,10 +14,18 @@ interface SupplyChainState {
 
     activePoItems: PoItem[] // Items for the currently selected PO
 
+    // Budget Guard
+    budgetCheckResult: BudgetCheckResult | null
+    budgetCheckLoading: boolean
+
+    // Material Transfers
+    materialTransfers: MaterialTransferRequest[]
+
     loading: {
         mr: boolean
         po: boolean
         inventory: boolean
+        transfer: boolean
     }
 
     error: string | null
@@ -31,6 +42,15 @@ interface SupplyChainState {
 
     fetchInventory: (projectId: string) => Promise<void>
     recordTransaction: (data: any) => Promise<void>
+
+    // Budget Guard actions
+    checkBudgetBeforePO: (projectId: string, items: CheckableItem[]) => Promise<BudgetCheckResult>
+    clearBudgetCheck: () => void
+
+    // MTR actions
+    fetchTransfers: (projectId: string) => Promise<void>
+    createMaterialTransfer: (input: any, requesterId: string, requesterName: string) => Promise<void>
+    executeMaterialTransfer: (transferId: string) => Promise<void>
 }
 
 export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
@@ -40,10 +60,15 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
     inventoryStock: [],
     activePoItems: [],
 
+    budgetCheckResult: null,
+    budgetCheckLoading: false,
+    materialTransfers: [],
+
     loading: {
         mr: false,
         po: false,
-        inventory: false
+        inventory: false,
+        transfer: false
     },
 
     error: null,
@@ -204,6 +229,83 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
             set(state => ({
                 error: err.message,
                 loading: { ...state.loading, inventory: false }
+            }))
+            throw err
+        }
+    },
+
+    // --- Budget Guard ---
+    checkBudgetBeforePO: async (projectId: string, items: CheckableItem[]) => {
+        set({ budgetCheckLoading: true, budgetCheckResult: null })
+        try {
+            const result = await checkBudgetAvailability(projectId, items)
+            set({ budgetCheckResult: result, budgetCheckLoading: false })
+            return result
+        } catch (err: any) {
+            set({ budgetCheckLoading: false, error: err.message })
+            throw err
+        }
+    },
+
+    clearBudgetCheck: () => {
+        set({ budgetCheckResult: null, budgetCheckLoading: false })
+    },
+
+    // --- Material Transfers ---
+    fetchTransfers: async (projectId: string) => {
+        set(state => ({ loading: { ...state.loading, transfer: true }, error: null }))
+        try {
+            const data = await materialTransferService.getTransfers(projectId)
+            set(state => ({
+                materialTransfers: data,
+                loading: { ...state.loading, transfer: false }
+            }))
+        } catch (err: any) {
+            set(state => ({
+                error: err.message,
+                loading: { ...state.loading, transfer: false }
+            }))
+        }
+    },
+
+    createMaterialTransfer: async (input: any, requesterId: string, requesterName: string) => {
+        set(state => ({ loading: { ...state.loading, transfer: true }, error: null }))
+        try {
+            await materialTransferService.createTransfer(input, requesterId, requesterName)
+            // Refresh list
+            if (input.projectId) {
+                const data = await materialTransferService.getTransfers(input.projectId)
+                set(state => ({
+                    materialTransfers: data,
+                    loading: { ...state.loading, transfer: false }
+                }))
+            } else {
+                set(state => ({ loading: { ...state.loading, transfer: false } }))
+            }
+        } catch (err: any) {
+            set(state => ({
+                error: err.message,
+                loading: { ...state.loading, transfer: false }
+            }))
+            throw err
+        }
+    },
+
+    executeMaterialTransfer: async (transferId: string) => {
+        set(state => ({ loading: { ...state.loading, transfer: true }, error: null }))
+        try {
+            await materialTransferService.executeTransfer(transferId)
+            // Update local state
+            set(state => ({
+                materialTransfers: state.materialTransfers.map(t =>
+                    t.id === transferId ? { ...t, status: 'EXECUTED' as const } : t
+                ),
+                loading: { ...state.loading, transfer: false }
+            }))
+        } catch (err: any) {
+            set(state => ({
+                error: err.message,
+                loading: { ...state.loading, transfer: false }
             }))
             throw err
         }

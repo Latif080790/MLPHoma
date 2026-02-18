@@ -14,9 +14,10 @@ interface RABVersionState {
   versionsByProject: Record<string, RABVersion[]>
   currentVersion: Record<string, number>
   loading: boolean
-  
+
   // Actions
-  createVersion: (projectId: string, description: string, changeType: RABVersion['changeType'], changes: RABChangeLog[], snapshot: RABVersionSnapshot) => Promise<void>
+  createVersion: (projectId: string, description: string, changeType: RABVersion['changeType'], changes: RABChangeLog[], snapshot: RABVersionSnapshot, tags?: string[]) => Promise<void>
+  getScenarios: (projectId: string) => RABVersion[]
   getVersionHistory: (projectId: string) => RABVersion[]
   getVersion: (projectId: string, version: number) => RABVersion | null
   compareVersions: (projectId: string, version1: number, version2: number) => RABVersionComparison
@@ -33,7 +34,7 @@ export const useRABVersionStore = create<RABVersionState>()(
         currentVersion: {},
         loading: false,
 
-        createVersion: async (projectId, description, changeType, changes, snapshot) => {
+        createVersion: async (projectId, description, changeType, changes, snapshot, tags = []) => {
           const state = get()
           const projectVersions = state.versionsByProject[projectId] || []
           const currentVer = state.currentVersion[projectId] || 0
@@ -51,7 +52,7 @@ export const useRABVersionStore = create<RABVersionState>()(
             changes,
             snapshot,
             status: 'draft',
-            tags: []
+            tags
           }
 
           // Update local state
@@ -80,7 +81,7 @@ export const useRABVersionStore = create<RABVersionState>()(
                 changes: JSON.stringify(changes),
                 snapshot: JSON.stringify(snapshot),
                 status: 'draft',
-                tags: [],
+                tags,
                 created_at: version.createdAt
               })
 
@@ -93,6 +94,11 @@ export const useRABVersionStore = create<RABVersionState>()(
           }
 
           toast.success(`Version ${newVersion} created`)
+        },
+
+        getScenarios: (projectId) => {
+          const versions = get().versionsByProject[projectId] || []
+          return versions.filter(v => v.tags?.includes('scenario'))
         },
 
         getVersionHistory: (projectId) => {
@@ -149,10 +155,10 @@ export const useRABVersionStore = create<RABVersionState>()(
             const item2 = items2.get(id)
             if (item2) {
               const changes: any[] = []
-              
+
               // Check key fields for changes
               const fieldsToCheck = ['name', 'volume', 'unit_price', 'cost_material', 'cost_labor', 'cost_equipment', 'cost_subcon']
-              
+
               fieldsToCheck.forEach(field => {
                 if (item1[field] !== item2[field]) {
                   changes.push({

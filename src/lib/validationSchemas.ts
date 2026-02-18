@@ -12,7 +12,8 @@ import { z } from 'zod'
 
 /** Common units for AHSP and resources */
 export const unitEnum = z.enum([
-  'm3', 'm2', 'm', "m'", 'kg', 'ltr', 'bh', 'oh', 'jam', 'hr', 'hari', 'unit'
+  'm3', 'm2', 'm', "m'", 'kg', 'ltr', 'bh', 'oh', 'jam', 'hr', 'hari', 'unit',
+  'ha', 'set', 'ls', 'btg', 'lembar'
 ])
 
 /** Resource types */

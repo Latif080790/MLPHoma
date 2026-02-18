@@ -41,6 +41,8 @@ export interface RABItem {
   wbsId?: string
   /** Optional Timeline Task link */
   taskId?: string
+  /** Snapshot price data (for locked baseline) */
+  snapshot_price?: any
   /** Optional metadata */
   createdAt?: string
   updatedAt?: string

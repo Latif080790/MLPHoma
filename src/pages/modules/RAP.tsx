@@ -9,9 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table'
-import { ProfitHealthWidget } from '../../components/modules/ProfitHealthWidget'
-import { Input } from '../../components/ui/input' // Ensure Input is imported
+import { Input } from '../../components/ui/input'
 import { toast } from 'sonner'
+import { TrendingUp, Percent, ShieldCheck } from 'lucide-react'
+import { rapProfitService } from '../../services/rapProfitService'
+import { ProfitHealthWidget } from '../../components/modules/ProfitHealthWidget'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +50,15 @@ export default function RAP(): JSX.Element {
   const [targetTotal, setTargetTotal] = useState<number>(5_000_000_000)
   const [searchQuery, setSearchQuery] = useState('')
   const [confirmImportOpen, setConfirmImportOpen] = useState(false)
+  const [targetProfit, setTargetProfit] = useState(15)
+  const [isSimulating, setIsSimulating] = useState(false)
+
+  // Sync targetProfit with project settings
+  useEffect(() => {
+    if (project?.meta?.targetProfitPercentage) {
+      setTargetProfit(project.meta.targetProfitPercentage)
+    }
+  }, [project?.meta?.targetProfitPercentage])
 
   useEffect(() => {
     if (projectId) {
@@ -74,6 +85,21 @@ export default function RAP(): JSX.Element {
     await initFromRab(projectId, rabItems)
     setConfirmImportOpen(false)
     toast.success('RAB items imported to RAP')
+  }
+
+  const handleApplyProfitSimulation = async () => {
+    if (!projectId) return
+    setIsSimulating(true)
+    try {
+      await rapProfitService.setTargetProfitPct(projectId, targetProfit)
+      await rapProfitService.recalculateWithProfitFirst(projectId)
+      await fetchItems(projectId)
+      toast.success(`RAP recalculated with ${targetProfit}% Profit Target`)
+    } catch (err: any) {
+      toast.error('Failed to apply profit simulation: ' + err.message)
+    } finally {
+      setIsSimulating(false)
+    }
   }
 
   // --- Scheduler Logic (Simplified for brevity, keeping core UI) ---
@@ -135,12 +161,44 @@ export default function RAP(): JSX.Element {
                   {items.length > 0 ? 'Synced with RAB' : 'Import from RAB'}
                 </Button>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="mt-2 flex items-baseline gap-2">
-                  <div className="text-2xl font-bold font-mono text-slate-800 dark:text-slate-100">
-                    Rp {Math.round(items.reduce((acc, item) => acc + (item.total_budget || 0), 0)).toLocaleString('id-ID')}
+              <CardContent className="pt-0 pb-3">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <div className="text-2xl font-bold font-mono text-slate-800 dark:text-slate-100">
+                      Rp {Math.round(items.reduce((acc, item) => acc + (item.total_budget || 0), 0)).toLocaleString('id-ID')}
+                    </div>
+                    <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total RAP Budget</p>
                   </div>
-                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total RAP Budget</p>
+
+                  <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight flex items-center gap-1">
+                        <TrendingUp size={10} className="text-emerald-500" />
+                        Profit Simulation
+                      </span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            value={targetProfit}
+                            onChange={(e) => setTargetProfit(Number(e.target.value))}
+                            className="h-7 w-16 text-xs font-mono pr-5 py-0"
+                          />
+                          <Percent size={10} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 text-[10px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800"
+                          onClick={handleApplyProfitSimulation}
+                          disabled={isSimulating || !items.length}
+                        >
+                          <ShieldCheck size={12} className="mr-1" />
+                          Apply Profit First
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -152,7 +210,7 @@ export default function RAP(): JSX.Element {
                     <TableRow className="border-b border-slate-200 dark:border-slate-800 hover:bg-transparent">
                       <TableHead className="h-8 w-[300px] bg-transparent text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Item Name</TableHead>
                       <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Total Budget</TableHead>
-                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Risk Fund</TableHead>
+                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Committed</TableHead>
                       <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Actual Cost</TableHead>
                       <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Remaining</TableHead>
                       <TableHead className="h-8 w-[100px] bg-transparent text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Status</TableHead>
@@ -170,28 +228,34 @@ export default function RAP(): JSX.Element {
                       </TableRow>
                     ) : (
                       filteredItems.map((item, idx) => {
-                        // Traffic Light Logic
-                        const progress = item.total_budget > 0 ? (item.actual_cost / item.total_budget) : 0
-                        const utilizationPct = Math.max(0, Math.round(progress * 100))
-                        let statusColor = 'bg-emerald-500' // Safe
+                        // Traffic Light Logic (Budget Guard)
+                        const totalBudget = item.total_budget || (item.qty_budget * item.unit_price_budget) || 0
+                        const committedCost = item.committed_cost || 0
+                        const actualCost = item.actual_cost || 0
+                        const totalBurn = committedCost + actualCost
+
+                        const burnRatio = totalBudget > 0 ? (totalBurn / totalBudget) : 0
+                        const utilizationPct = Math.round(burnRatio * 100)
+
+                        let statusColor = 'bg-emerald-500' // Safe (< 90%)
                         let statusText = 'Safe'
                         let rowClass = 'group hover:bg-slate-50 dark:hover:bg-slate-800/50'
 
-                        if (progress > 1.0) {
-                          statusColor = 'bg-red-500 animate-pulse' // Critical Overbudget
+                        if (burnRatio >= 1.0) {
+                          statusColor = 'bg-red-500 animate-pulse' // Critical Overbudget (> 100%)
                           statusText = 'CRITICAL'
                           rowClass = 'group bg-red-50/30 dark:bg-red-900/10 hover:bg-red-50/50 dark:hover:bg-red-900/20'
-                        } else if (progress > 0.9) {
-                          statusColor = 'bg-amber-500' // Danger Zone
+                        } else if (burnRatio >= 0.9) {
+                          statusColor = 'bg-amber-500' // Danger Zone (90-100%)
                           statusText = 'Danger'
                           rowClass = 'group bg-amber-50/30 dark:bg-amber-900/10 hover:bg-amber-50/50 dark:hover:bg-amber-900/20'
-                        } else if (progress > 0.75) {
-                          statusColor = 'bg-yellow-400' // Warning
+                        } else if (burnRatio >= 0.75) {
+                          statusColor = 'bg-yellow-400' // Warning (75-90%)
                           statusText = 'Warning'
                         }
 
-                        // Dummy Risk Fund calc if 0 (Simulated for v3 Demo)
-                        const riskFund = item.risk_buffer_amount || (item.total_budget * 0.05)
+                        // Calculated remaining (Total Budget - Committed - Actual)
+                        const remaining = totalBudget - totalBurn
 
                         return (
                           <TableRow key={item.id} className={`${rowClass} border-b border-slate-100 dark:border-slate-800 transition-colors`}>
@@ -204,20 +268,20 @@ export default function RAP(): JSX.Element {
                               </div>
                             </TableCell>
                             <TableCell className="text-right font-medium text-slate-700 dark:text-slate-300 font-mono text-xs py-2">
-                              {Math.round(item.total_budget ?? (item.qty_budget * item.unit_price_budget)).toLocaleString('id-ID')}
+                              {Math.round(totalBudget).toLocaleString('id-ID')}
                             </TableCell>
-                            <TableCell className="text-right font-mono text-xs text-purple-600 dark:text-purple-400 py-2">
-                              {Math.round(riskFund).toLocaleString('id-ID')}
+                            <TableCell className="text-right font-mono text-xs text-blue-600 dark:text-blue-400 py-2">
+                              {Math.round(committedCost).toLocaleString('id-ID')}
                             </TableCell>
-                            <TableCell className="text-right font-mono text-xs text-red-600 dark:text-red-400 py-2">
-                              {Math.round(item.actual_cost).toLocaleString('id-ID')}
+                            <TableCell className="text-right font-mono text-xs text-amber-600 dark:text-amber-400 py-2">
+                              {Math.round(actualCost).toLocaleString('id-ID')}
                             </TableCell>
-                            <TableCell className="text-right font-bold text-xs font-mono py-2">
-                              {Math.round(item.remaining_budget ?? (item.total_budget - item.actual_cost)).toLocaleString('id-ID')}
+                            <TableCell className="text-right font-bold text-xs font-mono py-2 text-slate-900 dark:text-slate-100">
+                              {Math.round(remaining).toLocaleString('id-ID')}
                             </TableCell>
                             <TableCell className="text-center py-2">
                               <div className="flex flex-col items-center justify-center gap-1">
-                                <div className={`h-2 w-12 rounded-full ${statusColor}`} title={statusText} />
+                                <div className={`h-2 w-12 rounded-full ${statusColor}`} title={`${statusText}: ${utilizationPct}% used (Committed + Actual)`} />
                                 <Badge
                                   variant={statusText === 'CRITICAL' ? 'destructive' : statusText === 'Danger' ? 'secondary' : 'outline'}
                                   className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wider"

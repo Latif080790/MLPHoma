@@ -1,25 +1,43 @@
-import React, { useState, useMemo, useEffect } from 'react'
+﻿import React, { useState, useMemo, useEffect } from 'react'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '../ui/table'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { Trash2, Plus, Search, ChevronDown, ChevronRight, Info, MapPin, Calculator, History, Save, CheckCircle2 } from 'lucide-react'
+import {
+  Calculator, CheckCircle2, ChevronDown, ChevronRight, History, Info, Layers, Lock,
+  LockKeyhole, MapPin, Plus, Save, Search, Settings2, ShoppingCart, Trash2, TrendingUp, X, Zap
+} from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Checkbox } from '../ui/checkbox'
 import { LoadingSpinner } from '../common/LoadingSpinner'
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
+import { RABPriceDriftDashboard } from './RABPriceDriftDashboard'
 import { useRabStore, RABItem, calculatePareto } from '../../store/rabStore'
 import { formatIDR } from '../../lib/utils'
 import { useAHSPStore } from '../../store/ahspStore'
-import { SAMPLE_AHSP_ITEMS, SAMPLE_RESOURCES } from '../../lib/sampleData/ahspSample'
-import { toast } from 'sonner'
+import { useRABVersionStore } from '../../store/rabVersionStore'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
   DialogTrigger,
 } from '../ui/dialog'
+import { Label } from '../ui/label'
+import { SAMPLE_AHSP_ITEMS, SAMPLE_RESOURCES } from '../../lib/sampleData/ahspSample'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +70,40 @@ interface RABTableProps {
   projectId: string
 }
 
+// Column definitions for the RAB Table
+const COLUMN_DEFS = [
+  { key: 'select', label: 'Select', defaultVisible: true, alwaysVisible: false },
+  { key: 'no', label: 'No', defaultVisible: true, alwaysVisible: false },
+  { key: 'cls', label: 'Pareto Class', defaultVisible: true, alwaysVisible: false },
+  { key: 'code', label: 'Code', defaultVisible: true, alwaysVisible: false },
+  { key: 'description', label: 'Description', defaultVisible: true, alwaysVisible: true },
+  { key: 'task', label: 'Linked Task', defaultVisible: false, alwaysVisible: false },
+  { key: 'unit', label: 'Unit', defaultVisible: true, alwaysVisible: false },
+  { key: 'volume', label: 'Volume', defaultVisible: true, alwaysVisible: false },
+  { key: 'tkdn', label: 'TKDN %', defaultVisible: false, alwaysVisible: false },
+  { key: 'cost_material', label: 'Material', defaultVisible: false, alwaysVisible: false },
+  { key: 'cost_labor', label: 'Labor', defaultVisible: false, alwaysVisible: false },
+  { key: 'cost_equipment', label: 'Equipment', defaultVisible: false, alwaysVisible: false },
+  { key: 'cost_subcon', label: 'Subcon', defaultVisible: false, alwaysVisible: false },
+  { key: 'unit_price', label: 'Unit Price', defaultVisible: true, alwaysVisible: true },
+  { key: 'total', label: 'Total', defaultVisible: true, alwaysVisible: true },
+  { key: 'actions', label: 'Actions', defaultVisible: true, alwaysVisible: true },
+] as const
+
+type ColumnKey = typeof COLUMN_DEFS[number]['key']
+
+const STORAGE_KEY_COLS = 'rabTable:visibleColumns'
+function loadColumnPrefs(): Set<ColumnKey> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_COLS)
+    if (raw) return new Set(JSON.parse(raw))
+  } catch { }
+  return new Set(COLUMN_DEFS.filter(c => c.defaultVisible).map(c => c.key))
+}
+function saveColumnPrefs(cols: Set<ColumnKey>) {
+  localStorage.setItem(STORAGE_KEY_COLS, JSON.stringify([...cols]))
+}
+
 export function RABTable({ projectId }: RABTableProps) {
   const {
     ahspItems,
@@ -60,16 +112,18 @@ export function RABTable({ projectId }: RABTableProps) {
     importResources,
     resources,
     componentsByAHSP,
+    fetchComponents,
     zonePricesByZone,
     fetchZonePrices,
     zones,
     loading
   } = useAHSPStore()
 
-  const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved } = useRabStore()
+  const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot } = useRabStore()
   const items = getItems(projectId)
   const draftCount = getDraftCount(projectId)
   const hasUnsavedChanges = hasUnsaved(projectId)
+  const projectLocked = isLocked(projectId)
 
   // Get tasks for linking
   const { getTasks, setTasks } = useTimelineStore()
@@ -88,13 +142,116 @@ export function RABTable({ projectId }: RABTableProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedUnit, setSelectedUnit] = useState<string>('all')
-  const [showDetails, setShowDetails] = useState(false)
   const [confirmScheduleOpen, setConfirmScheduleOpen] = useState(false)
-  const [visibleItemsCount, setVisibleItemsCount] = useState(50) // Start with 50 items
+  const [visibleItemsCount, setVisibleItemsCount] = useState(50)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const [showVersionHistory, setShowVersionHistory] = useState(false)
   const [showPublishConfirm, setShowPublishConfirm] = useState(false)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(loadColumnPrefs)
+  const [showLockConfirm, setShowLockConfirm] = useState(false)
+  const [isLocking, setIsLocking] = useState(false)
+  const [showDriftAnalysis, setShowDriftAnalysis] = useState(false)
+  const [showSaveScenario, setShowSaveScenario] = useState(false)
+  const [scenarioName, setScenarioName] = useState('')
+  const [selectedScenarioVersion, setSelectedScenarioVersion] = useState<number | null>(null)
+
+  const { fetchVersionsFromSupabase: fetchVersions, createVersion, versionsByProject } = useRABVersionStore()
+  const scenarios = useMemo(() =>
+    (versionsByProject[projectId] || []).filter(v => v.tags?.includes('scenario')),
+    [versionsByProject, projectId]
+  )
+
+  useEffect(() => {
+    fetchVersions(projectId)
+  }, [projectId, fetchVersions])
+
+  const handleSaveScenario = async () => {
+    if (!scenarioName.trim()) {
+      toast.error('Please enter a scenario name')
+      return
+    }
+
+    const snapshot = {
+      items,
+      totalItems: items.length,
+      totalCost: items.reduce((sum, i) => sum + (i.total_price || 0), 0),
+      metadata: {
+        createdAt: new Date().toISOString(),
+        categories: Array.from(new Set(items.map(i => i.category).filter(Boolean))) as string[]
+      }
+    }
+
+    await createVersion(
+      projectId,
+      scenarioName,
+      'create',
+      [],
+      snapshot,
+      ['scenario']
+    )
+
+    setShowSaveScenario(false)
+    setScenarioName('')
+  }
+
+  const handleSwitchScenario = (version: number | null) => {
+    if (version === null) {
+      setSelectedScenarioVersion(null)
+      return
+    }
+
+    const ver = (versionsByProject[projectId] || []).find(v => v.version === version)
+    if (ver) {
+      setSelectedScenarioVersion(version)
+      toast.info(`Switched to scenario: ${ver.description}`)
+    }
+  }
+
+  // Derived: is a column visible?
+  const isColVisible = (key: ColumnKey) => visibleColumns.has(key)
+  const toggleColumn = (key: ColumnKey) => {
+    const col = COLUMN_DEFS.find(c => c.key === key)
+    if (col?.alwaysVisible) return
+    const next = new Set(visibleColumns)
+    if (next.has(key)) next.delete(key); else next.add(key)
+    setVisibleColumns(next)
+    saveColumnPrefs(next)
+  }
+  const visibleColCount = COLUMN_DEFS.filter(c => visibleColumns.has(c.key)).length
+
+  // Expand/collapse row — fetch components on expand
+  const toggleExpand = (id: string, itemCode?: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+        // Trigger component fetch for this AHSP item
+        if (itemCode) {
+          const ahsp = ahspItems.find(a => a.code === itemCode)
+          if (ahsp && (!componentsByAHSP[ahsp.id] || componentsByAHSP[ahsp.id].length === 0)) {
+            fetchComponents(ahsp.id)
+          }
+        }
+      }
+      return next
+    })
+  }
+
+  // AHSP lookup: find components for an RAB item
+  const getAhspAnalysis = (itemCode: string | undefined) => {
+    if (!itemCode) return null
+    const ahsp = ahspItems.find(a => a.code === itemCode)
+    if (!ahsp) return null
+    const components = componentsByAHSP[ahsp.id] || []
+    return { ahsp, components }
+  }
+
+  // showDetails derived from visible columns (backward compat)
+  const showDetails = isColVisible('cost_material') || isColVisible('cost_labor') || isColVisible('cost_equipment') || isColVisible('cost_subcon')
 
   // Seed AHSP store with sample data if empty (DISABLED - User requested clean start)
   // useEffect(() => {
@@ -357,9 +514,18 @@ export function RABTable({ projectId }: RABTableProps) {
 
   const total = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
 
-  // PARETO LOGIC: Identify Class A/B/C
   const paretoItems = useMemo(() => calculatePareto(items), [items])
   const paretoMap = useMemo(() => new Map(paretoItems.map(i => [i.id, i.paretoClass])), [paretoItems])
+
+  const handleLockBaseline = async () => {
+    setIsLocking(true)
+    try {
+      await takeSnapshot(projectId)
+      setShowLockConfirm(false)
+    } finally {
+      setIsLocking(false)
+    }
+  }
 
   return (
     <div className="space-y-3 density-compact">
@@ -419,12 +585,76 @@ export function RABTable({ projectId }: RABTableProps) {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={showLockConfirm} onOpenChange={setShowLockConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-amber-600" />
+              Lock RAB Baseline?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will capture the current AHSP prices and store them as a "Snapshot" for this project.
+              Future changes to global AHSP prices will not affect this project's RAB.
+              Price editing will be disabled.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLocking}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLockBaseline}
+              disabled={isLocking}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {isLocking ? 'Locking...' : 'Lock & Snapshot'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {showDriftAnalysis && (
+        <Card className="border-blue-200 bg-blue-50/20">
+          <CardHeader className="p-4 pb-2 border-b flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <TrendingUp size={16} className="text-blue-500" />
+                Price Drift & Living Price Analysis
+              </CardTitle>
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setShowDriftAnalysis(false)}>
+              <X size={14} />
+            </Button>
+          </CardHeader>
+          <CardContent className="p-4">
+            <RABPriceDriftDashboard projectId={projectId} />
+          </CardContent>
+        </Card>
+      )}
+
+
       <div className="sticky-glass-panel flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="ghost" size="sm" className="control-compact" onClick={() => setShowDetails(!showDetails)}>
-            {showDetails ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            {showDetails ? 'Hide Split Costs' : 'Show Split Costs'}
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="control-compact gap-1.5">
+                <Settings2 size={14} />
+                Columns
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-52 p-2" align="start">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-2 py-1">Toggle Columns</p>
+              {COLUMN_DEFS.filter(c => c.key !== 'actions').map(col => (
+                <label key={col.key} className={`flex items-center gap-2 rounded px-2 py-1.5 text-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 ${col.alwaysVisible ? 'opacity-50' : ''}`}>
+                  <Checkbox
+                    checked={isColVisible(col.key)}
+                    disabled={col.alwaysVisible}
+                    onCheckedChange={() => toggleColumn(col.key)}
+                    className="h-3.5 w-3.5"
+                  />
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{col.label}</span>
+                </label>
+              ))}
+            </PopoverContent>
+          </Popover>
           <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-2" />
           <h3 className="text-sm font-semibold tracking-tight text-slate-700 dark:text-slate-300 uppercase">Cost Items</h3>
           <Badge variant="secondary" className="ml-2 font-mono text-xs text-slate-500 bg-slate-100 dark:bg-slate-800">{items.length}</Badge>
@@ -442,8 +672,52 @@ export function RABTable({ projectId }: RABTableProps) {
           {loading.zonePrices && (
             <LoadingSpinner size="sm" text="Loading zone prices..." className="ml-2" />
           )}
+          {projectLocked && (
+            <Badge variant="outline" className="ml-2 font-mono text-xs text-amber-700 bg-amber-50 border-amber-300">
+              <Lock className="h-3 w-3 mr-1" />
+              Locked Baseline
+            </Badge>
+          )}
+          {selectedScenarioVersion && (
+            <Badge variant="outline" className="ml-2 font-mono text-xs text-blue-700 bg-blue-50 border-blue-300">
+              <Layers className="h-3 w-3 mr-1" />
+              Scenario: v{selectedScenarioVersion}
+            </Badge>
+          )}
         </div>
         <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-2 text-xs h-8">
+                <Layers className="h-3.5 w-3.5" />
+                {selectedScenarioVersion ? `Scenario: v${selectedScenarioVersion}` : 'RAB Scenarios'}
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Project Scenarios</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleSwitchScenario(null)} className="flex items-center justify-between">
+                <span>Live RAB</span>
+                {!selectedScenarioVersion && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+              </DropdownMenuItem>
+              {scenarios.map(s => (
+                <DropdownMenuItem key={s.id} onClick={() => handleSwitchScenario(s.version)} className="flex items-center justify-between text-xs">
+                  <div className="flex flex-col">
+                    <span className="font-medium">v{s.version}: {s.description}</span>
+                    <span className="text-[10px] text-slate-500">{new Date(s.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  {selectedScenarioVersion === s.version && <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setShowSaveScenario(true)} className="text-blue-600 focus:text-blue-700 font-medium">
+                <Plus className="h-3.5 w-3.5 mr-2" />
+                Save as New Scenario
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {selectedItems.size > 0 && (
             <Button
               variant="destructive"
@@ -459,6 +733,36 @@ export function RABTable({ projectId }: RABTableProps) {
             <CalendarClock className="h-3.5 w-3.5" />
             Auto-Schedule
           </Button>
+          <Button
+            size="sm"
+            variant={showDriftAnalysis ? 'default' : 'outline'}
+            className={`gap-2 text-xs h-8 ${showDriftAnalysis ? '' : 'text-blue-600 border-blue-200 hover:bg-blue-50'}`}
+            onClick={() => setShowDriftAnalysis(!showDriftAnalysis)}
+          >
+            <Zap className="h-3.5 w-3.5" />
+            Price Drift
+          </Button>
+          {!projectLocked ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2 text-xs h-8 text-amber-600 border-amber-200 hover:bg-amber-50"
+              onClick={() => setShowLockConfirm(true)}
+            >
+              <Lock className="h-3.5 w-3.5" />
+              Lock Baseline
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled
+              className="gap-2 text-xs h-8 opacity-50"
+            >
+              <LockKeyhole className="h-3.5 w-3.5" />
+              Locked
+            </Button>
+          )}
           <Button
             size="sm"
             variant="outline"
@@ -543,8 +847,8 @@ export function RABTable({ projectId }: RABTableProps) {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Units</SelectItem>
-                          <SelectItem value="m3">m³</SelectItem>
-                          <SelectItem value="m2">m²</SelectItem>
+                          <SelectItem value="m3">mÂ³</SelectItem>
+                          <SelectItem value="m2">mÂ²</SelectItem>
                           <SelectItem value="m">m</SelectItem>
                           <SelectItem value="kg">kg</SelectItem>
                           <SelectItem value="ltr">ltr</SelectItem>
@@ -698,7 +1002,7 @@ export function RABTable({ projectId }: RABTableProps) {
               <div key={item.id} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="text-[10px] font-mono text-slate-400">#{idx + 1} • {item.item_code || '-'}</div>
+                    <div className="text-[10px] font-mono text-slate-400">#{idx + 1} â€¢ {item.item_code || '-'}</div>
                     <div className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item.name || 'Untitled Item'}</div>
                     <div className="mt-0.5 text-[11px] text-slate-500">{item.notes || 'No specification'}</div>
                   </div>
@@ -718,6 +1022,7 @@ export function RABTable({ projectId }: RABTableProps) {
                   <Input
                     type="number"
                     value={item.unit_price || ''}
+                    disabled={projectLocked || !!item.snapshot_price}
                     onChange={e => handlePriceChange(item.id, e.target.value)}
                     className="h-8 text-xs"
                     placeholder="Unit Price"
@@ -751,54 +1056,40 @@ export function RABTable({ projectId }: RABTableProps) {
             <Table>
               <TableHeader className="sticky-glass-tablehead">
                 <TableRow className="border-b-2 border-slate-200 dark:border-slate-700 hover:bg-transparent">
-                  <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">
-                    <Checkbox
-                      checked={isAllSelected}
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </TableHead>
-                  <TableHead className="w-[50px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">No</TableHead>
-                  <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">
+                  {isColVisible('select') && <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">
+                    <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
+                  </TableHead>}
+                  {isColVisible('no') && <TableHead className="w-[50px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">No</TableHead>}
+                  {isColVisible('cls') && <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">
                     <div className="inline-flex items-center gap-1">
                       <span>Cls</span>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-                            onClick={(event) => event.stopPropagation()}
-                            aria-label="Pareto class info"
-                          >
-                            <Info className="h-3 w-3" />
-                          </button>
+                          <button type="button" className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800" onClick={e => e.stopPropagation()} aria-label="Pareto class info"><Info className="h-3 w-3" /></button>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-[220px] text-[11px] leading-snug">
-                          Class A contributes most of cost impact, then B, then C.
-                        </TooltipContent>
+                        <TooltipContent className="max-w-[220px] text-[11px] leading-snug">Class A contributes most of cost impact, then B, then C.</TooltipContent>
                       </Tooltip>
                     </div>
-                  </TableHead>
-                  <TableHead className="w-[100px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3 border-l border-slate-200 dark:border-slate-700">Code</TableHead>
-                  <TableHead className="min-w-[250px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">Description & Spec</TableHead>
-                  <TableHead className="w-[150px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">Linked Task</TableHead>
-                  <TableHead className="w-[60px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3 border-l border-slate-200 dark:border-slate-700">Unit</TableHead>
-                  <TableHead className="w-[100px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">Volume</TableHead>
-                  <TableHead className="w-[80px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">TKDN %</TableHead>
-
-                  {showDetails && <TableHead className="w-[110px] text-right bg-blue-50/50 dark:bg-blue-900/20 font-bold text-blue-700 dark:text-blue-300 text-xs uppercase py-3 border-l-2 border-blue-200 dark:border-blue-800">Material</TableHead>}
-                  {showDetails && <TableHead className="w-[110px] text-right bg-green-50/50 dark:bg-green-900/20 font-bold text-green-700 dark:text-green-300 text-xs uppercase py-3">Labor</TableHead>}
-                  {showDetails && <TableHead className="w-[110px] text-right bg-orange-50/50 dark:bg-orange-900/20 font-bold text-orange-700 dark:text-orange-300 text-xs uppercase py-3">Equip</TableHead>}
-                  {showDetails && <TableHead className="w-[110px] text-right bg-purple-50/50 dark:bg-purple-900/20 font-bold text-purple-700 dark:text-purple-300 text-xs uppercase py-3">Subcon</TableHead>}
-
-                  <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3 border-l border-slate-200 dark:border-slate-700">Unit Price</TableHead>
-                  <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-3">Total</TableHead>
-                  <TableHead className="w-[40px] bg-transparent py-3"></TableHead>
+                  </TableHead>}
+                  {isColVisible('code') && <TableHead className="w-[100px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Code</TableHead>}
+                  <TableHead className="min-w-[250px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Description & Spec</TableHead>
+                  {isColVisible('task') && <TableHead className="w-[150px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Linked Task</TableHead>}
+                  {isColVisible('unit') && <TableHead className="w-[60px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Unit</TableHead>}
+                  {isColVisible('volume') && <TableHead className="w-[100px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Volume</TableHead>}
+                  {isColVisible('tkdn') && <TableHead className="w-[80px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">TKDN %</TableHead>}
+                  {isColVisible('cost_material') && <TableHead className="w-[110px] text-right bg-blue-50/50 dark:bg-blue-900/20 font-bold text-blue-700 dark:text-blue-300 text-[10px] uppercase py-2.5 border-l-2 border-blue-200 dark:border-blue-800">Material</TableHead>}
+                  {isColVisible('cost_labor') && <TableHead className="w-[110px] text-right bg-green-50/50 dark:bg-green-900/20 font-bold text-green-700 dark:text-green-300 text-[10px] uppercase py-2.5">Labor</TableHead>}
+                  {isColVisible('cost_equipment') && <TableHead className="w-[110px] text-right bg-orange-50/50 dark:bg-orange-900/20 font-bold text-orange-700 dark:text-orange-300 text-[10px] uppercase py-2.5">Equip</TableHead>}
+                  {isColVisible('cost_subcon') && <TableHead className="w-[110px] text-right bg-purple-50/50 dark:bg-purple-900/20 font-bold text-purple-700 dark:text-purple-300 text-[10px] uppercase py-2.5">Subcon</TableHead>}
+                  <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Unit Price</TableHead>
+                  <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Total</TableHead>
+                  <TableHead className="w-[40px] bg-transparent py-2.5"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={showDetails ? 14 : 10} className="text-center py-12 text-slate-400 bg-slate-50/20">
+                    <TableCell colSpan={visibleColCount} className="text-center py-12 text-slate-400 bg-slate-50/20">
                       <div className="flex flex-col items-center gap-2">
                         <Search className="h-8 w-8 opacity-20" />
                         <p>No items in RAB. Click "Add Item" to start.</p>
@@ -809,8 +1100,9 @@ export function RABTable({ projectId }: RABTableProps) {
                   items.map((item, idx) => {
                     const lineTotal = (item.volume || 0) * (item.unit_price || 0)
                     const pClass = paretoMap.get(item.id) || 'C'
+                    const isExpanded = expandedRows.has(item.id)
+                    const analysis = isExpanded ? getAhspAnalysis(item.item_code || item.code) : null
 
-                    // Row Style based on Class (More subtle Engineering Grade)
                     const rowClass = pClass === 'A'
                       ? "bg-red-50/30 dark:bg-red-900/10 border-l-[3px] border-l-red-500 hover:bg-red-50/50"
                       : pClass === 'B'
@@ -818,137 +1110,176 @@ export function RABTable({ projectId }: RABTableProps) {
                         : "border-l-[3px] border-l-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50"
 
                     return (
-                      <TableRow key={item.id} className={`${rowClass} group transition-colors border-b border-slate-100 dark:border-slate-800`}>
-                        <TableCell className="text-center py-2">
-                          <Checkbox
-                            checked={selectedItems.has(item.id)}
-                            onCheckedChange={(checked) => handleSelectOne(item.id, checked as boolean)}
-                          />
-                        </TableCell>
-                        <TableCell className="text-center text-[10px] font-mono text-slate-400 py-2">{idx + 1}</TableCell>
-                        <TableCell className="text-center py-2">
-                          <Badge variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} className={`h-4 w-4 p-0 flex items-center justify-center text-[9px] font-mono ${pClass === 'B' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 border-0' : ''}`}>
-                            {pClass}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono text-[10px] text-slate-500 py-2 border-l border-slate-100 dark:border-slate-800">
-                          {item.item_code || '-'}
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Input
-                                value={item.name || ''}
-                                onChange={e => updateItem(projectId, item.id, { name: e.target.value })}
-                                className="h-7 text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 font-medium px-2 shadow-none transition-all"
-                                placeholder="Item Name"
-                              />
-                              {(item as any).isDraft && (
-                                <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0">
-                                  DRAFT
-                                </Badge>
-                              )}
+                      <React.Fragment key={item.id}>
+                        <TableRow className={`${rowClass} group transition-colors border-b border-slate-100 dark:border-slate-800`}>
+                          {isColVisible('select') && <TableCell className="text-center py-2">
+                            <Checkbox checked={selectedItems.has(item.id)} onCheckedChange={(checked) => handleSelectOne(item.id, checked as boolean)} />
+                          </TableCell>}
+                          {isColVisible('no') && <TableCell className="text-center py-2">
+                            <button type="button" onClick={() => toggleExpand(item.id, item.item_code || (item as any).code)} className="inline-flex items-center gap-0.5 text-[10px] font-mono text-slate-400 hover:text-blue-600 transition-colors">
+                              {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                              {idx + 1}
+                            </button>
+                          </TableCell>}
+                          {isColVisible('cls') && <TableCell className="text-center py-2">
+                            <Badge variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} className={`h-4 w-4 p-0 flex items-center justify-center text-[9px] font-mono ${pClass === 'B' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 border-0' : ''}`}>{pClass}</Badge>
+                          </TableCell>}
+                          {isColVisible('code') && <TableCell className="font-mono text-[10px] text-slate-500 py-2">{item.item_code || '-'}</TableCell>}
+                          <TableCell className="py-2">
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <Input value={item.name || ''} onChange={e => updateItem(projectId, item.id, { name: e.target.value })} className="h-7 text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 font-medium px-2 shadow-none transition-all" placeholder="Item Name" />
+                                {(item as any).isDraft && <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0">DRAFT</Badge>}
+                              </div>
+                              <Input value={item.notes || ''} onChange={e => updateItem(projectId, item.id, { notes: e.target.value })} className="h-5 text-[10px] text-slate-500 border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 px-2 shadow-none transition-all" placeholder="Brand / Spec..." />
                             </div>
-                            <Input
-                              value={item.notes || ''}
-                              onChange={e => updateItem(projectId, item.id, { notes: e.target.value })}
-                              className="h-6 text-[10px] text-slate-500 border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 px-2 shadow-none transition-all"
-                              placeholder="Brand / Spec..."
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <Select
-                            value={item.taskId || 'unassigned'}
-                            onValueChange={(val) => updateItem(projectId, item.id, { taskId: val === 'unassigned' ? undefined : val })}
-                          >
-                            <SelectTrigger className="h-7 text-xs border-transparent bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-900 focus:ring-0 focus:border-blue-500 hover:border-slate-200 shadow-none">
-                              <SelectValue placeholder="-" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="unassigned">Unassigned</SelectItem>
-                              {tasks.map(t => (
-                                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="py-2 border-l border-slate-100 dark:border-slate-800">
-                          <Input
-                            value={item.unit || ''}
-                            onChange={e => updateItem(projectId, item.id, { unit: e.target.value })}
-                            className="h-7 text-xs text-center border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none"
-                          />
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <Input
-                            type="number"
-                            value={item.volume || ''}
-                            onChange={e => handleVolumeChange(item.id, e.target.value)}
-                            className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none"
-                          />
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            value={item.tkdn_percent || ''}
-                            onChange={e => updateItem(projectId, item.id, { tkdn_percent: parseFloat(e.target.value) || 0 })}
-                            className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none text-slate-500"
-                          />
-                        </TableCell>
-
-                        {showDetails && (
-                          <>
-                            <TableCell className="bg-blue-50/30 dark:bg-blue-900/5 py-2 border-l-2 border-blue-200 dark:border-blue-900">
-                              <Input type="number" className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-blue-200 focus:border-blue-500 shadow-none text-blue-700 dark:text-blue-300"
-                                value={item.cost_material || 0}
-                                onChange={(e) => handleSplitCostChange(item.id, 'cost_material', e.target.value)}
-                              />
+                          </TableCell>
+                          {isColVisible('task') && <TableCell className="py-2">
+                            <Select value={item.taskId || 'unassigned'} onValueChange={(val) => updateItem(projectId, item.id, { taskId: val === 'unassigned' ? undefined : val })}>
+                              <SelectTrigger className="h-7 text-xs border-transparent bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-900 focus:ring-0 focus:border-blue-500 hover:border-slate-200 shadow-none"><SelectValue placeholder="-" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unassigned">Unassigned</SelectItem>
+                                {tasks.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>}
+                          {isColVisible('unit') && <TableCell className="py-2">
+                            <Input value={item.unit || ''} onChange={e => updateItem(projectId, item.id, { unit: e.target.value })} className="h-7 text-xs text-center border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none" />
+                          </TableCell>}
+                          {isColVisible('volume') && <TableCell className="py-2">
+                            <Input type="number" value={item.volume || ''} onChange={e => handleVolumeChange(item.id, e.target.value)} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none" />
+                          </TableCell>}
+                          {isColVisible('tkdn') && <TableCell className="py-2">
+                            <Input type="number" placeholder="0" value={item.tkdn_percent || ''} onChange={e => updateItem(projectId, item.id, { tkdn_percent: parseFloat(e.target.value) || 0 })} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none text-slate-500" />
+                          </TableCell>}
+                          {isColVisible('cost_material') && <TableCell className="bg-blue-50/30 dark:bg-blue-900/5 py-2 border-l-2 border-blue-200 dark:border-blue-900">
+                            <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-blue-200 focus:border-blue-500 shadow-none text-blue-700 dark:text-blue-300 disabled:opacity-50" value={item.cost_material || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_material', e.target.value)} />
+                          </TableCell>}
+                          {isColVisible('cost_labor') && <TableCell className="bg-green-50/30 dark:bg-green-900/5 py-2">
+                            <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-green-200 focus:border-green-500 shadow-none text-green-700 dark:text-green-300 disabled:opacity-50" value={item.cost_labor || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_labor', e.target.value)} />
+                          </TableCell>}
+                          {isColVisible('cost_equipment') && <TableCell className="bg-orange-50/30 dark:bg-orange-900/5 py-2">
+                            <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-orange-200 focus:border-orange-500 shadow-none text-orange-700 dark:text-orange-300 disabled:opacity-50" value={item.cost_equipment || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_equipment', e.target.value)} />
+                          </TableCell>}
+                          {isColVisible('cost_subcon') && <TableCell className="bg-purple-50/30 dark:bg-purple-900/5 py-2">
+                            <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-purple-200 focus:border-purple-500 shadow-none text-purple-700 dark:text-purple-300 disabled:opacity-50" value={item.cost_subcon || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_subcon', e.target.value)} />
+                          </TableCell>}
+                          <TableCell className="py-2">
+                            <div className="flex items-center justify-end gap-1">
+                              {item.snapshot_price && <Lock size={10} className="text-amber-500 shrink-0" />}
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <button className="h-6 w-6 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-blue-500 transition-colors">
+                                    <Info size={12} />
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-64 p-3 shadow-xl border-slate-200" align="end">
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Price Hierarchy</p>
+                                  <div className="space-y-2">
+                                    <div className="flex justify-between items-center bg-slate-50 p-1.5 rounded text-[11px]">
+                                      <span className="text-slate-500">Global AHSP</span>
+                                      <span className="font-mono font-bold text-slate-700">{formatIDR(item.unit_price || 0)}</span>
+                                    </div>
+                                    {item.snapshot_price && (
+                                      <div className="flex justify-between items-center bg-amber-50 p-1.5 rounded text-[11px] border border-amber-100">
+                                        <div className="flex items-center gap-1.5 text-amber-700">
+                                          <Lock size={10} />
+                                          <span>Baseline (Snapshot)</span>
+                                        </div>
+                                        <span className="font-mono font-bold text-amber-900">
+                                          {formatIDR(typeof item.snapshot_price === 'object' ? item.snapshot_price.total : item.snapshot_price)}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="pt-2 border-t mt-2">
+                                      <p className="text-[10px] italic text-slate-400 leading-tight">Prices are automatically frozen when you "Lock Baseline".</p>
+                                    </div>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                              <Input type="number" disabled={projectLocked || !!item.snapshot_price} value={item.unit_price || ''} onChange={e => handlePriceChange(item.id, e.target.value)} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none font-semibold disabled:opacity-50" />
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-[11px] font-bold text-slate-700 dark:text-slate-300 py-2">{formatIDR(lineTotal)}</TableCell>
+                          <TableCell className="py-2">
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onClick={() => removeItem(projectId, item.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        {/* AHSP Analysis Expansion Row */}
+                        {isExpanded && (
+                          <TableRow className="bg-slate-50/80 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700">
+                            <TableCell colSpan={visibleColCount} className="p-0">
+                              <div className="px-6 py-3 ml-8">
+                                {analysis ? (
+                                  <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                                    <div className="bg-white dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                                      <Layers size={12} className="text-blue-500" />
+                                      <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">AHSP Analysis: {analysis.ahsp.code} â€” {analysis.ahsp.name}</span>
+                                    </div>
+                                    {(() => {
+                                      const grouped: Record<string, typeof analysis.components> = {}
+                                      analysis.components.forEach(c => {
+                                        const type = c.type || (c as any).resource?.type || 'other'
+                                        if (!grouped[type]) grouped[type] = []
+                                        grouped[type].push(c)
+                                      })
+                                      const typeConfig: Record<string, { label: string; color: string; bg: string }> = {
+                                        material: { label: 'MATERIAL', color: 'text-blue-700 dark:text-blue-300', bg: 'bg-blue-50/60 dark:bg-blue-900/20' },
+                                        labor: { label: 'TENAGA KERJA', color: 'text-emerald-700 dark:text-emerald-300', bg: 'bg-emerald-50/60 dark:bg-emerald-900/20' },
+                                        equipment: { label: 'PERALATAN', color: 'text-amber-700 dark:text-amber-300', bg: 'bg-amber-50/60 dark:bg-amber-900/20' },
+                                        subcontractor: { label: 'SUBKONTRAKTOR', color: 'text-purple-700 dark:text-purple-300', bg: 'bg-purple-50/60 dark:bg-purple-900/20' },
+                                        other: { label: 'LAIN-LAIN', color: 'text-slate-600', bg: 'bg-slate-50' },
+                                      }
+                                      let runningTotal = 0
+                                      return (
+                                        <div>
+                                          {Object.entries(grouped).map(([type, comps]) => {
+                                            const cfg = typeConfig[type] || typeConfig.other
+                                            return (
+                                              <div key={type}>
+                                                <div className={`px-4 py-1.5 ${cfg.bg} border-b border-slate-100 dark:border-slate-800`}>
+                                                  <span className={`text-[9px] font-black uppercase tracking-widest ${cfg.color}`}>{cfg.label}</span>
+                                                </div>
+                                                {comps.map((comp: any, ci: number) => {
+                                                  const name = comp.resource?.name || comp.resourceName || comp.name || '-'
+                                                  const unit = comp.unit || comp.resource?.unit || '-'
+                                                  const coeff = comp.coefficient || 0
+                                                  const price = comp.unitPrice || comp.resource?.unitPrice || 0
+                                                  const sub = coeff * price
+                                                  runningTotal += sub
+                                                  return (
+                                                    <div key={ci} className="flex items-center px-4 py-1 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                                      <span className="w-[220px] text-[10px] text-slate-700 dark:text-slate-300 truncate">{name}</span>
+                                                      <span className="w-[50px] text-[10px] text-center text-slate-500 font-mono">{unit}</span>
+                                                      <span className="w-[80px] text-[10px] text-right text-slate-600 dark:text-slate-400 font-mono">{Number(coeff).toFixed(4)}</span>
+                                                      <span className="w-[16px] text-[10px] text-center text-slate-400">Ã—</span>
+                                                      <span className="w-[100px] text-[10px] text-right text-slate-600 dark:text-slate-400 font-mono">{formatIDR(price)}</span>
+                                                      <span className="w-[16px] text-[10px] text-center text-slate-400">=</span>
+                                                      <span className="w-[110px] text-[11px] text-right font-mono font-semibold text-slate-700 dark:text-slate-300">{formatIDR(sub)}</span>
+                                                    </div>
+                                                  )
+                                                })}
+                                              </div>
+                                            )
+                                          })}
+                                          <div className="flex items-center justify-end px-4 py-2 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
+                                            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500 mr-3">Harga Satuan Analisa</span>
+                                            <span className="text-[12px] font-mono font-black text-slate-900 dark:text-white">{formatIDR(runningTotal)}</span>
+                                          </div>
+                                        </div>
+                                      )
+                                    })()}
+                                  </div>
+                                ) : (
+                                  <div className="text-[11px] text-slate-400 italic py-2">No AHSP analysis linked â€” item code not found in catalog.</div>
+                                )}
+                              </div>
                             </TableCell>
-                            <TableCell className="bg-green-50/30 dark:bg-green-900/5 py-2">
-                              <Input type="number" className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-green-200 focus:border-green-500 shadow-none text-green-700 dark:text-green-300"
-                                value={item.cost_labor || 0}
-                                onChange={(e) => handleSplitCostChange(item.id, 'cost_labor', e.target.value)}
-                              />
-                            </TableCell>
-                            <TableCell className="bg-orange-50/30 dark:bg-orange-900/5 py-2">
-                              <Input type="number" className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-orange-200 focus:border-orange-500 shadow-none text-orange-700 dark:text-orange-300"
-                                value={item.cost_equipment || 0}
-                                onChange={(e) => handleSplitCostChange(item.id, 'cost_equipment', e.target.value)}
-                              />
-                            </TableCell>
-                            <TableCell className="bg-purple-50/30 dark:bg-purple-900/5 py-2">
-                              <Input type="number" className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-purple-200 focus:border-purple-500 shadow-none text-purple-700 dark:text-purple-300"
-                                value={item.cost_subcon || 0}
-                                onChange={(e) => handleSplitCostChange(item.id, 'cost_subcon', e.target.value)}
-                              />
-                            </TableCell>
-                          </>
+                          </TableRow>
                         )}
-
-                        <TableCell className="py-2 border-l border-slate-100 dark:border-slate-800">
-                          <Input
-                            type="number"
-                            value={item.unit_price || ''}
-                            onChange={e => handlePriceChange(item.id, e.target.value)}
-                            className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none font-medium"
-                          />
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-xs font-semibold text-slate-700 dark:text-slate-300 py-2">
-                          {formatIDR(lineTotal)}
-                        </TableCell>
-                        <TableCell className="py-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-70 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity"
-                            onClick={() => removeItem(projectId, item.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+                      </React.Fragment>
                     )
                   })
                 )}
@@ -976,6 +1307,6 @@ export function RABTable({ projectId }: RABTableProps) {
         open={showVersionHistory}
         onClose={() => setShowVersionHistory(false)}
       />
-    </div>
+    </div >
   )
 }

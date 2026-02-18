@@ -48,6 +48,8 @@ import {
 import type { Risk } from '../../../types/risk'
 import { formatIDR } from '../../../lib/utils'
 import { format } from 'date-fns'
+import { ProjectSettingsDialog } from '../../../components/project/ProjectSettingsDialog'
+import { Settings2 } from 'lucide-react'
 
 // ─── Helper: risk score color ───────────────────────────────────────────────
 function riskScoreColor(score: number) {
@@ -385,6 +387,7 @@ export default function ProjectOverview() {
   const [team, setTeam] = useState<TeamMember[]>([])
   const [activities, setActivities] = useState<ActivityEntry[]>([])
   const [loading, setLoading] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
 
   const loadData = useCallback(async (projectId: string) => {
     setLoading(true)
@@ -521,9 +524,26 @@ export default function ProjectOverview() {
                 {activeProject.endDate && <span className="text-muted-foreground"> — {activeProject.endDate}</span>}
               </div>
             )}
+            <div className="ml-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-2 text-sky-700 hover:text-sky-800 hover:bg-sky-100"
+                onClick={() => setShowSettings(true)}
+              >
+                <Settings2 size={14} />
+                Project Settings
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      <ProjectSettingsDialog
+        projectId={activeProjectId}
+        open={showSettings}
+        onOpenChange={setShowSettings}
+      />
 
       {/* Section 1: KPI Cards */}
       {kpis && <KPISection kpis={kpis} />}
