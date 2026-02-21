@@ -214,3 +214,51 @@ export function calcPlannedProgressPercent(
 
     return { percent, daysElapsed, totalDuration }
 }
+
+// ─── Labor Productivity Benchmarking (Phase 12) ───
+
+export interface ProductivityResult {
+    score: number // 1.0 = standard, < 1.0 = slow, > 1.0 = high performance
+    status: 'efficient' | 'standard' | 'low'
+    avgDailyVolume: number
+    standardVolume: number
+    variance: number
+}
+
+/**
+ * Compare actual progress speed vs AHSP standards.
+ * For now, using a standard baseline of 5% progress per week as standard.
+ */
+export async function analyzeProductivity(projectId: string): Promise<ProductivityResult> {
+    const supabase = (await import('../lib/supabaseClient')).supabase
+    if (!supabase) throw new Error('Supabase client not available')
+
+    const { data: logs } = await supabase
+        .from('progress_logs')
+        .select('progress_percentage, updated_at')
+        .eq('project_id', projectId)
+        .order('updated_at', { ascending: false })
+        .limit(10)
+
+    if (!logs || logs.length < 2) {
+        return { score: 1.0, status: 'standard', avgDailyVolume: 0, standardVolume: 0, variance: 0 }
+    }
+
+    // Calculate avg daily progress increment
+    const latest = logs[0]
+    const oldest = logs[logs.length - 1]
+    const dayDiff = Math.max(1, (new Date(latest.updated_at).getTime() - new Date(oldest.updated_at).getTime()) / (1000 * 3600 * 24))
+    const totalProg = latest.progress_percentage - oldest.progress_percentage
+    const avgDailyProg = totalProg / dayDiff
+
+    const standardDailyProg = 0.7 // Assume 0.7% daily progress is standard (~5% per week)
+    const score = avgDailyProg / standardDailyProg
+
+    return {
+        score: parseFloat(score.toFixed(2)),
+        status: score > 1.1 ? 'efficient' : score < 0.9 ? 'low' : 'standard',
+        avgDailyVolume: parseFloat(avgDailyProg.toFixed(2)),
+        standardVolume: standardDailyProg,
+        variance: parseFloat((avgDailyProg - standardDailyProg).toFixed(2))
+    }
+}

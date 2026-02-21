@@ -29,6 +29,8 @@ const Settings = React.lazy(() => import('./pages/modules/v3/Settings'))
 const HandoverWizard = React.lazy(() => import('./pages/modules/v3/HandoverWizard'))
 const ProjectOverview = React.lazy(() => import('./pages/modules/v3/ProjectOverview'))
 const CostForecastDashboard = React.lazy(() => import('./pages/modules/v3/CostForecastDashboard'))
+const PortfolioResources = React.lazy(() => import('./pages/modules/v3/PortfolioResources'))
+const StrategySimulation = React.lazy(() => import('./pages/modules/v3/StrategySimulation'))
 const TKDNPage = React.lazy(() => import('./pages/TKDNPage'))
 const FeatureEditor = React.lazy(() => import('./components/feature/FeatureEditor'))
 
@@ -97,6 +99,8 @@ export default function App() {
             <Route path="/documents" element={<ProtectedLayout><Documents /></ProtectedLayout>} />
             <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
             <Route path="/handover" element={<ProtectedLayout><HandoverWizard /></ProtectedLayout>} />
+            <Route path="/portfolio-resources" element={<ProtectedLayout><PortfolioResources /></ProtectedLayout>} />
+            <Route path="/strategy-simulation" element={<ProtectedLayout><StrategySimulation /></ProtectedLayout>} />
             <Route path="/tkdn" element={<ProtectedLayout><TKDNPage /></ProtectedLayout>} />
             <Route path="/features" element={<ProtectedLayout><FeatureEditor /></ProtectedLayout>} />
 

@@ -985,6 +985,31 @@ export function syncCurvaSDataPoint(point: any): string {
 }
 
 /**
+ * Sync Progress Log with Evidence (Phase 11)
+ */
+export function syncProgressLog(log: any): string {
+  return syncQueue.enqueue({
+    operation: 'upsert',
+    table: 'progress_logs',
+    data: {
+      id: log.id || `${log.projectId}-${log.date}`,
+      project_id: log.projectId,
+      date: log.date,
+      progress_percentage: log.progress,
+      actual_cost: log.actualCost,
+      notes: log.notes,
+      volume_daily: log.volume,
+      evidence_url: log.photoUrl,
+      gps_coordinates: log.gpsCoords ? `${log.gpsCoords.latitude},${log.gpsCoords.longitude}` : null,
+      weather_condition: log.weather,
+      delay_reason: log.delayReason,
+      updated_at: new Date().toISOString(),
+    },
+    maxRetries: 3,
+  })
+}
+
+/**
  * Sync Curva-S Analysis (Phase 4)
  */
 export function syncCurvaSAnalysis(analysis: any): string {
@@ -1101,4 +1126,5 @@ export default {
   syncCurvaSAnalysis,
   syncCurvaSScenario,
   syncTKDNItem,
+  syncProgressLog,
 }

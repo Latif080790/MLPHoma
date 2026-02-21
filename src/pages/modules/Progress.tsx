@@ -25,6 +25,8 @@ import { Camera, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { progressBillingService } from "@/services/progressBillingService"
 import { progressEvidenceService } from "@/services/progressEvidenceService"
+import { syncProgressLog } from "@/lib/supabaseSyncService"
+import { reportService } from "@/services/reportService"
 
 /**
  * Export progress rows as CSV
@@ -148,6 +150,20 @@ export default function Progress() {
   const onAdd = () => {
     if (!form.date) return
 
+    // Task 1: Enforce Evidence-Based Progress
+    // Only block if not a demo/local project (optional: block always for strict policy)
+    const isStrictPolicy = !projectId.includes('demo') && projectId !== 'default'
+    if (isStrictPolicy) {
+      if (!form.photoUrl) {
+        toast.error("Evidence Required", { description: "Please upload a photo of site progress before submitting." })
+        return
+      }
+      if (!gpsCoords) {
+        toast.error("GPS Required", { description: "Please capture GPS location to verify site presence." })
+        return
+      }
+    }
+
     const payload: any = {
       projectId,
       date: form.date,
@@ -157,6 +173,14 @@ export default function Progress() {
       updatedAt: new Date().toISOString(),
     }
 
+    // 1. Save detailed progress log with evidence (Phase 11)
+    syncProgressLog({
+      ...form,
+      projectId,
+      gpsCoords
+    })
+
+    // 2. Update S-Curve Data Points
     addDataPoint(projectId, payload)
 
     // Auto-trigger billing generation (non-blocking)
@@ -205,6 +229,18 @@ export default function Progress() {
         description="Input progres aktual dan biaya lapangan—terhubung langsung ke Curva‑S."
         actions={
           <div className="flex flex-wrap gap-2">
+            <button
+              className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 shadow-sm"
+              onClick={() => {
+                toast.promise(reportService.generateDSR(projectId, form.date), {
+                  loading: 'Generating Daily Site Report...',
+                  success: 'DSR downloaded successfully',
+                  error: 'Failed to generate DSR'
+                })
+              }}
+            >
+              <FileText size={16} /> Generate DSR
+            </button>
             <button
               className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
               onClick={() => exportProgressCSV(recent)}

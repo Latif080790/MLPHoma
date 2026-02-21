@@ -317,5 +317,61 @@ export const supplyChainService = {
         })
 
         return Object.values(stock)
+    },
+
+    /**
+     * Analyze discrepancies between Procurement (Commitment) and Field Reporting
+     */
+    async getInventoryLeakageAnalysis(projectId: string): Promise<{
+        itemName: string,
+        procuredQty: number,
+        reportedQty: number,
+        delta: number,
+        leakagePercentage: number,
+        isAlert: boolean
+    }[]> {
+        const supabase = assertSupabase()
+
+        // 1. Get all PO Items (Procured)
+        const { data: poItems } = await supabase
+            .from('po_items')
+            .select('item_name, quantity, purchase_orders!inner(project_id)')
+            .eq('purchase_orders.project_id', projectId)
+
+        // 2. Get all Progress Logs (Reported Consumption)
+        const { data: progressLogs } = await supabase
+            .from('progress_logs')
+            .select('notes, volume_daily')
+            .eq('project_id', projectId)
+
+        const analysis: Record<string, { itemName: string, procured: number, reported: number }> = {}
+
+        poItems?.forEach(item => {
+            const key = item.item_name.toLowerCase().trim()
+            if (!analysis[key]) analysis[key] = { itemName: item.item_name, procured: 0, reported: 0 }
+            analysis[key].procured += (item.quantity || 0)
+        })
+
+        progressLogs?.forEach(log => {
+            // Heuristic matching
+            Object.keys(analysis).forEach(key => {
+                if (log.notes?.toLowerCase().includes(key)) {
+                    analysis[key].reported += (log.volume_daily || 0)
+                }
+            })
+        })
+
+        return Object.values(analysis).map(item => {
+            const delta = item.procured - item.reported
+            const leakagePercentage = item.procured > 0 ? (delta / item.procured) * 100 : 0
+            return {
+                itemName: item.itemName,
+                procuredQty: item.procured,
+                reportedQty: item.reported,
+                delta,
+                leakagePercentage: parseFloat(leakagePercentage.toFixed(2)),
+                isAlert: leakagePercentage > 15
+            }
+        })
     }
 }

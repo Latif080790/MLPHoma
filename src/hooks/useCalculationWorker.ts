@@ -26,7 +26,7 @@ let _requestId = 0
 function getSharedWorker(): Worker {
     if (!_sharedWorker) {
         _sharedWorker = new Worker(
-            new URL('./calculationWorker.ts', import.meta.url),
+            new URL('../workers/calculationWorker.ts', import.meta.url),
             { type: 'module' }
         )
         _sharedWorker.onmessage = (ev: MessageEvent) => {
@@ -104,7 +104,7 @@ export function useCalculationWorker() {
 export async function runCalculation<T = any>(type: CalcType, payload: any): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         const worker = new Worker(
-            new URL('./calculationWorker.ts', import.meta.url),
+            new URL('../workers/calculationWorker.ts', import.meta.url),
             { type: 'module' }
         )
 

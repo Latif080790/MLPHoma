@@ -7,7 +7,8 @@
 
 import React, { useMemo, useRef } from 'react'
 import { useRabStore } from '../../store/rabStore'
-import { mockProject } from '../../lib/mockData'
+// Legacy mock component - stubbing project info
+const mockProject = { project_id: 'default', name: 'Legacy Mock Project' }
 import { computeItemTotals } from '../../lib/rabUtils'
 import notify from '../../lib/toast'
 import RABExport from '../rab/RABExport'
