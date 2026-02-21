@@ -18,6 +18,7 @@ import { validate } from '../lib/validationMiddleware'
 import { projectInputSchema, projectUpdateSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
 import { useAuthStore } from './authStore'
+import { auditService } from '@/services/auditService'
 
 /**
  * PaymentTerms
@@ -52,6 +53,7 @@ export interface Project {
   endDate?: string
   budget?: number
   status?: string
+  archived_at?: string
   /** User ID (owner of the project) */
   userId?: string
   /** Optional payment terms attached to the project */
@@ -219,6 +221,10 @@ export const useProjectStore = create<ProjectState>((set, get) => {
      * archiveProject
      * Mark project as ARCHIVED locally and sync via centralized sync service.
      */
+    /**
+     * archiveProject
+     * Mark project as ARCHIVED locally and sync via centralized sync service.
+     */
     archiveProject: async (projectId: string) => {
       if (!projectId) return
 
@@ -226,17 +232,34 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       set((state) => {
         const existing = state.projects[projectId]
         if (!existing) return state
-        const archived = { ...existing, status: 'ARCHIVED' }
+
+        const archived: Project = {
+          ...existing,
+          status: 'ARCHIVED',
+          archived_at: new Date().toISOString()
+        }
+
         return { projects: { ...state.projects, [projectId]: archived } }
       })
 
       // 2. Sync via centralized service (queued + retry)
       const existing = get().projects[projectId]
       if (existing) {
-        syncProj({
-          ...existing,
-          status: 'ARCHIVED',
-          archived_at: new Date().toISOString(),
+        syncProj(existing)
+
+        // Log to audit trail
+        const currentUser = useAuthStore.getState().user
+        auditService.log({
+          action: 'PROJECT_ARCHIVED',
+          userId: currentUser?.id,
+          entity: 'projects',
+          entityType: 'PROJECT',
+          entityId: projectId,
+          details: { reason: 'User archived project', previousStatus: existing.status }
+        })
+
+        toast.success('Proyek berhasil diarsipkan', {
+          description: 'Project is now in read-only mode.'
         })
       }
     },

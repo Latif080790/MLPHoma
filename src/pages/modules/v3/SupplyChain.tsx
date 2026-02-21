@@ -20,6 +20,8 @@ import { MaterialTransferDialog } from "@/components/supply-chain/MaterialTransf
 import { MaterialTransferPanel } from "@/components/supply-chain/MaterialTransferPanel"
 import { WorkOrderPanel } from "@/components/modules/WorkOrderPanel"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
+import { ProcurementTracePanel } from "@/components/supply-chain/ProcurementTracePanel"
+import type { PurchaseOrder } from "@/types/supply-chain"
 
 export default function SupplyChain() {
     const { activeProjectId } = useProjectStore()
@@ -42,6 +44,7 @@ export default function SupplyChain() {
     const [searchTerm, setSearchTerm] = useState("")
     const [grnOpen, setGrnOpen] = useState(false)
     const [transferOpen, setTransferOpen] = useState(false)
+    const [tracePo, setTracePo] = useState<PurchaseOrder | null>(null)
 
     useEffect(() => {
         if (activeProjectId) {
@@ -99,6 +102,7 @@ export default function SupplyChain() {
             <InventoryTransactionDialog open={invOpen} onOpenChange={setInvOpen} projectId={activeProjectId} defaultType={invType} />
             <GRNDialog open={grnOpen} onOpenChange={setGrnOpen} projectId={activeProjectId} />
             <MaterialTransferDialog open={transferOpen} onOpenChange={setTransferOpen} projectId={activeProjectId} />
+            <ProcurementTracePanel open={!!tracePo} onOpenChange={(o) => { if (!o) setTracePo(null) }} po={tracePo} projectId={activeProjectId} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <div className="flex items-center justify-between mb-4">
@@ -218,7 +222,7 @@ export default function SupplyChain() {
                                             } : null
 
                                             return (
-                                                <TableRow key={po.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors">
+                                                <TableRow key={po.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors" onClick={() => setTracePo(po)}>
                                                     <TableCell className="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 py-2 border-r border-transparent">
                                                         {po.poNumber}
                                                     </TableCell>

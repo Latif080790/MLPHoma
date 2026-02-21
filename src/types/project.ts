@@ -15,5 +15,5 @@ export interface Project {
   /** Total project budget in IDR */
   budget: number
   /** Current lifecycle status */
-  status: 'Active' | 'Planning' | 'Completed'
+  status: 'Active' | 'Planning' | 'Completed' | 'ARCHIVED'
 }

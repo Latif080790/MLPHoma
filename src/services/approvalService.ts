@@ -251,6 +251,34 @@ export const approvalService = {
             }
         }
 
+        // Post-approval hook: commit budget for approved PO
+        if (approval.entityType === 'PURCHASE_ORDER' && approval.impactSummary?.poData) {
+            try {
+                const { commitBudget } = await import('./budgetGuardService')
+                const poData = approval.impactSummary.poData
+                if (poData?.items) {
+                    for (const item of poData.items) {
+                        if (item.rap_item_id) {
+                            const amount = (item.quantity || 0) * (item.unit_price || 0)
+                            if (amount > 0) await commitBudget(item.rap_item_id, amount)
+                        }
+                    }
+                }
+            } catch (poErr) {
+                console.error('[Approval] PO budget commit failed:', poErr)
+            }
+        }
+
+        // Post-approval hook: execute approved material transfer
+        if ((approval.entityType === 'MATERIAL_TRANSFER' || approval.entityType === 'EMERGENCY_TRANSFER') && approval.entityId) {
+            try {
+                const { materialTransferService: mts } = await import('./materialTransferService')
+                await mts.executeTransfer(approval.entityId)
+            } catch (mtrErr) {
+                console.error('[Approval] MTR execution failed:', mtrErr)
+            }
+        }
+
         return approval
     },
 

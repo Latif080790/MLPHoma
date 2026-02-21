@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowRightLeft, AlertTriangle, Loader2, CheckCircle2, Zap } from "lucide-react"
 import { materialTransferService } from "@/services/materialTransferService"
+import { useAuthStore } from "@/store/authStore"
 import { toast } from "sonner"
 
 // ---------- Schema ----------
@@ -96,6 +97,11 @@ export function MaterialTransferDialog({
     async function onSubmit(data: TransferFormValues) {
         setSubmitting(true)
         try {
+            const user = useAuthStore.getState().user
+            const profile = useAuthStore.getState().profile
+            const requesterId = user?.id || 'unknown'
+            const requesterName = profile?.full_name || user?.email || 'Unknown User'
+
             await materialTransferService.createTransfer(
                 {
                     projectId,
@@ -109,8 +115,8 @@ export function MaterialTransferDialog({
                     reason: data.reason,
                     isEmergency: data.isEmergency ?? false,
                 },
-                'current-user',
-                'Current User'
+                requesterId,
+                requesterName
             )
 
             if (data.isEmergency) {
@@ -271,11 +277,10 @@ export function MaterialTransferDialog({
                     </div>
 
                     {/* Emergency Toggle */}
-                    <div className={`flex items-center justify-between p-3 rounded-lg border ${
-                        isEmergency
-                            ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                            : 'bg-slate-50 dark:bg-slate-800/50'
-                    }`}>
+                    <div className={`flex items-center justify-between p-3 rounded-lg border ${isEmergency
+                        ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                        : 'bg-slate-50 dark:bg-slate-800/50'
+                        }`}>
                         <div className="flex items-center gap-3">
                             {isEmergency ? (
                                 <Zap className="h-5 w-5 text-red-500" />
@@ -311,11 +316,10 @@ export function MaterialTransferDialog({
                         <Button
                             type="submit"
                             disabled={submitting}
-                            className={`gap-2 ${
-                                isEmergency
-                                    ? 'bg-red-600 hover:bg-red-700'
-                                    : 'bg-blue-600 hover:bg-blue-700'
-                            }`}
+                            className={`gap-2 ${isEmergency
+                                ? 'bg-red-600 hover:bg-red-700'
+                                : 'bg-blue-600 hover:bg-blue-700'
+                                }`}
                         >
                             {submitting ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

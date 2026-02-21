@@ -202,6 +202,16 @@ export function TKDNResourceManager() {
             <Button size="sm" variant="outline" className="gap-2" onClick={handleExportCSV} disabled={items.length === 0}>
               <Download size={16} /> Export CSV
             </Button>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => useTKDNStore.getState().generatePDF()} disabled={items.length === 0}>
+              <Download size={16} /> Laporan PDF
+            </Button>
+            <Button size="sm" variant="secondary" className="gap-2" onClick={() => {
+              if (confirm('Impor item dari RAP? Item ganda mungkin terjadi.')) {
+                useTKDNStore.getState().importFromRAP(activeProjectId!)
+              }
+            }}>
+              <Package size={16} /> Impor RAP
+            </Button>
             <Button size="sm" className="gap-2" onClick={handleAdd}>
               <Plus size={16} /> Tambah Item
             </Button>

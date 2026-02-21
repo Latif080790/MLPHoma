@@ -26,6 +26,8 @@ export interface TKDNState {
   addItem: (input: TKDNCreateInput) => Promise<TKDNItem | null>
   updateItem: (id: string, updates: TKDNUpdateInput) => Promise<void>
   removeItem: (id: string) => Promise<void>
+  importFromRAP: (projectId: string) => Promise<number>
+  generatePDF: () => Promise<void>
   setTargetPercentage: (pct: number) => void
   recalculate: () => void
 }
@@ -110,6 +112,36 @@ export const useTKDNStore = create<TKDNState>((set, get) => ({
         summary: tkdnService.calculateSummary(prev, state.targetPercentage),
       }))
       toast.error('Gagal menghapus item TKDN', { description: err.message })
+    }
+  },
+
+  importFromRAP: async (projectId: string) => {
+    try {
+      const count = await tkdnService.importFromRAP(projectId)
+      if (count > 0) {
+        await get().fetchItems(projectId)
+        toast.success(`Berhasil mengimpor ${count} item dari RAP`)
+      } else {
+        toast.info('Tidak ada item RAP baru untuk diimpor')
+      }
+      return count
+    } catch (err: any) {
+      toast.error('Gagal mengimpor dari RAP', { description: err.message })
+      return 0
+    }
+  },
+
+  generatePDF: async () => {
+    const { summary, items } = get()
+    if (!summary || items.length === 0) {
+      toast.error('Tidak ada data untuk dilaporan')
+      return
+    }
+    try {
+      await tkdnService.generatePDF(summary, items)
+      toast.success('Laporan TKDN berhasil diunduh')
+    } catch (err: any) {
+      toast.error('Gagal membuat PDF', { description: err.message })
     }
   },
 

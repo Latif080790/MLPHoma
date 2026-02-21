@@ -73,7 +73,7 @@ export default function Documents() {
                 project_id: activeProjectId!,
                 title: newDocTitle,
                 category: newDocCategory,
-            }, newDocFile || undefined)
+            }, newDocFile || undefined, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
             toast.success("Document uploaded")
             setUploadOpen(false)
             loadDocs()
@@ -96,10 +96,10 @@ export default function Documents() {
     async function handleToggleLock(doc: ProjectDocument) {
         try {
             if (doc.is_locked) {
-                await documentService.unlockDocument(doc.id)
+                await documentService.unlockDocument(doc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document unlocked")
             } else {
-                await documentService.lockDocument(doc.id, user?.id || '', user?.name || 'User')
+                await documentService.lockDocument(doc.id, user?.id || '', user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document locked")
             }
             loadDocs()
@@ -114,7 +114,7 @@ export default function Documents() {
                 await documentService.unarchiveDocument(doc.id)
                 toast.success("Document restored")
             } else {
-                await documentService.archiveDocument(doc.id)
+                await documentService.archiveDocument(doc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document archived")
             }
             loadDocs()
@@ -125,7 +125,7 @@ export default function Documents() {
 
     async function handleDelete() {
         if (!pendingDeleteDoc) return
-        await documentService.deleteDocument(pendingDeleteDoc.id)
+        await documentService.deleteDocument(pendingDeleteDoc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
         setPendingDeleteDoc(null)
         loadDocs()
     }
@@ -180,22 +180,20 @@ export default function Documents() {
                         const isArchived = doc.status === 'ARCHIVED'
                         const isSuperseded = doc.status === 'SUPERSEDED'
                         const isLocked = doc.is_locked
-                        
+
                         return (
-                            <Card 
-                                key={doc.id} 
-                                className={`hover:border-blue-500 transition-colors group ${
-                                    isArchived ? 'opacity-60 border-slate-300' : 
-                                    isSuperseded ? 'opacity-50 border-yellow-300' : ''
-                                }`}
+                            <Card
+                                key={doc.id}
+                                className={`hover:border-blue-500 transition-colors group ${isArchived ? 'opacity-60 border-slate-300' :
+                                        isSuperseded ? 'opacity-50 border-yellow-300' : ''
+                                    }`}
                             >
                                 <CardContent className="p-4 flex flex-col justify-between h-full min-h-[140px]">
                                     <div className="flex items-start justify-between">
-                                        <div className={`p-2 rounded ${
-                                            isArchived ? 'bg-slate-50 text-slate-400' :
-                                            isSuperseded ? 'bg-yellow-50 text-yellow-600' :
-                                            'bg-blue-50 text-blue-600'
-                                        }`}>
+                                        <div className={`p-2 rounded ${isArchived ? 'bg-slate-50 text-slate-400' :
+                                                isSuperseded ? 'bg-yellow-50 text-yellow-600' :
+                                                    'bg-blue-50 text-blue-600'
+                                            }`}>
                                             <FileText size={20} />
                                         </div>
                                         <div className="flex gap-1">
