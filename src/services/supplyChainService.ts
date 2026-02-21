@@ -233,6 +233,21 @@ export const supplyChainService = {
                     }
                 }
             }
+
+            // Propagate MR status: if PO was linked to an MR, mark it as fulfilled
+            try {
+                const { data: poRow } = await assertSupabase()
+                    .from('purchase_orders')
+                    .select('mr_id')
+                    .eq('id', id)
+                    .single()
+
+                if (poRow?.mr_id) {
+                    await this.updateMrStatus(poRow.mr_id, 'PO_CREATED')
+                }
+            } catch (mrErr) {
+                console.warn('[SupplyChain] MR propagation failed (non-blocking):', mrErr)
+            }
         }
 
         return upsertPurchaseOrder({ id, ...updates })

@@ -10,6 +10,7 @@
  */
 
 import { assertSupabase } from '../lib/supabaseClient'
+import { auditService } from './auditService'
 
 /** Budget check result for single item */
 export interface BudgetCheckItem {
@@ -253,6 +254,17 @@ export async function commitBudget(
   if (updateError) {
     throw new Error(`Failed to commit budget: ${updateError.message}`)
   }
+
+  // Audit trail
+  try {
+    await auditService.log({
+      action: 'BUDGET_CHANGE',
+      entity: 'rap_items',
+      entityType: 'RAP_ITEM',
+      entityId: rapItemId,
+      details: { type: 'COMMIT', amount, previousCommitted: rapItem.committed_cost || 0, newCommitted },
+    })
+  } catch { /* audit is non-blocking */ }
 }
 
 /**
@@ -282,4 +294,15 @@ export async function releaseBudget(
   if (updateError) {
     throw new Error(`Failed to release budget: ${updateError.message}`)
   }
+
+  // Audit trail
+  try {
+    await auditService.log({
+      action: 'BUDGET_CHANGE',
+      entity: 'rap_items',
+      entityType: 'RAP_ITEM',
+      entityId: rapItemId,
+      details: { type: 'RELEASE', amount, previousCommitted: rapItem.committed_cost || 0, newCommitted },
+    })
+  } catch { /* audit is non-blocking */ }
 }

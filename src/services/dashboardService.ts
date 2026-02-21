@@ -1,6 +1,6 @@
 
 import { supabase } from '../lib/supabaseClient'
-import { differenceInDays, parseISO } from 'date-fns'
+
 
 export interface DashboardStats {
     totalBudget: number
@@ -183,11 +183,7 @@ export const dashboardService = {
             })
         }
 
-        // EARNED VALUE ANALYSIS
-        // EV = % complete * BAC (Budget at Completion)
-        // PV = planned % * BAC (time-proportioned budget)
-        // AC = actual cost incurred
-        // CPI = EV / AC, SPI = EV / PV
+        // EARNED VALUE ANALYSIS (delegated to evmService)
         let cpi: number | null = null
         let spi: number | null = null
         let overallProgress = 0
@@ -213,29 +209,32 @@ export const dashboardService = {
             .single()
 
         if (totalBudget > 0) {
-            const earnedValue = (overallProgress / 100) * totalBudget // EV
-            const ac = actualCostTotal > 0 ? actualCostTotal : utilizedBudget // AC fallback to committed
+            const { computeEVM, calcPlannedProgressPercent, computeForecasts } = await import('./evmService')
 
-            // Derive schedule duration from actual project dates
-            const now = new Date()
-            const projectStart = projectData?.start_date ? parseISO(projectData.start_date) : new Date(now.getTime() - 30 * 86400000)
-            const projectEnd = projectData?.end_date ? parseISO(projectData.end_date) : new Date(now.getTime() + 150 * 86400000)
-            const daysElapsed = Math.max(1, differenceInDays(now, projectStart))
-            const totalDuration = Math.max(1, differenceInDays(projectEnd, projectStart))
-            const plannedPercent = Math.min(daysElapsed / totalDuration, 1)
-            const plannedValue = plannedPercent * totalBudget // PV
+            const startDate = projectData?.start_date || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
+            const endDate = projectData?.end_date || new Date(Date.now() + 150 * 86400000).toISOString().split('T')[0]
 
-            if (ac > 0) cpi = parseFloat((earnedValue / ac).toFixed(2))
-            if (plannedValue > 0) spi = parseFloat((earnedValue / plannedValue).toFixed(2))
+            const { percent: plannedPercent, daysElapsed } = calcPlannedProgressPercent(startDate, endDate)
 
-            // Forecasted end date (EAC-based)
-            if (overallProgress > 5) { // Only predict if >5% progress
-                const totalDaysNeeded = daysElapsed / (overallProgress / 100)
-                const remainingDays = totalDaysNeeded - daysElapsed
-                const forecastDate = new Date()
-                forecastDate.setDate(forecastDate.getDate() + remainingDays)
-                forecastedEndDate = forecastDate.toISOString().split('T')[0]
-            }
+            const metrics = computeEVM({
+                totalBudget,
+                actualCost: actualCostTotal > 0 ? actualCostTotal : utilizedBudget,
+                progressPercent: overallProgress,
+                plannedProgressPercent: plannedPercent,
+            })
+
+            cpi = parseFloat(metrics.cpi.toFixed(2))
+            spi = parseFloat(metrics.spi.toFixed(2))
+
+            // Forecast using evmService
+            const forecasts = computeForecasts({
+                metrics,
+                startDate,
+                endDate,
+                progressPercent: overallProgress,
+                daysElapsed,
+            })
+            forecastedEndDate = forecasts.forecastDate
         }
 
         if (activeRisks) {

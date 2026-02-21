@@ -1,5 +1,7 @@
 import { assertSupabase } from '@/lib/supabaseClient';
 import { supplyChainService } from './supplyChainService';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 export interface HandoverSummary {
     budget: {
@@ -171,5 +173,126 @@ export const handoverService = {
         }
 
         return issues;
+    },
+
+    async generateHandoverReport(projectId: string, summary: HandoverSummary, issues: OutstandingIssue[]) {
+        const doc = new jsPDF();
+        const now = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
+
+        // --- Page 1: Executive Summary ---
+        doc.setFontSize(22);
+        doc.text('Berita Acara Serah Terima Proyek', 105, 20, { align: 'center' });
+        doc.setFontSize(12);
+        doc.text(`Project ID: ${projectId}`, 105, 28, { align: 'center' });
+        doc.text(`Tanggal: ${now}`, 105, 34, { align: 'center' });
+
+        doc.setLineWidth(0.5);
+        doc.line(20, 40, 190, 40);
+
+        // Budget Section
+        doc.setFontSize(14);
+        doc.text('1. Ringkasan Anggaran', 20, 50);
+        doc.setFontSize(10);
+        (doc as any).autoTable({
+            startY: 55,
+            head: [['Keterangan', 'Nilai (Rp)']],
+            body: [
+                ['Anggaran Direncanakan (RAP)', summary.budget.planned.toLocaleString('id-ID')],
+                ['Realisasi Biaya (Actual)', summary.budget.actual.toLocaleString('id-ID')],
+                ['Variansi (Sisa/Overrun)', summary.budget.variance.toLocaleString('id-ID')]
+            ],
+            theme: 'plain',
+        });
+
+        // Schedule Section
+        doc.setFontSize(14);
+        doc.text('2. Jadwal & Progres', 20, (doc as any).lastAutoTable.finalY + 15);
+        doc.setFontSize(10);
+        (doc as any).autoTable({
+            startY: (doc as any).lastAutoTable.finalY + 20,
+            head: [['Parameter', 'Status']],
+            body: [
+                ['Tanggal Mulai', summary.schedule.startDate],
+                ['Tanggal Selesai (Rencana)', summary.schedule.endDate],
+                ['Tanggal Selesai (Aktual)', summary.schedule.actualFinish],
+                ['Progres Fisik', `${summary.schedule.progress}%`],
+                ['Status Akhir', summary.schedule.status]
+            ],
+            theme: 'plain',
+        });
+
+        // Safety Section
+        doc.setFontSize(14);
+        doc.text('3. K3L (Safety)', 20, (doc as any).lastAutoTable.finalY + 15);
+        doc.setFontSize(10);
+        (doc as any).autoTable({
+            startY: (doc as any).lastAutoTable.finalY + 20,
+            head: [['Parameter', 'Jumlah']],
+            body: [
+                ['Total Resiko Teridentifikasi', summary.safety.total],
+                ['Resiko Tinggi/Critical', summary.safety.highSeverity],
+                ['Insiden Tercatat', summary.safety.incidents],
+                ['Jam Kerja Aman (Manhours)', summary.safety.manhours]
+            ],
+            theme: 'plain',
+        });
+
+        // --- Page 2: Outstanding Issues ---
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text('Daftar Masalah Tertunda (Outstanding Issues)', 20, 20);
+
+        if (issues.length === 0) {
+            doc.setFontSize(12);
+            doc.text('Tidak ada masalah tertunda (Clean Handover).', 20, 30);
+        } else {
+            (doc as any).autoTable({
+                startY: 25,
+                head: [['Tipe', 'Deskripsi', 'Prioritas', 'Status']],
+                body: issues.map(i => [i.type, i.desc, i.priority, i.status]),
+                theme: 'grid',
+                headStyles: { fillColor: [220, 53, 69] }
+            });
+        }
+
+        // --- Page 3: Inventory & Assets ---
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text('Sisa Inventaris & Aset (Material On-Site)', 20, 20);
+
+        if (summary.inventory.length === 0) {
+            doc.setFontSize(12);
+            doc.text('Tidak ada sisa material tercatat.', 20, 30);
+        } else {
+            (doc as any).autoTable({
+                startY: 25,
+                head: [['Material', 'Satuan', 'Sisa Stok']],
+                body: summary.inventory.map(i => [i.materialName, i.unit, i.current]),
+                theme: 'striped'
+            });
+        }
+
+        // --- Page 4: Sign-off ---
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text('Lembar Pengesahan (Sign-off)', 105, 30, { align: 'center' });
+
+        const ySign = 80;
+        doc.setFontSize(12);
+
+        // Project Manager
+        doc.text('Dibuat Oleh:', 40, ySign);
+        doc.line(30, ySign + 30, 90, ySign + 30);
+        doc.text('( Project Manager )', 45, ySign + 35);
+
+        // Director/Owner
+        doc.text('Disetujui Oleh:', 140, ySign);
+        doc.line(130, ySign + 30, 190, ySign + 30);
+        doc.text('( Direktur / Owner )', 145, ySign + 35);
+
+        doc.setFontSize(10);
+        doc.text('Dokumen ini digenerate otomatis oleh sistem MLPHoma.', 105, 280, { align: 'center' });
+
+        doc.save(`BAST_Proyek_${projectId}.pdf`);
     }
 };

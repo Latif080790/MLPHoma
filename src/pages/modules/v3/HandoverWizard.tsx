@@ -13,9 +13,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Check, Download, AlertTriangle, FileText, ArrowRight, Loader2 } from "lucide-react"
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
 import { useProjectStore } from '@/store/projectStore'
+import { PermissionGuard } from '@/components/common/PermissionGuard'
 import { toast } from 'sonner'
 import { assertSupabase } from '@/lib/supabaseClient'
 
@@ -63,25 +62,12 @@ export default function HandoverWizard() {
 
     const handleGenerateReport = async () => {
         setGenerating(true)
-
-        // Simulate heavy processing
-        await new Promise(r => setTimeout(r, 2000))
-
         try {
-            const element = document.getElementById('handover-report-content')
-            if (!element) return
-
-            const canvas = await html2canvas(element, { scale: 2 })
-            const imgData = canvas.toDataURL('image/png')
-            const pdf = new jsPDF('p', 'mm', 'a4')
-            const pdfWidth = pdf.internal.pageSize.getWidth()
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-            pdf.save(`Final_Report_${project?.code || 'PROJECT'}.pdf`)
-
-            setReportReady(true)
-            toast.success("Report Generated Successfully")
+            if (summary && project) {
+                await handoverService.generateHandoverReport(project.id, summary, outstanding)
+                setReportReady(true)
+                toast.success("Report Generated Successfully")
+            }
         } catch (error) {
             toast.error("Failed to generate report")
         } finally {
@@ -96,19 +82,9 @@ export default function HandoverWizard() {
 
     const handleArchiveProject = async () => {
         try {
-            const client = assertSupabase()
-            const { error } = await client
-                .from('projects')
-                .update({
-                    status: 'ARCHIVED',
-                    archived_at: new Date().toISOString()
-                })
-                .eq('id', project!.id)
-
-            if (error) throw error
-            toast.success("Project Archived!")
+            await useProjectStore.getState().archiveProject(project!.id)
             setConfirmArchiveOpen(false)
-            window.location.reload() // Force reload to refresh context
+            // No force reload needed, store updates state
         } catch (err: any) {
             toast.error("Archive Failed", { description: err.message })
         }
@@ -255,13 +231,15 @@ export default function HandoverWizard() {
                                                 <div className="font-medium text-red-900">Archive Project</div>
                                                 <div className="text-sm text-red-700">Make read-only and hide from main dashboard.</div>
                                             </div>
-                                            <Button
-                                                variant="destructive"
-                                                onClick={() => setConfirmArchiveOpen(true)}
-                                                disabled={outstanding.length > 0}
-                                            >
-                                                Archive Project
-                                            </Button>
+                                            <PermissionGuard requiredRole="manager" showDisabled>
+                                                <Button
+                                                    variant="destructive"
+                                                    onClick={() => setConfirmArchiveOpen(true)}
+                                                    disabled={outstanding.length > 0}
+                                                >
+                                                    Archive Project
+                                                </Button>
+                                            </PermissionGuard>
                                             {outstanding.length > 0 && (
                                                 <p className="text-[10px] text-red-500 mt-1">
                                                     Resolve all issues to archive
@@ -291,60 +269,7 @@ export default function HandoverWizard() {
                 </div>
             </Card>
 
-            {/* Hidden Report Template for PDF Generation */}
-            <div id="handover-report-content" className="fixed top-0 left-[-9999px] w-[800px] h-auto bg-white p-12 text-slate-900">
-                <h1 className="text-4xl font-bold mb-2">{project.name}</h1>
-                <div className="text-xl text-slate-500 mb-8">Final Handover Report</div>
-
-                <div className="space-y-8">
-                    <section>
-                        <h2 className="text-2xl font-bold border-b pb-2 mb-4">1. Executive Summary</h2>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="p-4 bg-slate-100 rounded">
-                                <div className="text-sm">Final Budget</div>
-                                <div className="text-xl font-bold">
-                                    Rp {summary?.budget.actual.toLocaleString() || '0'}
-                                </div>
-                            </div>
-                            <div className="p-4 bg-slate-100 rounded">
-                                <div className="text-sm">Completion Date</div>
-                                <div className="text-xl font-bold">{summary?.schedule.actualFinish || '-'}</div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section>
-                        <h2 className="text-2xl font-bold border-b pb-2 mb-4">2. Asset Handover</h2>
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-100">
-                                <tr>
-                                    <th className="p-2">Item</th>
-                                    <th className="p-2">Qty</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {summary?.inventory.map((i: any, idx: number) => (
-                                    <tr key={idx} className="border-b">
-                                        <td className="p-2">{i.materialName}</td>
-                                        <td className="p-2">{i.current} {i.unit}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </section>
-
-                    <div className="mt-12 pt-8 border-t flex justify-between">
-                        <div>
-                            <div className="mb-16">Approved By:</div>
-                            <div className="border-t w-48 pt-2">Project Manager</div>
-                        </div>
-                        <div>
-                            <div className="mb-16">Received By:</div>
-                            <div className="border-t w-48 pt-2">Owner / Client</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {/* Hidden Report Template removed as we generate PDF programmatically now */}
 
             <AlertDialog open={confirmArchiveOpen} onOpenChange={setConfirmArchiveOpen}>
                 <AlertDialogContent>

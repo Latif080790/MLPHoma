@@ -4,7 +4,7 @@
  * Main AHSP catalog component with search, filter, and management
  */
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, Info, X, RotateCcw, FileText, Wrench } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
@@ -66,9 +66,9 @@ export function AHSPCatalog({
   const [pendingDeleteItem, setPendingDeleteItem] = useState<AHSPItem | null>(null)
   const [selectedMode, setSelectedMode] = useState<AHSPCreationMode | null>(null)
   const [sourceReference, setSourceReference] = useState<string | undefined>(undefined)
-  const [visibleCount, setVisibleCount] = useState(50)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const parentRef = useRef<HTMLDivElement>(null)
 
   const {
     ahspItems,
@@ -103,9 +103,11 @@ export function AHSPCatalog({
     }
   }, [selectedZone, fetchZonePrices])
 
-  // Reset visible items on search/filter change
   useEffect(() => {
-    setVisibleCount(50)
+    // Scroll to top when search/filter changed
+    if (parentRef.current) {
+      parentRef.current.scrollTop = 0
+    }
   }, [searchQuery, selectedCategory, selectedZone])
 
   // Calculate summary
@@ -217,10 +219,6 @@ export function AHSPCatalog({
 
     return rows
   }, [displayItems])
-
-  const visibleRows = useMemo(() => {
-    return groupedDisplayRows.slice(0, visibleCount)
-  }, [groupedDisplayRows, visibleCount])
 
   const totals = useMemo(() => {
     let materialTotal = 0
@@ -549,7 +547,10 @@ export function AHSPCatalog({
 
       {/* Main Table Content */}
       <div className="hidden rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900 md:block">
-        <div className="max-h-[600px] overflow-auto relative">
+        <div
+          ref={parentRef}
+          className="max-h-[600px] overflow-auto relative"
+        >
           {loading.ahspItems ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -561,7 +562,7 @@ export function AHSPCatalog({
             </div>
           ) : (
             <TooltipProvider delayDuration={120}>
-              <Table>
+              <Table className="w-full table-fixed">
                 <TableHeader className="sticky-glass-tablehead">
                   <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
                     <TableHead className="w-12 text-center py-4">
@@ -584,10 +585,14 @@ export function AHSPCatalog({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {visibleRows.map((row) => {
+                  {groupedDisplayRows.map((row) => {
+
                     if (row.type === 'section') {
                       return (
-                        <TableRow key={`section-${row.label}`} className="bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/40">
+                        <TableRow
+                          key={`section-${row.label}`}
+                          className="bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/40"
+                        >
                           <TableCell colSpan={10} className="py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                             {row.label}
                           </TableCell>
@@ -605,7 +610,6 @@ export function AHSPCatalog({
                     const isUnallocated = breakSum === 0 && (item.finalPrice || 0) > 0
 
                     const totalPrice = isUnallocated ? item.finalPrice : breakSum
-
                     const hasZoneOverride = selectedZone !== 'default' && (item as any).originalFinalPrice !== undefined
 
                     return (
@@ -656,16 +660,6 @@ export function AHSPCatalog({
                       </TableRow>
                     )
                   })}
-
-                  {visibleCount < groupedDisplayRows.length && (
-                    <TableRow className="hover:bg-transparent">
-                      <TableCell colSpan={9} className="py-4 text-center">
-                        <Button variant="outline" size="sm" onClick={() => setVisibleCount(prev => prev + 100)}>
-                          Muat Lagi ({groupedDisplayRows.length - visibleCount} item tersisa)
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )}
                 </TableBody>
               </Table>
             </TooltipProvider>
@@ -779,7 +773,7 @@ export function AHSPCatalog({
             itemId = editingItem.id
           } else {
             itemId = addAHSPItem(data)
-            
+
             // Save creation log for new items
             if (selectedMode) {
               try {

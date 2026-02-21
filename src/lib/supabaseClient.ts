@@ -442,5 +442,5 @@ export async function getCreationLog(ahspId: string) {
     .eq('ahsp_id', ahspId)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single()
+    .maybeSingle()
 }

@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand'
-import { assertSupabase, fetchResources, fetchAhspItems, bulkImportAHSPDirect, getCreationLog, getAhspCount, getResourceCount } from '../lib/supabaseClient'
+import { assertSupabase } from '../lib/supabaseClient'
 import type {
   AhspItemRow,
   ResourceRow,
@@ -12,7 +12,8 @@ import type {
   AhspPriceHistoryRow
 } from '../lib/supabaseClient'
 import { devtools, persist } from 'zustand/middleware'
-import { calculateAHSPPrice as calcAHSPPrice } from '../lib/calculationService'
+import { ahspRepository } from '../lib/ahspRepository'
+import { calculateSingleAHSPPrice, recalculateAllInWorker, prepareImportData, toSupabaseRows } from '../services/ahspService'
 import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncAHSPComponents, syncDelete, syncAHSPItems, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
@@ -82,71 +83,22 @@ export const useAHSPStore = create<AHSPStore>()(
           zonePrices: null,
         },
 
-        // Data fetching actions
+        // Data fetching actions — delegated to ahspRepository
         fetchResources: async () => {
           set((state) => ({ loading: { ...state.loading, resources: true }, errors: { ...state.errors, resources: null } }))
-          try {
-            const allResources: Resource[] = []
-            let offset = 0
-            const batchSize = 1000
-            let hasMore = true
-
-            while (hasMore) {
-              const { data, error } = await fetchResources(batchSize, offset)
-              if (error) throw error
-
-              const rows = (data as ResourceRow[]) || []
-              if (rows.length === 0) {
-                hasMore = false
-                break
-              }
-
-              const mapped = rows.map(r => {
-                const dbType = (r.type || '').toUpperCase()
-                const type: ResourceType =
-                  dbType === 'LABOR' ? 'labor' :
-                    dbType === 'EQUIPMENT' ? 'equipment' :
-                      dbType === 'SUBCON' || dbType === 'SUBCONTRACTOR' ? 'subcontractor' :
-                        'material'
-
-                return {
-                  id: r.id,
-                  code: r.code,
-                  name: r.name,
-                  type,
-                  unit: r.unit as ResourceUnit,
-                  unitPrice: r.unit_price,
-                  isActive: r.is_active ?? true,
-                  supplier: r.supplier,
-                  specifications: r.specifications,
-                  createdAt: r.created_at || new Date().toISOString(),
-                  updatedAt: r.updated_at || new Date().toISOString()
-                }
-              })
-
-              allResources.push(...mapped)
-              offset += batchSize
-
-              // If we got fewer than requested, we're at the end
-              if (rows.length < batchSize) {
-                hasMore = false
-              }
-            }
-
-            set((state) => ({
-              resources: allResources,
-              loading: { ...state.loading, resources: false },
-              totalResourceCount: allResources.length
-            }))
-          } catch (error: any) {
-            const errorMsg = error.message || 'Failed to fetch resources'
+          const { data, error } = await ahspRepository.fetchAllResources()
+          if (error) {
             set((state) => ({
               loading: { ...state.loading, resources: false },
-              errors: { ...state.errors, resources: errorMsg },
+              errors: { ...state.errors, resources: error },
             }))
-            toast.error('Failed to load resources', {
-              description: errorMsg
-            })
+            toast.error('Failed to load resources', { description: error })
+          } else {
+            set((state) => ({
+              resources: data,
+              loading: { ...state.loading, resources: false },
+              totalResourceCount: data.length
+            }))
           }
         },
 
@@ -156,82 +108,34 @@ export const useAHSPStore = create<AHSPStore>()(
             errors: { ...state.errors, ahspItems: null },
           }))
 
-          try {
-            const allItems: AHSPItem[] = []
-            let offset = 0
-            const batchSize = 1000
-            let hasMore = true
-
-            while (hasMore) {
-              const { data, error } = await fetchAhspItems(batchSize, offset)
-              if (error) throw error
-
-              const rows = (data as AhspItemRow[]) || []
-              if (rows.length === 0) {
-                hasMore = false
-                break
-              }
-
-              const mappedItems = rows.map((item) => ({
-                ...item,
-                basePrice: item.base_price || 0,
-                finalPrice: item.final_price || 0,
-                isActive: item.is_active ?? true, // Corrected: missing isActive mapping
-                price_material: item.price_material || 0,
-                price_labor: item.price_labor || 0,
-                price_equipment: item.price_equipment || 0,
-                price_subcon: item.price_subcon || 0,
-                overheadPercentage: item.overhead_percentage || 0,
-                profitPercentage: item.profit_percentage || 0,
-                createdAt: item.created_at,
-                updatedAt: item.updated_at
-              })) as AHSPItem[]
-
-              allItems.push(...mappedItems)
-              offset += batchSize
-              if (rows.length < batchSize) hasMore = false
-            }
-
-            // Fetch creation logs in batches to avoid overwhelming the network
-            // Note: In high-performance systems, this should be a single join query or bulk fetch
-            const itemsWithLogs: AHSPItem[] = []
-            const LOG_BATCH_SIZE = 50
-
-            for (let i = 0; i < allItems.length; i += LOG_BATCH_SIZE) {
-              const batch = allItems.slice(i, i + LOG_BATCH_SIZE)
-              const batchResults = await Promise.all(
-                batch.map(async (item) => {
-                  try {
-                    const { data: log, error } = await getCreationLog(item.id)
-                    if (!error && log) {
-                      return {
-                        ...item,
-                        creationMode: log.creation_mode as 'sni' | 'custom' | 'historical',
-                        sourceReference: log.source_reference
-                      }
-                    }
-                  } catch (e) { /* ignore */ }
-                  return item
-                })
-              )
-              itemsWithLogs.push(...batchResults)
-            }
-
-            set((state) => ({
-              ahspItems: itemsWithLogs,
-              loading: { ...state.loading, ahspItems: false },
-              totalAhspCount: itemsWithLogs.length
-            }))
-          } catch (error: any) {
-            const errorMsg = error.message || 'Failed to fetch AHSP items'
+          const { data: allItems, error } = await ahspRepository.fetchAllAHSPItems()
+          if (error) {
             set((state) => ({
               loading: { ...state.loading, ahspItems: false },
-              errors: { ...state.errors, ahspItems: errorMsg },
+              errors: { ...state.errors, ahspItems: error },
             }))
-            toast.error('Failed to load AHSP items', {
-              description: errorMsg
-            })
+            toast.error('Failed to load AHSP items', { description: error })
+            return
           }
+
+          // Fetch creation logs via repository
+          const logByAhspId = await ahspRepository.fetchCreationLogs(allItems.map(i => i.id))
+
+          const itemsWithLogs: AHSPItem[] = allItems.map((item) => {
+            const log = logByAhspId.get(item.id)
+            if (!log) return item
+            return {
+              ...item,
+              creationMode: log.creation_mode as 'sni' | 'custom' | 'historical',
+              sourceReference: log.source_reference || undefined,
+            }
+          })
+
+          set((state) => ({
+            ahspItems: itemsWithLogs,
+            loading: { ...state.loading, ahspItems: false },
+            totalAhspCount: itemsWithLogs.length
+          }))
         },
 
         fetchComponents: async (ahspId?: string) => {
@@ -240,89 +144,20 @@ export const useAHSPStore = create<AHSPStore>()(
             errors: { ...state.errors, components: null },
           }))
 
-          try {
-            const client = assertSupabase()
-            const componentsByAHSP: Record<string, AHSPComponent[]> = {}
-
-            let offset = 0
-            const batchSize = 1000
-            let hasMore = true
-
-            while (hasMore) {
-              let query = client
-                .from('ahsp_components')
-                .select(`
-                *,
-                resource:resources(*)
-              `)
-                .range(offset, offset + batchSize - 1)
-                .order('created_at', { ascending: true })
-
-              if (ahspId) {
-                query = query.eq('ahsp_id', ahspId)
-              }
-
-              const { data, error } = await query
-              if (error) throw error
-
-              const rows = (data as (AhspComponentRow & { resource: ResourceRow | null })[]) || []
-              if (rows.length === 0) {
-                hasMore = false
-                break
-              }
-
-              rows.forEach((comp) => {
-                const component: AHSPComponent = {
-                  id: comp.id,
-                  ahspId: comp.ahsp_id,
-                  type: comp.type as ResourceType,
-                  resourceId: comp.resource_id,
-                  coefficient: comp.coefficient,
-                  unit: comp.unit as ResourceUnit,
-                  unitPrice: comp.unit_price,
-                  subtotal: comp.subtotal,
-                  resource: comp.resource ? {
-                    id: comp.resource.id,
-                    code: comp.resource.code,
-                    name: comp.resource.name,
-                    type: comp.resource.type as ResourceType,
-                    unit: comp.resource.unit as ResourceUnit,
-                    unitPrice: comp.resource.unit_price,
-                    isActive: comp.resource.is_active ?? true,
-                    supplier: comp.resource.supplier,
-                    specifications: comp.resource.specifications,
-                    createdAt: comp.resource.created_at || new Date().toISOString(),
-                    updatedAt: comp.resource.updated_at || new Date().toISOString()
-                  } : undefined,
-                  createdAt: comp.created_at || new Date().toISOString(),
-                  updatedAt: comp.updated_at || new Date().toISOString(),
-                }
-
-                if (!componentsByAHSP[comp.ahsp_id]) {
-                  componentsByAHSP[comp.ahsp_id] = []
-                }
-                componentsByAHSP[comp.ahsp_id].push(component)
-              })
-
-              offset += batchSize
-              if (rows.length < batchSize) hasMore = false
-            }
-
+          const { data: componentsByAHSP, error } = await ahspRepository.fetchComponents(ahspId)
+          if (error) {
+            set((state) => ({
+              loading: { ...state.loading, components: false },
+              errors: { ...state.errors, components: error },
+            }))
+            toast.error('Failed to load components', { description: error })
+          } else {
             set((state) => ({
               componentsByAHSP: ahspId
                 ? { ...state.componentsByAHSP, [ahspId]: componentsByAHSP[ahspId] || [] }
                 : componentsByAHSP,
               loading: { ...state.loading, components: false },
             }))
-          } catch (error: any) {
-            const errorMsg = error.message || 'Failed to fetch components'
-            set((state) => ({
-              loading: { ...state.loading, components: false },
-              errors: { ...state.errors, components: errorMsg },
-            }))
-            toast.error('Failed to load components', {
-              description: errorMsg
-            })
           }
         },
 
@@ -699,7 +534,7 @@ export const useAHSPStore = create<AHSPStore>()(
                 updated_at: comp.updatedAt,
               }))
 
-              const result = await bulkImportAHSPDirect(ahspRows, resourceRows, componentRows)
+              const result = await ahspRepository.bulkImport(ahspRows, resourceRows, componentRows)
 
               if (!result.success) {
                 throw new Error(result.error || 'Unknown error')
@@ -926,22 +761,14 @@ export const useAHSPStore = create<AHSPStore>()(
           })
         },
 
-        // Calculation actions
+        // Calculation actions — delegated to ahspService
         calculateAHSPPrice: (ahspId) => {
           set((state) => {
             const components = state.componentsByAHSP[ahspId] || []
             const ahspItem = state.ahspItems.find(item => item.id === ahspId)
             if (!ahspItem) return state
 
-            // Use centralized calculation service with validation
-            const result = calcAHSPPrice({
-              components: components.map(c => ({
-                coefficient: c.coefficient,
-                unitPrice: c.unitPrice
-              })),
-              overheadPercent: ahspItem.overheadPercentage,
-              profitPercent: ahspItem.profitPercentage
-            })
+            const result = calculateSingleAHSPPrice(ahspItem, components)
 
             return {
               ahspItems: state.ahspItems.map(item =>
@@ -950,13 +777,10 @@ export const useAHSPStore = create<AHSPStore>()(
                     ...item,
                     basePrice: result.priceBreakdown.basePrice,
                     finalPrice: result.priceBreakdown.finalPrice,
-
-                    // Update split costs from breakdown - This will now be persisted via syncAHSPItem
                     price_material: result.componentBreakdown.breakdown.material,
                     price_labor: result.componentBreakdown.breakdown.labor,
                     price_equipment: result.componentBreakdown.breakdown.equipment,
                     price_subcon: result.componentBreakdown.breakdown.subcontractor,
-
                     updatedAt: new Date().toISOString(),
                   }
                   : item
@@ -967,20 +791,38 @@ export const useAHSPStore = create<AHSPStore>()(
           // Queue-based sync with retry
           const item = get().ahspItems.find(i => i.id === ahspId)
           if (item) {
-            // Explicitly sync the new split cost fields to update the DB
-            // Note: syncAHSPItem needs to be robust enough to handle these new fields if they are in the Type
-            syncAHSPItem(item)
+            ahspRepository.syncAHSPItem(item)
           }
         },
 
-        recalculateAllPrices: () => {
+        recalculateAllPrices: async () => {
           const state = get()
-          Object.keys(state.componentsByAHSP).forEach(ahspId => {
-            get().calculateAHSPPrice(ahspId)
-          })
+          // Offload bulk recalculation to Web Worker
+          const results = await recalculateAllInWorker(state.ahspItems, state.componentsByAHSP)
+
+          set((currentState) => ({
+            ahspItems: currentState.ahspItems.map(item => {
+              const calculated = results.find(r => r.ahspId === item.id)
+              if (!calculated) return item
+              return {
+                ...item,
+                basePrice: calculated.result.priceBreakdown.basePrice,
+                finalPrice: calculated.result.priceBreakdown.finalPrice,
+                price_material: calculated.result.componentBreakdown.breakdown.material,
+                price_labor: calculated.result.componentBreakdown.breakdown.labor,
+                price_equipment: calculated.result.componentBreakdown.breakdown.equipment,
+                price_subcon: calculated.result.componentBreakdown.breakdown.subcontractor,
+                updatedAt: new Date().toISOString(),
+              }
+            })
+          }))
+
+          // Sync all updated items
+          const updatedItems = get().ahspItems
+          updatedItems.forEach(item => ahspRepository.syncAHSPItem(item))
         },
 
-        // Bulk actions
+        // Bulk actions — recalculation via Web Worker
         bulkUpdatePrices: (type, percentage) => {
           set((state) => ({
             resources: state.resources.map(resource =>
@@ -994,7 +836,7 @@ export const useAHSPStore = create<AHSPStore>()(
             ),
           }))
 
-          // Recalculate all AHSP prices
+          // Recalculate all AHSP prices via Web Worker (non-blocking)
           setTimeout(() => {
             get().recalculateAllPrices()
           }, 100)
@@ -1096,28 +938,16 @@ export const useAHSPStore = create<AHSPStore>()(
             loading: { ...state.loading, zones: true },
             errors: { ...state.errors, zones: null }
           }))
-          try {
-            const client = assertSupabase()
-            const { data, error } = await client.from('zones').select('*').order('created_at')
-            if (error) throw error
-
-            const zones: Zone[] = (data || []).map(z => ({
-              id: z.id,
-              name: z.name,
-              description: z.description,
-              isActive: z.is_active,
-              createdAt: z.created_at,
-              updatedAt: z.updated_at
+          const { data: zones, error } = await ahspRepository.fetchZones()
+          if (error) {
+            set((state) => ({
+              loading: { ...state.loading, zones: false },
+              errors: { ...state.errors, zones: error }
             }))
-
+          } else {
             set((state) => ({
               zones,
               loading: { ...state.loading, zones: false }
-            }))
-          } catch (err: any) {
-            set((state) => ({
-              loading: { ...state.loading, zones: false },
-              errors: { ...state.errors, zones: err.message }
             }))
           }
         },
@@ -1136,16 +966,7 @@ export const useAHSPStore = create<AHSPStore>()(
             zones: [...state.zones, newZone]
           }))
 
-          // Sync
-          const client = assertSupabase()
-          client.from('zones').insert({
-            id: newZone.id,
-            name: newZone.name,
-            description: newZone.description,
-            is_active: newZone.isActive,
-            created_at: newZone.createdAt,
-            updated_at: newZone.updatedAt
-          }).then(({ error }) => {
+          ahspRepository.insertZone(newZone).then(({ error }) => {
             if (error) toast.error("Failed to sync zone")
           })
         },
@@ -1155,13 +976,7 @@ export const useAHSPStore = create<AHSPStore>()(
             zones: state.zones.map(z => z.id === id ? { ...z, ...updates, updatedAt: new Date().toISOString() } : z)
           }))
 
-          const client = assertSupabase()
-          client.from('zones').update({
-            name: updates.name,
-            description: updates.description,
-            is_active: updates.isActive,
-            updated_at: new Date().toISOString()
-          }).eq('id', id).then(({ error }) => {
+          ahspRepository.updateZone(id, updates).then(({ error }) => {
             if (error) toast.error("Failed to update zone")
           })
         },
@@ -1170,48 +985,25 @@ export const useAHSPStore = create<AHSPStore>()(
           set(state => ({
             zones: state.zones.filter(z => z.id !== id)
           }))
-          syncDelete('zones', id)
+          ahspRepository.deleteZone(id)
         },
 
         fetchZonePrices: async (zoneId) => {
           set(state => ({
             loading: { ...state.loading, zonePrices: true }
           }))
-          try {
-            const client = assertSupabase()
-            const { data, error } = await client
-              .from('ahsp_zone_prices')
-              .select('*')
-              .eq('zone_id', zoneId)
-
-            if (error) throw error
-
-            const prices: AhspZonePrice[] = (data || []).map(p => ({
-              id: p.id,
-              ahspId: p.ahsp_id,
-              zoneId: p.zone_id,
-              price_material: p.price_material || 0,
-              price_labor: p.price_labor || 0,
-              price_equipment: p.price_equipment || 0,
-              price_subcon: p.price_subcon || 0,
-              overheadPercentage: p.overhead_percentage || 0,
-              profitPercentage: p.profit_percentage || 0,
-              finalPrice: p.final_price || 0,
-              createdAt: p.created_at,
-              updatedAt: p.updated_at
-            }))
-
+          const { data: prices, error } = await ahspRepository.fetchZonePrices(zoneId)
+          if (error) {
+            console.error(error)
+          } else {
             set(state => ({
               zonePricesByZone: {
                 ...state.zonePricesByZone,
                 [zoneId]: prices
               },
-              loading: { ...state.loading, zonePrices: false }
             }))
-          } catch (err: any) {
-            console.error(err)
-            set(state => ({ loading: { ...state.loading, zonePrices: false } }))
           }
+          set(state => ({ loading: { ...state.loading, zonePrices: false } }))
         },
 
         updateZonePrice: (priceData) => {
@@ -1260,25 +1052,12 @@ export const useAHSPStore = create<AHSPStore>()(
             }
           })
 
-          // Sync
-          const client = assertSupabase()
+          // Sync via repository
           const state = get()
           const price = state.zonePricesByZone[zoneId]?.find(p => p.ahspId === ahspId)
           if (!price) return
 
-          client.from('ahsp_zone_prices').upsert({
-            id: price.id,
-            ahsp_id: price.ahspId,
-            zone_id: price.zoneId,
-            price_material: price.price_material,
-            price_labor: price.price_labor,
-            price_equipment: price.price_equipment,
-            price_subcon: price.price_subcon,
-            overhead_percentage: price.overheadPercentage,
-            profit_percentage: price.profitPercentage,
-            // final_price is generated
-            updated_at: price.updatedAt
-          }).then(({ error }) => {
+          ahspRepository.upsertZonePrice(price).then(({ error }) => {
             if (error) {
               console.error("Failed to sync zone price", error)
               toast.error("Failed to save zone price")
@@ -1310,31 +1089,9 @@ export const useAHSPStore = create<AHSPStore>()(
             loading: { ...state.loading, ahspItems: true, resources: true },
           }))
 
-          const client = assertSupabase()
+          const { success, error } = await ahspRepository.clearAllData()
 
-          try {
-            // Delete in order of dependencies (child first, parent later)
-            // Using .gt('created_at', '1970-01-01Z') as a universal filter instead of .neq('id', '0')
-            // because neq id '0' might fail if id is a uuid.
-
-            const filterValue = '1970-01-01Z'
-
-            // 1. Clear Zone Prices
-            await client.from('ahsp_zone_prices').delete().gt('created_at', filterValue)
-
-            // 2. Clear Price History
-            await client.from('ahsp_price_history').delete().gt('created_at', filterValue)
-
-            // 3. Clear Components (FK to ahsp_items and resources)
-            await client.from('ahsp_components').delete().gt('created_at', filterValue)
-
-            // 4. Clear AHSP Items
-            await client.from('ahsp_items').delete().gt('created_at', filterValue)
-
-            // 5. Clear Resources
-            await client.from('resources').delete().gt('created_at', filterValue)
-
-            // Update local state
+          if (success) {
             set({
               resources: [],
               totalResourceCount: 0,
@@ -1352,12 +1109,10 @@ export const useAHSPStore = create<AHSPStore>()(
                 zonePrices: false,
               }
             })
-
             toast.success('Berhasil menghapus semua data AHSP dan DKH.')
-          } catch (error) {
+          } else {
             console.error('Failed to clear AHSP data:', error)
             toast.error('Gagal menghapus data. Silakan periksa koneksi atau hak akses Anda.')
-
             set((state) => ({
               loading: {
                 ...state.loading,

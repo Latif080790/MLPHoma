@@ -14,7 +14,9 @@ import { useSupplyChainStore } from "@/store/supplyChainStore"
 import { useRapStore } from "@/store/rapStore"
 import { toast } from "sonner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { checkBudgetAvailability, formatBudgetCheckMessage, BudgetCheckResult } from "@/services/budgetGuardService"
+import { checkBudgetAvailability, formatBudgetCheckMessage, commitBudget, BudgetCheckResult } from "@/services/budgetGuardService"
+import { approvalService } from "@/services/approvalService"
+import { useAuthStore } from "@/store/authStore"
 
 const poItemSchema = z.object({
     rap_item_id: z.string().optional(),
@@ -60,21 +62,56 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
     async function onSubmit(data: PoFormValues) {
         try {
             const totalAmount = data.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
+            const user = useAuthStore.getState().user
+            const profile = useAuthStore.getState().profile
 
+            // If approval is required, route through approval workflow instead of direct PO creation
+            if (budgetCheck?.requiresApproval) {
+                await approvalService.createApproval({
+                    projectId: projectId,
+                    entityType: 'PURCHASE_ORDER',
+                    entityId: data.po_number,
+                    title: `PO ${data.po_number} — Budget Near Limit`,
+                    description: `Vendor: ${data.vendor_name || 'N/A'}, Total: Rp ${totalAmount.toLocaleString('id-ID')}. Budget utilization exceeds 90% threshold.`,
+                    requesterId: user?.id || 'unknown',
+                    requesterName: profile?.full_name || user?.email || 'Unknown',
+                    impactSummary: { poData: data, totalAmount, budgetUtilization: budgetCheck.message }
+                })
+                toast.success('PO submitted for approval', {
+                    description: 'Budget near limit — PM/Admin approval required before commit.'
+                })
+                onOpenChange(false)
+                form.reset()
+                return
+            }
+
+            // Direct creation (within budget)
             await createPurchaseOrder({
                 project_id: projectId,
                 po_number: data.po_number,
                 vendor_name: data.vendor_name,
                 total_amount: totalAmount,
                 status: 'DRAFT',
-                created_by: 'current-user-id'
+                created_by: user?.id || 'current-user-id'
             }, data.items)
 
-            toast.success("Purchase Order created")
+            // Commit budget for each linked RAP item
+            for (const item of data.items) {
+                if (item.rap_item_id) {
+                    const amount = (item.quantity || 0) * (item.unit_price || 0)
+                    if (amount > 0) {
+                        await commitBudget(item.rap_item_id, amount)
+                    }
+                }
+            }
+
+            toast.success('Purchase Order created', {
+                description: `PO ${data.po_number} — Budget committed for ${data.items.filter(i => i.rap_item_id).length} RAP items.`
+            })
             onOpenChange(false)
             form.reset()
         } catch (err: any) {
-            toast.error("Failed to create PO: " + err.message)
+            toast.error('Failed to create PO: ' + err.message)
         }
     }
 

@@ -13,6 +13,7 @@
 
 import { create } from 'zustand'
 import type { CurvaSDataPoint, CurvaSAnalysis } from '../types/curvaS'
+import { computeEVM, classifyHealth } from '../services/evmService'
 import { notify as toast } from '@/lib/toast'
 import { validate, mergeErrorMessages } from '@/lib/validationMiddleware'
 import {
@@ -66,6 +67,12 @@ interface CurvaSState {
     projectId: string,
     rapPlan: Array<{ period: string; planned: number; actual?: number }>,
     totalBudget: number
+  ) => void
+
+  // Progress → CurvaS sync
+  syncFromProgress: (
+    projectId: string,
+    entries: Array<{ date: string; progressPercent: number; actualCost: number }>
   ) => void
 
   // Saved scenario actions
@@ -147,59 +154,41 @@ function computeAnalysis(
   config: { totalBudget: number; totalDuration: number } | undefined
 ): CurvaSAnalysis | null {
   if (!points || points.length === 0 || !config) return null
+
   const last = points[points.length - 1]
-  const analysisDate = last.date
+  const first = points[0]
   const totalBudget = config.totalBudget || 0
   const plannedProgress = last.plannedProgress || 0
   const actualProgress = last.actualProgress || 0
-  const AC = last.actualCost || 0
-  const PV = (plannedProgress / 100) * (totalBudget || 1)
-  const EV = (actualProgress / 100) * (totalBudget || 1)
-  const spi = PV > 0 ? EV / PV : 1
-  const cpi = AC > 0 ? EV / AC : 1
-  const sv = EV - PV
-  const cv = EV - AC
-  const first = points[0]
+
+  // Delegate core math to evmService
+  const metrics = computeEVM({
+    totalBudget,
+    actualCost: last.actualCost || 0,
+    progressPercent: actualProgress,
+    plannedProgressPercent: plannedProgress,
+  })
+
+  const health = classifyHealth(metrics.cpi, metrics.spi)
+
+  // Forecast completion date using progress rate
   const daysElapsed =
     (toDate(last.date).getTime() - toDate(first.date).getTime()) / (1000 * 60 * 60 * 24)
   const progressRate = actualProgress > 0 && daysElapsed > 0 ? actualProgress / daysElapsed : 0
   const daysToGo = progressRate > 0 ? Math.ceil((100 - actualProgress) / progressRate) : 0
   const forecastDate = new Date(toDate(last.date))
   if (daysToGo > 0) forecastDate.setDate(forecastDate.getDate() + daysToGo)
-  const eac = cpi > 0 ? totalBudget / cpi : totalBudget
-  const etc = eac - AC
-  const vac = totalBudget - eac
-  let status: CurvaSAnalysis['status'] = 'on-track'
-  if (cpi < 0.98) status = 'over-budget'
-  else if (spi < 0.98) status = 'behind-schedule'
-  else if (spi > 1.02) status = 'ahead-schedule'
-  else if (cpi > 1.02) status = 'under-budget'
-  const insights: string[] = []
-  if (status === 'behind-schedule') insights.push('Schedule behind plan. Accelerate critical tasks.')
-  if (status === 'over-budget') insights.push('Cost overrun detected. Review procurement and resource usage.')
-  if (status === 'ahead-schedule') insights.push('Ahead of schedule. Re-balance resources if needed.')
-  if (status === 'under-budget') insights.push('Under budget. Consider risk allowances.')
+
   return {
     projectId,
     currentProgress: actualProgress,
-    metrics: {
-      spi,
-      cpi,
-      earnedValue: Math.round(EV),
-      plannedValue: Math.round(PV),
-      actualCost: Math.round(AC),
-      sv: Math.round(sv),
-      cv: Math.round(cv),
-      eac: Math.round(eac),
-      etc: Math.max(0, Math.round(etc)),
-      vac: Math.round(vac),
-    },
-    status,
-    trend: spi > 1.01 || cpi > 1.01 ? 'improving' : spi < 0.99 || cpi < 0.99 ? 'declining' : 'stable',
+    metrics,
+    status: health.projectStatus,
+    trend: health.trend,
     forecastCompletionDate: daysToGo > 0 ? forecastDate.toISOString().split('T')[0] : undefined,
-    forecastTotalCost: Math.round(eac),
-    analysisDate,
-    insights,
+    forecastTotalCost: metrics.eac,
+    analysisDate: last.date,
+    insights: health.insights,
   }
 }
 
@@ -228,7 +217,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
 
   generateBaseline: (projectId, totalBudget, startDate, endDate) => {
     if (!projectId) return
-    
+
     // Validate baseline config
     const validation = validate(curvaSBaselineConfigSchema, {
       projectId,
@@ -240,7 +229,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
       toast.error('Baseline Validation Error', mergeErrorMessages(validation.errors))
       return
     }
-    
+
     const dates = generateMonthlyDates(startDate, endDate)
     const stepProgress = 100 / Math.max(1, dates.length)
     const stepCost = totalBudget / Math.max(1, dates.length)
@@ -283,7 +272,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
         [projectId]: { totalBudget, totalDuration, progressMethod: 'even' },
       },
     }))
-    
+
     toast.success('Baseline generated successfully', `${newPoints.length} data points created`)
   },
 
@@ -296,7 +285,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
     set((state) => ({
       analyses: { ...state.analyses, [projectId]: next },
     }))
-    
+
     // Sync analysis to Supabase if valid
     if (next) {
       syncCurvaSAnalysis(next)
@@ -317,7 +306,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
       toast.error('Data Point Validation Error', mergeErrorMessages(validation.errors))
       return
     }
-    
+
     set((state) => {
       const arr = [...(state.dataPoints[projectId] || EMPTY_POINTS)]
       const idx = arr.findIndex((p) => p.date === point.date)
@@ -343,10 +332,10 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
       if (isSamePoints(state.dataPoints[projectId] || EMPTY_POINTS, arr)) {
         return state
       }
-      
+
       // Sync to Supabase
       syncCurvaSDataPoint(savedPoint)
-      
+
       return {
         dataPoints: { ...state.dataPoints, [projectId]: arr },
       }
@@ -401,17 +390,59 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
     }))
   },
 
+  // Progress → CurvaS sync
+  syncFromProgress: (projectId, entries) => {
+    if (!projectId || !entries || entries.length === 0) return
+    const state = get()
+    const existing = state.dataPoints[projectId] || EMPTY_POINTS
+    const cfg = state.configs[projectId]
+    const totalBudget = cfg?.totalBudget || 0
+    const nowIso = new Date().toISOString()
+
+    // Merge progress entries into data points
+    const pointsMap = new Map<string, CurvaSDataPoint>()
+    existing.forEach(p => pointsMap.set(p.date, p))
+
+    entries.forEach(entry => {
+      const date = entry.date
+      const prev = pointsMap.get(date)
+      const plannedProgress = prev?.plannedProgress || 0
+      const plannedCost = prev?.plannedCost || 0
+
+      pointsMap.set(date, {
+        id: prev?.id || pointId(projectId, date),
+        projectId,
+        date,
+        plannedProgress,
+        actualProgress: entry.progressPercent,
+        plannedCost,
+        actualCost: entry.actualCost,
+        createdAt: prev?.createdAt || nowIso,
+        updatedAt: nowIso,
+      })
+    })
+
+    const newPoints = Array.from(pointsMap.values()).sort((a, b) => a.date.localeCompare(b.date))
+    if (isSamePoints(existing, newPoints)) return
+
+    set(s => ({
+      dataPoints: { ...s.dataPoints, [projectId]: newPoints },
+    }))
+
+    toast.success('Progress synced to S-Curve', `${entries.length} entries updated`)
+  },
+
   // Saved scenario actions
   addSavedScenario: (projectId, scenario) => {
     if (!projectId || !scenario) return
-    
+
     // Validate scenario
     const validation = validate(curvaSScenarioSchema, scenario)
     if (!validation.success) {
       toast.error('Scenario Validation Error', mergeErrorMessages(validation.errors))
       return
     }
-    
+
     set((state) => {
       const prev = state.savedScenarios[projectId] || []
       // avoid duplicates by id
@@ -420,10 +451,10 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
         return { savedScenarios: { ...state.savedScenarios, [projectId]: prev } }
       }
       const next = [...prev, scenario]
-      
+
       // Sync to Supabase
       syncCurvaSScenario(scenario, projectId)
-      
+
       toast.success('Scenario saved successfully', scenario.name)
       return { savedScenarios: { ...state.savedScenarios, [projectId]: next } }
     })

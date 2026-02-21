@@ -28,6 +28,7 @@ const Documents = React.lazy(() => import('./pages/modules/v3/Documents'))
 const Settings = React.lazy(() => import('./pages/modules/v3/Settings'))
 const HandoverWizard = React.lazy(() => import('./pages/modules/v3/HandoverWizard'))
 const ProjectOverview = React.lazy(() => import('./pages/modules/v3/ProjectOverview'))
+const CostForecastDashboard = React.lazy(() => import('./pages/modules/v3/CostForecastDashboard'))
 const TKDNPage = React.lazy(() => import('./pages/TKDNPage'))
 const FeatureEditor = React.lazy(() => import('./components/feature/FeatureEditor'))
 
@@ -88,6 +89,7 @@ export default function App() {
 
             {/* v3 Ultra Routes */}
             <Route path="/costing" element={<ProtectedLayout><ProjectCosting /></ProtectedLayout>} />
+            <Route path="/cost-forecast" element={<ProtectedLayout><CostForecastDashboard /></ProtectedLayout>} />
             <Route path="/schedule" element={<ProtectedLayout><ScheduleOps /></ProtectedLayout>} />
             <Route path="/supply-chain" element={<ProtectedLayout><SupplyChain /></ProtectedLayout>} />
             <Route path="/finance" element={<ProtectedLayout><Finance /></ProtectedLayout>} />

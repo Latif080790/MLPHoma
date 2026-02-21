@@ -196,13 +196,7 @@ export const projectOverviewService = {
 
     const { data, error } = await client
       .from('project_members')
-      .select(`
-        id,
-        user_id,
-        project_role,
-        assigned_at,
-        profiles ( full_name, email )
-      `)
+      .select('id, user_id, project_role, assigned_at')
       .eq('project_id', projectId)
 
     if (error) {
@@ -210,13 +204,37 @@ export const projectOverviewService = {
       return []
     }
 
+    const userIds = (data || [])
+      .map((row: any) => row.user_id)
+      .filter((id: string | null | undefined): id is string => typeof id === 'string' && id.length > 0)
+
+    const profileMap = new Map<string, { full_name?: string; email?: string }>()
+    if (userIds.length > 0) {
+      const uniqueUserIds = Array.from(new Set(userIds))
+      const { data: profilesData, error: profileError } = await client
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', uniqueUserIds)
+
+      if (profileError) {
+        console.warn('[projectOverview] getTeamMembers profiles error:', profileError.message)
+      } else {
+        for (const profile of profilesData || []) {
+          profileMap.set(profile.id, {
+            full_name: profile.full_name || undefined,
+            email: profile.email || undefined,
+          })
+        }
+      }
+    }
+
     return (data || []).map((row: any) => ({
       id: row.id,
       userId: row.user_id,
       role: row.project_role || 'user',
       assignedAt: row.assigned_at,
-      fullName: row.profiles?.full_name || undefined,
-      email: row.profiles?.email || undefined,
+      fullName: profileMap.get(row.user_id)?.full_name || undefined,
+      email: profileMap.get(row.user_id)?.email || undefined,
     }))
   },
 
@@ -228,26 +246,27 @@ export const projectOverviewService = {
   async getRecentActivity(projectId: string, limit = 10): Promise<ActivityEntry[]> {
     const client = assertSupabase()
 
-    // Primary query: entity_id matches projectId
-    const { data: byEntity } = await client
+    const fetchSize = Math.max(limit * 5, 50)
+    const { data, error } = await client
       .from('audit_logs')
       .select('id, action, entity_type, entity_id, user_name, created_at, details')
-      .eq('entity_id', projectId)
       .order('created_at', { ascending: false })
-      .limit(limit)
+      .limit(fetchSize)
 
-    // Secondary query: details->project_id matches (different entity)
-    const { data: byDetails } = await client
-      .from('audit_logs')
-      .select('id, action, entity_type, entity_id, user_name, created_at, details')
-      .filter('details->>project_id', 'eq', projectId)
-      .order('created_at', { ascending: false })
-      .limit(limit)
+    if (error) {
+      console.warn('[projectOverview] getRecentActivity error:', error.message)
+      return []
+    }
 
-    // Merge & deduplicate
+    const filtered = (data || []).filter((row: any) => {
+      const detailsProjectId = row?.details?.project_id
+      return row.entity_id === projectId || detailsProjectId === projectId
+    })
+
+    // Deduplicate
     const seen = new Set<string>()
     const merged: ActivityEntry[] = []
-    for (const row of [...(byEntity || []), ...(byDetails || [])]) {
+    for (const row of filtered) {
       if (seen.has(row.id)) continue
       seen.add(row.id)
       merged.push({
