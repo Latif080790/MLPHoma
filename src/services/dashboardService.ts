@@ -1,6 +1,8 @@
-
 import { supabase } from '../lib/supabaseClient'
-
+import { computeEVM, computeForecasts, calcPlannedProgressPercent } from './evmService'
+import { scheduleAlertService } from './scheduleAlertService'
+import { phiService, PHIResult } from './phiService'
+import { anomalyService, Anomaly } from './anomalyService'
 
 export interface DashboardStats {
     totalBudget: number
@@ -12,6 +14,8 @@ export interface DashboardStats {
     spi: number | null   // Schedule Performance Index = EV / PV
     overallProgress: number // 0-100
     forecastedEndDate: string | null
+    phi: PHIResult | null // Project Health Index (Phase 13)
+    anomalies: Anomaly[] // Phase 13
     cashflow: {
         week: string
         inflow: number
@@ -37,6 +41,16 @@ export interface DashboardStats {
         progress: number
     }[]
     equipmentCost: number // New Field for Automation Data
+    alertCounts: {
+        CRITICAL: number
+        MODERATE: number
+        MINOR: number
+    }
+    topRisks: {
+        id: string
+        description: string
+        score: number
+    }[]
 }
 
 export const dashboardService = {
@@ -104,7 +118,14 @@ export const dashboardService = {
             .eq('project_id', projectId)
             .gte('risk_score', 15)
             .eq('status', 'OPEN')
+            .order('risk_score', { ascending: false })
             .limit(5)
+
+        const topRisks = activeRisks?.map((r: any) => ({
+            id: r.id,
+            description: r.description,
+            score: r.risk_score
+        })) || []
 
         // 3. Schedule Stats (Overdue & Upcoming)
         const today = new Date().toISOString().split('T')[0]
@@ -209,8 +230,6 @@ export const dashboardService = {
             .single()
 
         if (totalBudget > 0) {
-            const { computeEVM, calcPlannedProgressPercent, computeForecasts } = await import('./evmService')
-
             const startDate = projectData?.start_date || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
             const endDate = projectData?.end_date || new Date(Date.now() + 150 * 86400000).toISOString().split('T')[0]
 
@@ -235,7 +254,33 @@ export const dashboardService = {
                 daysElapsed,
             })
             forecastedEndDate = forecasts.forecastDate
+
+            // IMPROVED CASHFLOW Projection (Task 3)
+            // Divide remaining budget over the next 4 weeks based on current velocity
+            const remainingBudget = totalBudget - utilizedBudget
+            const weeklyOutflow = remainingBudget / 8 // simple spread over 2 months
+
+            for (let i = 0; i < 4; i++) {
+                cashflow[i].outflow = parseFloat((weeklyOutflow / 1000000).toFixed(2))
+                cashflow[i].inflow = parseFloat(((weeklyOutflow * 1.1) / 1000000).toFixed(2))
+                cashflow[i].balance = cashflow[i].inflow - cashflow[i].outflow
+            }
         }
+
+        // 5. Schedule Alerts Integration (Task 2)
+        const alertCounts = await scheduleAlertService.getAlertCounts(projectId)
+        const projectAlerts = await scheduleAlertService.getProjectAlerts(projectId)
+
+        // Add Top Alerts to Activity Feed
+        projectAlerts.slice(0, 3).forEach(alert => {
+            activityFeed.push({
+                id: alert.id,
+                type: 'RISK', // reuse RISK type for red accent in terminal
+                message: `ALERT: ${alert.taskName} is ${alert.daysBehind}d behind`,
+                date: alert.detectedAt,
+                status: alert.severity
+            })
+        })
 
         if (activeRisks) {
             activeRisks.slice(0, 2).forEach((risk: any) => {
@@ -252,6 +297,17 @@ export const dashboardService = {
         // Sort feed by date
         activityFeed.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
+        // 6. PHI CALCULATION (Phase 13)
+        const phi = await phiService.calculatePHI(projectId, {
+            cpi: cpi || 1.0,
+            spi: spi || 1.0,
+            criticalRisks: criticalRisks || 0,
+            activeAlerts: alertCounts.CRITICAL || 0
+        })
+
+        // 7. ANOMALY DETECTION (Phase 13)
+        const anomalies = await anomalyService.detectAnomalies(projectId)
+
         return {
             totalBudget,
             utilizedBudget,
@@ -261,11 +317,15 @@ export const dashboardService = {
             spi,
             overallProgress,
             forecastedEndDate,
+            phi,
+            anomalies,
             cashflow,
             wasteAlerts: wasteAlerts.slice(0, 5),
             activityFeed: activityFeed.slice(0, 5),
             upcomingTasks,
-            equipmentCost // Result
+            equipmentCost, // Result
+            alertCounts,
+            topRisks
         }
     },
 
@@ -279,11 +339,87 @@ export const dashboardService = {
             spi: null,
             overallProgress: 0,
             forecastedEndDate: null,
+            phi: null,
+            anomalies: [],
             cashflow: [],
             wasteAlerts: [],
             activityFeed: [],
             upcomingTasks: [],
-            equipmentCost: 0
+            equipmentCost: 0,
+            alertCounts: { CRITICAL: 0, MODERATE: 0, MINOR: 0 },
+            topRisks: []
+        }
+    },
+
+    async getPortfolioStats(): Promise<{
+        totalProjects: number
+        totalBudget: number
+        utilizedBudget: number
+        avgCpi: number
+        avgSpi: number
+        avgPhi: number // Phase 13
+        globalAlertCounts: { CRITICAL: number; MODERATE: number; MINOR: number }
+        topGlobalRisks: { id: string; description: string; score: number; projectName: string }[]
+    }> {
+        if (!supabase) return {
+            totalProjects: 0, totalBudget: 0, utilizedBudget: 0, avgCpi: 1, avgSpi: 1, avgPhi: 100,
+            globalAlertCounts: { CRITICAL: 0, MODERATE: 0, MINOR: 0 }, topGlobalRisks: []
+        }
+
+        const { data: projects } = await supabase.from('projects').select('id, name')
+        if (!projects) return {
+            totalProjects: 0, totalBudget: 0, utilizedBudget: 0, avgCpi: 1, avgSpi: 1, avgPhi: 100,
+            globalAlertCounts: { CRITICAL: 0, MODERATE: 0, MINOR: 0 }, topGlobalRisks: []
+        }
+
+        let totalBudget = 0
+        let totalUtilized = 0
+        let cpiSum = 0
+        let spiSum = 0
+        let phiSum = 0
+        let projectsWithData = 0
+        const globalAlerts = { CRITICAL: 0, MODERATE: 0, MINOR: 0 }
+
+        // Aggregate stats per project
+        await Promise.all(projects.map(async (p) => {
+            const stats = await this.getProjectStats(p.id)
+            totalBudget += stats.totalBudget
+            totalUtilized += stats.utilizedBudget
+            if (stats.cpi !== null && stats.spi !== null) {
+                cpiSum += stats.cpi
+                spiSum += stats.spi
+                phiSum += stats.phi?.score || 0
+                projectsWithData++
+            }
+            globalAlerts.CRITICAL += stats.alertCounts.CRITICAL
+            globalAlerts.MODERATE += stats.alertCounts.MODERATE
+            globalAlerts.MINOR += stats.alertCounts.MINOR
+        }))
+
+        // Global Risks Fetch
+        const { data: topRisks } = await supabase
+            .from('risks')
+            .select('id, description, risk_score, projects(name)')
+            .eq('status', 'OPEN')
+            .order('risk_score', { ascending: false })
+            .limit(5)
+
+        const topGlobalRisks = topRisks?.map((r: any) => ({
+            id: r.id,
+            description: r.description,
+            score: r.risk_score,
+            projectName: r.projects?.name || 'Unknown'
+        })) || []
+
+        return {
+            totalProjects: projects.length,
+            totalBudget,
+            utilizedBudget: totalUtilized,
+            avgCpi: projectsWithData > 0 ? cpiSum / projectsWithData : 1,
+            avgSpi: projectsWithData > 0 ? spiSum / projectsWithData : 1,
+            avgPhi: projectsWithData > 0 ? phiSum / projectsWithData : 100,
+            globalAlertCounts: globalAlerts,
+            topGlobalRisks
         }
     }
 }

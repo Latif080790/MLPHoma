@@ -17,7 +17,10 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
-    Hexagon
+    Hexagon,
+    Zap,
+    BarChart3,
+    Layers
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -33,8 +36,11 @@ const NAV_ITEMS: NavItem[] = [
     { href: '/projects', icon: FolderKanban, label: 'Projects', color: 'text-yellow-600' },
     { href: '/project-overview', icon: ClipboardList, label: 'Project Overview', color: 'text-sky-500' },
     { href: '/costing', icon: Calculator, label: 'Project Costing', color: 'text-emerald-500' },
+    { href: '/cost-forecast', icon: BarChart3, label: 'Cost Forecast', color: 'text-rose-500' },
     { href: '/schedule', icon: CalendarClock, label: 'Operation & Sch', color: 'text-indigo-500' },
     { href: '/supply-chain', icon: Truck, label: 'Supply Chain', color: 'text-orange-500' },
+    { href: '/portfolio-resources', icon: Layers, label: 'Resource Heatmap', color: 'text-cyan-500' },
+    { href: '/strategy-simulation', icon: Zap, label: 'Strategic Modeling', color: 'text-yellow-500' },
     { href: '/finance', icon: Wallet, label: 'Finance', color: 'text-teal-500' },
     { href: '/change-management', icon: FileDiff, label: 'Change Mgmt', color: 'text-rose-500' },
     { href: '/documents', icon: FolderOpen, label: 'Document', color: 'text-slate-500' },
