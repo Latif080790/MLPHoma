@@ -14,8 +14,10 @@ import { PlusSquare, Download, RefreshCw } from 'lucide-react'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Button } from '../../components/ui/button'
 import { useProjectStore } from '../../store/projectStore'
+import { useProjectStore } from '../../store/projectStore'
 import { useRapStore } from '../../store/rapStore'
 import { useCurvaSStore } from '../../store/curvaSStore'
+import { useFinanceStore } from '../../store/financeStore'
 import { downloadCSV } from '../../lib/utils'
 import { EmptyState } from '../../components/common/EmptyState'
 import SummaryCard from '../../components/cashflow/SummaryCard'
@@ -54,9 +56,22 @@ export default function CashFlow(): JSX.Element {
   const getRapPlan = useRapStore((s) => s.getPlan)
   const setPlannedFromRap = useCurvaSStore((s) => s.setPlannedFromRap)
   const analyzeCurva = useCurvaSStore((s) => s.analyzeProject)
-  
+
   // Subscribe to data points for calculation
   const points = useCurvaSStore((s) => (projectId ? s.getDataPoints(projectId) : EMPTY_ARRAY))
+
+  // Predictability Enhancement: Pull actual AP/AR commitments
+  const fetchInvoices = useFinanceStore((s) => s.fetchInvoices)
+  const fetchClaims = useFinanceStore((s) => s.fetchClaims)
+  const invoices = useFinanceStore((s) => s.invoices)
+  const claims = useFinanceStore((s) => s.claims)
+
+  React.useEffect(() => {
+    if (projectId) {
+      fetchInvoices(projectId)
+      fetchClaims(projectId)
+    }
+  }, [projectId, fetchInvoices, fetchClaims])
 
   /**
    * Baca saved scenarios untuk menampilkan empty state jika kosong.
@@ -74,8 +89,8 @@ export default function CashFlow(): JSX.Element {
 
   // Calculate cashflow rows
   const rows = useMemo(() => {
-    return calculateCashFlow(points, paymentTerms, projectBudget)
-  }, [points, paymentTerms, projectBudget])
+    return calculateCashFlow(points, paymentTerms, projectBudget, invoices, claims)
+  }, [points, paymentTerms, projectBudget, invoices, claims])
 
   // Calculate summary totals
   const summary = useMemo(() => {
@@ -233,7 +248,7 @@ export default function CashFlow(): JSX.Element {
       />
 
       <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <SummaryCard 
+        <SummaryCard
           totalOutflow={summary.totalOutflow}
           totalInflow={summary.totalInflow}
           endingBalance={summary.endingBalance}

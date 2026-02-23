@@ -63,7 +63,7 @@ export const supplyChainService = {
 
     // --- Purchase Orders ---
 
-    async createPurchaseOrder(data: Omit<PurchaseOrderRow, 'id' | 'created_at'>, items: Omit<PoItemRow, 'id' | 'po_id'>[]) {
+    async createPurchaseOrder(data: Omit<PurchaseOrderRow, 'id' | 'created_at'>, items: Omit<PoItemRow, 'id' | 'po_id'>[], bypassBudgetGuard = false) {
         // 1. Validate Budget using Budget Guard Service
         if (items.length === 0) throw new Error("PO must have at least one item")
 
@@ -75,11 +75,13 @@ export const supplyChainService = {
             unitPrice: item.unit_price
         }))
 
-        // Run budget check
-        const budgetCheck = await checkBudgetAvailability(data.project_id, checkableItems)
+        // Run budget check unless bypassed (e.g. approved via workflow)
+        if (!bypassBudgetGuard) {
+            const budgetCheck = await checkBudgetAvailability(data.project_id, checkableItems)
 
-        if (budgetCheck.hasExceeded) {
-            throw new Error(budgetCheck.message)
+            if (budgetCheck.hasExceeded) {
+                throw new Error(budgetCheck.message)
+            }
         }
 
         // If requires approval but status is DRAFT, allow creation with warning

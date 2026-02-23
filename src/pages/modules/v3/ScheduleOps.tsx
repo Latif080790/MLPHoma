@@ -12,9 +12,11 @@ import RiskRegister from '@/components/risk/RiskRegister'
 import { useProjectStore } from '@/store/projectStore'
 import { EmptyState } from '@/components/common/EmptyState'
 import { TimelineScenarioPanel } from '@/components/modules/TimelineScenarioPanel'
+import { ResourceUsageDialog } from '@/components/progress/ResourceUsageDialog'
 
 export default function ScheduleOps() {
     const { activeProjectId } = useProjectStore()
+    const [resourceOpen, setResourceOpen] = React.useState(false)
 
     if (!activeProjectId) return <EmptyState title="No Project Selected" description="Please select a project to view schedule." />
 
@@ -25,6 +27,8 @@ export default function ScheduleOps() {
                 title="Schedule & Operations"
                 description="Integrated project planning, execution, and risk management."
             />
+
+            <ResourceUsageDialog open={resourceOpen} onOpenChange={setResourceOpen} projectId={activeProjectId} />
 
             <Tabs defaultValue="timeline" className="w-full">
                 <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-slate-100/50 dark:bg-slate-800/50 mb-6 backdrop-blur-sm">
@@ -89,7 +93,18 @@ export default function ScheduleOps() {
                             <p className="text-slate-500 max-w-sm mx-auto mb-6">
                                 Log equipment usage and labor distribution here to feed the Portfolio Heatmap.
                             </p>
-                            <Progress />
+                            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 max-w-sm mx-auto">
+                                <p className="text-xs text-slate-400 mb-4 uppercase tracking-wider font-bold">Input Center</p>
+                                <button
+                                    onClick={() => setResourceOpen(true)}
+                                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700 shadow-md transition-all active:scale-95"
+                                >
+                                    <Boxes size={18} /> New Resource Log
+                                </button>
+                                <p className="mt-4 text-[11px] text-slate-400 italic">
+                                    Mencatat pemakaian alat (HM/Shift) dan distribusi tenaga kerja secara spesifik.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </TabsContent>

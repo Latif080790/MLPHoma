@@ -30,7 +30,7 @@ import { Separator } from '@/components/ui/separator'
 
 export default function ProjectManagement() {
   const navigate = useNavigate()
-  const { projects: projectsObj, activeProjectId, setActiveProject, addProject, updateProject, removeProject, loadProjects } = useProjectStore()
+  const { projects: projectsObj, activeProjectId, setActiveProject, addProject, updateProject, removeProject, activateProject, loadProjects } = useProjectStore()
 
   const projects = useMemo(() => Object.values(projectsObj), [projectsObj])
 
@@ -40,6 +40,7 @@ export default function ProjectManagement() {
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [pendingDeleteProject, setPendingDeleteProject] = useState<Project | null>(null)
+  const [pendingActivateProject, setPendingActivateProject] = useState<Project | null>(null)
 
   useEffect(() => {
     loadProjects()
@@ -109,6 +110,12 @@ export default function ProjectManagement() {
     }
   }
 
+  const handleActivateConfirm = async () => {
+    if (!pendingActivateProject) return
+    await activateProject(pendingActivateProject.id)
+    setPendingActivateProject(null)
+  }
+
   return (
     <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-slate-50/50 dark:bg-slate-950/50">
 
@@ -142,8 +149,8 @@ export default function ProjectManagement() {
                 key={project.id}
                 onClick={() => setSelectedProjectId(project.id)}
                 className={`group px-3 py-3 rounded-lg cursor-pointer transition-all border border-transparent ${selectedProjectId === project.id
-                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900 shadow-sm'
-                    : 'hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-100'
+                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900 shadow-sm'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-100'
                   }`}
               >
                 <div className="flex justify-between items-start mb-1">
@@ -222,8 +229,22 @@ export default function ProjectManagement() {
                     <DropdownMenuItem onClick={(e) => handleDelete(e, selectedProject)} className="text-red-600">
                       <Trash2 className="mr-2 h-4 w-4" /> Delete Project
                     </DropdownMenuItem>
+                    {selectedProject.status !== 'Active' && (
+                      <DropdownMenuItem onClick={() => setPendingActivateProject(selectedProject)} className="text-blue-600 font-medium border-t mt-1 pt-1">
+                        <CheckCircle2 className="mr-2 h-4 w-4" /> Activate & Freeze Baseline
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
+                {selectedProject.status !== 'Active' && (
+                  <Button
+                    variant="outline"
+                    className="border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 hidden sm:flex"
+                    onClick={() => setPendingActivateProject(selectedProject)}
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" /> Activate Project
+                  </Button>
+                )}
                 <Button
                   size="lg"
                   onClick={handleEnterProject}
@@ -344,6 +365,25 @@ export default function ProjectManagement() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!pendingActivateProject} onOpenChange={(open) => { if (!open) setPendingActivateProject(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Activate Project & Freeze Baseline?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Activating "{pendingActivateProject?.name}" will freeze its current Resource Allocation Budget (RAB) and Resource Allocation Plan (RAP) as the "Initial Baseline".
+              <br /><br />
+              This signifies that the project is moving into the Execution phase. Any future variations to the budget will be tracked against this baseline.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleActivateConfirm} className="bg-blue-600 hover:bg-blue-700 text-white">
+              Activate & Freeze
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -22,6 +22,7 @@ export type AuditAction =
     | 'DEACTIVATE'
     | 'ASSIGN'
     | 'PROJECT_ARCHIVED'
+    | 'PROJECT_ACTIVATED'
     // Finance actions
     | 'INVOICE_CREATED'
     | 'INVOICE_PAID'

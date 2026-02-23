@@ -52,6 +52,7 @@ interface FinanceState {
   createInvoice: (invoice: Partial<Invoice>) => Promise<void>
   payInvoice: (invoiceId: string, projectId: string, amount: number) => Promise<void>
   markOverdue: (projectId: string) => Promise<void>
+  updateInvoiceStatus: (id: string, status: InvoiceStatus, projectId: string) => Promise<void>
 
   createClaim: (claim: Partial<ClientClaim>) => Promise<void>
   updateClaimStatus: (id: string, status: ClaimStatus, projectId: string) => Promise<void>
@@ -217,6 +218,18 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     if (overdue.length > 0) {
       toast.info(`${overdue.length} invoice(s) marked overdue`)
       await get().fetchInvoices(projectId)
+    }
+  },
+
+  updateInvoiceStatus: async (id: string, status: InvoiceStatus, projectId: string) => {
+    set({ loading: true })
+    try {
+      await financeService.updateInvoiceStatus(id, status)
+      await get().fetchInvoices(projectId)
+    } catch (err: any) {
+      toast.error('Failed to update invoice status: ' + err.message)
+    } finally {
+      set({ loading: false })
     }
   },
 

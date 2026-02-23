@@ -24,6 +24,7 @@ import { WBSImportDialog } from '../../components/timeline/WBSImportDialog'
 import { useTimelineStore } from '../../store/timelineStore'
 import { useProjectStore } from '../../store/projectStore'
 import type { TimelineTask } from '../../store/timelineStore'
+import { calculateTimelineAlerts } from '../../lib/timelineAlerts'
 import { toast } from 'sonner'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
@@ -274,12 +275,15 @@ export default function Timeline() {
 
   const summary = useMemo(() => {
     const total = rawTasks.length
-    const completed = rawTasks.filter((t) => t.status === 'completed').length
-    const inProgress = rawTasks.filter((t) => t.status === 'in_progress').length
-    const start = total ? rawTasks.reduce((m, t) => (t.startDate < m ? t.startDate : m), rawTasks[0].startDate) : ''
-    const end = total ? rawTasks.reduce((m, t) => (t.endDate > m ? t.endDate : m), rawTasks[0].endDate) : ''
+    const completed = rawTasks.filter((t: TimelineTask) => t.status === 'completed').length
+    const inProgress = rawTasks.filter((t: TimelineTask) => t.status === 'in_progress').length
+    const start = total ? rawTasks.reduce((m: string, t: TimelineTask) => (t.startDate < m ? t.startDate : m), rawTasks[0].startDate) : ''
+    const end = total ? rawTasks.reduce((m: string, t: TimelineTask) => (t.endDate > m ? t.endDate : m), rawTasks[0].endDate) : ''
     return { total, completed, inProgress, start, end }
   }, [rawTasks])
+
+  // Calculate alerts based on current data
+  const alerts = useMemo(() => calculateTimelineAlerts(rawTasks), [rawTasks])
 
   // Export refs
   const exportRef = useRef<HTMLDivElement | null>(null)
@@ -484,6 +488,39 @@ export default function Timeline() {
         </Card>
       </div>
 
+      {/* Critical Path Alerts */}
+      {alerts.length > 0 && (
+        <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <AlertTriangle className="h-4 w-4 text-red-600" />
+            <span className="font-bold text-red-800 dark:text-red-400">Early Warning Alerts</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {alerts.slice(0, 4).map((alert, i) => (
+              <div key={i} className="bg-white dark:bg-slate-900 rounded p-3 text-sm flex items-center justify-between border border-red-100 dark:border-red-900/30">
+                <div className="overflow-hidden">
+                  <div className="font-semibold text-slate-800 dark:text-slate-200 truncate pr-2">{alert.taskName}</div>
+                  <div className="text-slate-500 text-xs mt-0.5">{alert.message}</div>
+                </div>
+                <div className="flex flex-col items-end shrink-0">
+                  <div className="text-xs font-mono text-red-600 font-bold">{alert.actualProgress.toFixed(0)}% / {alert.expectedProgress.toFixed(0)}%</div>
+                  {alert.severity === 'critical' ? (
+                    <span className="text-[10px] bg-red-100 text-red-700 px-1 py-0.5 mt-1 rounded">CRITICAL</span>
+                  ) : (
+                    <span className="text-[10px] bg-amber-100 text-amber-700 px-1 py-0.5 mt-1 rounded">WARNING</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {alerts.length > 4 && (
+            <div className="text-xs text-red-600 mt-3 text-center cursor-pointer hover:underline">
+              + {alerts.length - 4} more warnings...
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Chart */}
       <Card ref={exportRef as any} className="border-0 shadow-md">
         <CardHeader className="flex items-center justify-between bg-slate-50/50 border-b pb-4">
@@ -535,14 +572,14 @@ export default function Timeline() {
             showBaseline={showBaseline}
             tasksOverride={filteredTasks}
             onTaskClick={(id) => {
-              const t = getTasks(projectId).find((x) => String(x.id) === String(id)) || null
+              const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
               setEditingTask(t || null)
               setEditorOpen(true)
               setSelectedId(id)
             }}
             onTaskMove={handleTaskMove}
             onTaskEdit={(id) => {
-              const t = getTasks(projectId).find((x) => String(x.id) === String(id)) || null
+              const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
               setEditingTask(t || null)
               setEditorOpen(true)
               setSelectedId(id)
