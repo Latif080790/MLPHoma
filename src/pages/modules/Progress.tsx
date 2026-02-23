@@ -29,6 +29,7 @@ import { progressEvidenceService } from "@/services/progressEvidenceService"
 import { syncProgressLog } from "@/lib/supabaseSyncService"
 import { reportService } from "@/services/reportService"
 import { ResourceUsageDialog } from "@/components/progress/ResourceUsageDialog"
+import { RoleGuard } from "@/components/common/RoleGuard"
 
 /**
  * Export progress rows as CSV
@@ -550,10 +551,10 @@ export default function Progress() {
                       <div className="truncate text-slate-400">{r.notes || "-"}</div>
                       <div className="text-right flex justify-end gap-1">
                         {(r.qc_status === 'pending' || !r.qc_status) && (
-                          <>
+                          <RoleGuard allowedRoles={['QC_ENGINEER', 'PROJECT_MANAGER', 'ADMIN']}>
                             <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleApproveQC(r.id)}>✔</Button>
                             <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleRejectQC(r.id)}>✖</Button>
-                          </>
+                          </RoleGuard>
                         )}
                       </div>
                     </div>

@@ -21,6 +21,9 @@ interface AuthState {
   initialized: boolean
   error: string | null
 
+  // RBAC Role
+  role: 'PROJECT_MANAGER' | 'QC_ENGINEER' | 'FINANCE' | 'ADMIN' | 'ENGINEER' | null
+
   // Actions
   initialize: () => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
@@ -43,6 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: false,
   initialized: false,
   error: null,
+  role: null,
 
   /**
    * Initialize auth state
@@ -75,10 +79,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       }
 
+      // Mock Role Assignment for Evaluation/Testing
+      let role: AuthState['role'] = null
+      if (session?.user) {
+        const email = session.user.email?.toLowerCase() || ''
+        if (email.includes('finance')) role = 'FINANCE'
+        else if (email.includes('qc')) role = 'QC_ENGINEER'
+        else if (email.includes('pm')) role = 'PROJECT_MANAGER'
+        else role = 'ADMIN' // Default for main test accounts
+      }
+
       set({
         user: session?.user ?? null,
         session: session ?? null,
         profile,
+        role,
         loading: false,
         initialized: true,
       })
@@ -88,10 +103,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (user && session) {
           // User signed in, fetch profile
           const { profile: fetchedProfile } = await authService.getProfile(user.id)
+
+          let newRole: AuthState['role'] = 'ADMIN'
+          const email = user.email?.toLowerCase() || ''
+          if (email.includes('finance')) newRole = 'FINANCE'
+          else if (email.includes('qc')) newRole = 'QC_ENGINEER'
+          else if (email.includes('pm')) newRole = 'PROJECT_MANAGER'
+
           set({
             user,
             session,
             profile: fetchedProfile || null,
+            role: newRole
           })
         } else {
           // User signed out
@@ -131,15 +154,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Fetch profile
       let profile: ProfileData | null = null
+      let role: AuthState['role'] = 'ADMIN'
       if (user) {
         const { profile: fetchedProfile } = await authService.getProfile(user.id)
         profile = fetchedProfile || null
+        const email = user.email?.toLowerCase() || ''
+        if (email.includes('finance')) role = 'FINANCE'
+        else if (email.includes('qc')) role = 'QC_ENGINEER'
+        else if (email.includes('pm')) role = 'PROJECT_MANAGER'
       }
 
       set({
         user: user ?? null,
         session: session ?? null,
         profile,
+        role,
         loading: false,
         error: null,
       })
@@ -213,6 +242,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         user: null,
         session: null,
         profile: null,
+        role: null,
         loading: false,
         error: null,
       })

@@ -984,10 +984,16 @@ export function syncCurvaSDataPoint(point: any): string {
   })
 }
 
+import { useOfflineQueueStore } from '@/store/offlineQueueStore'
+
 /**
  * Sync Progress Log with Evidence (Phase 11)
  */
 export function syncProgressLog(log: any): string {
+  if (!navigator.onLine) {
+    useOfflineQueueStore.getState().addLog(log)
+    return 'offline-queued'
+  }
   return syncQueue.enqueue({
     operation: 'upsert',
     table: 'progress_logs',
