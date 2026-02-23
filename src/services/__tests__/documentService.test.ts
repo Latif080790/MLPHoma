@@ -25,11 +25,18 @@ function makeChain(result: any) {
   const c: any = {}
   c.select = () => c
   c.eq = () => c
+  c.neq = () => c
   c.order = () => c
   c.limit = () => c
   c.single = () => Promise.resolve(result)
-  c.insert = () => c
-  c.update = () => c
+  c.insert = () => ({
+    select: () => ({
+      single: () => Promise.resolve(result)
+    })
+  })
+  c.update = () => ({
+    eq: () => Promise.resolve(result)
+  })
   c.then = (res: any) => Promise.resolve(result).then(res)
   return c
 }
@@ -152,6 +159,11 @@ describe('documentService', () => {
       let updatedData: any = null
 
       mockFromImpl = () => ({
+        select: () => ({
+          eq: () => ({
+            single: () => Promise.resolve({ data: { title: 'Test' }, error: null })
+          })
+        }),
         update: (data: any) => {
           updatedData = data
           return { eq: () => Promise.resolve({ error: null }) }
@@ -164,6 +176,11 @@ describe('documentService', () => {
 
     it('should throw on error', async () => {
       mockFromImpl = () => ({
+        select: () => ({
+          eq: () => ({
+            single: () => Promise.resolve({ data: { title: 'Test' }, error: null })
+          })
+        }),
         update: () => ({ eq: () => Promise.resolve({ error: new Error('delete fail') }) }),
       })
       await expect(documentService.deleteDocument('x')).rejects.toThrow()

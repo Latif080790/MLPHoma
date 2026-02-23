@@ -20,6 +20,27 @@ import type { AhspItemRow, ResourceRow, AhspComponentRow } from '../lib/supabase
 import { generateId } from '../lib/idGenerator'
 
 /**
+ * Calculate AHSP price for a single item in a Web Worker.
+ */
+export async function calculateAHSPPriceInWorker(
+    ahspItem: AHSPItem,
+    components: AHSPComponent[]
+) {
+    const payload = {
+        ahspId: ahspItem.id,
+        components: components.map(c => ({
+            coefficient: c.coefficient,
+            unitPrice: c.unitPrice,
+            type: c.type,
+        })),
+        overheadPercent: ahspItem.overheadPercentage,
+        profitPercent: ahspItem.profitPercentage
+    }
+
+    return runCalculation('calculateAHSPPrice', payload)
+}
+
+/**
  * Calculate AHSP price for a single item — uses main-thread calculation
  * for responsiveness on single-item updates.
  */
@@ -83,7 +104,7 @@ export async function recalculateAllInWorker(
  * Prepare import data — transforms raw import items into domain models.
  */
 export function prepareImportData(
-    items: AHSPItem[],
+    items: any[],
     existingResources: Resource[]
 ) {
     const newItems: AHSPItem[] = []
@@ -180,6 +201,56 @@ export function prepareImportData(
     })
 
     return { newItems, allNewResources, allNewComponents, componentsByAHSP }
+}
+
+/**
+ * Initialize a new AHSP Item with defaults.
+ */
+export function initializeAHSPItem(
+    data: any,
+    defaults: { overhead: number, profit: number }
+): AHSPItem {
+    return {
+        ...data,
+        id: data.id || generateId('ahsp'),
+        basePrice: data.basePrice ?? 0,
+        finalPrice: data.finalPrice ?? 0,
+        isActive: data.isActive ?? true,
+        overheadPercentage: data.overheadPercentage ?? defaults.overhead,
+        profitPercentage: data.profitPercentage ?? defaults.profit,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        price_material: data.price_material ?? 0,
+        price_labor: data.price_labor ?? 0,
+        price_equipment: data.price_equipment ?? 0,
+        price_subcon: data.price_subcon ?? 0,
+    }
+}
+
+/**
+ * Initialize a new AHSP Component with defaults.
+ */
+export function initializeAHSPComponent(
+    ahspId: string,
+    data: any,
+    resources: Resource[] = []
+): AHSPComponent {
+    const resource = resources.find(r => r.id === data.resourceId)
+    const coeff = Number(data.coefficient || 0)
+    const unitPrice = data.unitPrice ?? resource?.unitPrice ?? 0
+    const unit = data.unit ?? resource?.unit ?? 'unit'
+
+    return {
+        ...data,
+        id: generateId('comp'),
+        ahspId,
+        unit,
+        unitPrice,
+        coefficient: coeff,
+        subtotal: coeff * unitPrice,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    }
 }
 
 /**

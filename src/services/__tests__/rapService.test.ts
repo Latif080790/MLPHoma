@@ -17,11 +17,13 @@ function makeChain(result: any) {
   const c: any = {}
   c.select = () => c
   c.eq = () => c
+  c.in = () => c
   c.order = () => c
   c.limit = () => c
   c.single = () => Promise.resolve(result)
   c.upsert = () => c
   c.insert = () => c
+  c.delete = () => c
   c.then = (res: any) => Promise.resolve(result).then(res)
   return c
 }
@@ -29,6 +31,7 @@ function makeChain(result: any) {
 describe('rapService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockFromImpl = () => makeChain({ data: [], error: null })
   })
 
   describe('getByProject', () => {
@@ -68,17 +71,28 @@ describe('rapService', () => {
   })
 
   describe('initFromRab', () => {
-    it('should map RAB items to RAP structure and insert', async () => {
-      let insertedData: any = null
-      mockFromImpl = () => ({
-        insert: (data: any) => {
-          insertedData = data
-          return {
-            select: () => Promise.resolve({ data, error: null }),
-            then: (res: any) => Promise.resolve({ data, error: null }).then(res),
+    it('should map RAB items to RAP structure and merge-upsert', async () => {
+      let upsertedData: any = null
+      let deleteCalledWith: any = null
+
+      mockFromImpl = (table: string) => {
+        const c = makeChain({ data: [], error: null })
+        if (table === 'rap_items') {
+          c.upsert = (data: any) => {
+            upsertedData = data
+            return makeChain({ data, error: null })
           }
-        },
-      })
+          c.delete = () => {
+            return {
+              in: (col: string, ids: any[]) => {
+                deleteCalledWith = ids
+                return Promise.resolve({ error: null })
+              }
+            }
+          }
+        }
+        return c
+      }
 
       const rabItems = [
         { id: 'rab-1', wbs_id: 'w1', volume: 100, unit_price: 5000, cost_material: 3000, cost_labor: 1000, cost_equipment: 500, cost_subcon: 500 },
@@ -86,14 +100,12 @@ describe('rapService', () => {
       ]
 
       const result = await rapService.initFromRab('P1', rabItems)
-      expect(insertedData).toHaveLength(2)
-      expect(insertedData[0].project_id).toBe('P1')
-      expect(insertedData[0].rab_item_id).toBe('rab-1')
-      expect(insertedData[0].qty_budget).toBe(100)
-      expect(insertedData[0].cost_material).toBe(3000)
-      // Second item defaults to 0 for split costs
-      expect(insertedData[1].cost_equipment).toBe(0)
-      expect(insertedData[1].committed_cost).toBe(0)
+      expect(upsertedData).toHaveLength(2)
+      expect(upsertedData[0].project_id).toBe('P1')
+      expect(upsertedData[0].rab_item_id).toBe('rab-1')
+      expect(upsertedData[0].qty_budget).toBe(100)
+      expect(upsertedData[0].cost_material).toBe(3000)
+      expect(upsertedData[1].cost_equipment).toBe(0)
     })
   })
 })

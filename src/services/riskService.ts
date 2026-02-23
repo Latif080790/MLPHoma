@@ -9,14 +9,19 @@ export const riskService = {
         const { data, error } = await client
             .from('risks')
             .select(`
-        *,
-        wbs_items ( name )
-      `)
+                *,
+                wbs:wbs_id ( name )
+            `)
             .eq('project_id', projectId)
             .order('risk_score', { ascending: false })
 
         if (error) {
-            console.warn('[risk] getRisks error:', error.message)
+            console.error('[risk] getRisks 400 error details:', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            })
             return []
         }
 
@@ -40,7 +45,7 @@ export const riskService = {
             created_at: row.created_at,
             updated_at: row.updated_at,
 
-            wbs_name: row.wbs_items?.name
+            wbs_name: row.wbs?.name
         }))
     },
 

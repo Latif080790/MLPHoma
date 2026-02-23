@@ -99,7 +99,7 @@ export const rapProfitService = {
         // Get all RAP items with their RAB reference
         const { data: rapItems, error } = await client
             .from('rap_items')
-            .select('id, rab_item_id, total_budget')
+            .select('id, rab_item_id, qty_budget')
             .eq('project_id', projectId)
 
         if (error) throw error
@@ -112,18 +112,23 @@ export const rapProfitService = {
             // Get linked RAB item's owner price
             const { data: rabItem } = await client
                 .from('rab_items')
-                .select('total_price, final_total, volume, unit_price')
+                .select('final_total, volume, unit_price')
                 .eq('id', rap.rab_item_id)
                 .single()
 
             if (!rabItem) continue
 
-            const rabTotal = Number(rabItem.total_price || rabItem.final_total || 0)
+            const rabTotal = Number(rabItem.final_total || 0)
             const rapBudget = rabTotal * multiplier
+
+            // Calculate necessary unit_price_budget to achieve rapBudget
+            // rap_items.total_budget = qty_budget * unit_price_budget (Generated)
+            const qty = Number(rap.qty_budget) || 1
+            const unitPriceBudget = rapBudget / qty
 
             const { error: updateErr } = await client
                 .from('rap_items')
-                .update({ total_budget: rapBudget })
+                .update({ unit_price_budget: unitPriceBudget })
                 .eq('id', rap.id)
 
             if (!updateErr) updatedCount++
@@ -182,7 +187,7 @@ export const rapProfitService = {
                 actual_cost,
                 committed_cost,
                 wbs_items ( name, code ),
-                rab_items ( total_price, final_total )
+                rab_items ( final_total )
             `)
             .eq('project_id', projectId)
 

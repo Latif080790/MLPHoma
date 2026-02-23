@@ -35,6 +35,31 @@ vi.mock('../../lib/supabaseClient', () => ({
   assertSupabase: () => ({ from: (table: string) => mockFrom(table) }),
 }))
 
+vi.mock('../evmService', () => ({
+  computeEVM: vi.fn(() => ({ cpi: 1.0, spi: 1.0, ev: 0, pv: 0, ac: 0 })),
+  computeForecasts: vi.fn(() => ({ forecastDate: '2025-12-31', estimateAtCompletion: 0 })),
+  calcPlannedProgressPercent: vi.fn(() => ({ percent: 50, daysElapsed: 15 })),
+}))
+
+vi.mock('../phiService', () => ({
+  phiService: {
+    calculatePHI: vi.fn(() => Promise.resolve({ score: 85, breakdown: {} })),
+  },
+}))
+
+vi.mock('../anomalyService', () => ({
+  anomalyService: {
+    detectAnomalies: vi.fn(() => Promise.resolve([])),
+  },
+}))
+
+vi.mock('../scheduleAlertService', () => ({
+  scheduleAlertService: {
+    getAlertCounts: vi.fn(() => Promise.resolve({ CRITICAL: 0, MODERATE: 0, MINOR: 0 })),
+    getProjectAlerts: vi.fn(() => Promise.resolve([])),
+  },
+}))
+
 import { dashboardService, DashboardStats } from '../dashboardService'
 
 // ---------- Test Data ----------
