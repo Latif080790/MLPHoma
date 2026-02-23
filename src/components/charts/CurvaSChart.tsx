@@ -7,8 +7,11 @@
 
 import React, { useMemo } from 'react'
 import {
+  Area,
+  AreaChart,
   Line,
   LineChart as ReLineChart,
+  ComposedChart,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -333,7 +336,13 @@ export function CurvaSChart({
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={height}>
-              <ReLineChart data={combinedData}>
+              <ComposedChart data={combinedData}>
+                <defs>
+                  <linearGradient id="colorPlanned" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={colors.planned} stopOpacity={0.1} />
+                    <stop offset="95%" stopColor={colors.planned} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                 <XAxis
                   dataKey="date"
@@ -353,7 +362,17 @@ export function CurvaSChart({
                 <Legend />
 
                 {showPlanned && (
-                  <Line type="monotone" dataKey="planned" stroke={colors.planned} strokeWidth={2} name="Planned" dot={false} />
+                  <Area
+                    type="monotone"
+                    dataKey="planned"
+                    stroke={colors.planned}
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorPlanned)"
+                    name="Planned"
+                    dot={false}
+                    isAnimationActive={false}
+                  />
                 )}
 
                 {showActual && (
@@ -381,7 +400,7 @@ export function CurvaSChart({
                     <ReferenceLine y={100} stroke="#374151" strokeWidth={2} />
                   </>
                 )}
-              </ReLineChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

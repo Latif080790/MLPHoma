@@ -121,9 +121,33 @@ export default function Progress() {
 
   const [resourceOpen, setResourceOpen] = useState(false)
 
-  // Photo Upload State
   const [uploading, setUploading] = useState(false)
   const [gpsCoords, setGpsCoords] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [allowNoGps, setAllowNoGps] = useState(false)
+  const [gpsLoading, setGpsLoading] = useState(false)
+
+  const captureGps = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation not supported")
+      setAllowNoGps(true)
+      return
+    }
+    setGpsLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGpsCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude })
+        setGpsLoading(false)
+        toast.success("GPS Captured")
+      },
+      (err) => {
+        console.error(err)
+        toast.warning("Could not capture GPS. You may still submit but it will be flagged as unverified.")
+        setGpsLoading(false)
+        setAllowNoGps(true)
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -151,7 +175,10 @@ export default function Progress() {
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .map(d => ({
           ...d,
-          wbsName: wbsItems.find(w => w.id === (d as any).wbsId)?.name
+          wbsName: wbsItems.find(w => w.id === (d as any).wbsId)?.name,
+          photoUrl: (d as any).photoUrl,
+          qc_status: (d as any).qc_status || 'pending',
+          gpsCoords: (d as any).gpsCoords
         }))
         .slice(0, 50),
     [all, wbsItems]
@@ -170,8 +197,10 @@ export default function Progress() {
         toast.error("Evidence Required", { description: "Please upload a photo of site progress before submitting." })
         return
       }
-      if (!gpsCoords) {
-        toast.error("GPS Required", { description: "Please capture GPS location to verify site presence." })
+      if (!gpsCoords && !allowNoGps) {
+        toast.error("GPS Required", {
+          description: "Please capture GPS location to verify site presence. If GPS is unavailable, try again or use the bypass (if allowed)."
+        })
         return
       }
     }
@@ -182,7 +211,8 @@ export default function Progress() {
       actualProgress: Number(form.progress) || 0,
       actualCost: Number(form.cost) || 0,
       wbsId: form.wbsId,
-      notes: form.notes,
+      notes: allowNoGps && !gpsCoords ? `[NO-GPS] ${form.notes}` : form.notes,
+      gpsCoords: gpsCoords,
       updatedAt: new Date().toISOString(),
     }
 
@@ -234,6 +264,22 @@ export default function Progress() {
     const p = all.find(d => d.date === form.date)
     return p ? { progress: p.plannedProgress, cost: p.plannedCost } : null
   }, [all, form.date])
+
+  const handleApproveQC = async (id: string) => {
+    // In a real app we'd fetch the log id from Supabase, but CurvaS store might just have client ids.
+    // Assuming 'id' is a valid Supabase progress_logs UUID for this demo:
+    if (!id || id.length < 10) { toast.error("Invalid progress ID"); return }
+    const success = await progressEvidenceService.approveProgressLog(id, 'PM_USER')
+    if (success) toast.success("Quality Control Approved")
+  }
+
+  const handleRejectQC = async (id: string) => {
+    if (!id || id.length < 10) { toast.error("Invalid progress ID"); return }
+    const reason = window.prompt("Reason for rejection:")
+    if (!reason) return
+    const success = await progressEvidenceService.rejectProgressLog(id, reason)
+    if (success) toast.success("Quality Control Rejected")
+  }
 
   return (
     <div className="space-y-6">
@@ -329,6 +375,30 @@ export default function Progress() {
                     </SelectContent>
                   </Select>
                   <p className="text-[10px] text-blue-600/70 italic">*Wajib dipilih agar Actual Cost ter-link otomatis ke Budget Control.</p>
+                </div>
+
+                <div className="flex items-center gap-2 mt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="bg-sky-50 text-sky-700 border-sky-200"
+                    onClick={captureGps}
+                    disabled={gpsLoading}
+                  >
+                    {gpsLoading ? <Loader2 size={14} className="animate-spin mr-2" /> : <MapPin size={14} className="mr-2" />}
+                    Capture GPS Location
+                  </Button>
+                  {gpsCoords && (
+                    <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">
+                      {gpsCoords.latitude.toFixed(4)}, {gpsCoords.longitude.toFixed(4)}
+                    </Badge>
+                  )}
+                  {allowNoGps && !gpsCoords && (
+                    <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 border-amber-200">
+                      GPS Unavailable (Allowed)
+                    </Badge>
+                  )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -443,23 +513,49 @@ export default function Progress() {
               </CardHeader>
               <CardContent>
                 <div className="rounded-md border">
-                  <div className="grid grid-cols-5 border-b bg-neutral-50 p-2 text-sm font-medium dark:border-neutral-800 dark:bg-neutral-900">
+                  <div className="grid grid-cols-6 border-b bg-neutral-50 p-2 text-sm font-medium dark:border-neutral-800 dark:bg-neutral-900">
                     <div>Date</div>
-                    <div className="text-right">Planned (%)</div>
+                    <div>Evidence</div>
                     <div className="text-right">Actual (%)</div>
-                    <div className="text-right">Actual Cost</div>
+                    <div className="text-right">QC Status</div>
                     <div>Notes</div>
+                    <div className="text-right">Action</div>
                   </div>
                   {recent.map((r: any) => (
-                    <div key={r.id} className="grid grid-cols-5 border-b p-2 text-sm last:border-b-0 dark:border-neutral-800">
+                    <div key={r.id} className="grid grid-cols-6 items-center border-b p-2 text-sm last:border-b-0 dark:border-neutral-800">
                       <div>
                         {new Date(r.date).toLocaleDateString("id-ID")}
                         {r.wbsName && <div className="text-[10px] text-blue-600 font-medium truncate">{r.wbsName}</div>}
                       </div>
-                      <div className="text-right">{(r.plannedProgress ?? 0).toFixed(1)}%</div>
-                      <div className="text-right">{(r.actualProgress ?? 0).toFixed(1)}%</div>
-                      <div className="text-right">Rp {(r.actualCost ?? 0).toLocaleString("id-ID")}</div>
+                      <div>
+                        {r.photoUrl ? (
+                          <div className="flex flex-col gap-1 items-start">
+                            <img src={r.photoUrl} alt="Evidence" className="h-8 w-12 object-cover rounded cursor-pointer border" onClick={() => window.open(r.photoUrl, '_blank')} />
+                            {r.gpsCoords && (
+                              <span className="text-[9px] text-green-600">
+                                {r.gpsCoords.latitude.toFixed(3)}, {r.gpsCoords.longitude.toFixed(3)}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-400">No Photo</span>
+                        )}
+                      </div>
+                      <div className="text-right font-mono">{(r.actualProgress ?? 0).toFixed(1)}%</div>
+                      <div className="text-right">
+                        {r.qc_status === 'approved' && <Badge className="bg-green-500 text-[10px] h-4">APPROVED</Badge>}
+                        {r.qc_status === 'rejected' && <Badge className="bg-red-500 text-[10px] h-4">REJECTED</Badge>}
+                        {(r.qc_status === 'pending' || !r.qc_status) && <Badge className="bg-amber-500 text-[10px] h-4">PENDING</Badge>}
+                      </div>
                       <div className="truncate text-slate-400">{r.notes || "-"}</div>
+                      <div className="text-right flex justify-end gap-1">
+                        {(r.qc_status === 'pending' || !r.qc_status) && (
+                          <>
+                            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleApproveQC(r.id)}>✔</Button>
+                            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleRejectQC(r.id)}>✖</Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   ))}
                   {recent.length === 0 && (

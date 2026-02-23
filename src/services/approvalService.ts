@@ -251,21 +251,26 @@ export const approvalService = {
             }
         }
 
-        // Post-approval hook: commit budget for approved PO
+        // Post-approval hook: Execute PO Creation and auto-commit budget
         if (approval.entityType === 'PURCHASE_ORDER' && approval.impactSummary?.poData) {
             try {
-                const { commitBudget } = await import('./budgetGuardService')
+                const { supplyChainService } = await import('./supplyChainService')
                 const poData = approval.impactSummary.poData
-                if (poData?.items) {
-                    for (const item of poData.items) {
-                        if (item.rap_item_id) {
-                            const amount = (item.quantity || 0) * (item.unit_price || 0)
-                            if (amount > 0) await commitBudget(item.rap_item_id, amount)
-                        }
-                    }
-                }
+
+                await supplyChainService.createPurchaseOrder({
+                    project_id: approval.projectId,
+                    po_number: poData.po_number,
+                    vendor_name: poData.vendor_name,
+                    total_amount: approval.impactSummary.totalAmount,
+                    status: 'APPROVED',
+                    created_by: approval.requesterId || 'system',
+                    approved_by: approverId,
+                    approved_at: new Date().toISOString()
+                }, poData.items, true) // Bypass budget guard since it was explicitly approved
+
+                console.info('[Approval] PO successfully created and budget committed:', poData.po_number)
             } catch (poErr) {
-                console.error('[Approval] PO budget commit failed:', poErr)
+                console.error('[Approval] PO execution failed:', poErr)
             }
         }
 
@@ -276,6 +281,17 @@ export const approvalService = {
                 await mts.executeTransfer(approval.entityId)
             } catch (mtrErr) {
                 console.error('[Approval] MTR execution failed:', mtrErr)
+            }
+        }
+
+        // Post-approval hook: execute payment
+        if (approval.entityType === 'PAYMENT' && approval.entityId) {
+            try {
+                const { financeService } = await import('./financeService')
+                await financeService.payInvoice(approval.entityId, approval.projectId, approval.impactSummary?.amount || 0, approverId, approverName)
+                console.info('[Approval] Payment successfully executed:', approval.entityId)
+            } catch (err) {
+                console.error('[Approval] Payment execution failed:', err)
             }
         }
 

@@ -12,7 +12,7 @@
 
 import { create } from 'zustand'
 import { createCachedGetter } from '../lib/cachedGetter'
-import { fetchProjects, supabase } from '../lib/supabaseClient'
+import { fetchProjects, supabase, assertSupabase } from '../lib/supabaseClient'
 import { syncProject as syncProj, syncDelete } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import { projectInputSchema, projectUpdateSchema } from '../lib/validationSchemas'
@@ -82,6 +82,8 @@ interface ProjectState {
   removeProject: (projectId: string) => void
   /** Set the active project id */
   setActiveProject: (projectId?: string) => void
+  /** Activate a project (transition to Execution state & freeze baseline) */
+  activateProject: (projectId: string) => Promise<void>
   /** Set payment terms for a project (partial replace/merge) */
   setPaymentTerms: (projectId: string, terms: Partial<PaymentTerms>) => void
 
@@ -261,6 +263,59 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         toast.success('Proyek berhasil diarsipkan', {
           description: 'Project is now in read-only mode.'
         })
+      }
+    },
+
+    /**
+     * activateProject
+     * Mark project as Active locally, sync it, and call freeze_project_baseline.
+     */
+    activateProject: async (projectId: string) => {
+      if (!projectId) return
+
+      // Optimistic update
+      set((state) => {
+        const existing = state.projects[projectId]
+        if (!existing) return state
+        const activated: Project = { ...existing, status: 'Active' }
+        return { projects: { ...state.projects, [projectId]: activated } }
+      })
+
+      const existing = get().projects[projectId]
+      if (existing) {
+        // Sync new status
+        syncProj(existing)
+
+        // Supabase RPC to freeze baselines
+        try {
+          const client = assertSupabase()
+          // If project ID is still uuid, we pass it. If it changed to text, it's fine too.
+          const { error } = await client.rpc('freeze_project_baseline', {
+            p_project_id: projectId,
+            p_snapshot_name: 'Initial Baseline'
+          })
+
+          if (error) throw error
+
+          const currentUser = useAuthStore.getState().user
+          auditService.log({
+            action: 'PROJECT_ACTIVATED',
+            userId: currentUser?.id,
+            entity: 'projects',
+            entityType: 'PROJECT',
+            entityId: projectId,
+            details: { reason: 'User activated project and froze baseline' }
+          })
+
+          toast.success('Project Activated', {
+            description: 'Baseline snapshots for RAB and RAP have been frozen successfully.'
+          })
+        } catch (err: any) {
+          console.error('[Project Activation] Freeze failed:', err)
+          toast.error('Baseline Freeze Failed', {
+            description: err.message || 'Could not freeze baseline data.'
+          })
+        }
       }
     },
 

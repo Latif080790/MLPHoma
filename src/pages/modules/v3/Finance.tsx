@@ -29,13 +29,15 @@ import { AgingReport } from "@/components/finance/AgingReport"
 import { ThreeWayMatch } from "@/components/finance/ThreeWayMatch"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 import { CashflowForecastWidget } from "@/components/finance/CashflowForecastWidget"
+import { approvalService } from "@/services/approvalService"
+import { useAuthStore } from "@/store/authStore"
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
     const [activeTab, setActiveTab] = useState("overview")
     const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
     const [claimDialogOpen, setClaimDialogOpen] = useState(false)
-    const [pendingInvoicePayment, setPendingInvoicePayment] = useState<{ id: string; project_id: string; total_amount: number; invoice_number: string } | null>(null)
+    const [pendingInvoicePayment, setPendingInvoicePayment] = useState<{ id: string; project_id: string; total_amount: number; invoice_number: string; vendor_name?: string } | null>(null)
 
     const {
         invoices, claims, transactions, loading,
@@ -51,14 +53,35 @@ export default function Finance() {
         }
     }, [activeProjectId])
 
-    const handlePayClick = (inv: { id: string; project_id: string; total_amount: number; invoice_number: string }) => {
+    const handlePayClick = (inv: { id: string; project_id: string; total_amount: number; invoice_number: string; vendor_name?: string }) => {
         setPendingInvoicePayment(inv)
     }
 
     const handlePayConfirm = async () => {
         if (!pendingInvoicePayment) return
-        await payInvoice(pendingInvoicePayment.id, pendingInvoicePayment.project_id, pendingInvoicePayment.total_amount)
-        setPendingInvoicePayment(null)
+
+        try {
+            const { user, profile } = useAuthStore.getState()
+            await approvalService.createApproval({
+                projectId: pendingInvoicePayment.project_id,
+                entityType: 'PAYMENT',
+                entityId: pendingInvoicePayment.id,
+                title: `Payment: ${pendingInvoicePayment.vendor_name || 'Vendor'} Inv#${pendingInvoicePayment.invoice_number}`,
+                description: `Requesting approval to release payment for Rp ${pendingInvoicePayment.total_amount.toLocaleString()}`,
+                requesterId: user?.id || 'unknown',
+                requesterName: profile?.full_name || user?.email || 'Finance',
+                approverRole: 'manager',
+                impactSummary: { amount: pendingInvoicePayment.total_amount, vendor: pendingInvoicePayment.vendor_name }
+            })
+
+            // Mark invoice as pending locally
+            useFinanceStore.getState().updateInvoiceStatus(pendingInvoicePayment.id, 'PENDING_PAYMENT', pendingInvoicePayment.project_id)
+
+            toast.success("Payment approval requested", { description: "Sent to PM's Command Center" })
+            setPendingInvoicePayment(null)
+        } catch (err: any) {
+            toast.error("Failed to request approval", { description: err.message })
+        }
     }
 
     const claimActions = (claim: ClientClaim) => {
@@ -250,7 +273,7 @@ export default function Finance() {
                     )}
 
                     {/* Cashflow Forecast Widget */}
-                    <CashflowForecastWidget 
+                    <CashflowForecastWidget
                         projectId={activeProjectId}
                         forecastWeeks={4}
                     />
@@ -297,7 +320,7 @@ export default function Finance() {
                                                         {mockTrace.length > 0 ? (
                                                             <div className="flex items-center gap-1.5">
                                                                 <TraceCountBadge count={mockTrace.length} direction="upstream" />
-                                                                <TraceChain 
+                                                                <TraceChain
                                                                     chain={mockTrace}
                                                                     size="sm"
                                                                 />
@@ -316,7 +339,7 @@ export default function Finance() {
                                                         } className="text-[10px] font-normal px-2 py-0.5">{inv.status}</Badge>
                                                     </TableCell>
                                                     <TableCell className="p-3 text-right">
-                                                        {inv.status !== 'PAID' && (
+                                                        {inv.status !== 'PAID' && inv.status !== 'PENDING_PAYMENT' && (
                                                             <Button size="sm" onClick={() => handlePayClick(inv)} className="h-7 text-xs">Pay</Button>
                                                         )}
                                                     </TableCell>

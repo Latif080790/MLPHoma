@@ -1,5 +1,6 @@
 import { CurvaSDataPoint } from '../types/curvaS'
 import { PaymentTerms } from '../store/projectStore'
+import { Invoice, ClientClaim } from '../types/finance'
 
 export interface CashRow {
   period: string
@@ -13,7 +14,9 @@ export interface CashRow {
 export function calculateCashFlow(
   points: CurvaSDataPoint[],
   terms: PaymentTerms,
-  totalBudget: number
+  totalBudget: number,
+  invoices: Invoice[] = [],
+  claims: ClientClaim[] = []
 ): CashRow[] {
   if (!points || points.length === 0) return []
 
@@ -24,7 +27,7 @@ export function calculateCashFlow(
   const taxRate = terms.taxRate ?? 0 // Tax on billing (e.g. 0.03)
 
   const dpAmount = totalBudget * dpPct
-  
+
   let cumOutflow = 0
   let cumInflow = 0
   let prevProgress = 0
@@ -34,17 +37,35 @@ export function calculateCashFlow(
   const sortedPoints = [...points].sort((a, b) => a.date.localeCompare(b.date))
 
   return sortedPoints.map((p, idx) => {
-    // Outflow: Cost for this period
-    // If we have actualCost, use it. Else use plannedCost difference?
-    // CurvaSDataPoint has cumulative costs.
-    // So period cost = current cum cost - prev cum cost.
-    
+    // ------------------------------------------------------------------
+    // 1. OUTFLOW (Theoretical + Actual AP Commitments)
+    // ------------------------------------------------------------------
+
+    // Base Theoretical Outflow from S-Curve
     const prevPoint = idx > 0 ? sortedPoints[idx - 1] : null
     const currentCost = (p.actualCost || p.plannedCost || 0)
     const prevCost = prevPoint ? (prevPoint.actualCost || prevPoint.plannedCost || 0) : 0
     let periodOutflow = Math.max(0, currentCost - prevCost)
 
-    // Inflow:
+    // Add rigid AP Commitments (Unpaid Invoices due in this period)
+    const periodStart = prevPoint ? prevPoint.date : '1970-01-01'
+    const periodEnd = p.date
+
+    const invoicesDueThisPeriod = invoices.filter(inv =>
+      inv.status !== 'PAID' &&
+      inv.due_date > periodStart &&
+      inv.due_date <= periodEnd
+    )
+
+    const apCommitments = invoicesDueThisPeriod.reduce((sum, inv) => sum + (inv.total_amount || 0), 0)
+
+    // We assume theoretical periodOutflow somewhat predicted AP.
+    // If real AP > theoretical, we must use real AP as the absolute floor of outflow.
+    periodOutflow = Math.max(periodOutflow, apCommitments)
+
+    // ------------------------------------------------------------------
+    // 2. INFLOW (Theoretical + Actual AR Commitments)
+    // ------------------------------------------------------------------
     // 1. DP in first period? Or separate?
     // Let's assume DP is received in first period.
     let periodInflow = 0
@@ -56,21 +77,32 @@ export function calculateCashFlow(
     // Progress made this period
     const currentProgress = (p.actualProgress || p.plannedProgress || 0)
     const progressDelta = Math.max(0, currentProgress - prevProgress)
-    
+
     // Billable amount
     const grossBill = (progressDelta / 100) * totalBudget * billingPct
-    
+
     // Deduct retention
     const netBill = grossBill * (1 - retentionPct)
-    
+
     // Deduct DP recovery? 
     // Usually DP is recovered pro-rata. 
     // Recovery = (progressDelta / 100) * dpAmount
     const dpRecovery = (progressDelta / 100) * dpAmount
-    
+
     const finalBill = Math.max(0, netBill - dpRecovery)
-    
-    periodInflow += finalBill
+
+    let periodInflow = finalBill
+
+    // Add rigid AR Expectations (Unpaid Claims due in this period)
+    const claimsDueThisPeriod = claims.filter(c =>
+      c.status !== 'PAID' &&
+      c.dueDate && c.dueDate > periodStart &&
+      c.dueDate <= periodEnd
+    )
+    const arExpectations = claimsDueThisPeriod.reduce((sum, c) => sum + (c.amount || 0), 0)
+
+    // Ensure inflow is at least the rigidly expected AR
+    periodInflow = Math.max(periodInflow, arExpectations)
 
     // Release retention if progress reaches 100% (or very close)
     if (currentProgress >= 99.9 && prevProgress < 99.9) {

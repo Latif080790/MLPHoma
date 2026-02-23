@@ -1,5 +1,5 @@
 
-export type InvoiceStatus = 'UNPAID' | 'PARTIAL' | 'PAID' | 'OVERDUE'
+export type InvoiceStatus = 'UNPAID' | 'PARTIAL' | 'PAID' | 'OVERDUE' | 'PENDING_PAYMENT'
 export type ClaimStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'PAID'
 
 export interface Invoice {

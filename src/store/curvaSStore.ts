@@ -231,14 +231,16 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
     }
 
     const dates = generateMonthlyDates(startDate, endDate)
-    const stepProgress = 100 / Math.max(1, dates.length)
-    const stepCost = totalBudget / Math.max(1, dates.length)
-    let accProgress = 0
-    let accCost = 0
     const nowIso = new Date().toISOString()
+
+    // S-Curve logic: P(t) = t - (1/2pi)*sin(2pi*t)
+    // This creates a smooth slow-fast-slow distribution
     const newPoints: CurvaSDataPoint[] = dates.map((d, idx) => {
-      accProgress = idx === dates.length - 1 ? 100 : Math.min(100, accProgress + stepProgress)
-      accCost = idx === dates.length - 1 ? totalBudget : accCost + stepCost
+      const t = idx / (dates.length - 1 || 1)
+      const sFactor = t - Math.sin(2 * Math.PI * t) / (2 * Math.PI)
+      const accProgress = sFactor * 100
+      const accCost = sFactor * totalBudget
+
       return {
         id: pointId(projectId, d),
         projectId,
@@ -279,16 +281,16 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
   analyzeProject: (projectId) => {
     const points = get().dataPoints[projectId] || EMPTY_POINTS
     const cfg = get().configs[projectId]
-    const next = computeAnalysis(projectId, points, cfg)
+    const analysis = computeAnalysis(projectId, points, cfg)
     const prev = get().analyses[projectId] || null
-    if (isSameAnalysis(prev, next)) return
+    if (isSameAnalysis(prev, analysis)) return
     set((state) => ({
-      analyses: { ...state.analyses, [projectId]: next },
+      analyses: { ...state.analyses, [projectId]: analysis },
     }))
 
-    // Sync analysis to Supabase if valid
-    if (next) {
-      syncCurvaSAnalysis(next)
+    // Integration Sync: Phase 4
+    if (analysis) {
+      syncCurvaSAnalysis(analysis)
     }
   },
 

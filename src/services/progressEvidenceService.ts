@@ -47,7 +47,7 @@ function haversineDistance(
 // ---------- Service ----------
 
 export const progressEvidenceService = {
-    
+
     /**
      * Get evidence requirements for a task
      */
@@ -58,9 +58,9 @@ export const progressEvidenceService = {
             .select('*')
             .eq('task_id', taskId)
             .single()
-        
+
         if (error || !data) return null
-        
+
         return {
             taskId: data.task_id,
             taskName: data.task_name,
@@ -77,7 +77,7 @@ export const progressEvidenceService = {
             complianceNotes: data.compliance_notes,
         }
     },
-    
+
     /**
      * Get project site coordinates
      */
@@ -94,7 +94,7 @@ export const progressEvidenceService = {
         }
         return null
     },
-    
+
     /**
      * Validate evidence against requirements
      */
@@ -120,11 +120,11 @@ export const progressEvidenceService = {
             signatureRequired: requirement.signatureRequired,
             signaturesMissing: [],
         }
-        
+
         // Count photo evidence
         const photos = evidence.filter(e => e.evidenceType === 'PHOTO')
         result.photoCount = photos.length
-        
+
         // Check photo requirement
         if (requirement.photoRequired && photos.length < requirement.photoMinCount) {
             result.isValid = false
@@ -135,7 +135,7 @@ export const progressEvidenceService = {
                 `Minimum ${requirement.photoMinCount} photos required, only ${photos.length} provided`
             )
         }
-        
+
         // Check video requirement
         const videos = evidence.filter(e => e.evidenceType === 'VIDEO')
         result.hasVideo = videos.length > 0
@@ -144,7 +144,7 @@ export const progressEvidenceService = {
             result.missingEvidence.push('Video evidence required')
             result.errors.push('Video documentation is mandatory for this task')
         }
-        
+
         // Check location requirement
         const withLocation = evidence.filter(e => e.latitude && e.longitude)
         result.hasLocation = withLocation.length > 0
@@ -153,7 +153,7 @@ export const progressEvidenceService = {
             result.missingEvidence.push('GPS location required')
             result.errors.push('Location capture is mandatory for this task')
         }
-        
+
         // Validate location distance if site coordinates provided
         if (siteCoords && requirement.locationMaxDistance) {
             withLocation.forEach(ev => {
@@ -170,14 +170,14 @@ export const progressEvidenceService = {
                 }
             })
         }
-        
+
         // Check timestamp requirement
         result.hasTimestamp = evidence.every(e => e.capturedAt)
         if (requirement.timestampRequired && !result.hasTimestamp) {
             result.isValid = false
             result.errors.push('All evidence must have valid timestamps')
         }
-        
+
         // Check timestamp window if specified
         if (requirement.timestampWindow) {
             const { start, end } = requirement.timestampWindow
@@ -185,7 +185,7 @@ export const progressEvidenceService = {
                 const capturedAt = new Date(e.capturedAt)
                 return capturedAt < new Date(start) || capturedAt > new Date(end)
             })
-            
+
             if (outOfWindow.length > 0) {
                 result.timestampValid = false
                 result.warnings.push(
@@ -193,7 +193,7 @@ export const progressEvidenceService = {
                 )
             }
         }
-        
+
         // Check for future timestamps
         evidence.forEach(ev => {
             const capturedAt = new Date(ev.capturedAt).getTime()
@@ -204,7 +204,7 @@ export const progressEvidenceService = {
                 )
             }
         })
-        
+
         // Check signature requirement
         const signatures = evidence.filter(e => e.evidenceType === 'SIGNATURE')
         result.hasSignature = signatures.length > 0
@@ -214,18 +214,18 @@ export const progressEvidenceService = {
                 result.missingEvidence.push('Signature required')
                 result.errors.push('Authorized signature is mandatory for this task')
             }
-            
+
             // Check if all required roles have signed
             if (requirement.signatureRoles && requirement.signatureRoles.length > 0) {
                 const signedRoles = signatures
                     .map(s => s.tags)
                     .flat()
                     .filter(Boolean) as string[]
-                
+
                 const missingSigs = requirement.signatureRoles.filter(
                     role => !signedRoles.includes(role)
                 )
-                
+
                 if (missingSigs.length > 0) {
                     result.isValid = false
                     result.signaturesMissing = missingSigs
@@ -235,7 +235,7 @@ export const progressEvidenceService = {
                 }
             }
         }
-        
+
         // Additional warnings for quality
         if (photos.length > 0) {
             const lowQualityPhotos = photos.filter(p => p.fileSize < 50000) // < 50KB
@@ -245,23 +245,23 @@ export const progressEvidenceService = {
                 )
             }
         }
-        
+
         return result
     },
-    
+
     /**
      * Upload evidence for a progress update
      */
     async uploadEvidence(input: UploadEvidenceInput): Promise<ProgressEvidence> {
         const client = assertSupabase()
         const id = generateId('evidence')
-        
+
         // Upload file to storage
         const filePath = `progress-evidence/${input.taskId}/${id}_${input.file.name}`
         const { error: uploadError } = await client.storage
             .from('progress-evidence')
             .upload(filePath, input.file, { contentType: input.file.type, upsert: false })
-        
+
         let fileUrl = ''
         if (uploadError) {
             console.warn('Storage upload failed, using mock URL:', uploadError.message)
@@ -272,7 +272,7 @@ export const progressEvidenceService = {
                 .getPublicUrl(filePath)
             fileUrl = urlData?.publicUrl || `https://storage.example.com/${filePath}`
         }
-        
+
         // Save evidence metadata
         const evidence: ProgressEvidence = {
             id,
@@ -294,7 +294,7 @@ export const progressEvidenceService = {
             tags: input.tags,
             createdAt: new Date().toISOString(),
         }
-        
+
         const { error: insertError } = await client
             .from('progress_evidence')
             .insert({
@@ -316,14 +316,14 @@ export const progressEvidenceService = {
                 description: evidence.description,
                 tags: evidence.tags,
             })
-        
+
         if (insertError) {
             console.warn('Evidence metadata save failed:', insertError.message)
         }
-        
+
         return evidence
     },
-    
+
     /**
      * Get evidence for a progress update
      */
@@ -334,9 +334,9 @@ export const progressEvidenceService = {
             .select('*')
             .eq('progress_update_id', progressUpdateId)
             .order('captured_at', { ascending: false })
-        
+
         if (error || !data) return []
-        
+
         return data.map((row: any) => ({
             id: row.id,
             progressUpdateId: row.progress_update_id,
@@ -363,7 +363,7 @@ export const progressEvidenceService = {
             createdAt: row.created_at,
         }))
     },
-    
+
     /**
      * Check if progress update can be submitted (has sufficient evidence)
      */
@@ -374,7 +374,7 @@ export const progressEvidenceService = {
     ): Promise<{ allowed: boolean; validation: EvidenceValidationResult }> {
         // Get evidence requirements
         const requirement = await this.getTaskEvidenceRequirements(taskId)
-        
+
         // No requirements = always allowed
         if (!requirement) {
             return {
@@ -398,19 +398,19 @@ export const progressEvidenceService = {
                 },
             }
         }
-        
+
         // Get uploaded evidence
         const evidence = await this.getEvidenceForUpdate(progressUpdateId)
-        
+
         // Get site coordinates if needed
         let siteCoords: GpsCoords | null = null
         if (projectId && requirement.locationRequired && requirement.locationMaxDistance) {
             siteCoords = await this.getProjectSiteCoords(projectId)
         }
-        
+
         // Validate
         const validation = this.validateEvidence(evidence, requirement, siteCoords)
-        
+
         return {
             allowed: validation.isValid,
             validation,
@@ -445,5 +445,54 @@ export const progressEvidenceService = {
                 },
             )
         })
+    },
+
+    /**
+     * Approve a progress log QC status
+     */
+    async approveProgressLog(progressId: string, verifiedBy: string): Promise<boolean> {
+        const client = assertSupabase()
+        const { error } = await client
+            .from('progress_logs')
+            .update({ qc_status: 'approved', updated_at: new Date().toISOString() })
+            .eq('id', progressId)
+
+        if (error) {
+            console.error('[Progress QC] Approve failed:', error)
+            return false
+        }
+
+        // Also verify the evidence rows
+        await client
+            .from('progress_evidence')
+            .update({
+                is_verified: true,
+                verified_by: verifiedBy,
+                verified_at: new Date().toISOString()
+            })
+            .eq('progress_update_id', progressId)
+
+        return true
+    },
+
+    /**
+     * Reject a progress log QC status
+     */
+    async rejectProgressLog(progressId: string, reason: string): Promise<boolean> {
+        const client = assertSupabase()
+        const { error } = await client
+            .from('progress_logs')
+            .update({
+                qc_status: 'rejected',
+                notes: reason, // Append or overwrite notes with rejection reason
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', progressId)
+
+        if (error) {
+            console.error('[Progress QC] Reject failed:', error)
+            return false
+        }
+        return true
     },
 }
