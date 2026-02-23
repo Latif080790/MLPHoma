@@ -65,23 +65,23 @@ export const projectOverviewService = {
   async getProjectKPIs(projectId: string): Promise<ProjectKPIs> {
     const client = assertSupabase()
 
-    // RAB total (sum of rab_items total_price for this project)
+    // RAB total (sum of rab_items final_total for this project)
     const { data: rabData } = await client
       .from('rab_items')
-      .select('total_price')
+      .select('final_total')
       .eq('project_id', projectId)
 
-    const rabTotal = (rabData || []).reduce((sum: number, r: any) => sum + (r.total_price || 0), 0)
+    const rabTotal = (rabData || []).reduce((sum: number, r: any) => sum + (r.final_total || 0), 0)
 
-    // RAP items (committed + actual)
+    // RAP items (total_budget + actual_cost)
     const { data: rapData } = await client
       .from('rap_items')
-      .select('amount, actual_cost')
+      .select('total_budget, actual_cost, committed_cost')
       .eq('project_id', projectId)
 
-    const rapTotal = (rapData || []).reduce((sum: number, r: any) => sum + (r.amount || 0), 0)
+    const rapTotal = (rapData || []).reduce((sum: number, r: any) => sum + (r.total_budget || 0), 0)
     const actualCost = (rapData || []).reduce((sum: number, r: any) => sum + (r.actual_cost || 0), 0)
-    const committedCost = rapTotal // committed = RAP amount
+    const committedCost = (rapData || []).reduce((sum: number, r: any) => sum + (r.committed_cost || 0), 0)
     const remainingBudget = rabTotal - actualCost
 
     // Overall progress from timeline_tasks
@@ -112,7 +112,7 @@ export const projectOverviewService = {
 
   /**
    * getUpcomingMilestones
-   * Returns tasks with end_date >= today, ordered by nearest first.
+   * Returns tasks with start_date >= today, ordered by nearest first.
    */
   async getUpcomingMilestones(projectId: string, limit = 5): Promise<TaskSummary[]> {
     const client = assertSupabase()
@@ -120,7 +120,7 @@ export const projectOverviewService = {
 
     const { data, error } = await client
       .from('timeline_tasks')
-      .select('id, name, end_date, progress, assignee, wbs_id')
+      .select('id, name, end_date, progress, wbs_id')
       .eq('project_id', projectId)
       .gte('end_date', today)
       .order('end_date', { ascending: true })
@@ -133,15 +133,14 @@ export const projectOverviewService = {
 
     const now = new Date()
     return (data || []).map((t: any) => {
-      const endDate = new Date(t.end_date)
-      const diffMs = endDate.getTime() - now.getTime()
+      const taskDate = new Date(t.end_date)
+      const diffMs = taskDate.getTime() - now.getTime()
       const daysUntilDue = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
       return {
         id: t.id,
         name: t.name,
         endDate: t.end_date,
         progress: t.progress || 0,
-        assignee: t.assignee || undefined,
         wbsCode: t.wbs_id || undefined,
         daysUntilDue,
       }
@@ -150,7 +149,7 @@ export const projectOverviewService = {
 
   /**
    * getOverdueTasks
-   * Returns tasks with end_date < today AND progress < 100.
+   * Returns tasks with start_date < today AND progress < 100.
    */
   async getOverdueTasks(projectId: string, limit = 5): Promise<TaskSummary[]> {
     const client = assertSupabase()
@@ -158,7 +157,7 @@ export const projectOverviewService = {
 
     const { data, error } = await client
       .from('timeline_tasks')
-      .select('id, name, end_date, progress, assignee, wbs_id')
+      .select('id, name, end_date, progress, wbs_id')
       .eq('project_id', projectId)
       .lt('end_date', today)
       .lt('progress', 100)
@@ -172,15 +171,14 @@ export const projectOverviewService = {
 
     const now = new Date()
     return (data || []).map((t: any) => {
-      const endDate = new Date(t.end_date)
-      const diffMs = endDate.getTime() - now.getTime()
+      const taskDate = new Date(t.end_date)
+      const diffMs = taskDate.getTime() - now.getTime()
       const daysUntilDue = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
       return {
         id: t.id,
         name: t.name,
         endDate: t.end_date,
         progress: t.progress || 0,
-        assignee: t.assignee || undefined,
         wbsCode: t.wbs_id || undefined,
         daysUntilDue,
       }

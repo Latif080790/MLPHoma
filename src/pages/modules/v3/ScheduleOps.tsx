@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
-import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical } from 'lucide-react'
+import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical, Boxes } from 'lucide-react'
 import WBS from '../WBS'
 import Timeline from '../Timeline'
 import CurvaS from '../CurvaS'
@@ -43,6 +43,9 @@ export default function ScheduleOps() {
                     <TabsTrigger value="risk" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
                         <AlertTriangle size={14} /> Risk & Issues
                     </TabsTrigger>
+                    <TabsTrigger value="resource" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
+                        <Boxes size={14} /> Resource Entry
+                    </TabsTrigger>
                     <TabsTrigger value="scenario" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
                         <FlaskConical size={14} /> What-If
                     </TabsTrigger>
@@ -75,6 +78,19 @@ export default function ScheduleOps() {
                 <TabsContent value="risk" className="outline-none">
                     <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-4">
                         <RiskRegister projectId={activeProjectId} />
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="resource" className="outline-none">
+                    <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-4 min-h-[400px]">
+                        <div className="text-center py-12">
+                            <Boxes className="mx-auto h-12 w-12 text-slate-400 mb-4" />
+                            <h3 className="text-lg font-bold">Resource Logistics & Tooling</h3>
+                            <p className="text-slate-500 max-w-sm mx-auto mb-6">
+                                Log equipment usage and labor distribution here to feed the Portfolio Heatmap.
+                            </p>
+                            <Progress />
+                        </div>
                     </div>
                 </TabsContent>
 

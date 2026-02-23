@@ -106,6 +106,14 @@ const PerformanceIndicator = ({
 }
 
 /**
+ * Helper to check if a date is valid
+ */
+const isValidDate = (d: any) => {
+  const date = new Date(d)
+  return date instanceof Date && !isNaN(date.getTime())
+}
+
+/**
  * Komponen utama CurvaSChart
  * Catatan penting:
  * - Tidak ada early-return sebelum semua hooks (useMemo) agar jumlah hooks konsisten antar render.
@@ -123,18 +131,25 @@ export function CurvaSChart({
 }: CurvaSChartProps) {
   // Proses data untuk chart
   const chartData = useMemo(() => {
-    return data.map((point) => ({
-      date: new Date(point.date).toLocaleDateString('id-ID', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      }),
-      fullDate: point.date,
-      planned: type === 'progress' ? point.plannedProgress : point.plannedCost,
-      actual: type === 'progress' ? point.actualProgress : point.actualCost,
-      plannedVolume: point.plannedVolume || 0,
-      actualVolume: point.actualVolume || 0,
-    }))
+    return data.map((point) => {
+      const dateObj = new Date(point.date)
+      const formattedDate = isValidDate(dateObj)
+        ? dateObj.toLocaleDateString('id-ID', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
+        : 'Invalid Date'
+
+      return {
+        date: formattedDate,
+        fullDate: point.date,
+        planned: type === 'progress' ? point.plannedProgress : point.plannedCost,
+        actual: type === 'progress' ? point.actualProgress : point.actualCost,
+        plannedVolume: point.plannedVolume || 0,
+        actualVolume: point.actualVolume || 0,
+      }
+    })
   }, [data, type])
 
   // Hitung forecast data (berbasis last actual date)
@@ -162,13 +177,17 @@ export function CurvaSChart({
       const futureDate = new Date(baseDate)
       futureDate.setDate(futureDate.getDate() + Math.round((daysToComplete / 4) * i))
 
-      points.push({
-        date: futureDate.toLocaleDateString('id-ID', {
+      const formatted = isValidDate(futureDate)
+        ? futureDate.toLocaleDateString('id-ID', {
           day: '2-digit',
           month: 'short',
           year: 'numeric',
-        }),
-        fullDate: futureDate.toISOString().split('T')[0],
+        })
+        : 'Invalid Date'
+
+      points.push({
+        date: formatted,
+        fullDate: isValidDate(futureDate) ? futureDate.toISOString().split('T')[0] : '',
         forecast:
           type === 'progress'
             ? Math.min(100, (lastDataPoint?.actualProgress || 0) + (remainingProgress * i) / 4)

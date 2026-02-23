@@ -114,39 +114,10 @@ export const useRapStore = create<RapState>((set, get) => {
     initFromRab: async (projectId: string, rabItems: any[]) => {
       set({ isLoading: true })
       try {
-        const now = new Date().toISOString()
-        const rapItems = rabItems.map(rab => ({
-          id: (rab as any).rap_id || generateId('rap'),
-          project_id: projectId,
-          rab_item_id: rab.id,
-          // Use only valid wbs_id (never timeline taskId which is a different FK)
-          wbs_id: rab.wbsId || rab.wbs_id || null,
-          ahsp_id: rab.ahspId || rab.ahsp_id || null,
-          // Carry the name locally so UI doesn't depend on DB joins
-          name: rab.name || rab.item_name || 'Unnamed Item',
-          qty_budget: rab.volume,
-          unit_price_budget: rab.unit_price,
-          total_budget: (rab.volume || 0) * (rab.unit_price || 0),
-          cost_material: rab.cost_material || 0,
-          cost_labor: rab.cost_labor || 0,
-          cost_equipment: rab.cost_equipment || 0,
-          cost_subcon: rab.cost_subcon || 0,
-          committed_cost: 0,
-          actual_cost: 0,
-          remaining_budget: (rab.volume || 0) * (rab.unit_price || 0),
-          risk_buffer_amount: 0,
-          status: 'not_started',
-          createdAt: now,
-          updatedAt: now,
-        }))
-
-        // Update local state
-        set({ items: rapItems })
-
-        // Batch Sync
-        syncRAPItems(rapItems, projectId)
-
-        toast.success(`RAP initialized with ${rapItems.length} items`)
+        const data = await rapService.initFromRab(projectId, rabItems)
+        // Update local state with fresh data from DB
+        set({ items: data as RapItem[] })
+        toast.success(`RAP initialized with ${data.length} items from RAB`)
       } catch (err: any) {
         toast.error('Failed to initialize RAP: ' + err.message)
       } finally {

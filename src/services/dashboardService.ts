@@ -399,7 +399,7 @@ export const dashboardService = {
         // Global Risks Fetch
         const { data: topRisks } = await supabase
             .from('risks')
-            .select('id, description, risk_score, projects(name)')
+            .select('id, description, risk_score, projectName:project_id(name)')
             .eq('status', 'OPEN')
             .order('risk_score', { ascending: false })
             .limit(5)

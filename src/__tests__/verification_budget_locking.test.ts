@@ -1,30 +1,42 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { supplyChainService } from '../services/supplyChainService'
 
-const mockFromFn = vi.fn()
+const makeChain = (result: any) => {
+    const c: any = {}
+    c.select = vi.fn().mockReturnValue(c)
+    c.in = vi.fn().mockReturnValue(c)
+    c.eq = vi.fn().mockReturnValue(c)
+    c.single = vi.fn().mockResolvedValue(result)
+    c.maybeSingle = vi.fn().mockResolvedValue(result)
+    c.insert = vi.fn().mockReturnValue(c)
+    c.update = vi.fn().mockReturnValue(c)
+    c.upsert = vi.fn().mockReturnValue(c)
+    c.then = (res: any) => Promise.resolve(result).then(res)
+    return c
+}
 
 // Mock Supabase Client
-vi.mock('../lib/supabaseClient', () => ({
-    supabase: null,
-    assertSupabase: () => ({
-        from: (...args: any[]) => mockFromFn(...args),
-    }),
-    upsertPurchaseOrder: vi.fn(),
-    upsertPoItem: vi.fn(),
-    fetchPurchaseOrders: vi.fn(),
-    fetchPoItems: vi.fn(),
-    fetchInventoryTransactions: vi.fn(),
-    upsertInventoryTransaction: vi.fn(),
-    fetchMaterialRequests: vi.fn(),
-    upsertMaterialRequest: vi.fn(),
-    fetchRabItems: vi.fn(),
-    fetchProjects: vi.fn(),
-    // Exports
-    generateId: () => 'mock-id'
-}))
+vi.mock('../lib/supabaseClient', () => {
+    const mockFrom = vi.fn()
+    return {
+        supabase: { from: mockFrom },
+        assertSupabase: () => ({ from: mockFrom }),
+        upsertPurchaseOrder: vi.fn(),
+        upsertPoItem: vi.fn(),
+        fetchPurchaseOrders: vi.fn(),
+        fetchPoItems: vi.fn(),
+        fetchInventoryTransactions: vi.fn(),
+        upsertInventoryTransaction: vi.fn(),
+        fetchMaterialRequests: vi.fn(),
+        upsertMaterialRequest: vi.fn(),
+        fetchRabItems: vi.fn(),
+        fetchProjects: vi.fn(),
+        generateId: (prefix?: string) => `${prefix || 'mock'}-id`
+    }
+})
 
-import { upsertPurchaseOrder, upsertPoItem } from '../lib/supabaseClient'
+import { assertSupabase, upsertPurchaseOrder, upsertPoItem } from '../lib/supabaseClient'
+const mockFromFn = (assertSupabase() as any).from
 
 // Mock Data
 const MOCK_RAP_ITEMS = [
@@ -46,11 +58,7 @@ describe('Verification: RAP Budget Locking', () => {
 
     it('should BLOCK PO creation if budget is exceeded', async () => {
         // Setup Mock: Return RAP Item with Budget = 10,000
-        mockFromFn.mockReturnValue({
-            select: vi.fn().mockReturnValue({
-                in: vi.fn().mockResolvedValue({ data: MOCK_RAP_ITEMS, error: null })
-            })
-        })
+        mockFromFn.mockReturnValue(makeChain({ data: MOCK_RAP_ITEMS, error: null }))
 
         // Attempt to buy 20 items at 1000 (Total 20,000 > Budget 10,000)
         const itemsToBuy = [
@@ -66,27 +74,16 @@ describe('Verification: RAP Budget Locking', () => {
         await expect(supplyChainService.createPurchaseOrder(
             { project_id: 'p1', po_number: 'PO-001', vendor_name: 'Vendor A', total_amount: 20000, status: 'DRAFT' },
             itemsToBuy
-        )).rejects.toThrow(/Budget Exceeded/)
+        )).rejects.toThrow(/Budget exceeded/i)
     })
 
     it('should ALLOW PO creation if within budget', async () => {
         // Setup Mock: Return RAP Item with Budget = 10,000
         mockFromFn.mockImplementation((table: string) => {
             if (table === 'rap_items') {
-                return {
-                    select: vi.fn().mockReturnValue({
-                        in: vi.fn().mockResolvedValue({ data: MOCK_RAP_ITEMS, error: null })
-                    }),
-                    update: vi.fn().mockReturnValue({
-                        eq: vi.fn().mockResolvedValue({ error: null })
-                    })
-                }
+                return makeChain({ data: MOCK_RAP_ITEMS, error: null })
             }
-            return {
-                select: vi.fn().mockReturnValue({
-                    in: vi.fn().mockResolvedValue({ data: [], error: null })
-                })
-            }
+            return makeChain({ data: [], error: null })
         })
 
         // Attempt to buy 5 items at 1000 (Total 5,000 < Budget 10,000)

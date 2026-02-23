@@ -1,7 +1,7 @@
 ﻿import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+  Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow
 } from '../ui/table'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
@@ -75,9 +75,9 @@ interface RABTableProps {
 const COLUMN_DEFS = [
   { key: 'select', label: 'Select', defaultVisible: true, alwaysVisible: false },
   { key: 'no', label: 'No', defaultVisible: true, alwaysVisible: false },
-  { key: 'cls', label: 'Pareto Class', defaultVisible: true, alwaysVisible: false },
+  { key: 'cls', label: 'Pareto', defaultVisible: true, alwaysVisible: false },
   { key: 'code', label: 'Code', defaultVisible: true, alwaysVisible: false },
-  { key: 'description', label: 'Description', defaultVisible: true, alwaysVisible: true },
+  { key: 'description', label: 'Description & Specification', defaultVisible: true, alwaysVisible: true },
   { key: 'task', label: 'Linked Task', defaultVisible: false, alwaysVisible: false },
   { key: 'unit', label: 'Unit', defaultVisible: true, alwaysVisible: false },
   { key: 'volume', label: 'Volume', defaultVisible: true, alwaysVisible: false },
@@ -87,8 +87,8 @@ const COLUMN_DEFS = [
   { key: 'cost_equipment', label: 'Equipment', defaultVisible: false, alwaysVisible: false },
   { key: 'cost_subcon', label: 'Subcon', defaultVisible: false, alwaysVisible: false },
   { key: 'unit_price', label: 'Unit Price', defaultVisible: true, alwaysVisible: true },
-  { key: 'total', label: 'Total', defaultVisible: true, alwaysVisible: true },
-  { key: 'actions', label: 'Actions', defaultVisible: true, alwaysVisible: true },
+  { key: 'total', label: 'Total Amount', defaultVisible: true, alwaysVisible: true },
+  { key: 'actions', label: 'Aksi', defaultVisible: true, alwaysVisible: true },
 ] as const
 
 type ColumnKey = typeof COLUMN_DEFS[number]['key']
@@ -364,8 +364,9 @@ export function RABTable({ projectId }: RABTableProps) {
     getScrollElement: () => mainParentRef.current,
     estimateSize: (index) => {
       const row = virtualRows[index]
-      return row.type === 'item' ? 42 : 300
+      return row.type === 'item' ? 60 : 300
     },
+    measureElement: (el) => el.getBoundingClientRect().height,
     overscan: 10,
   })
 
@@ -551,6 +552,10 @@ export function RABTable({ projectId }: RABTableProps) {
   }
 
   const total = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
+  const totalMaterial = items.reduce((sum, i) => sum + ((i.volume || 0) * (i.cost_material || 0)), 0)
+  const totalLabor = items.reduce((sum, i) => sum + ((i.volume || 0) * (i.cost_labor || 0)), 0)
+  const totalEquip = items.reduce((sum, i) => sum + ((i.volume || 0) * (i.cost_equipment || 0)), 0)
+  const totalSubcon = items.reduce((sum, i) => sum + ((i.volume || 0) * (i.cost_subcon || 0)), 0)
 
   const paretoItems = useMemo(() => calculatePareto(items), [items])
   const paretoMap = useMemo(() => new Map(paretoItems.map(i => [i.id, i.paretoClass])), [paretoItems])
@@ -1097,15 +1102,15 @@ export function RABTable({ projectId }: RABTableProps) {
             ref={mainParentRef}
             className="max-h-[600px] overflow-auto relative"
           >
-            <Table>
+            <Table className="w-full table-fixed border-collapse">
               <TableHeader className="sticky-glass-tablehead">
-                <TableRow className="border-b-2 border-slate-200 dark:border-slate-700 hover:bg-transparent">
-                  {isColVisible('select') && <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">
+                <TableRow className="border-b-2 border-slate-200 dark:border-slate-700 hover:bg-transparent shadow-sm">
+                  {isColVisible('select') && <TableHead className="w-[48px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">
                     <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
                   </TableHead>}
-                  {isColVisible('no') && <TableHead className="w-[50px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">No</TableHead>}
-                  {isColVisible('cls') && <TableHead className="w-[40px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">
-                    <div className="inline-flex items-center gap-1">
+                  {isColVisible('no') && <TableHead className="w-[56px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4 text-center">No.</TableHead>}
+                  {isColVisible('cls') && <TableHead className="w-[48px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4 text-center">
+                    <div className="inline-flex items-center gap-1 justify-center w-full">
                       <span>Cls</span>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -1115,19 +1120,19 @@ export function RABTable({ projectId }: RABTableProps) {
                       </Tooltip>
                     </div>
                   </TableHead>}
-                  {isColVisible('code') && <TableHead className="w-[100px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Code</TableHead>}
-                  <TableHead className="min-w-[250px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Description & Spec</TableHead>
-                  {isColVisible('task') && <TableHead className="w-[150px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Linked Task</TableHead>}
-                  {isColVisible('unit') && <TableHead className="w-[60px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Unit</TableHead>}
-                  {isColVisible('volume') && <TableHead className="w-[100px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Volume</TableHead>}
-                  {isColVisible('tkdn') && <TableHead className="w-[80px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">TKDN %</TableHead>}
-                  {isColVisible('cost_material') && <TableHead className="w-[110px] text-right bg-blue-50/50 dark:bg-blue-900/20 font-bold text-blue-700 dark:text-blue-300 text-[10px] uppercase py-2.5 border-l-2 border-blue-200 dark:border-blue-800">Material</TableHead>}
-                  {isColVisible('cost_labor') && <TableHead className="w-[110px] text-right bg-green-50/50 dark:bg-green-900/20 font-bold text-green-700 dark:text-green-300 text-[10px] uppercase py-2.5">Labor</TableHead>}
-                  {isColVisible('cost_equipment') && <TableHead className="w-[110px] text-right bg-orange-50/50 dark:bg-orange-900/20 font-bold text-orange-700 dark:text-orange-300 text-[10px] uppercase py-2.5">Equip</TableHead>}
-                  {isColVisible('cost_subcon') && <TableHead className="w-[110px] text-right bg-purple-50/50 dark:bg-purple-900/20 font-bold text-purple-700 dark:text-purple-300 text-[10px] uppercase py-2.5">Subcon</TableHead>}
-                  <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Unit Price</TableHead>
-                  <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-2.5">Total</TableHead>
-                  <TableHead className="w-[40px] bg-transparent py-2.5"></TableHead>
+                  {isColVisible('code') && <TableHead className="w-[100px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">Code</TableHead>}
+                  {isColVisible('description') && <TableHead className="w-[320px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">Pekerjaan / Item Description</TableHead>}
+                  {isColVisible('task') && <TableHead className="w-[150px] font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">Linked Task</TableHead>}
+                  {isColVisible('unit') && <TableHead className="w-[64px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">Unit</TableHead>}
+                  {isColVisible('volume') && <TableHead className="w-[100px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">Volume</TableHead>}
+                  {isColVisible('tkdn') && <TableHead className="w-[80px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">TKDN %</TableHead>}
+                  {isColVisible('cost_material') && <TableHead className="w-[110px] text-right bg-blue-50/50 dark:bg-blue-900/20 font-bold text-blue-700 dark:text-blue-300 text-[10px] uppercase py-4 border-l-2 border-blue-200 dark:border-blue-800">Material</TableHead>}
+                  {isColVisible('cost_labor') && <TableHead className="w-[110px] text-right bg-green-50/50 dark:bg-green-900/20 font-bold text-green-700 dark:text-green-300 text-[10px] uppercase py-4">Labor</TableHead>}
+                  {isColVisible('cost_equipment') && <TableHead className="w-[110px] text-right bg-orange-50/50 dark:bg-orange-900/20 font-bold text-orange-700 dark:text-orange-300 text-[10px] uppercase py-4">Equip</TableHead>}
+                  {isColVisible('cost_subcon') && <TableHead className="w-[110px] text-right bg-purple-50/50 dark:bg-purple-900/20 font-bold text-purple-700 dark:text-purple-300 text-[10px] uppercase py-4">Subcon</TableHead>}
+                  {isColVisible('unit_price') && <TableHead className="w-[140px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">Unit Price</TableHead>}
+                  {isColVisible('total') && <TableHead className="w-[144px] text-right font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">Total Amount</TableHead>}
+                  {isColVisible('actions') && <TableHead className="w-[64px] text-center font-bold text-slate-700 dark:text-slate-300 text-[10px] uppercase bg-transparent py-4">Aksi</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody style={{ height: `${mainVirtualizer.getTotalSize()}px`, position: 'relative' }}>
@@ -1151,13 +1156,14 @@ export function RABTable({ projectId }: RABTableProps) {
                       return (
                         <TableRow
                           key={`${item.id}-expansion`}
+                          ref={mainVirtualizer.measureElement}
+                          data-index={vRow.index}
                           className="bg-slate-50/80 dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-700"
                           style={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             width: '100%',
-                            height: `${vRow.size}px`,
                             transform: `translateY(${vRow.start}px)`,
                           }}
                         >
@@ -1245,130 +1251,157 @@ export function RABTable({ projectId }: RABTableProps) {
                     return (
                       <TableRow
                         key={item.id}
+                        ref={mainVirtualizer.measureElement}
+                        data-index={vRow.index}
                         className={`${rowClass} group transition-colors border-b border-slate-100 dark:border-slate-800`}
                         style={{
                           position: 'absolute',
                           top: 0,
                           left: 0,
                           width: '100%',
-                          height: `${vRow.size}px`,
                           transform: `translateY(${vRow.start}px)`,
                         }}
                       >
-                        {isColVisible('select') && <TableCell className="text-center py-2">
-                          <Checkbox checked={selectedItems.has(item.id)} onCheckedChange={(checked) => handleSelectOne(item.id, checked as boolean)} />
+                        {isColVisible('select') && <TableCell className="w-[48px] text-center py-2.5" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox checked={selectedItems.has(item.id)} onCheckedChange={(checked) => handleSelectOne(item.id, checked as boolean)} className="border-slate-300" />
                         </TableCell>}
-                        {isColVisible('no') && <TableCell className="text-center py-2">
-                          <button type="button" onClick={() => toggleExpand(item.id, item.item_code || (item as any).code)} className="inline-flex items-center gap-0.5 text-[10px] font-mono text-slate-400 hover:text-blue-600 transition-colors">
+                        {isColVisible('no') && <TableCell className="w-[56px] text-center py-2.5">
+                          <button type="button" onClick={() => toggleExpand(item.id, item.item_code || (item as any).code)} className="inline-flex items-center gap-0.5 text-center font-mono text-[10px] text-slate-400 hover:text-blue-600 transition-colors w-full justify-center">
                             {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                             {idx + 1}
                           </button>
                         </TableCell>}
-                        {isColVisible('cls') && <TableCell className="text-center py-2">
-                          <Badge variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} className={`h-4 w-4 p-0 flex items-center justify-center text-[9px] font-mono ${pClass === 'B' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 border-0' : ''}`}>{pClass}</Badge>
+                        {isColVisible('cls') && <TableCell className="w-[48px] text-center py-2.5">
+                          <div className="flex justify-center">
+                            <Badge variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} className={`h-4 w-4 p-0 flex items-center justify-center text-[9px] font-mono border-none shadow-none ${pClass === 'B' ? 'bg-yellow-100 text-yellow-800' : ''}`}>{pClass}</Badge>
+                          </div>
                         </TableCell>}
-                        {isColVisible('code') && <TableCell className="font-mono text-[10px] text-slate-500 py-2">{item.item_code || '-'}</TableCell>}
-                        <TableCell className="py-2">
+                        {isColVisible('code') && <TableCell className="w-[100px] font-mono text-[10px] text-slate-500 py-2.5">{item.item_code || '-'}</TableCell>}
+                        {isColVisible('description') && <TableCell className="w-[320px] py-2.5">
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
-                              <Input value={item.name || ''} onChange={e => updateItem(projectId, item.id, { name: e.target.value })} className="h-7 text-xs border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 font-medium px-2 shadow-none transition-all" placeholder="Item Name" />
-                              {(item as any).isDraft && <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0">DRAFT</Badge>}
+                              <Input value={item.name || ''} onChange={e => updateItem(projectId, item.id, { name: e.target.value })} className="h-7 text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 font-bold px-2 shadow-none transition-all truncate" placeholder="Item Name" />
+                              {(item as any).isDraft && <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0 font-bold uppercase tracking-tight">Draft</Badge>}
                             </div>
-                            <Input value={item.notes || ''} onChange={e => updateItem(projectId, item.id, { notes: e.target.value })} className="h-5 text-[10px] text-slate-500 border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 px-2 shadow-none transition-all" placeholder="Brand / Spec..." />
+                            <Input value={item.notes || ''} onChange={e => updateItem(projectId, item.id, { notes: e.target.value })} className="h-5 text-[10px] text-slate-500 border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 px-2 shadow-none transition-all font-medium italic" placeholder="Brand / Spec..." />
                           </div>
-                        </TableCell>
-                        {isColVisible('task') && <TableCell className="py-2">
+                        </TableCell>}
+                        {isColVisible('task') && <TableCell className="w-[150px] py-2.5">
                           <Select value={item.taskId || 'unassigned'} onValueChange={(val) => updateItem(projectId, item.id, { taskId: val === 'unassigned' ? undefined : val })}>
-                            <SelectTrigger className="h-7 text-xs border-transparent bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-900 focus:ring-0 focus:border-blue-500 hover:border-slate-200 shadow-none"><SelectValue placeholder="-" /></SelectTrigger>
+                            <SelectTrigger className="h-7 text-[11px] border-slate-200 bg-slate-50/50 hover:bg-white focus:ring-0 focus:border-blue-500 shadow-none"><SelectValue placeholder="-" /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="unassigned">Unassigned</SelectItem>
-                              {tasks.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                              {tasks.map(t => <SelectItem key={t.id} value={t.id} className="text-[11px]">{t.name}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         </TableCell>}
-                        {isColVisible('unit') && <TableCell className="py-2">
-                          <Input value={item.unit || ''} onChange={e => updateItem(projectId, item.id, { unit: e.target.value })} className="h-7 text-xs text-center border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none" />
+                        {isColVisible('unit') && <TableCell className="w-[64px] py-2.5 text-center px-0">
+                          <Badge variant="outline" className="text-[10px] h-6 bg-slate-50 font-black uppercase text-slate-600 border-slate-200 min-w-[32px] justify-center mx-auto">
+                            {item.unit || '-'}
+                          </Badge>
                         </TableCell>}
-                        {isColVisible('volume') && <TableCell className="py-2">
-                          <Input type="number" value={item.volume || ''} onChange={e => handleVolumeChange(item.id, e.target.value)} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none" />
+                        {isColVisible('volume') && <TableCell className="w-[100px] py-2.5">
+                          <Input type="number" value={item.volume || ''} onChange={e => handleVolumeChange(item.id, e.target.value)} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none font-bold" />
                         </TableCell>}
-                        {isColVisible('tkdn') && <TableCell className="py-2">
-                          <Input type="number" placeholder="0" value={item.tkdn_percent || ''} onChange={e => updateItem(projectId, item.id, { tkdn_percent: parseFloat(e.target.value) || 0 })} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none text-slate-500" />
+                        {isColVisible('tkdn') && <TableCell className="w-[80px] py-2.5">
+                          <Input type="number" placeholder="0" value={item.tkdn_percent || ''} onChange={e => updateItem(projectId, item.id, { tkdn_percent: parseFloat(e.target.value) || 0 })} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none text-slate-500" />
                         </TableCell>}
-                        {isColVisible('cost_material') && <TableCell className="bg-blue-50/30 dark:bg-blue-900/5 py-2 border-l-2 border-blue-200 dark:border-blue-800">
-                          <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-blue-200 focus:border-blue-500 shadow-none text-blue-700 dark:text-blue-300 disabled:opacity-50" value={item.cost_material || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_material', e.target.value)} />
+                        {isColVisible('cost_material') && <TableCell className="w-[110px] bg-blue-50/10 py-2.5 border-l-2 border-blue-100">
+                          <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white focus:bg-white hover:border-blue-200 focus:border-blue-500 shadow-none text-blue-700 disabled:opacity-50" value={item.cost_material || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_material', e.target.value)} />
                         </TableCell>}
-                        {isColVisible('cost_labor') && <TableCell className="bg-green-50/30 dark:bg-green-900/5 py-2">
-                          <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-green-200 focus:border-green-500 shadow-none text-green-700 dark:text-green-300 disabled:opacity-50" value={item.cost_labor || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_labor', e.target.value)} />
+                        {isColVisible('cost_labor') && <TableCell className="w-[110px] bg-green-50/10 py-2.5">
+                          <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white focus:bg-white hover:border-green-200 focus:border-green-500 shadow-none text-green-700 disabled:opacity-50" value={item.cost_labor || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_labor', e.target.value)} />
                         </TableCell>}
-                        {isColVisible('cost_equipment') && <TableCell className="bg-orange-50/30 dark:bg-orange-900/5 py-2">
-                          <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-orange-200 focus:border-orange-500 shadow-none text-orange-700 dark:text-orange-300 disabled:opacity-50" value={item.cost_equipment || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_equipment', e.target.value)} />
+                        {isColVisible('cost_equipment') && <TableCell className="w-[110px] bg-orange-50/10 py-2.5">
+                          <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white focus:bg-white hover:border-orange-200 focus:border-orange-500 shadow-none text-orange-700 disabled:opacity-50" value={item.cost_equipment || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_equipment', e.target.value)} />
                         </TableCell>}
-                        {isColVisible('cost_subcon') && <TableCell className="bg-purple-50/30 dark:bg-purple-900/5 py-2">
-                          <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-purple-200 focus:border-purple-500 shadow-none text-purple-700 dark:text-purple-300 disabled:opacity-50" value={item.cost_subcon || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_subcon', e.target.value)} />
+                        {isColVisible('cost_subcon') && <TableCell className="w-[110px] bg-purple-50/10 py-2.5">
+                          <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-[11px] bg-transparent border-transparent hover:bg-white focus:bg-white hover:border-purple-200 focus:border-blue-500 shadow-none text-purple-700 disabled:opacity-50" value={item.cost_subcon || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_subcon', e.target.value)} />
                         </TableCell>}
-                        <TableCell className="py-2">
+                        {isColVisible('unit_price') && <TableCell className="w-[140px] py-2.5">
                           <div className="flex items-center justify-end gap-1">
                             {item.snapshot_price && <Lock size={10} className="text-amber-500 shrink-0" />}
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <button className="h-6 w-6 flex items-center justify-center rounded text-slate-400 hover:bg-slate-100 hover:text-blue-500 transition-colors">
-                                  <Info size={12} />
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-64 p-3 shadow-xl border-slate-200" align="end">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Price Hierarchy</p>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between items-center bg-slate-50 p-1.5 rounded text-[11px]">
-                                    <span className="text-slate-500">Global AHSP</span>
-                                    <span className="font-mono font-bold text-slate-700">{formatIDR(item.unit_price || 0)}</span>
-                                  </div>
-                                  {item.snapshot_price && (
-                                    <div className="flex justify-between items-center bg-amber-50 p-1.5 rounded text-[11px] border border-amber-100">
-                                      <div className="flex items-center gap-1.5 text-amber-700">
-                                        <Lock size={10} />
-                                        <span>Baseline (Snapshot)</span>
-                                      </div>
-                                      <span className="font-mono font-bold text-amber-900">
-                                        {formatIDR(typeof item.snapshot_price === 'object' ? item.snapshot_price.total : item.snapshot_price)}
-                                      </span>
-                                    </div>
-                                  )}
-                                  <div className="pt-2 border-t mt-2">
-                                    <p className="text-[10px] italic text-slate-400 leading-tight">Prices are automatically frozen when you "Lock Baseline".</p>
-                                  </div>
-                                </div>
-                              </PopoverContent>
-                            </Popover>
-                            <Input type="number" disabled={projectLocked || !!item.snapshot_price} value={item.unit_price || ''} onChange={e => handlePriceChange(item.id, e.target.value)} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 hover:border-slate-200 focus:border-blue-500 shadow-none font-semibold disabled:opacity-50" />
+                            <Input type="number" disabled={projectLocked || !!item.snapshot_price} value={item.unit_price || ''} onChange={e => handlePriceChange(item.id, e.target.value)} className="h-7 text-right font-mono text-[11px] border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none font-bold text-slate-900 disabled:opacity-50" />
                           </div>
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-[11px] font-bold text-slate-700 dark:text-slate-300 py-2">{formatIDR(lineTotal)}</TableCell>
-                        <TableCell className="py-2">
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity" onClick={() => removeItem(projectId, item.id)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </TableCell>
+                        </TableCell>}
+                        {isColVisible('total') && <TableCell className="w-[144px] text-right font-mono text-xs font-black text-slate-900 py-2.5">{formatIDR(lineTotal)}</TableCell>}
+                        {isColVisible('actions') && <TableCell className="w-[64px] py-2.5 text-center">
+                          <div className="flex justify-center">
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-100 group-hover:opacity-100 transition-opacity" onClick={() => removeItem(projectId, item.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>}
                       </TableRow>
                     )
                   })
                 )}
               </TableBody>
+              {items.length > 0 && (
+                <TableFooter className="sticky bottom-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md z-30 border-t-2 border-slate-200 dark:border-slate-800">
+                  <TableRow className="hover:bg-transparent border-t-2 border-slate-200 dark:border-slate-700">
+                    {isColVisible('select') && <TableCell className="w-[48px] py-3" />}
+                    {isColVisible('no') && <TableCell className="w-[56px] py-3" />}
+                    {isColVisible('cls') && <TableCell className="w-[48px] py-3" />}
+                    {isColVisible('code') && <TableCell className="w-[100px] py-3" />}
+                    {isColVisible('description') && <TableCell className="w-[320px] py-3 text-right font-black text-[10px] text-slate-500 uppercase tracking-wider">Sub-Totals</TableCell>}
+                    {isColVisible('task') && <TableCell className="w-[150px] py-3" />}
+                    {isColVisible('unit') && <TableCell className="w-[64px] py-3" />}
+                    {isColVisible('volume') && <TableCell className="w-[100px] py-3" />}
+                    {isColVisible('tkdn') && <TableCell className="w-[80px] py-3" />}
+
+                    {isColVisible('cost_material') && (
+                      <TableCell className="w-[110px] py-3 text-right font-mono text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50/30 border-l-2 border-blue-100 dark:border-blue-900/50">
+                        {formatIDR(totalMaterial)}
+                      </TableCell>
+                    )}
+                    {isColVisible('cost_labor') && (
+                      <TableCell className="w-[110px] py-3 text-right font-mono text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50/30">
+                        {formatIDR(totalLabor)}
+                      </TableCell>
+                    )}
+                    {isColVisible('cost_equipment') && (
+                      <TableCell className="w-[110px] py-3 text-right font-mono text-xs font-bold text-orange-700 dark:text-orange-300 bg-orange-50/30">
+                        {formatIDR(totalEquip)}
+                      </TableCell>
+                    )}
+                    {isColVisible('cost_subcon') && (
+                      <TableCell className="w-[110px] py-3 text-right font-mono text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-50/30">
+                        {formatIDR(totalSubcon)}
+                      </TableCell>
+                    )}
+
+                    {isColVisible('unit_price') && <TableCell className="w-[140px] py-3" />}
+                    {isColVisible('total') && (
+                      <TableCell className="w-[144px] py-3 text-right font-mono text-sm font-black text-slate-900 dark:text-white bg-slate-100/50 dark:bg-slate-800/50">
+                        {formatIDR(total)}
+                      </TableCell>
+                    )}
+                    {isColVisible('actions') && <TableCell className="w-[64px] py-3" />}
+                  </TableRow>
+                </TableFooter>
+              )}
             </Table>
           </div>
         </div>
       </TooltipProvider>
 
-      <div className="sticky-glass-footer flex flex-col justify-end gap-3 rounded-lg p-3 md:flex-row md:items-center md:gap-8 md:p-4 mt-6">
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1"><Badge variant="destructive" className="h-2 w-2 p-0 rounded-full" /> A: Top 80%</div>
-          <div className="flex items-center gap-1"><Badge className="h-2 w-2 p-0 rounded-full bg-yellow-500 hover:bg-yellow-600" /> B: Next 15%</div>
-          <div className="flex items-center gap-1"><Badge variant="outline" className="h-2 w-2 p-0 rounded-full border-slate-400" /> C: Low Value</div>
-        </div>
-        <div className="h-8 w-px bg-slate-200 dark:bg-slate-700" />
-        <div className="text-right">
-          <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">Estimated Total</div>
-          <div className="text-xl font-bold font-mono text-slate-900 dark:text-white mt-0.5">{formatIDR(total)}</div>
+      <div className="sticky-glass-footer flex flex-col gap-4 rounded-lg p-3 md:p-4 mt-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-[10px] uppercase font-bold tracking-wider">
+            <div className="flex items-center gap-1.5"><Badge variant="destructive" className="h-2.5 w-2.5 p-0 rounded-full" /> <span className="text-slate-500">Class A:</span> <span className="text-slate-900 dark:text-slate-200">80% Cost Baseline</span></div>
+            <div className="flex items-center gap-1.5"><Badge className="h-2.5 w-2.5 p-0 rounded-full bg-yellow-500 hover:bg-yellow-600" /> <span className="text-slate-500">Class B:</span> <span className="text-slate-900 dark:text-slate-200">15% Cost Baseline</span></div>
+            <div className="flex items-center gap-1.5"><Badge variant="outline" className="h-2.5 w-2.5 p-0 rounded-full border-slate-400" /> <span className="text-slate-500">Class C:</span> <span className="text-slate-900 dark:text-slate-200">Non-Critical</span></div>
+          </div>
+
+          <div className="flex flex-col items-end">
+            <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
+              <Calculator size={12} /> Grand Total Estimated
+            </div>
+            <div className="text-2xl font-black font-mono text-slate-900 dark:text-white drop-shadow-sm">
+              {formatIDR(total)}
+            </div>
+          </div>
         </div>
       </div>
 

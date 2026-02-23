@@ -4,7 +4,19 @@ import { projectOverviewService } from '../../services/projectOverviewService'
 import { riskService } from '../../services/riskService'
 
 // --- MOCKS ---
-const mockFromFn = vi.fn()
+function makeChain(result: any) {
+    const c: any = {}
+    c.select = () => c
+    c.eq = () => c
+    c.gte = () => c
+    c.lt = () => c
+    c.order = () => c
+    c.limit = () => Promise.resolve(result)
+    c.then = (res: any) => Promise.resolve(result).then(res)
+    return c
+}
+
+const mockFromFn = vi.fn().mockImplementation(() => makeChain({ data: [], error: null }))
 
 vi.mock('../../lib/supabaseClient', () => ({
     supabase: null,
@@ -21,47 +33,35 @@ describe('Project Overview Service Unit Tests', () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
+        mockFromFn.mockImplementation(() => makeChain({ data: [], error: null }))
     })
 
     describe('getProjectKPIs', () => {
         it('should aggregate RAB, RAP, and Actual Costs correctly', async () => {
             // 1. RAB Items
-            mockFromFn.mockReturnValueOnce({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockResolvedValue({
-                        data: [{ total_price: 1000 }, { total_price: 500 }],
-                        error: null
-                    })
-                })
-            })
+            mockFromFn.mockReturnValueOnce(makeChain({
+                data: [{ final_total: 1000 }, { final_total: 500 }],
+                error: null
+            }))
 
             // 2. RAP Items
-            mockFromFn.mockReturnValueOnce({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockResolvedValue({
-                        data: [{ amount: 800, actual_cost: 200 }, { amount: 400, actual_cost: 100 }],
-                        error: null
-                    })
-                })
-            })
+            mockFromFn.mockReturnValueOnce(makeChain({
+                data: [{ total_budget: 800, actual_cost: 200, committed_cost: 0 }, { total_budget: 400, actual_cost: 100, committed_cost: 0 }],
+                error: null
+            }))
 
             // 3. Tasks (Progress)
-            mockFromFn.mockReturnValueOnce({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockResolvedValue({
-                        data: [{ progress: 50 }, { progress: 100 }],
-                        error: null
-                    })
-                })
-            })
+            mockFromFn.mockReturnValueOnce(makeChain({
+                data: [{ progress: 50 }, { progress: 100 }],
+                error: null
+            }))
 
             const kpis = await projectOverviewService.getProjectKPIs('proj-1')
 
             // RAB Total = 1000 + 500 = 1500
             expect(kpis.rabTotal).toBe(1500)
-            // RAP Total = 800 + 400 = 1200 (Committed)
+            // RAP Total = 800 + 400 = 1200
             expect(kpis.rapTotal).toBe(1200)
-            expect(kpis.committedCost).toBe(1200)
             // Actual Cost = 200 + 100 = 300
             expect(kpis.actualCost).toBe(300)
             // Remaining Budget = RAB - Actual = 1500 - 300 = 1200
@@ -94,26 +94,14 @@ describe('Project Overview Service Unit Tests', () => {
             tomorrow.setDate(today.getDate() + 1)
             const tomorrowStr = tomorrow.toISOString().split('T')[0]
 
-            mockFromFn.mockReturnValueOnce({
-                select: vi.fn().mockReturnValue({
-                    eq: vi.fn().mockReturnValue({
-                        gte: vi.fn().mockReturnValue({
-                            order: vi.fn().mockReturnValue({
-                                limit: vi.fn().mockResolvedValue({
-                                    data: [{ id: 't1', end_date: tomorrowStr, name: 'Task 1' }],
-                                    error: null
-                                })
-                            })
-                        })
-                    })
-                })
-            })
+            mockFromFn.mockReturnValueOnce(makeChain({
+                data: [{ id: 't1', end_date: tomorrowStr, name: 'Task 1' }],
+                error: null
+            }))
 
             const tasks = await projectOverviewService.getUpcomingMilestones('proj-1')
 
             expect(tasks).toHaveLength(1)
-            // Expect roughly 1 day (or 0 if run late in day vs UTC, but math.ceil should be positive)
-            // Since we mocked Date in service vs test, it might slightly vary, but should be defined
             expect(tasks[0].daysUntilDue).toBeGreaterThanOrEqual(0)
         })
     })

@@ -16,6 +16,7 @@ import { Badge } from "../../components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useProjectStore } from "../../store/projectStore"
 import { useCurvaSStore } from "../../store/curvaSStore"
+import { useWBSStore } from "../../store/wbsStore"
 import { EmptyState } from "../../components/common/EmptyState"
 import * as XLSX from "xlsx"
 import html2canvas from "html2canvas"
@@ -27,6 +28,7 @@ import { progressBillingService } from "@/services/progressBillingService"
 import { progressEvidenceService } from "@/services/progressEvidenceService"
 import { syncProgressLog } from "@/lib/supabaseSyncService"
 import { reportService } from "@/services/reportService"
+import { ResourceUsageDialog } from "@/components/progress/ResourceUsageDialog"
 
 /**
  * Export progress rows as CSV
@@ -112,9 +114,12 @@ export default function Progress() {
     notes: "",
     photoUrl: "",
     volume: 0,
+    wbsId: "",
     weather: 'sunny',
     delayReason: 'none'
   })
+
+  const [resourceOpen, setResourceOpen] = useState(false)
 
   // Photo Upload State
   const [uploading, setUploading] = useState(false)
@@ -136,13 +141,20 @@ export default function Progress() {
     }
   }
 
+  const { itemsByProject } = useWBSStore()
+  const wbsItems = useMemo(() => itemsByProject[projectId] || [], [itemsByProject, projectId])
+
   const recent = useMemo(
     () =>
       all
         .filter((d) => d.actualProgress > 0 || d.actualCost > 0)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .map(d => ({
+          ...d,
+          wbsName: wbsItems.find(w => w.id === (d as any).wbsId)?.name
+        }))
         .slice(0, 50),
-    [all]
+    [all, wbsItems]
   )
 
   const exportRef = useRef<HTMLDivElement | null>(null)
@@ -169,6 +181,7 @@ export default function Progress() {
       date: form.date,
       actualProgress: Number(form.progress) || 0,
       actualCost: Number(form.cost) || 0,
+      wbsId: form.wbsId,
       notes: form.notes,
       updatedAt: new Date().toISOString(),
     }
@@ -210,6 +223,7 @@ export default function Progress() {
       notes: "",
       photoUrl: "",
       volume: 0,
+      wbsId: "",
       weather: 'sunny',
       delayReason: 'none'
     })
@@ -242,6 +256,12 @@ export default function Progress() {
               <FileText size={16} /> Generate DSR
             </button>
             <button
+              className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800 text-blue-600 border-blue-200"
+              onClick={() => setResourceOpen(true)}
+            >
+              <Plus size={16} /> Log Resource
+            </button>
+            <button
               className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
               onClick={() => exportProgressCSV(recent)}
             >
@@ -263,6 +283,8 @@ export default function Progress() {
         }
       />
 
+      <ResourceUsageDialog open={resourceOpen} onOpenChange={setResourceOpen} projectId={projectId} />
+
       {!project ? (
         <div className="container mx-auto py-6">
           <EmptyState
@@ -279,6 +301,36 @@ export default function Progress() {
                 <CardTitle>Tambah Progres Aktual</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* WBS Link Section */}
+                <div className="bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-lg border border-blue-100 dark:border-blue-900/30 space-y-2">
+                  <Label htmlFor="wbs-select" className="text-blue-700 dark:text-blue-300 font-bold flex items-center gap-1.5">
+                    <BarChart2 size={14} /> Item Pekerjaan (WBS Link)
+                  </Label>
+                  <Select
+                    value={form.wbsId}
+                    onValueChange={(val) => {
+                      const item = wbsItems.find(i => i.id === val)
+                      setForm({ ...form, wbsId: val, notes: item ? `Progress for ${item.name}` : form.notes })
+                    }}
+                  >
+                    <SelectTrigger id="wbs-select" className="bg-white dark:bg-slate-900 border-blue-200 focus:ring-blue-500">
+                      <SelectValue placeholder="Pilih Item Pekerjaan..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {wbsItems.filter(i => i.level > 1).map((item) => (
+                        <SelectItem key={item.id} value={item.id}>
+                          <span className="font-mono text-[10px] mr-2 opacity-50">{item.code}</span>
+                          {item.name}
+                        </SelectItem>
+                      ))}
+                      {wbsItems.length === 0 && (
+                        <SelectItem value="none" disabled>No tasks found in WBS</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-blue-600/70 italic">*Wajib dipilih agar Actual Cost ter-link otomatis ke Budget Control.</p>
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor="date">Date</Label>
@@ -398,13 +450,16 @@ export default function Progress() {
                     <div className="text-right">Actual Cost</div>
                     <div>Notes</div>
                   </div>
-                  {recent.map((r) => (
+                  {recent.map((r: any) => (
                     <div key={r.id} className="grid grid-cols-5 border-b p-2 text-sm last:border-b-0 dark:border-neutral-800">
-                      <div>{new Date(r.date).toLocaleDateString("id-ID")}</div>
+                      <div>
+                        {new Date(r.date).toLocaleDateString("id-ID")}
+                        {r.wbsName && <div className="text-[10px] text-blue-600 font-medium truncate">{r.wbsName}</div>}
+                      </div>
                       <div className="text-right">{(r.plannedProgress ?? 0).toFixed(1)}%</div>
                       <div className="text-right">{(r.actualProgress ?? 0).toFixed(1)}%</div>
                       <div className="text-right">Rp {(r.actualCost ?? 0).toLocaleString("id-ID")}</div>
-                      <div className="truncate">{r.notes || "-"}</div>
+                      <div className="truncate text-slate-400">{r.notes || "-"}</div>
                     </div>
                   ))}
                   {recent.length === 0 && (

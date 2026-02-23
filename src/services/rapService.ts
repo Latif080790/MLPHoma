@@ -1,3 +1,4 @@
+import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
 
 export interface RapItem {
@@ -71,39 +72,85 @@ export const rapService = {
     },
 
     /**
-     * Initialize RAP items from RAB (Import from Estimate)
-     * This is a "bulk insert" operation
+     * Delete all RAP items for a project (for re-sync)
      */
-    async initFromRab(projectId: string, rabItems: any[]) {
-        // 1. Map RAB items to RAP items structure
-        const rapItems = rabItems.map(rab => ({
-            project_id: projectId,
-            rab_item_id: rab.id,
-            wbs_id: rab.wbs_id, // Assuming RAB has WBS link
-
-            // Default Budget = RAB Estimate
-            qty_budget: rab.volume,
-            unit_price_budget: rab.unit_price,
-
-            // Link split costs if available (Unit Costs)
-            cost_material: rab.cost_material || 0,
-            cost_labor: rab.cost_labor || 0,
-            cost_equipment: rab.cost_equipment || 0,
-            cost_subcon: rab.cost_subcon || 0,
-
-            // Initialize zero real costs
-            committed_cost: 0,
-            actual_cost: 0
-        }))
-
-        // 2. Insert
+    async deleteAllByProject(projectId: string) {
         const client = assertSupabase()
-        const { data, error } = await client
+        const { error } = await client
             .from('rap_items')
-            .insert(rapItems)
-            .select()
+            .delete()
+            .eq('project_id', projectId)
 
         if (error) throw error
+    },
+
+    /**
+     * Initialize RAP items from RAB (Import from Estimate)
+     * Smart Merge Strategy: Updates existing, inserts new, deletes removed (if no costs)
+     */
+    async initFromRab(projectId: string, rabItems: any[]) {
+        const client = assertSupabase()
+
+        // 1. Fetch existing RAP items
+        const { data: existingRap } = await client
+            .from('rap_items')
+            .select('id, rab_item_id, committed_cost, actual_cost')
+            .eq('project_id', projectId)
+
+        const existingMap = new Map((existingRap || []).map(r => [r.rab_item_id, r]))
+
+        // 2. Prepare items for Upsert
+        const toUpsert = rabItems.map(rab => {
+            const existing = existingMap.get(rab.id)
+            return {
+                id: (rab as any).rap_id || existing?.id || generateId('rap'),
+                project_id: projectId,
+                rab_item_id: rab.id,
+                wbs_id: rab.wbs_id || rab.wbsId || null,
+                ahsp_id: rab.ahsp_id || rab.ahspId || null,
+                name: rab.name || rab.item_name || 'Unnamed Item',
+
+                qty_budget: rab.volume || 0,
+                unit_price_budget: rab.unit_price || rab.unitPrice || 0,
+
+                cost_material: rab.cost_material || 0,
+                cost_labor: rab.cost_labor || 0,
+                cost_equipment: rab.cost_equipment || 0,
+                cost_subcon: rab.cost_subcon || 0,
+
+                // Preserve existing costs
+                committed_cost: existing?.committed_cost || 0,
+                actual_cost: existing?.actual_cost || 0,
+                status: (rab as any).status || 'not_started'
+            }
+        })
+
+        // 3. Identify items to delete (those in existing but NOT in new selection)
+        const incomingRabIds = new Set(rabItems.map(r => r.id))
+        const toDeleteIds = (existingRap || [])
+            .filter(r => r.rab_item_id && !incomingRabIds.has(r.rab_item_id))
+            .filter(r => Number(r.committed_cost || 0) === 0 && Number(r.actual_cost || 0) === 0)
+            .map(r => r.id)
+
+        // 4. Execute Operations
+        // Delete removals first
+        if (toDeleteIds.length > 0) {
+            await client.from('rap_items').delete().in('id', toDeleteIds)
+        }
+
+        // Upsert all items (Update matched, Insert new)
+        const { data, error } = await client
+            .from('rap_items')
+            .upsert(toUpsert)
+            .select()
+
+        if (error) {
+            console.error('[rapService] Upsert error:', error)
+            if (error.code === '23503') {
+                throw new Error('Synchronization failed: Some RAB items are missing in the database. Please ensure you have "Published" your RAB baseline before syncing to RAP.')
+            }
+            throw error
+        }
         return data
     }
 }

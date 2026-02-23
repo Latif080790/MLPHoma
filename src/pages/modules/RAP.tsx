@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Gauge, LayoutList, CalendarClock, Search } from 'lucide-react'
+import { Gauge, LayoutList, CalendarClock, Search, Info } from 'lucide-react'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { useProjectStore } from '../../store/projectStore'
 import { useRapStore } from '../../store/rapStore'
@@ -24,6 +24,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../../components/ui/alert-dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../../components/ui/tooltip'
 
 // Existing Scheduler Components (Keeping them for the "Scheduler" tab)
 import { RapToolbar } from '../../components/rap/RapToolbar'
@@ -42,7 +48,7 @@ export default function RAP(): JSX.Element {
 
   // New Store (RAP Items)
   const { items, fetchItems, initFromRab, isLoading } = useRapStore()
-  const { getItems: getRabItems } = useRabStore()
+  const { getItems: getRabItems, getDraftCount } = useRabStore()
 
   // Local State for Scheduler (Legacy)
   const [plan, setPlan] = useState<RapPlanItem[]>([])
@@ -50,6 +56,7 @@ export default function RAP(): JSX.Element {
   const [targetTotal, setTargetTotal] = useState<number>(5_000_000_000)
   const [searchQuery, setSearchQuery] = useState('')
   const [confirmImportOpen, setConfirmImportOpen] = useState(false)
+  const draftCount = getDraftCount(projectId)
   const [targetProfit, setTargetProfit] = useState(15)
   const [isSimulating, setIsSimulating] = useState(false)
 
@@ -157,9 +164,33 @@ export default function RAP(): JSX.Element {
                     />
                   </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={openImportConfirm} disabled={isLoading || items.length > 0 || !projectId} className="control-compact">
-                  {items.length > 0 ? 'Synced with RAB' : 'Import from RAB'}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={openImportConfirm}
+                          disabled={isLoading || !projectId || draftCount > 0}
+                          className={`control-compact ${draftCount > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {items.length > 0 ? 'Re-sync from RAB' : 'Import from RAB'}
+                        </Button>
+                      </div>
+                    </TooltipTrigger>
+                    {draftCount > 0 && (
+                      <TooltipContent className="bg-amber-50 text-amber-700 border-amber-200 text-[11px] max-w-[240px]">
+                        <p className="font-bold flex items-center gap-1.5 mb-1 text-amber-900">
+                          <Info size={14} />
+                          Unpublished Changes
+                        </p>
+                        There are <strong>{draftCount}</strong> unpublished changes in RAB.
+                        Please <strong>Publish</strong> your RAB baseline before syncing to RAP.
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </CardHeader>
               <CardContent className="pt-0 pb-3">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -330,7 +361,8 @@ export default function RAP(): JSX.Element {
           <AlertDialogHeader>
             <AlertDialogTitle>Import RAP items from RAB?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action imports all available RAB items into RAP budget control for this project.
+              This action synchronizes your RAP budget with the current RAB estimate.
+              <strong>Smart Sync:</strong> Existing items with committed or actual costs (like Purchase Orders) will be preserved. Newly added RAB items will be imported, and removed items will only be deleted if they have no costs.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
