@@ -11,6 +11,8 @@ import { toast } from 'sonner'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ApprovalInbox } from '@/components/dashboard/ApprovalInbox'
 import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
+import { GenerateReportDialog } from '@/components/dashboard/GenerateReportDialog'
+import { FileDown } from 'lucide-react'
 
 import { useNavigate } from 'react-router-dom'
 
@@ -75,6 +77,15 @@ export default function CommandCenter() {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* Report Generator */}
+                        {!isPortfolioMode && activeProject && stats && (
+                            <GenerateReportDialog projectId={activeProjectId} projectName={activeProject.name} stats={stats}>
+                                <Button variant="outline" size="sm" className="h-7 text-[10px] font-mono border-slate-700 text-slate-400 hover:text-white bg-slate-900">
+                                    <FileDown className="mr-2 h-3 w-3" /> EXPORT REPORT
+                                </Button>
+                            </GenerateReportDialog>
+                        )}
+
                         <Button
                             variant="ghost"
                             size="sm"

@@ -13,6 +13,7 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { AppShell } from './components/layout/AppShell'
 import { useAuthStore } from './store/authStore'
 import { useProjectStore } from './store/projectStore'
+import { NetworkProvider } from './providers/NetworkProvider'
 
 // Lazy-loaded page components for optimal code splitting
 const ProjectManagement = React.lazy(() => import('./pages/modules/ProjectManagement'))
@@ -72,42 +73,44 @@ export default function App() {
 
   return (
     <HashRouter>
-      {/* Global toaster untuk notifikasi */}
-      <AppToaster />
-      {/* Error boundary membungkus seluruh routing */}
-      <ErrorBoundary>
-        <Suspense fallback={<PageSkeleton />}>
-          <Routes>
-            {/* Public auth routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+      <NetworkProvider>
+        {/* Global toaster untuk notifikasi */}
+        <AppToaster />
+        {/* Error boundary membungkus seluruh routing */}
+        <ErrorBoundary>
+          <Suspense fallback={<PageSkeleton />}>
+            <Routes>
+              {/* Public auth routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Protected routes — all wrapped with sidebar layout */}
-            <Route path="/" element={<ProtectedLayout><CommandCenter /></ProtectedLayout>} />
-            <Route path="/projects" element={<ProtectedLayout><ProjectManagement /></ProtectedLayout>} />
-            <Route path="/project-overview" element={<ProtectedLayout><ProjectOverview /></ProtectedLayout>} />
+              {/* Protected routes — all wrapped with sidebar layout */}
+              <Route path="/" element={<ProtectedLayout><CommandCenter /></ProtectedLayout>} />
+              <Route path="/projects" element={<ProtectedLayout><ProjectManagement /></ProtectedLayout>} />
+              <Route path="/project-overview" element={<ProtectedLayout><ProjectOverview /></ProtectedLayout>} />
 
-            {/* v3 Ultra Routes */}
-            <Route path="/costing" element={<ProtectedLayout><ProjectCosting /></ProtectedLayout>} />
-            <Route path="/cost-forecast" element={<ProtectedLayout><CostForecastDashboard /></ProtectedLayout>} />
-            <Route path="/schedule" element={<ProtectedLayout><ScheduleOps /></ProtectedLayout>} />
-            <Route path="/supply-chain" element={<ProtectedLayout><SupplyChain /></ProtectedLayout>} />
-            <Route path="/finance" element={<ProtectedLayout><Finance /></ProtectedLayout>} />
-            <Route path="/change-management" element={<ProtectedLayout><ChangeManagement /></ProtectedLayout>} />
-            <Route path="/documents" element={<ProtectedLayout><Documents /></ProtectedLayout>} />
-            <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
-            <Route path="/handover" element={<ProtectedLayout><HandoverWizard /></ProtectedLayout>} />
-            <Route path="/portfolio-resources" element={<ProtectedLayout><PortfolioResources /></ProtectedLayout>} />
-            <Route path="/strategy-simulation" element={<ProtectedLayout><StrategySimulation /></ProtectedLayout>} />
-            <Route path="/tkdn" element={<ProtectedLayout><TKDNPage /></ProtectedLayout>} />
-            <Route path="/features" element={<ProtectedLayout><FeatureEditor /></ProtectedLayout>} />
+              {/* v3 Ultra Routes */}
+              <Route path="/costing" element={<ProtectedLayout><ProjectCosting /></ProtectedLayout>} />
+              <Route path="/cost-forecast" element={<ProtectedLayout><CostForecastDashboard /></ProtectedLayout>} />
+              <Route path="/schedule" element={<ProtectedLayout><ScheduleOps /></ProtectedLayout>} />
+              <Route path="/supply-chain" element={<ProtectedLayout><SupplyChain /></ProtectedLayout>} />
+              <Route path="/finance" element={<ProtectedLayout><Finance /></ProtectedLayout>} />
+              <Route path="/change-management" element={<ProtectedLayout><ChangeManagement /></ProtectedLayout>} />
+              <Route path="/documents" element={<ProtectedLayout><Documents /></ProtectedLayout>} />
+              <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
+              <Route path="/handover" element={<ProtectedLayout><HandoverWizard /></ProtectedLayout>} />
+              <Route path="/portfolio-resources" element={<ProtectedLayout><PortfolioResources /></ProtectedLayout>} />
+              <Route path="/strategy-simulation" element={<ProtectedLayout><StrategySimulation /></ProtectedLayout>} />
+              <Route path="/tkdn" element={<ProtectedLayout><TKDNPage /></ProtectedLayout>} />
+              <Route path="/features" element={<ProtectedLayout><FeatureEditor /></ProtectedLayout>} />
 
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </ErrorBoundary>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+      </NetworkProvider>
     </HashRouter>
   )
 }

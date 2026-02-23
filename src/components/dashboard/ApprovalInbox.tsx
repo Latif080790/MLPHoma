@@ -47,6 +47,7 @@ import { useApprovalStore } from '@/store/approvalStore'
 import { useProjectStore } from '@/store/projectStore'
 import { useAuthStore } from '@/store/authStore'
 import type { ApprovalEntityType, ApprovalRequest } from '@/types/approval'
+import { RoleGuard } from '@/components/common/RoleGuard'
 
 const ENTITY_ICONS: Record<ApprovalEntityType, React.ReactNode> = {
     PURCHASE_ORDER: <ShoppingCart className="h-4 w-4 text-blue-400" />,
@@ -223,8 +224,8 @@ export function ApprovalInbox() {
                             <div
                                 key={approval.id}
                                 className={`rounded-lg border px-4 py-3 transition-colors hover:bg-white/[0.02] ${approval.entityType === 'EMERGENCY_TRANSFER' || approval.entityType === 'BUDGET_OVERRIDE'
-                                        ? 'border-red-500/20 bg-red-500/[0.03]'
-                                        : 'border-white/10'
+                                    ? 'border-red-500/20 bg-red-500/[0.03]'
+                                    : 'border-white/10'
                                     }`}
                             >
                                 <div className="flex items-start justify-between gap-3">
@@ -255,24 +256,26 @@ export function ApprovalInbox() {
 
                                     {/* Action buttons */}
                                     <div className="flex gap-1.5 shrink-0">
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-8 text-xs text-emerald-400 hover:bg-emerald-500/10"
-                                            onClick={() => setApproveTarget(approval)}
-                                        >
-                                            <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                                            Approve
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant="ghost"
-                                            className="h-8 text-xs text-red-400 hover:bg-red-500/10"
-                                            onClick={() => setRejectTarget(approval)}
-                                        >
-                                            <XCircle className="h-3.5 w-3.5 mr-1" />
-                                            Reject
-                                        </Button>
+                                        <RoleGuard allowedRoles={['PROJECT_MANAGER', 'FINANCE', 'ADMIN']} fallback={<span className="text-xs text-muted-foreground italic mt-2">No Auth</span>}>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 text-xs text-emerald-400 hover:bg-emerald-500/10"
+                                                onClick={() => setApproveTarget(approval)}
+                                            >
+                                                <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                                                Approve
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 text-xs text-red-400 hover:bg-red-500/10"
+                                                onClick={() => setRejectTarget(approval)}
+                                            >
+                                                <XCircle className="h-3.5 w-3.5 mr-1" />
+                                                Reject
+                                            </Button>
+                                        </RoleGuard>
                                     </div>
                                 </div>
                             </div>
