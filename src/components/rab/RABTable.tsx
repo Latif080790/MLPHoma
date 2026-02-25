@@ -121,7 +121,8 @@ export function RABTable({ projectId }: RABTableProps) {
   } = useAHSPStore()
 
   const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot } = useRabStore()
-  const items = getItems(projectId)
+  const allItems = getItems(projectId)
+  const items = allItems.filter(i => activeTab === 'direct' ? !i.is_overhead : i.is_overhead)
   const draftCount = getDraftCount(projectId)
   const hasUnsavedChanges = hasUnsaved(projectId)
   const projectLocked = isLocked(projectId)
@@ -143,6 +144,7 @@ export function RABTable({ projectId }: RABTableProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedUnit, setSelectedUnit] = useState<string>('all')
+  const [activeTab, setActiveTab] = useState<'direct' | 'overhead'>('direct')
   const [confirmScheduleOpen, setConfirmScheduleOpen] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
@@ -457,7 +459,8 @@ export function RABTable({ projectId }: RABTableProps) {
       cost_material: ahspItem.price_material || 0,
       cost_labor: ahspItem.price_labor || 0,
       cost_equipment: ahspItem.price_equipment || 0,
-      cost_subcon: ahspItem.price_subcon || 0
+      cost_subcon: ahspItem.price_subcon || 0,
+      is_overhead: activeTab === 'overhead'
     })
 
     setIsAddDialogOpen(false)
@@ -549,6 +552,56 @@ export function RABTable({ projectId }: RABTableProps) {
 
     setConfirmScheduleOpen(false)
     toast.success(`Generated WBS and ${linkedTasks.length} tasks in Timeline`)
+  }
+
+  const handleGenerateWBS = () => {
+    if (items.length === 0) {
+      toast.error('No Direct Cost items to generate WBS from')
+      return
+    }
+
+    const wbsItems: any[] = []
+
+    // Group by category, then by name for a simple 2-level WBS if needed, 
+    // but the task says: convert imported RAB to WBS directly.
+    const categories = Array.from(new Set(items.map(i => i.category || 'Pekerjaan Utama')))
+    const categoryIdMap = new Map<string, string>()
+
+    // Level 1: Categories
+    categories.forEach((cat, idx) => {
+      const catId = `wbs-cat-${Date.now()}-${idx}`
+      categoryIdMap.set(cat, catId)
+      wbsItems.push({
+        id: catId,
+        code: (idx + 1).toString(),
+        name: cat,
+        level: 1,
+        parentId: null,
+        sortOrder: idx
+      })
+    })
+
+    // Level 2: Items
+    items.forEach((item, idx) => {
+      const cat = item.category || 'Pekerjaan Utama'
+      const parentId = categoryIdMap.get(cat)
+      const wbsId = `wbs-item-${Date.now()}-${idx}`
+
+      wbsItems.push({
+        id: wbsId,
+        code: '', // Auto-generated
+        name: item.name || item.item_name || 'Untitled',
+        level: 2,
+        parentId: parentId,
+        sortOrder: idx
+      })
+
+      // Link RAB back to WBS implicitly or explicitly if needed
+      // updateItem(projectId, item.id, { wbsId }) // if we add wbsId to RABItem
+    })
+
+    importWBS(projectId, wbsItems)
+    toast.success(`Generated ${wbsItems.length} WBS nodes from RAB`)
   }
 
   const total = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
@@ -728,6 +781,23 @@ export function RABTable({ projectId }: RABTableProps) {
             </Badge>
           )}
         </div>
+
+        {/* Tab Controls */}
+        <div className="flex bg-neutral-100/50 p-1 rounded-md border border-neutral-200 mt-2">
+          <button
+            onClick={() => setActiveTab('direct')}
+            className={`flex-1 text-sm font-medium px-4 py-1.5 rounded transition-all ${activeTab === 'direct' ? 'bg-white shadow-sm text-blue-600' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200/50'}`}
+          >
+            Direct Costs (Fisik)
+          </button>
+          <button
+            onClick={() => setActiveTab('overhead')}
+            className={`flex-1 text-sm font-medium px-4 py-1.5 rounded transition-all ${activeTab === 'overhead' ? 'bg-white shadow-sm text-blue-600' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200/50'}`}
+          >
+            Overhead (Tak Langsung)
+          </button>
+        </div>
+
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -772,6 +842,14 @@ export function RABTable({ projectId }: RABTableProps) {
               Delete {selectedItems.size} Selected
             </Button>
           )}
+
+          {activeTab === 'direct' && items.length > 0 && (
+            <Button size="sm" variant="default" className="gap-2 text-xs h-8 bg-indigo-600 hover:bg-indigo-700" onClick={handleGenerateWBS}>
+              <Layers className="h-3.5 w-3.5" />
+              Generate WBS
+            </Button>
+          )}
+
           <Button size="sm" variant="outline" className="gap-2 text-xs h-8" onClick={handleAutoSchedule}>
             <CalendarClock className="h-3.5 w-3.5" />
             Auto-Schedule

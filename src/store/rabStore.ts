@@ -16,7 +16,7 @@ import { create } from 'zustand'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
 import { syncRABItem, syncDelete, syncRABItems } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
-import { rabItemInputSchema, rabItemUpdateSchema } from '../lib/validationSchemas'
+import { rabItemInputSchema, rabItemUpdateSchema, rabItemSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
 import { generateId } from '../lib/idGenerator'
 import type { RABItem } from '../types/rab'
@@ -192,6 +192,8 @@ export const useRabStore = create<RabState>((set, get) => {
         taskId: (item as any).taskId,
         tkdn_percent: (item as any).tkdn_percent ?? 0,
         isDraft: true, // new items start as draft
+        is_overhead: (item as any).is_overhead ?? false,
+        boq_id: (item as any).boq_id,
         createdAt: now,
         updatedAt: now,
         ...item,
