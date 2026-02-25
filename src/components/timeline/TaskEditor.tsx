@@ -11,6 +11,7 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Textarea } from '../ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { Badge } from '../ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import type { TimelineTask, TaskDependency, TaskStatus, DependencyType } from '../../types/timeline'
 import { useTimelineStore } from '../../store/timelineStore'
@@ -71,6 +72,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
 
   const [dependencies, setDependencies] = useState<TaskDependency[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [resourceInput, setResourceInput] = useState('')
 
   // Initialize when opening or when task changes
   useEffect(() => {
@@ -195,6 +197,26 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
     setDependencies(prev => prev.filter((_, i) => i !== idx))
   }
 
+  const addResource = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && resourceInput.trim() !== '') {
+      e.preventDefault()
+      if (!form.assignedResources.includes(resourceInput.trim())) {
+        setForm(prev => ({
+          ...prev,
+          assignedResources: [...prev.assignedResources, resourceInput.trim()]
+        }))
+      }
+      setResourceInput('')
+    }
+  }
+
+  const removeResource = (resourceToRemove: string) => {
+    setForm(prev => ({
+      ...prev,
+      assignedResources: prev.assignedResources.filter(r => r !== resourceToRemove)
+    }))
+  }
+
   if (!isOpen) return null
 
   return (
@@ -313,6 +335,43 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Resources (New) */}
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Assigned Resources (Logistics & Labor)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="resourceInput">Add Resource</Label>
+                  <p className="text-xs text-slate-500 mb-2">Ketik nama posisi (misal: "Tukang") atau nama alat (misal: "Excavator") lalu tekan **Enter**.</p>
+                  <Input
+                    id="resourceInput"
+                    placeholder="Contoh: 1 Unit PC-200, 5 Tukang Besi... (Enter)"
+                    value={resourceInput}
+                    onChange={(e) => setResourceInput(e.target.value)}
+                    onKeyDown={addResource}
+                  />
+                </div>
+                {form.assignedResources.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {form.assignedResources.map((res) => (
+                      <Badge key={res} variant="secondary" className="flex items-center gap-1 px-3 py-1">
+                        {res}
+                        <X
+                          size={14}
+                          className="ml-1 cursor-pointer hover:text-red-500"
+                          onClick={() => removeResource(res)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -69,9 +69,9 @@ export const authService = {
   },
 
   /**
-   * Sign up with email, password, and optional full name
+   * Sign up with email, password, full name, and role
    */
-  async signUp(email: string, password: string, fullName?: string): Promise<AuthResult> {
+  async signUp(email: string, password: string, fullName?: string, role?: string): Promise<AuthResult> {
     if (!supabase) {
       console.warn('Supabase not configured, auth disabled')
       return { error: new Error('Supabase not configured') }
@@ -84,6 +84,7 @@ export const authService = {
         options: {
           data: {
             full_name: fullName || email.split('@')[0],
+            role: role || 'ENGINEER', // Store role in metadata which trigger reads
           },
         },
       })
@@ -277,7 +278,7 @@ export const authService = {
   onAuthStateChange(callback: (user: User | null, session: Session | null) => void): () => void {
     if (!supabase) {
       console.warn('Supabase not configured, auth disabled')
-      return () => {}
+      return () => { }
     }
 
     const {

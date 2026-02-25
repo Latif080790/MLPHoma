@@ -46,6 +46,7 @@ export interface GanttChartProps {
     baselineEndDate?: string
     wbsId?: string
     wbsCode?: string
+    assignedResources?: string[]
   }>
   height?: number
   onTaskClick?: (taskId: string) => void
@@ -1245,10 +1246,15 @@ export default function GanttChart({
                           }}
                           tabIndex={0}
                         >
-                          <span className={`h-2.5 w-2.5 rounded-full ${statusColor(t.status)} ring-2 ring-white`} />
-                          <div className="min-w-0">
+                          <span className={`h-2.5 w-2.5 rounded-full ${statusColor(t.status)} ring-2 ring-white shrink-0`} />
+                          <div className="min-w-0 flex-1">
                             <div className="truncate text-sm font-medium">{t.name}</div>
-                            <div className="text-[12px] text-neutral-500 truncate" style={{ maxWidth: leftColWidth - 80 }}>
+                            {t.assignedResources && t.assignedResources.length > 0 && (
+                              <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium truncate mt-0.5">
+                                {t.assignedResources.join(', ')}
+                              </div>
+                            )}
+                            <div className="text-[12px] text-neutral-500 truncate mt-0.5" style={{ maxWidth: leftColWidth - 80 }}>
                               {t.id.slice(0, 10)} • {t.startDate} → {t.endDate}
                             </div>
                           </div>

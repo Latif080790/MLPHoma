@@ -11,6 +11,7 @@ import { useSession } from '../../hooks/useSession'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card'
 import { AlertCircle, CheckCircle2, Loader2, Lock, Mail, User } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '../../components/ui/alert'
@@ -20,6 +21,7 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [role, setRole] = useState('ENGINEER')
   const [validationError, setValidationError] = useState('')
   const [success, setSuccess] = useState(false)
 
@@ -62,7 +64,7 @@ export default function Register() {
       return
     }
 
-    const success = await signUp(email, password, fullName)
+    const success = await signUp(email, password, fullName, role)
 
     if (success) {
       setSuccess(true)
@@ -152,6 +154,21 @@ export default function Register() {
                     disabled={loading}
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="role">Pilih Peran (Role)</Label>
+                <Select value={role} onValueChange={setRole} disabled={loading}>
+                  <SelectTrigger id="role" className="w-full">
+                    <SelectValue placeholder="Pilih Role Anda..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ENGINEER">Site Engineer</SelectItem>
+                    <SelectItem value="PROJECT_MANAGER">Project Manager</SelectItem>
+                    <SelectItem value="QC_ENGINEER">Quality Control</SelectItem>
+                    <SelectItem value="FINANCE">Finance / Procurement</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
