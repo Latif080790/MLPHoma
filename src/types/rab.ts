@@ -30,6 +30,9 @@ export interface RABItem {
   finalTotal?: number
   final_total?: number
   finalPrice?: number
+  /** Enterprise Fields */
+  is_overhead?: boolean
+  boq_id?: string
   /** Split Costs (v3 Ultra) */
   cost_material?: number
   cost_labor?: number

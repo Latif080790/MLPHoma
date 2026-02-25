@@ -13,6 +13,8 @@ import { WBSEditor } from '../../components/wbs/WBSEditor'
 import { EmptyState } from '../../components/common/EmptyState'
 import { Button } from '../../components/ui/button'
 import { Alert, AlertDescription } from '../../components/ui/alert'
+import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
+import { RABTable } from '../../components/rab/RABTable'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -108,13 +110,13 @@ export default function WBS() {
       } else {
         // Add new item
         addItem(projectId, data)
-        
+
         // Auto-expand parent to show new item
         if (data.parentId) {
           toggleExpanded(data.parentId)
         }
       }
-      
+
       // Generate codes to ensure consistency
       generateCodes(projectId)
     } catch (error) {
@@ -165,7 +167,7 @@ export default function WBS() {
       try {
         const content = e.target?.result as string
         const data = JSON.parse(content) as WBSItem[]
-        
+
         // Validate imported data
         if (!Array.isArray(data)) {
           throw new Error('Invalid file format')
@@ -231,7 +233,7 @@ export default function WBS() {
               <Download size={16} className="mr-2" />
               Export
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -293,30 +295,58 @@ export default function WBS() {
         </Alert>
       )}
 
-      {/* WBS Tree */}
-      <div className="rounded-xl border bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-        <div className="sticky top-0 z-10 border-b bg-white/95 p-4 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium">WBS Structure</h3>
-            <div className="text-sm text-neutral-500">
-              {items.length} items • {tree.length} root items
+      {/* Split Pane Layout */}
+      <div className="flex-1 rounded-xl border bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900 border-neutral-200">
+        <PanelGroup direction="horizontal">
+          {/* Left Panel: WBS Tree */}
+          <Panel defaultSize={35} minSize={20} className="flex flex-col relative bg-white dark:bg-neutral-900">
+            <div className="sticky top-0 z-10 border-b bg-neutral-50/95 p-3 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm">WBS Structure</h3>
+                <div className="text-xs text-neutral-500 font-medium">
+                  {items.length} items
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <WBSTree
-          items={items}
-          selectedId={selectedId}
-          expandedIds={expandedIds}
-          loading={loading}
-          onItemClick={(item) => selectItem(item.id)}
-          onToggleExpand={toggleExpanded}
-          onAddItem={handleAddItem}
-          onEditItem={handleEditItem}
-          onDeleteItem={handleDeleteItem}
-          onMoveItem={handleMoveItem}
-          maxNestingLevel={8}
-        />
+            <div className="flex-1 overflow-auto">
+              <WBSTree
+                items={items}
+                selectedId={selectedId}
+                expandedIds={expandedIds}
+                loading={loading}
+                onItemClick={(item) => selectItem(item.id)}
+                onToggleExpand={toggleExpanded}
+                onAddItem={handleAddItem}
+                onEditItem={handleEditItem}
+                onDeleteItem={handleDeleteItem}
+                onMoveItem={handleMoveItem}
+                maxNestingLevel={8}
+              />
+            </div>
+          </Panel>
+
+          {/* Resizer Handle */}
+          <PanelResizeHandle className="w-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-blue-500/50 active:bg-blue-500 transition-colors mx-auto flex flex-col justify-center items-center cursor-col-resize group">
+            <div className="h-8 w-1 rounded-full bg-neutral-300 dark:bg-neutral-600 group-hover:bg-white transition-colors" />
+          </PanelResizeHandle>
+
+          {/* Right Panel: RAB Table */}
+          <Panel defaultSize={65} minSize={30} className="flex flex-col relative bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800">
+            <div className="sticky top-0 z-10 border-b bg-neutral-50/95 p-3 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95 flex justify-between items-center">
+              <h3 className="font-semibold text-sm">Rencana Anggaran Biaya (RAB)</h3>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="h-7 text-xs">
+                  <Download size={14} className="mr-1" />
+                  BoQ Import
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-auto bg-neutral-50 dark:bg-neutral-900/50 p-0 m-0">
+              <RABTable projectId={projectId} />
+            </div>
+          </Panel>
+        </PanelGroup>
       </div>
 
       {/* WBS Editor Modal */}
