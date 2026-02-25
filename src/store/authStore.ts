@@ -27,7 +27,7 @@ interface AuthState {
   // Actions
   initialize: () => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string, fullName?: string) => Promise<boolean>
+  signUp: (email: string, password: string, fullName?: string, role?: string) => Promise<boolean>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<boolean>
   refreshProfile: () => Promise<void>
@@ -79,14 +79,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       }
 
-      // Mock Role Assignment for Evaluation/Testing
+      // Real Role Assignment
       let role: AuthState['role'] = null
-      if (session?.user) {
-        const email = session.user.email?.toLowerCase() || ''
-        if (email.includes('finance')) role = 'FINANCE'
-        else if (email.includes('qc')) role = 'QC_ENGINEER'
-        else if (email.includes('pm')) role = 'PROJECT_MANAGER'
-        else role = 'ADMIN' // Default for main test accounts
+      if (profile?.role) {
+        role = profile.role as AuthState['role']
+      } else if (session?.user?.user_metadata?.role) {
+        // Fallback to user metadata
+        role = session.user.user_metadata.role as AuthState['role']
+      } else {
+        // Fallback for older test accounts missing the role metadata
+        role = 'ENGINEER'
       }
 
       set({
@@ -104,11 +106,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // User signed in, fetch profile
           const { profile: fetchedProfile } = await authService.getProfile(user.id)
 
-          let newRole: AuthState['role'] = 'ADMIN'
-          const email = user.email?.toLowerCase() || ''
-          if (email.includes('finance')) newRole = 'FINANCE'
-          else if (email.includes('qc')) newRole = 'QC_ENGINEER'
-          else if (email.includes('pm')) newRole = 'PROJECT_MANAGER'
+          let newRole: AuthState['role'] = 'ENGINEER'
+          if (fetchedProfile?.role) {
+            newRole = fetchedProfile.role as AuthState['role']
+          } else if (user.user_metadata?.role) {
+            newRole = user.user_metadata.role as AuthState['role']
+          }
 
           set({
             user,
@@ -154,14 +157,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Fetch profile
       let profile: ProfileData | null = null
-      let role: AuthState['role'] = 'ADMIN'
+      let role: AuthState['role'] = 'ENGINEER'
       if (user) {
         const { profile: fetchedProfile } = await authService.getProfile(user.id)
         profile = fetchedProfile || null
-        const email = user.email?.toLowerCase() || ''
-        if (email.includes('finance')) role = 'FINANCE'
-        else if (email.includes('qc')) role = 'QC_ENGINEER'
-        else if (email.includes('pm')) role = 'PROJECT_MANAGER'
+
+        // Determine real role
+        if (profile?.role) {
+          role = profile.role as AuthState['role']
+        } else if (user.user_metadata?.role) {
+          role = user.user_metadata.role as AuthState['role']
+        }
       }
 
       set({
@@ -181,13 +187,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   /**
-   * Sign up with email, password, and optional full name
+   * Sign up with email, password, full name and role
    */
-  signUp: async (email: string, password: string, fullName?: string): Promise<boolean> => {
+  signUp: async (email: string, password: string, fullName?: string, role?: string): Promise<boolean> => {
     try {
       set({ loading: true, error: null })
 
-      const { user, session, error } = await authService.signUp(email, password, fullName)
+      const { user, session, error } = await authService.signUp(email, password, fullName, role)
 
       if (error) {
         set({
