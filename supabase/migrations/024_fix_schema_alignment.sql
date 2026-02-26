@@ -76,9 +76,26 @@ BEGIN
   END IF;
 END $$;
 
--- Backfill risk_score from probability * impact for any existing rows
-UPDATE public.risks SET risk_score = COALESCE(probability, 1) * COALESCE(impact, 1)
-WHERE risk_score IS NULL OR risk_score = 1;
+-- Backfill risk_score: if it's a generated column, drop and re-create as regular column
+DO $$
+DECLARE
+  is_generated text;
+BEGIN
+  -- Check if risk_score is a generated column
+  SELECT generation_expression INTO is_generated
+  FROM information_schema.columns
+  WHERE table_schema = 'public' AND table_name = 'risks' AND column_name = 'risk_score';
+
+  IF is_generated IS NOT NULL AND is_generated != '' THEN
+    -- Drop generated column and re-create as regular column
+    ALTER TABLE public.risks DROP COLUMN risk_score;
+    ALTER TABLE public.risks ADD COLUMN risk_score integer DEFAULT 1;
+  END IF;
+
+  -- Backfill risk_score from probability * impact for any existing rows
+  UPDATE public.risks SET risk_score = COALESCE(probability, 1) * COALESCE(impact, 1)
+  WHERE risk_score IS NULL OR risk_score = 1;
+END $$;
 
 -- Create trigger to auto-calculate risk_score on insert/update
 CREATE OR REPLACE FUNCTION public.calc_risk_score()
