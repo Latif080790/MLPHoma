@@ -5,6 +5,12 @@
 
 DO $$
 BEGIN
+  -- Only run if ahsp_components table exists
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'ahsp_components') THEN
+    RAISE NOTICE 'ahsp_components table does not exist yet, skipping migration 026';
+    RETURN;
+  END IF;
+
     -- Add 'unit' column if it doesn't exist
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns 
@@ -26,13 +32,14 @@ BEGIN
     END IF;
 
     -- Optional: Backfill data from associated resources if columns were empty
-    -- This assumes unit and unit_price are currently null/0 and fetching from master is desired for recovery
-    UPDATE public.ahsp_components ac
-    SET 
-        unit = r.unit,
-        unit_price = r.unit_price
-    FROM public.resources r
-    WHERE ac.resource_id = r.id
-    AND (ac.unit IS NULL OR ac.unit_price = 0);
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'resources') THEN
+      UPDATE public.ahsp_components ac
+      SET 
+          unit = r.unit,
+          unit_price = r.unit_price
+      FROM public.resources r
+      WHERE ac.resource_id = r.id
+      AND (ac.unit IS NULL OR ac.unit_price = 0);
+    END IF;
 
 END $$;

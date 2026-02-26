@@ -15,6 +15,7 @@ import { Button } from '../../components/ui/button'
 import { Alert, AlertDescription } from '../../components/ui/alert'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { RABTable } from '../../components/rab/RABTable'
+import BoQImportDialog from '../../components/rab/BoQImportDialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../../components/ui/alert-dialog'
-import { Download, Upload, AlertTriangle, FileText, Plus } from 'lucide-react'
+import { Download, Upload, AlertTriangle, FileText, Plus, FileUp } from 'lucide-react'
 import type { WBSItem } from '../../types/wbs'
 
 /**
@@ -65,6 +66,7 @@ export default function WBS() {
   const [showEditor, setShowEditor] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
   const [pendingDeleteItem, setPendingDeleteItem] = useState<WBSItem | null>(null)
+  const [showBoQImport, setShowBoQImport] = useState(false)
 
   /**
    * Handle adding new item
@@ -336,8 +338,8 @@ export default function WBS() {
             <div className="sticky top-0 z-10 border-b bg-neutral-50/95 p-3 backdrop-blur-sm dark:border-neutral-800 dark:bg-neutral-900/95 flex justify-between items-center">
               <h3 className="font-semibold text-sm">Rencana Anggaran Biaya (RAB)</h3>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="h-7 text-xs">
-                  <Download size={14} className="mr-1" />
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setShowBoQImport(true)}>
+                  <FileUp size={14} className="mr-1" />
                   BoQ Import
                 </Button>
               </div>
@@ -376,6 +378,13 @@ export default function WBS() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* BoQ Import Dialog */}
+      <BoQImportDialog
+        open={showBoQImport}
+        onOpenChange={setShowBoQImport}
+        projectId={projectId}
+      />
     </div>
   )
 }

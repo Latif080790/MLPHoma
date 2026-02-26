@@ -5,7 +5,7 @@
 -- Create ahsp_creation_logs table
 create table if not exists public.ahsp_creation_logs (
   id text primary key default gen_random_uuid()::text,
-  ahsp_id text references public.ahsp_items(id) on delete cascade,
+  ahsp_id uuid references public.ahsp_items(id) on delete cascade,
   creation_mode text check (creation_mode in ('sni', 'custom', 'historical')),
   source_reference text, -- SNI code or historical project ID
   created_at timestamptz default now(),

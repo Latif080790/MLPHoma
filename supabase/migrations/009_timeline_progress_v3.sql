@@ -27,7 +27,15 @@ CREATE TABLE IF NOT EXISTS curva_s_points (
 );
 
 -- Support for Zoning, Resources, and Scenarios
-ALTER TABLE timeline_tasks ADD COLUMN IF NOT EXISTS zone_id UUID REFERENCES price_zones(id); -- Link to Zone
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'price_zones') THEN
+    EXECUTE 'ALTER TABLE timeline_tasks ADD COLUMN IF NOT EXISTS zone_id UUID REFERENCES price_zones(id)';
+  ELSE
+    -- price_zones not yet created, add column without FK for now
+    ALTER TABLE timeline_tasks ADD COLUMN IF NOT EXISTS zone_id UUID;
+  END IF;
+END $$;
 ALTER TABLE timeline_tasks ADD COLUMN IF NOT EXISTS sequence_level INTEGER DEFAULT 0; -- For logic-based sequencing
 ALTER TABLE timeline_tasks ADD COLUMN IF NOT EXISTS resource_count INTEGER DEFAULT 1; -- Jml Tim / Alat
 ALTER TABLE timeline_tasks ADD COLUMN IF NOT EXISTS productivity_rate NUMERIC DEFAULT 1.0; -- Output per day
