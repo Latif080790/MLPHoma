@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, Download, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap } from "lucide-react"
+import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, Download, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap, Wallet } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -28,6 +28,7 @@ import { ClaimDialog } from "@/components/finance/ClaimDialog"
 import { AgingReport } from "@/components/finance/AgingReport"
 import { OverheadCostPanel } from "@/components/finance/OverheadCostPanel"
 import { ThreeWayMatch } from "@/components/finance/ThreeWayMatch"
+import { OpnameBoard } from "@/components/finance/OpnameBoard"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 import { CashflowForecastWidget } from "@/components/finance/CashflowForecastWidget"
 import { approvalService } from "@/services/approvalService"
@@ -197,6 +198,9 @@ export default function Finance() {
                     </TabsTrigger>
                     <TabsTrigger value="overhead" className="gap-2">
                         <PieChart size={14} /> Overhead
+                    </TabsTrigger>
+                    <TabsTrigger value="opname" className="gap-2">
+                        <Wallet size={14} /> Hutang Subcon (Opname)
                     </TabsTrigger>
                 </TabsList>
 
@@ -488,6 +492,11 @@ export default function Finance() {
                             )}
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                {/* --- OPNAME BOARD --- */}
+                <TabsContent value="opname" className="space-y-6">
+                    <OpnameBoard />
                 </TabsContent>
             </Tabs>
 

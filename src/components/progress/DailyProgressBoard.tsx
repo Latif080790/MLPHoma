@@ -22,6 +22,7 @@ import { useProjectStore } from '../../store/projectStore'
 import {
     progressCaptureService, type WeatherCondition, type ProgressEntry,
 } from '../../services/progressCaptureService'
+import { geofenceService } from '../../services/geofenceService'
 import type { TimelineTask } from '../../store/timelineStore'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -53,8 +54,24 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
     const [weather, setWeather] = useState<WeatherCondition>('sunny')
     const [crewCount, setCrewCount] = useState(0)
     const [submitting, setSubmitting] = useState(false)
+    const [locationValid, setLocationValid] = useState(false)
+    const [verifyingLocation, setVerifyingLocation] = useState(false)
 
     const progressGain = progress - task.progress
+
+    const handleVerifyLocation = async () => {
+        setVerifyingLocation(true)
+        try {
+            await geofenceService.validateSubmission(projectId, 'Site Manager')
+            setLocationValid(true)
+            toast.success("Location verified. You may now submit progress.")
+        } catch (err: any) {
+            setLocationValid(false)
+            // Error is handled and toasted inside the service
+        } finally {
+            setVerifyingLocation(false)
+        }
+    }
 
     const handleSubmit = async () => {
         if (progress <= task.progress) {
@@ -79,6 +96,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
             })
             toast.success('Progress submitted', { description: `${task.name}: ${task.progress}% → ${progress}%` })
             setExpanded(false)
+            setLocationValid(false) // reset for next time
             onSubmitted()
         } catch (err: any) {
             toast.error('Failed', { description: err.message })
@@ -89,8 +107,8 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
 
     return (
         <div className={`rounded-lg border transition-all ${isOverdue ? 'border-red-300 bg-red-50/50 dark:border-red-900 dark:bg-red-950/10' :
-                existingEntry ? 'border-emerald-300 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/10' :
-                    'border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700'
+            existingEntry ? 'border-emerald-300 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/10' :
+                'border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700'
             }`}>
             {/* Header */}
             <button
@@ -122,7 +140,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                 <div className="w-16 shrink-0">
                     <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full transition-all ${task.progress >= 100 ? 'bg-emerald-500' :
-                                isOverdue ? 'bg-red-500' : 'bg-blue-500'
+                            isOverdue ? 'bg-red-500' : 'bg-blue-500'
                             }`} style={{ width: `${Math.min(task.progress, 100)}%` }} />
                     </div>
                 </div>
@@ -189,8 +207,8 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                                         key={w.value}
                                         onClick={() => setWeather(w.value)}
                                         className={`p-1.5 rounded-md transition-colors ${weather === w.value
-                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700'
+                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                            : 'bg-slate-100 text-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700'
                                             }`}
                                         title={w.label}
                                     >
@@ -209,16 +227,39 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                         className="h-16 text-xs resize-none"
                     />
 
-                    {/* Submit */}
-                    <div className="flex justify-end">
-                        <Button
-                            size="sm"
-                            disabled={submitting || progress <= task.progress}
-                            onClick={handleSubmit}
-                            className="gap-1"
-                        >
-                            <Send size={12} /> Submit Progress
-                        </Button>
+                    {/* Submit Actions */}
+                    <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-2 mt-2 gap-2">
+                        <div className="text-xs text-slate-500 flex items-center gap-1.5">
+                            <MapPin size={12} className={locationValid ? 'text-emerald-500' : 'text-amber-500'} />
+                            {locationValid ? (
+                                <span className="text-emerald-600 font-medium">Site Area Verified</span>
+                            ) : (
+                                <span className="text-amber-600">Location required (500m radius)</span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            {!locationValid ? (
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={handleVerifyLocation}
+                                    disabled={verifyingLocation}
+                                    className="w-full sm:w-auto h-8 text-xs gap-1.5 bg-white dark:bg-slate-800"
+                                >
+                                    <MapPin size={12} />
+                                    {verifyingLocation ? 'Acquiring GPS...' : 'Verify Location'}
+                                </Button>
+                            ) : (
+                                <Button
+                                    size="sm"
+                                    disabled={submitting || progress <= task.progress}
+                                    onClick={handleSubmit}
+                                    className="w-full sm:w-auto h-8 text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 text-white"
+                                >
+                                    <Send size={12} /> Submit Progress
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

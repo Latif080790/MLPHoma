@@ -22,6 +22,7 @@ import { WorkOrderPanel } from "@/components/modules/WorkOrderPanel"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 import { ProcurementTracePanel } from "@/components/supply-chain/ProcurementTracePanel"
 import { MTRPanel } from "@/components/supply/MTRPanel"
+import { SubcontractorPanel } from "@/components/supply/SubcontractorPanel"
 import type { PurchaseOrder } from "@/types/supply-chain"
 
 export default function SupplyChain() {
@@ -341,7 +342,7 @@ export default function SupplyChain() {
 
                 {/* --- SPK / OPNAME --- */}
                 <TabsContent value="spk" className="space-y-4">
-                    <WorkOrderPanel projectId={activeProjectId} />
+                    <SubcontractorPanel />
                 </TabsContent>
 
                 {/* --- MTR (Material Transfer Requests) --- */}
