@@ -45,6 +45,9 @@ export interface CurvaSChartProps {
   showPlanned?: boolean
   showActual?: boolean
   showForecast?: boolean
+  showShadow?: boolean
+  /** Shadow curve data (CCO-adjusted) */
+  shadowData?: { date: string; shadowProgress: number; shadowCost: number }[]
   /** Ukuran chart */
   height?: number
   /** Jenis chart */
@@ -127,6 +130,8 @@ export function CurvaSChart({
   showPlanned = true,
   showActual = true,
   showForecast = true,
+  showShadow = false,
+  shadowData,
   height = 400,
   type = 'progress',
   theme = 'default',
@@ -203,16 +208,24 @@ export function CurvaSChart({
 
   // Gabungkan actual dan forecast
   const combinedData = useMemo(() => {
-    const actual = chartData.map((item) => ({ ...item, forecast: undefined }))
-    const forecast = forecastData.map((item) => ({ ...item, planned: undefined, actual: undefined }))
+    const actual = chartData.map((item, idx) => {
+      const shadow = shadowData && shadowData[idx]
+      return {
+        ...item,
+        forecast: undefined,
+        shadow: shadow ? (type === 'progress' ? shadow.shadowProgress : shadow.shadowCost) : undefined,
+      }
+    })
+    const forecast = forecastData.map((item) => ({ ...item, planned: undefined, actual: undefined, shadow: undefined }))
     return [...actual, ...forecast]
-  }, [chartData, forecastData])
+  }, [chartData, forecastData, shadowData, type])
 
   // Warna chart berdasarkan tema
   const colors = {
     planned: theme === 'dark' ? '#60a5fa' : '#2563eb',
     actual: theme === 'dark' ? '#34d399' : '#10b981',
     forecast: theme === 'dark' ? '#fbbf24' : '#d97706',
+    shadow: theme === 'dark' ? '#fb923c' : '#ea580c',
   }
 
   // Status → warna/ikon
@@ -331,6 +344,7 @@ export function CurvaSChart({
                 <Badge variant={showPlanned ? 'default' : 'outline'}>Planned</Badge>
                 <Badge variant={showActual ? 'default' : 'outline'}>Actual</Badge>
                 {showForecast && <Badge variant={showForecast ? 'default' : 'outline'}>Forecast</Badge>}
+                {showShadow && <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">Shadow (CCO)</Badge>}
               </div>
             </div>
           </CardHeader>
@@ -388,6 +402,19 @@ export function CurvaSChart({
                     strokeDasharray="5 5"
                     name="Forecast"
                     dot={false}
+                  />
+                )}
+
+                {showShadow && shadowData && shadowData.length > 0 && (
+                  <Line
+                    type="monotone"
+                    dataKey="shadow"
+                    stroke={colors.shadow}
+                    strokeWidth={2}
+                    strokeDasharray="8 4"
+                    name="Shadow (CCO)"
+                    dot={false}
+                    isAnimationActive={false}
                   />
                 )}
 

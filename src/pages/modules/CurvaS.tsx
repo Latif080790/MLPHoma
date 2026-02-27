@@ -23,8 +23,9 @@ import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Card, CardContent } from '../../components/ui/card'
 import { Alert, AlertDescription } from '../../components/ui/alert'
-import { Download, LineChart, Play, Rocket, RefreshCw, AlertTriangle, Rows } from 'lucide-react'
+import { Download, LineChart, Play, Rocket, RefreshCw, AlertTriangle, Rows, GitPullRequest } from 'lucide-react'
 import { downloadCSV, formatDate } from '../../lib/utils'
+import { shadowCurveService } from '../../services/shadowCurveService'
 
 /** Stable empty array reference to avoid new [] creation in selectors/defaults. */
 const EMPTY_POINTS: any[] = Object.freeze([]) as unknown as any[]
@@ -56,6 +57,7 @@ export default function CurvaSPage() {
   const [showPlanned, setShowPlanned] = useState(true)
   const [showActual, setShowActual] = useState(true)
   const [showForecast, setShowForecast] = useState(true)
+  const [showShadow, setShowShadow] = useState(false)
   const [denseMode, setDenseMode] = useState(false)
 
   // Handlers
@@ -192,6 +194,13 @@ export default function CurvaSPage() {
         >
           Forecast
         </Badge>
+        <Badge
+          variant={showShadow ? 'default' : 'outline'}
+          className={`cursor-pointer ${showShadow ? 'bg-orange-600 hover:bg-orange-700 text-white' : ''}`}
+          onClick={() => setShowShadow((v) => !v)}
+        >
+          Shadow (CCO)
+        </Badge>
       </div>
 
       <CurvaSChart
@@ -200,11 +209,41 @@ export default function CurvaSPage() {
         showPlanned={showPlanned}
         showActual={showActual}
         showForecast={showForecast}
+        showShadow={showShadow}
+        shadowData={showShadow ? shadowCurveService.calculateShadowCurve(projectId).points : undefined}
         height={420}
         type={type}
         theme="default"
         denseMode={denseMode}
       />
+
+      {/* Shadow Curve Summary */}
+      {showShadow && (() => {
+        const summary = shadowCurveService.getSummary(projectId)
+        return summary.approvedCcoCount > 0 ? (
+          <Card className="border-orange-200 dark:border-orange-900/50 bg-orange-50/50 dark:bg-orange-950/10">
+            <CardContent className="p-4 flex items-center gap-4">
+              <GitPullRequest className="text-orange-600 shrink-0" size={20} />
+              <div className="flex-1 text-sm">
+                <span className="font-semibold text-orange-800 dark:text-orange-400">
+                  Shadow Curve Active — {summary.approvedCcoCount} CCO{summary.approvedCcoCount > 1 ? 's' : ''} Approved
+                </span>
+                <div className="flex gap-4 mt-1 text-xs text-orange-700/70 dark:text-orange-400/60">
+                  <span>Cost Δ: {summary.totalCostDelta > 0 ? '+' : ''}Rp {summary.totalCostDelta.toLocaleString()}</span>
+                  <span>Schedule Δ: {summary.totalScheduleDelta > 0 ? '+' : ''}{summary.totalScheduleDelta} days</span>
+                  <span>Plan Deviation: {summary.planDeviationPercent > 0 ? '+' : ''}{summary.planDeviationPercent}%</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-slate-200 dark:border-slate-800">
+            <CardContent className="p-4 text-center text-xs text-slate-500">
+              No approved CCOs — shadow curve matches original plan.
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       {/* Config quick glance */}
       {config && (

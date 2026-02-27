@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { GitPullRequest, DollarSign, Clock, AlertOctagon, Plus, TrendingUp, Check, X, Loader2, AlertTriangle } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -14,6 +14,9 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { ChangeOrderDialog } from "@/components/change-order/ChangeOrderDialog"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { toast } from "sonner"
+import { ImpactAnalysisPanel } from "@/components/change/ImpactAnalysisPanel"
+import { CCO_STATUS_LABELS, CCO_STATUS_COLORS } from "@/services/ccoStateMachine"
+import type { ChangeOrderStatus } from "@/types/change-order"
 
 export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
@@ -98,6 +101,21 @@ export default function ChangeManagement() {
 
             <ChangeOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} projectId={activeProjectId!} />
 
+            {/* Status Pipeline Counters */}
+            {orders.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                    {(['DRAFT', 'SUBMITTED', 'REVIEWED', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED'] as ChangeOrderStatus[]).map(status => {
+                        const count = orders.filter(o => o.status === status).length
+                        return (
+                            <div key={status} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${CCO_STATUS_COLORS[status]}`}>
+                                <span className="text-[10px] opacity-70">{CCO_STATUS_LABELS[status]}</span>
+                                <span className="font-mono font-bold">{count}</span>
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
+
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="mb-4">
                     <TabsTrigger value="log" className="gap-2">
@@ -139,11 +157,8 @@ export default function ChangeManagement() {
                                                     <div className="text-xs text-slate-500 truncate max-w-[300px]">{order.description}</div>
                                                 </TableCell>
                                                 <TableCell className="p-3">
-                                                    <Badge variant={
-                                                        order.status === 'APPROVED' ? 'default' :
-                                                            order.status === 'REJECTED' ? 'destructive' : 'outline'
-                                                    } className="text-[10px] font-normal px-2 py-0.5">
-                                                        {order.status}
+                                                    <Badge className={`text-[9px] font-semibold px-2 py-0.5 ${CCO_STATUS_COLORS[order.status]}`}>
+                                                        {CCO_STATUS_LABELS[order.status]}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className={`p-3 text-right font-mono text-xs font-semibold ${order.cost_impact > 0 ? 'text-red-600' : 'text-green-600'}`}>
@@ -232,18 +247,20 @@ export default function ChangeManagement() {
                         </Card>
                     </div>
 
-                    <Card className="bg-blue-50 border-blue-100">
-                        <CardContent className="p-4 flex gap-4">
-                            <AlertOctagon className="text-blue-500 mt-1" />
-                            <div>
-                                <h4 className="font-semibold text-blue-900">Impact Summary</h4>
-                                <p className="text-sm text-blue-700 mt-1">
-                                    The project is currently facing a total potential cost overrun of <strong>Rp {totalCostImpact.toLocaleString()}</strong> and a schedule delay of <strong>{totalTimeImpact} days</strong>.
-                                    Approval of pending items will formalize these changes into the project baseline.
-                                </p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    {/* Per-Order Impact Analysis Panels */}
+                    {orders.length === 0 ? (
+                        <EmptyState title="No Change Orders" description="Create a VO to see impact analysis." />
+                    ) : (
+                        <div className="space-y-4">
+                            {orders.map(order => (
+                                <ImpactAnalysisPanel
+                                    key={order.id}
+                                    changeOrder={order}
+                                    onTransitioned={() => activeProjectId && fetchOrders(activeProjectId)}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </TabsContent>
             </Tabs>
 

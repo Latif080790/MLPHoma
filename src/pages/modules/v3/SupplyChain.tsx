@@ -21,6 +21,7 @@ import { MaterialTransferPanel } from "@/components/supply-chain/MaterialTransfe
 import { WorkOrderPanel } from "@/components/modules/WorkOrderPanel"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 import { ProcurementTracePanel } from "@/components/supply-chain/ProcurementTracePanel"
+import { MTRPanel } from "@/components/supply/MTRPanel"
 import type { PurchaseOrder } from "@/types/supply-chain"
 
 export default function SupplyChain() {
@@ -121,6 +122,9 @@ export default function SupplyChain() {
                         </TabsTrigger>
                         <TabsTrigger value="spk" className="gap-2">
                             <ClipboardList size={14} /> SPK / Opname
+                        </TabsTrigger>
+                        <TabsTrigger value="mtr" className="gap-2">
+                            <Truck size={14} /> MTR
                         </TabsTrigger>
                     </TabsList>
 
@@ -338,6 +342,11 @@ export default function SupplyChain() {
                 {/* --- SPK / OPNAME --- */}
                 <TabsContent value="spk" className="space-y-4">
                     <WorkOrderPanel projectId={activeProjectId} />
+                </TabsContent>
+
+                {/* --- MTR (Material Transfer Requests) --- */}
+                <TabsContent value="mtr" className="space-y-4">
+                    <MTRPanel />
                 </TabsContent>
 
             </Tabs>

@@ -13,6 +13,8 @@ import { useProjectStore } from '@/store/projectStore'
 import { EmptyState } from '@/components/common/EmptyState'
 import { TimelineScenarioPanel } from '@/components/modules/TimelineScenarioPanel'
 import { ResourceUsageDialog } from '@/components/progress/ResourceUsageDialog'
+import { DailyProgressBoard } from '@/components/progress/DailyProgressBoard'
+import { ClipboardCheck } from 'lucide-react'
 
 export default function ScheduleOps() {
     const { activeProjectId } = useProjectStore()
@@ -69,7 +71,10 @@ export default function ScheduleOps() {
 
                 <TabsContent value="progress" className="outline-none">
                     <Card className="border-none shadow-none bg-transparent">
-                        <Progress />
+                        <DailyProgressBoard />
+                        <div className="mt-6">
+                            <Progress />
+                        </div>
                     </Card>
                 </TabsContent>
 
