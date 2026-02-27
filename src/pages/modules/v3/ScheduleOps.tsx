@@ -14,6 +14,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { TimelineScenarioPanel } from '@/components/modules/TimelineScenarioPanel'
 import { ResourceUsageDialog } from '@/components/progress/ResourceUsageDialog'
 import { DailyProgressBoard } from '@/components/progress/DailyProgressBoard'
+import { CriticalPathGantt } from '@/components/charts/CriticalPathGantt'
 import { ClipboardCheck } from 'lucide-react'
 
 export default function ScheduleOps() {
@@ -39,6 +40,9 @@ export default function ScheduleOps() {
                     </TabsTrigger>
                     <TabsTrigger value="wbs" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
                         <ListTodo size={14} /> WBS Structure
+                    </TabsTrigger>
+                    <TabsTrigger value="cpm" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
+                        <AlertTriangle size={14} /> Critical Path
                     </TabsTrigger>
                     <TabsTrigger value="progress" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
                         <TrendingUp size={14} /> Site Progress
@@ -67,6 +71,10 @@ export default function ScheduleOps() {
                     <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-0 min-h-[500px]">
                         <WBS />
                     </div>
+                </TabsContent>
+
+                <TabsContent value="cpm" className="outline-none">
+                    <CriticalPathGantt />
                 </TabsContent>
 
                 <TabsContent value="progress" className="outline-none">
