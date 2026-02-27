@@ -23,6 +23,8 @@ import {
     Layers
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { approvalService } from '@/services/approvalService'
+import { useProjectStore } from '@/store/projectStore'
 
 interface NavItem {
     href: string
@@ -58,6 +60,30 @@ interface AppSidebarProps {
 export function AppSidebar({ collapsed, setCollapsed }: AppSidebarProps) {
     const location = useLocation()
     const currentPath = location.pathname
+    const { activeProjectId } = useProjectStore()
+    const [pendingApprovals, setPendingApprovals] = React.useState(0)
+
+    React.useEffect(() => {
+        let mounted = true
+        const loadPending = async () => {
+            try {
+                const count = await approvalService.getPendingCount(activeProjectId)
+                if (mounted) {
+                    setPendingApprovals(count)
+                }
+            } catch {
+                if (mounted) {
+                    setPendingApprovals(0)
+                }
+            }
+        }
+
+        void loadPending()
+
+        return () => {
+            mounted = false
+        }
+    }, [activeProjectId, currentPath])
 
     return (
         <aside
@@ -122,6 +148,12 @@ export function AppSidebar({ collapsed, setCollapsed }: AppSidebarProps) {
                             )}>
                                 {item.label}
                             </span>
+
+                            {!collapsed && item.href === '/' && pendingApprovals > 0 && (
+                                <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                    {pendingApprovals}
+                                </span>
+                            )}
                         </Link>
                     )
                 })}
