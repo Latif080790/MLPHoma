@@ -319,24 +319,27 @@ export default function Finance() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {invoices.map((inv, idx) => {
-                                            // Mock trace data - show invoice lineage back to GRN → PO
-                                            const hasTrace = inv.po_id || idx % 2 === 0
-                                            const mockTrace = hasTrace ? [
-                                                { type: 'PO' as const, ref: inv.po_id?.slice(0, 12) || `PO-${String(idx + 1).padStart(4, '0')}` },
-                                                { type: 'GRN' as const, ref: `GRN-${String(idx).padStart(3, '0')}` },
-                                            ] : []
+                                        {invoices.map((inv) => {
+                                            const traceChain = inv.po_id
+                                                ? [
+                                                    { type: 'PO' as const, ref: inv.po_id.slice(0, 12) },
+                                                    { type: 'INVOICE' as const, ref: inv.invoice_number },
+                                                ]
+                                                : [
+                                                    { type: 'INVOICE' as const, ref: inv.invoice_number },
+                                                ]
+                                            const upstreamCount = inv.po_id ? 1 : 0
 
                                             return (
                                                 <TableRow key={inv.id} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
                                                     <TableCell className="p-3 font-medium text-slate-700 dark:text-slate-300">{inv.vendor_name}</TableCell>
                                                     <TableCell className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">{inv.invoice_number}</TableCell>
                                                     <TableCell className="p-3">
-                                                        {mockTrace.length > 0 ? (
+                                                        {traceChain.length > 0 ? (
                                                             <div className="flex items-center gap-1.5">
-                                                                <TraceCountBadge count={mockTrace.length} direction="upstream" />
+                                                                {upstreamCount > 0 && <TraceCountBadge count={upstreamCount} direction="upstream" />}
                                                                 <TraceChain
-                                                                    chain={mockTrace}
+                                                                    chain={traceChain}
                                                                     size="sm"
                                                                 />
                                                             </div>
