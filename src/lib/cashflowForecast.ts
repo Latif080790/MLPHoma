@@ -42,6 +42,12 @@ export interface HistoricalTransaction {
     category?: string
 }
 
+export interface FinanceForecastInput {
+    invoices: Array<{ due_date: string; total_amount: number; status?: string }>
+    claims: Array<{ created_at: string; amount: number; status?: string }>
+    transactions: Array<{ transaction_date: string; amount: number }>
+}
+
 // ---------- Constants ----------
 
 const RUNWAY_WARNING_DAYS = 30 // < 30 days runway = warning
@@ -128,6 +134,71 @@ function groupByWeek(transactions: HistoricalTransaction[]): Map<string, { ar: n
     return weekMap
 }
 
+function normalizeDate(value: string | undefined): string {
+    if (!value) return new Date().toISOString()
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return new Date().toISOString()
+    return date.toISOString()
+}
+
+export function buildHistoricalTransactionsFromFinance(input: FinanceForecastInput): HistoricalTransaction[] {
+    const fromLedger: HistoricalTransaction[] = input.transactions.map((txn) => ({
+        date: normalizeDate(txn.transaction_date),
+        amount: Math.abs(txn.amount || 0),
+        type: (txn.amount || 0) >= 0 ? 'AR' : 'AP',
+        category: 'LEDGER',
+    }))
+
+    const fromClaims: HistoricalTransaction[] = input.claims.map((claim) => ({
+        date: normalizeDate(claim.created_at),
+        amount: Math.max(0, claim.amount || 0),
+        type: 'AR',
+        category: `CLAIM_${claim.status || 'UNKNOWN'}`,
+    }))
+
+    return [...fromLedger, ...fromClaims]
+}
+
+export function buildScheduledTransactionsFromFinance(
+    input: FinanceForecastInput,
+    forecastWeeks: 4 | 8,
+): HistoricalTransaction[] {
+    const now = new Date()
+    const cutoff = addWeeks(now, forecastWeeks)
+
+    const scheduledInvoices: HistoricalTransaction[] = input.invoices
+        .filter((inv) => {
+            const status = String(inv.status || '').toUpperCase()
+            if (status === 'PAID') return false
+            const dueDate = new Date(inv.due_date)
+            if (Number.isNaN(dueDate.getTime())) return false
+            return dueDate >= now && dueDate <= cutoff
+        })
+        .map((inv) => ({
+            date: normalizeDate(inv.due_date),
+            amount: Math.max(0, inv.total_amount || 0),
+            type: 'AP' as const,
+            category: `INVOICE_${inv.status || 'UNPAID'}`,
+        }))
+
+    const scheduledClaims: HistoricalTransaction[] = input.claims
+        .filter((claim) => {
+            const status = String(claim.status || '').toUpperCase()
+            if (!['SUBMITTED', 'APPROVED'].includes(status)) return false
+            const claimDate = new Date(claim.created_at)
+            if (Number.isNaN(claimDate.getTime())) return false
+            return claimDate >= now && claimDate <= cutoff
+        })
+        .map((claim) => ({
+            date: normalizeDate(claim.created_at),
+            amount: Math.max(0, claim.amount || 0),
+            type: 'AR' as const,
+            category: `CLAIM_${claim.status || 'SUBMITTED'}`,
+        }))
+
+    return [...scheduledInvoices, ...scheduledClaims]
+}
+
 /**
  * Calculate average weekly AR/AP from historical data
  */
@@ -156,6 +227,7 @@ export function calculateCashflowForecast(
     historicalTransactions: HistoricalTransaction[],
     forecastWeeks: 4 | 8 = 4,
     includeScheduledPayments: boolean = true,
+    scheduledTransactions: HistoricalTransaction[] = [],
 ): CashflowForecast {
     const now = new Date()
     const weekStart = getWeekStart(now)
@@ -167,6 +239,8 @@ export function calculateCashflowForecast(
     const weeks: CashflowDataPoint[] = []
     let runningBalance = currentBalance
     
+    const scheduledByWeek = groupByWeek(scheduledTransactions)
+
     for (let i = 0; i < forecastWeeks; i++) {
         const forecastDate = addWeeks(weekStart, i)
         const weekLabel = `Week ${i + 1}`
@@ -176,9 +250,13 @@ export function calculateCashflowForecast(
         let inflow = avgAR
         let outflow = avgAP
         
-        if (i === 0) {
-            // Current week - could include more precise scheduled payments
-            // For now, use averages
+        if (includeScheduledPayments) {
+            const key = getWeekStart(forecastDate).toISOString()
+            const bucket = scheduledByWeek.get(key)
+            if (bucket) {
+                inflow += bucket.ar
+                outflow += bucket.ap
+            }
         }
         
         const net = inflow - outflow

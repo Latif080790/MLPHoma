@@ -15,6 +15,7 @@ import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/validationSchemas'
 import { syncTimelineTask, syncDelete, syncTimelineTasks } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
+import type { TimelineProgressEvidence } from '../types/progressEvidence'
 
 /**
  * Task status
@@ -54,6 +55,7 @@ export interface TimelineTask {
   endDate: string // YYYY-MM-DD
   duration: number // inclusive days
   progress: number // 0..100
+  progressEvidence?: TimelineProgressEvidence
   status: TaskStatus
   priority: TaskPriority
   wbsId?: string
@@ -203,6 +205,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
         endDate,
         duration: inclusiveDays(data.startDate, endDate),
         progress: Number(data.progress || 0),
+        progressEvidence: data.progressEvidence,
         status: (data.status as TaskStatus) || 'not_started',
         priority: (data.priority as TaskPriority) || 'medium',
         wbsId: data.wbsId,
@@ -313,6 +316,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
           endDate,
           duration: inclusiveDays(startDate, endDate),
           progress: Number(t.progress || 0),
+          progressEvidence: t.progressEvidence,
           status: t.status || 'not_started',
           priority: t.priority || 'medium',
           wbsId: t.wbsId,

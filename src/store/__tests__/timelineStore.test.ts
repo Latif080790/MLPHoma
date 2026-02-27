@@ -137,6 +137,30 @@ describe('timelineStore', () => {
 
       expect(supabaseSyncService.syncTimelineTask).toHaveBeenCalled()
     })
+
+    it('should persist progress evidence metadata when provided', () => {
+      const taskId = useTimelineStore.getState().addTask(projectId, {
+        name: 'Task with Evidence',
+        startDate: '2024-01-01',
+        endDate: '2024-01-02',
+        progress: 20,
+        status: 'in_progress',
+        priority: 'medium',
+        progressEvidence: {
+          photoUrl: 'https://example.com/photo.jpg',
+          capturedAt: '2024-01-01T10:00:00.000Z',
+          latitude: -6.2,
+          longitude: 106.8,
+          hasPhoto: true,
+          hasTimestamp: true,
+          hasLocation: true,
+        },
+      })
+
+      const task = useTimelineStore.getState().getTasks(projectId).find((t) => t.id === taskId)
+      expect(task?.progressEvidence?.photoUrl).toBe('https://example.com/photo.jpg')
+      expect(task?.progressEvidence?.hasLocation).toBe(true)
+    })
   })
 
   describe('updateTask', () => {

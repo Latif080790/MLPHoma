@@ -138,6 +138,42 @@ export interface ProgressUpdateWithEvidence {
 }
 
 /**
+ * Minimal evidence snapshot attached to timeline task progress updates.
+ * Used for client-side gating in Timeline module.
+ */
+export interface TimelineProgressEvidence {
+    photoUrl: string
+    capturedAt: string
+    latitude: number
+    longitude: number
+    hasPhoto: boolean
+    hasTimestamp: boolean
+    hasLocation: boolean
+}
+
+/**
+ * Returns true when timeline evidence snapshot satisfies minimum requirements.
+ */
+export function isTimelineProgressEvidenceComplete(
+    evidence?: Partial<TimelineProgressEvidence> | null,
+): evidence is TimelineProgressEvidence {
+    if (!evidence) return false
+
+    const hasPhoto = typeof evidence.photoUrl === 'string' && evidence.photoUrl.trim().length > 0
+    const hasTimestamp = typeof evidence.capturedAt === 'string' && evidence.capturedAt.trim().length > 0
+    const hasLocation = typeof evidence.latitude === 'number' && typeof evidence.longitude === 'number'
+
+    return (
+        hasPhoto &&
+        hasTimestamp &&
+        hasLocation &&
+        evidence.hasPhoto === true &&
+        evidence.hasTimestamp === true &&
+        evidence.hasLocation === true
+    )
+}
+
+/**
  * Evidence upload input
  */
 export interface UploadEvidenceInput {

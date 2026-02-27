@@ -3,6 +3,8 @@
  * Type definitions for Timeline/Gantt module with CPM support.
  */
 
+import type { TimelineProgressEvidence } from './progressEvidence'
+
 /** Task dependency types */
 export type DependencyType = 'FS' | 'SS' | 'FF' | 'SF'
 
@@ -39,6 +41,8 @@ export interface TimelineTask {
   endDate: string
   /** Current progress percentage (0-100) */
   progress: number
+  /** Evidence snapshot for progress gate (photo/timestamp/location) */
+  progressEvidence?: TimelineProgressEvidence
   /** Task status */
   status: TaskStatus
   /** Task dependencies */
