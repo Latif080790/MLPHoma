@@ -55,6 +55,16 @@ export interface CriticalPathResult {
 }
 
 /**
+ * Threshold configuration for schedule deviation severity.
+ */
+export interface ScheduleAlertThresholds {
+    minorDays: number
+    moderateDays: number
+    criticalDays: number
+    minProgressGapPercent: number
+}
+
+/**
  * Task for schedule analysis
  */
 interface TaskForAnalysis {
@@ -72,9 +82,12 @@ interface TaskForAnalysis {
 
 // ---------- Constants ----------
 
-const MINOR_THRESHOLD_DAYS = 2      // < 2 days behind = minor
-const MODERATE_THRESHOLD_DAYS = 5   // 2-5 days behind = moderate
-const CRITICAL_THRESHOLD_DAYS = 10  // > 5 days behind = critical
+const DEFAULT_THRESHOLDS: ScheduleAlertThresholds = {
+    minorDays: 2,
+    moderateDays: 5,
+    criticalDays: 10,
+    minProgressGapPercent: 5,
+}
 
 // ---------- Helpers ----------
 
@@ -89,16 +102,51 @@ function daysBetween(date1: Date, date2: Date): number {
 /**
  * Determine alert severity based on days behind
  */
-function getSeverity(daysBehind: number, isCriticalPath: boolean): AlertSeverity {
+function getSeverity(daysBehind: number, isCriticalPath: boolean, thresholds: ScheduleAlertThresholds): AlertSeverity {
     if (isCriticalPath) {
         // Critical path tasks get elevated severity
-        if (daysBehind >= MODERATE_THRESHOLD_DAYS) return 'CRITICAL'
-        if (daysBehind >= MINOR_THRESHOLD_DAYS) return 'MODERATE'
+        if (daysBehind >= thresholds.moderateDays) return 'CRITICAL'
+        if (daysBehind >= thresholds.minorDays) return 'MODERATE'
     }
 
-    if (daysBehind >= CRITICAL_THRESHOLD_DAYS) return 'CRITICAL'
-    if (daysBehind >= MODERATE_THRESHOLD_DAYS) return 'MODERATE'
+    if (daysBehind >= thresholds.criticalDays) return 'CRITICAL'
+    if (daysBehind >= thresholds.moderateDays) return 'MODERATE'
     return 'MINOR'
+}
+
+function normalizeDependencies(raw: unknown): string[] {
+    if (!raw) return []
+
+    const parseDependencyValue = (value: unknown): string | null => {
+        if (typeof value === 'string') {
+            const trimmed = value.trim()
+            return trimmed.length ? trimmed : null
+        }
+        if (value && typeof value === 'object') {
+            const candidate = (value as any).predecessorId ?? (value as any).id
+            if (typeof candidate === 'string' && candidate.trim().length > 0) {
+                return candidate.trim()
+            }
+        }
+        return null
+    }
+
+    if (typeof raw === 'string') {
+        try {
+            const parsed = JSON.parse(raw)
+            return normalizeDependencies(parsed)
+        } catch {
+            return []
+        }
+    }
+
+    if (!Array.isArray(raw)) return []
+
+    const normalized = raw
+        .map(parseDependencyValue)
+        .filter((v): v is string => Boolean(v))
+
+    return Array.from(new Set(normalized))
 }
 
 /**
@@ -200,14 +248,15 @@ function calculateCriticalPath(tasks: TaskForAnalysis[]): CriticalPathResult {
 function analyzeTask(
     task: TaskForAnalysis,
     isCriticalPath: boolean,
-    now: Date
+    now: Date,
+    thresholds: ScheduleAlertThresholds,
 ): ScheduleAlert | null {
     const plannedEnd = new Date(task.plannedEndDate)
     const plannedStart = new Date(task.plannedStartDate)
     const actualStart = task.actualStartDate ? new Date(task.actualStartDate) : null
 
     // Calculate expected progress based on planned dates
-    const plannedDuration = daysBetween(plannedStart, plannedEnd)
+    const plannedDuration = Math.max(1, daysBetween(plannedStart, plannedEnd))
     const daysElapsed = Math.max(0, daysBetween(plannedStart, now))
     const expectedProgress = Math.min(100, (daysElapsed / plannedDuration) * 100)
 
@@ -216,7 +265,7 @@ function analyzeTask(
 
     // Only alert if task has started or should have started, and is behind
     const shouldHaveStarted = now >= plannedStart
-    if (!shouldHaveStarted || progressGap < 5) {
+    if (!shouldHaveStarted || progressGap < thresholds.minProgressGapPercent) {
         // Less than 5% behind = acceptable variance
         return null
     }
@@ -240,7 +289,7 @@ function analyzeTask(
     }
 
     // Determine severity
-    const severity = getSeverity(daysBehind, isCriticalPath)
+    const severity = getSeverity(daysBehind, isCriticalPath, thresholds)
 
     // Build message
     let message = `Task is ${daysBehind} days behind schedule`
@@ -253,7 +302,7 @@ function analyzeTask(
 
     // Build recommendations
     const recommendations: string[] = []
-    if (daysBehind >= MODERATE_THRESHOLD_DAYS) {
+    if (daysBehind >= thresholds.moderateDays) {
         recommendations.push('Review resource allocation and consider adding more workers')
     }
     if (isCriticalPath) {
@@ -290,11 +339,16 @@ function analyzeTask(
 
 export const scheduleAlertService = {
 
+    getDefaultThresholds(): ScheduleAlertThresholds {
+        return { ...DEFAULT_THRESHOLDS }
+    },
+
     /**
      * Get all schedule alerts for a project
      */
-    async getProjectAlerts(projectId: string): Promise<ScheduleAlert[]> {
+    async getProjectAlerts(projectId: string, thresholds: Partial<ScheduleAlertThresholds> = {}): Promise<ScheduleAlert[]> {
         const client = assertSupabase()
+        const effectiveThresholds: ScheduleAlertThresholds = { ...DEFAULT_THRESHOLDS, ...thresholds }
 
         // Fetch project tasks from timeline_tasks
         const { data: tasksData, error } = await client
@@ -310,25 +364,14 @@ export const scheduleAlertService = {
 
         // Convert to analysis format
         const tasks: TaskForAnalysis[] = tasksData.map((row: any) => {
-            let deps: string[] = []
-            try {
-                if (typeof row.dependencies === 'string') {
-                    deps = JSON.parse(row.dependencies)
-                } else if (Array.isArray(row.dependencies)) {
-                    deps = row.dependencies
-                }
-            } catch (e) {
-                console.warn('Failed to parse dependencies for task:', row.id, e)
-            }
-
             return {
                 id: row.id,
                 name: row.name,
                 plannedStartDate: row.start_date,
                 plannedEndDate: row.end_date,
                 progress: row.progress || 0,
-                dependencies: deps,
-                duration: row.duration || daysBetween(new Date(row.start_date), new Date(row.end_date)),
+                dependencies: normalizeDependencies(row.dependencies),
+                duration: row.duration || Math.max(1, daysBetween(new Date(row.start_date), new Date(row.end_date))),
             }
         })
 
@@ -342,7 +385,7 @@ export const scheduleAlertService = {
 
         tasks.forEach(task => {
             const isCritical = criticalTaskSet.has(task.id)
-            const alert = analyzeTask(task, isCritical, now)
+            const alert = analyzeTask(task, isCritical, now, effectiveThresholds)
 
             if (alert) {
                 alert.projectId = projectId
@@ -381,25 +424,14 @@ export const scheduleAlertService = {
         }
 
         const tasks: TaskForAnalysis[] = tasksData.map((row: any) => {
-            let deps: string[] = []
-            try {
-                if (typeof row.dependencies === 'string') {
-                    deps = JSON.parse(row.dependencies)
-                } else if (Array.isArray(row.dependencies)) {
-                    deps = row.dependencies
-                }
-            } catch (e) {
-                console.warn('Failed to parse dependencies for task:', row.id, e)
-            }
-
             return {
                 id: row.id,
                 name: '',
                 plannedStartDate: row.start_date,
                 plannedEndDate: row.end_date,
                 progress: 0,
-                dependencies: deps,
-                duration: row.duration || daysBetween(new Date(row.start_date), new Date(row.end_date)),
+                dependencies: normalizeDependencies(row.dependencies),
+                duration: row.duration || Math.max(1, daysBetween(new Date(row.start_date), new Date(row.end_date))),
             }
         })
 

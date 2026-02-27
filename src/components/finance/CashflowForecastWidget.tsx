@@ -10,14 +10,24 @@ import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { TrendingUp, TrendingDown, AlertTriangle, DollarSign, Calendar, Info } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts'
-import { calculateCashflowForecast, generateMockTransactions, formatCurrency, type CashflowForecast } from '../../lib/cashflowForecast'
+import {
+    calculateCashflowForecast,
+    buildHistoricalTransactionsFromFinance,
+    buildScheduledTransactionsFromFinance,
+    formatCurrency,
+    type CashflowForecast,
+} from '../../lib/cashflowForecast'
 import { cn } from '../../lib/utils'
+import type { Invoice, ClientClaim, FinanceTransaction } from '../../types/finance'
 
 interface CashflowForecastWidgetProps {
     projectId: string
     forecastWeeks?: 4 | 8
     currentBalance?: number
     compact?: boolean
+    invoices?: Invoice[]
+    claims?: ClientClaim[]
+    transactions?: FinanceTransaction[]
 }
 
 const HEALTH_CONFIG = {
@@ -55,6 +65,9 @@ export function CashflowForecastWidget({
     forecastWeeks = 4,
     currentBalance = 500000000, // Default 500M IDR
     compact = false,
+    invoices = [],
+    claims = [],
+    transactions = [],
 }: CashflowForecastWidgetProps) {
     const [forecast, setForecast] = useState<CashflowForecast | null>(null)
     const [loading, setLoading] = useState(true)
@@ -62,20 +75,27 @@ export function CashflowForecastWidget({
     
     useEffect(() => {
         loadForecast()
-    }, [projectId, showWeeks, currentBalance])
+    }, [projectId, showWeeks, currentBalance, invoices, claims, transactions])
     
     const loadForecast = async () => {
         setLoading(true)
         try {
-            // In production, fetch real transactions from API
-            // For now, generate mock data
-            const mockTransactions = generateMockTransactions(8)
+            const historicalTransactions = buildHistoricalTransactionsFromFinance({
+                invoices,
+                claims,
+                transactions,
+            })
+            const scheduledTransactions = buildScheduledTransactionsFromFinance(
+                { invoices, claims, transactions },
+                showWeeks,
+            )
             
             const result = calculateCashflowForecast(
                 currentBalance,
-                mockTransactions,
+                historicalTransactions,
                 showWeeks,
-                true
+                true,
+                scheduledTransactions,
             )
             
             setForecast(result)

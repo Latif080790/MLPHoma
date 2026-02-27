@@ -301,6 +301,10 @@ export default function Finance() {
                     <CashflowForecastWidget
                         projectId={activeProjectId}
                         forecastWeeks={4}
+                        invoices={invoices}
+                        claims={claims}
+                        transactions={transactions}
+                        currentBalance={Math.max(0, summary.totalIncome - summary.totalExpense)}
                     />
                 </TabsContent>
 
@@ -462,6 +466,15 @@ export default function Finance() {
 
                 {/* --- CASHFLOW SUMMARY --- */}
                 <TabsContent value="cashflow">
+                    <CashflowForecastWidget
+                        projectId={activeProjectId}
+                        forecastWeeks={8}
+                        invoices={invoices}
+                        claims={claims}
+                        transactions={transactions}
+                        currentBalance={Math.max(0, summary.totalIncome - summary.totalExpense)}
+                    />
+
                     <div className="grid gap-4 md:grid-cols-2 mb-6">
                         <Card className="bg-green-50">
                             <CardHeader className="pb-2"><CardTitle className="text-sm text-green-700">Total Income</CardTitle></CardHeader>

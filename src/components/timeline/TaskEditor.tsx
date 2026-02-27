@@ -17,6 +17,10 @@ import type { TimelineTask, TaskDependency, TaskStatus, DependencyType } from '.
 import { useTimelineStore } from '../../store/timelineStore'
 import { useWBSStore } from '../../store/wbsStore'
 import { useRabStore } from '../../store/rabStore'
+import {
+  isTimelineProgressEvidenceComplete,
+  type TimelineProgressEvidence,
+} from '../../types/progressEvidence'
 
 /**
  * Props for TaskEditor component
@@ -44,6 +48,14 @@ function calculateEndDate(startDate: string, duration: number): string {
   return end.toISOString().split('T')[0]
 }
 
+function toDateTimeLocal(value?: string): string {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const offsetMs = date.getTimezoneOffset() * 60000
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16)
+}
+
 /**
  * TaskEditor
  * Simple modal overlay to add/edit a timeline task.
@@ -65,6 +77,10 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
     progress: 0,
     status: 'not_started' as TaskStatus,
     priority: 'medium' as 'low' | 'medium' | 'high',
+    evidencePhotoUrl: '',
+    evidenceCapturedAt: '',
+    evidenceLatitude: '',
+    evidenceLongitude: '',
     wbsId: '',
     rabId: '',
     assignedResources: [] as string[],
@@ -86,6 +102,10 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
         progress: task.progress,
         status: task.status,
         priority: task.priority,
+        evidencePhotoUrl: task.progressEvidence?.photoUrl || '',
+        evidenceCapturedAt: toDateTimeLocal(task.progressEvidence?.capturedAt),
+        evidenceLatitude: task.progressEvidence?.latitude != null ? String(task.progressEvidence.latitude) : '',
+        evidenceLongitude: task.progressEvidence?.longitude != null ? String(task.progressEvidence.longitude) : '',
         wbsId: task.wbsId || '',
         rabId: task.rabId || '',
         assignedResources: task.assignedResources || [],
@@ -100,6 +120,10 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
         progress: 0,
         status: 'not_started',
         priority: 'medium',
+        evidencePhotoUrl: '',
+        evidenceCapturedAt: '',
+        evidenceLatitude: '',
+        evidenceLongitude: '',
         wbsId: '',
         rabId: '',
         assignedResources: [],
@@ -114,10 +138,25 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
    */
   const validate = (): boolean => {
     const e: Record<string, string> = {}
+    const previousProgress = task?.progress ?? 0
+    const progressIncreased = form.progress > previousProgress
+    const draftEvidence = {
+      photoUrl: form.evidencePhotoUrl.trim(),
+      capturedAt: form.evidenceCapturedAt ? new Date(form.evidenceCapturedAt).toISOString() : '',
+      latitude: form.evidenceLatitude === '' ? undefined : Number(form.evidenceLatitude),
+      longitude: form.evidenceLongitude === '' ? undefined : Number(form.evidenceLongitude),
+      hasPhoto: form.evidencePhotoUrl.trim().length > 0,
+      hasTimestamp: form.evidenceCapturedAt.trim().length > 0,
+      hasLocation: form.evidenceLatitude.trim().length > 0 && form.evidenceLongitude.trim().length > 0,
+    }
+
     if (!form.name.trim()) e.name = 'Task name is required'
     if (!form.startDate) e.startDate = 'Start date is required'
     if (form.duration < 1) e.duration = 'Duration must be at least 1 day'
     if (form.progress < 0 || form.progress > 100) e.progress = 'Progress must be 0–100'
+    if (progressIncreased && !isTimelineProgressEvidenceComplete(draftEvidence)) {
+      e.progressEvidence = 'Progress increase requires complete evidence: photo URL, timestamp, and GPS location.'
+    }
 
     // Validate dependencies
     if (dependencies.some(d => !d.predecessorId)) {
@@ -139,6 +178,19 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
     ev.preventDefault()
     if (!validate()) return
 
+    const evidenceInput = {
+      photoUrl: form.evidencePhotoUrl.trim(),
+      capturedAt: form.evidenceCapturedAt ? new Date(form.evidenceCapturedAt).toISOString() : '',
+      latitude: form.evidenceLatitude === '' ? Number.NaN : Number(form.evidenceLatitude),
+      longitude: form.evidenceLongitude === '' ? Number.NaN : Number(form.evidenceLongitude),
+      hasPhoto: form.evidencePhotoUrl.trim().length > 0,
+      hasTimestamp: form.evidenceCapturedAt.trim().length > 0,
+      hasLocation: form.evidenceLatitude.trim().length > 0 && form.evidenceLongitude.trim().length > 0,
+    }
+    const progressEvidence: TimelineProgressEvidence | undefined = isTimelineProgressEvidenceComplete(evidenceInput)
+      ? evidenceInput
+      : task?.progressEvidence
+
     const data: Omit<TimelineTask, 'id' | 'createdAt' | 'updatedAt'> = {
       projectId,
       name: form.name,
@@ -147,6 +199,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
       startDate: form.startDate,
       endDate: calculateEndDate(form.startDate, form.duration),
       progress: form.progress,
+      progressEvidence,
       status: form.status,
       priority: form.priority,
       wbsId: form.wbsId || undefined,
@@ -312,6 +365,54 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
                     className={errors.progress ? 'border-red-500' : ''}
                   />
                   {errors.progress ? <p className="mt-1 text-sm text-red-500">{errors.progress}</p> : null}
+                  {errors.progressEvidence ? <p className="mt-1 text-sm text-red-500">{errors.progressEvidence}</p> : null}
+                </div>
+
+                <div className="rounded-md border p-3 space-y-3 dark:border-neutral-800">
+                  <div>
+                    <Label htmlFor="evidencePhotoUrl">Evidence Photo URL</Label>
+                    <Input
+                      id="evidencePhotoUrl"
+                      type="url"
+                      placeholder="https://..."
+                      value={form.evidencePhotoUrl}
+                      onChange={(e) => setForm({ ...form, evidencePhotoUrl: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="evidenceCapturedAt">Evidence Timestamp</Label>
+                    <Input
+                      id="evidenceCapturedAt"
+                      type="datetime-local"
+                      value={form.evidenceCapturedAt}
+                      onChange={(e) => setForm({ ...form, evidenceCapturedAt: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="evidenceLatitude">Latitude</Label>
+                      <Input
+                        id="evidenceLatitude"
+                        type="number"
+                        step="any"
+                        value={form.evidenceLatitude}
+                        onChange={(e) => setForm({ ...form, evidenceLatitude: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="evidenceLongitude">Longitude</Label>
+                      <Input
+                        id="evidenceLongitude"
+                        type="number"
+                        step="any"
+                        value={form.evidenceLongitude}
+                        onChange={(e) => setForm({ ...form, evidenceLongitude: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-neutral-500">
+                    Progress increase is gated until evidence has photo URL, timestamp, and GPS coordinates.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

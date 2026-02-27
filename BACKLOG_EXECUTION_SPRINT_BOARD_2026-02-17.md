@@ -10,7 +10,7 @@
 - ✅ **WCAG 2.1 AA Typography Compliance COMPLETE** (359 violations fixed, automated enforcement active)
 - ✅ **Sprint 0 COMPLETE** (All 3 epics: WCAG compliance, costing stability, release safety)
 - ✅ **ESLint Critical Errors Fixed** (19 errors resolved across 14 files)
-- 🚧 **Sprint 1 IN PROGRESS** - Control gates implementation underway (S1.1 + S1.2 implemented)
+- ✅ **Sprint 3 COMPLETE** - Predictive & quality controls delivered (S3.1 + S3.2 + S3.3)
 
 ---
 
@@ -141,26 +141,24 @@
 ## Sprint 3 (Predictive & Quality Controls)
 
 ### Epic S3.1 Evidence-Gated Progress
-- [ ] Introduce progress evidence type (photo/timestamp/location)
+- [x] Introduce progress evidence type (photo/timestamp/location)
   - New file: `src/types/progressEvidence.ts`
-- [ ] Gate progress submission when evidence incomplete
+- [x] Gate progress submission when evidence incomplete
   - Candidate files:
     - `src/pages/modules/Timeline.tsx`
     - `src/components/timeline/**`
 
 ### Epic S3.2 Critical Path Warning
-- [ ] Add warning service for schedule deviation thresholds
+- [x] Add warning service for schedule deviation thresholds
   - New file: `src/services/scheduleAlertService.ts`
-- [ ] Add warning panel to command center
-  - Candidate file: `src/pages/Home.tsx`
+- [x] Add warning panel to command center
+  - File: `src/pages/modules/v3/CommandCenter.tsx`
 
 ### Epic S3.3 Rolling Cashflow Forecast
-- [ ] Add simple rolling forecast utility (4/8 week)
+- [x] Add simple rolling forecast utility (4/8 week)
   - New file: `src/lib/cashflowForecast.ts`
-- [ ] Add forecast widget in finance/dashboard
-  - Candidate files:
-    - `src/pages/modules/v3/Finance.tsx`
-    - `src/pages/Home.tsx`
+- [x] Add forecast widget in finance/dashboard
+  - File: `src/pages/modules/v3/Finance.tsx`
 
 ---
 

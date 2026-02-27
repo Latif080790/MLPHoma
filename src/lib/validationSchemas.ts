@@ -233,6 +233,17 @@ export const taskDependencySchema = z.object({
   lag: z.number().default(0), // Can be negative (lead) or positive (lag)
 })
 
+/** Timeline progress evidence schema (photo/timestamp/location) */
+export const timelineProgressEvidenceSchema = z.object({
+  photoUrl: z.string().min(1, 'Evidence photo URL is required'),
+  capturedAt: z.string().min(1, 'Evidence timestamp is required'),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  hasPhoto: z.literal(true),
+  hasTimestamp: z.literal(true),
+  hasLocation: z.literal(true),
+})
+
 /** Timeline task base schema (without refinement) */
 export const timelineTaskBaseSchema = z.object({
   projectId: z.string().min(1, 'Project ID required'),
@@ -244,6 +255,7 @@ export const timelineTaskBaseSchema = z.object({
   startDate: commonValidations.isoDate,
   endDate: commonValidations.isoDate,
   progress: commonValidations.percentage.default(0),
+  progressEvidence: timelineProgressEvidenceSchema.optional(),
   status: taskStatusEnum.default('not_started'),
   dependencies: z.array(taskDependencySchema).default([]),
   assignedResources: z.array(z.string()).optional(),
@@ -268,6 +280,7 @@ export const timelineTaskUpdateSchema = z.object({
   startDate: commonValidations.isoDate.optional(),
   endDate: commonValidations.isoDate.optional(),
   progress: commonValidations.percentage.optional(),
+  progressEvidence: timelineProgressEvidenceSchema.optional(),
   status: taskStatusEnum.optional(),
   dependencies: z.array(taskDependencySchema).optional(),
   assignedResources: z.array(z.string()).optional(),

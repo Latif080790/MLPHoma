@@ -354,6 +354,54 @@ describe('validationSchemas', () => {
         const result = timelineTaskInputSchema.safeParse(invalidTask)
         expect(result.success).toBe(false)
       })
+
+      it('should validate task with complete progress evidence', () => {
+        const validTask = {
+          projectId: 'proj-1',
+          name: 'Task with evidence',
+          duration: 2,
+          startDate: '2025-01-01',
+          endDate: '2025-01-02',
+          progress: 40,
+          status: 'in_progress' as const,
+          progressEvidence: {
+            photoUrl: 'https://example.com/evidence.jpg',
+            capturedAt: '2025-01-01T10:00:00.000Z',
+            latitude: -6.2,
+            longitude: 106.8,
+            hasPhoto: true,
+            hasTimestamp: true,
+            hasLocation: true,
+          },
+        }
+
+        const result = timelineTaskInputSchema.safeParse(validTask)
+        expect(result.success).toBe(true)
+      })
+
+      it('should reject task with invalid evidence completeness flags', () => {
+        const invalidTask = {
+          projectId: 'proj-1',
+          name: 'Task with invalid evidence',
+          duration: 2,
+          startDate: '2025-01-01',
+          endDate: '2025-01-02',
+          progress: 40,
+          status: 'in_progress' as const,
+          progressEvidence: {
+            photoUrl: 'https://example.com/evidence.jpg',
+            capturedAt: '2025-01-01T10:00:00.000Z',
+            latitude: -6.2,
+            longitude: 106.8,
+            hasPhoto: true,
+            hasTimestamp: false,
+            hasLocation: true,
+          },
+        }
+
+        const result = timelineTaskInputSchema.safeParse(invalidTask)
+        expect(result.success).toBe(false)
+      })
     })
   })
 
