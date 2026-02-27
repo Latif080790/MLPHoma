@@ -23,6 +23,8 @@ import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 import { ProcurementTracePanel } from "@/components/supply-chain/ProcurementTracePanel"
 import { MTRPanel } from "@/components/supply/MTRPanel"
 import { SubcontractorPanel } from "@/components/supply/SubcontractorPanel"
+import { MaterialTransferRequestDialog } from "@/components/supply/MaterialTransferRequestDialog"
+import { MaterialTransferApprovalPanel } from "@/components/supply/MaterialTransferApprovalPanel"
 import type { PurchaseOrder } from "@/types/supply-chain"
 
 export default function SupplyChain() {
@@ -47,6 +49,7 @@ export default function SupplyChain() {
     const [grnOpen, setGrnOpen] = useState(false)
     const [transferOpen, setTransferOpen] = useState(false)
     const [tracePo, setTracePo] = useState<PurchaseOrder | null>(null)
+    const [mtrRequestOpen, setMtrRequestOpen] = useState(false)
 
     useEffect(() => {
         if (activeProjectId) {
@@ -104,6 +107,7 @@ export default function SupplyChain() {
             <InventoryTransactionDialog open={invOpen} onOpenChange={setInvOpen} projectId={activeProjectId} defaultType={invType} />
             <GRNDialog open={grnOpen} onOpenChange={setGrnOpen} projectId={activeProjectId} />
             <MaterialTransferDialog open={transferOpen} onOpenChange={setTransferOpen} projectId={activeProjectId} />
+            <MaterialTransferRequestDialog open={mtrRequestOpen} onOpenChange={setMtrRequestOpen} projectId={activeProjectId} />
             <ProcurementTracePanel open={!!tracePo} onOpenChange={(o) => { if (!o) setTracePo(null) }} po={tracePo} projectId={activeProjectId} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -347,6 +351,12 @@ export default function SupplyChain() {
 
                 {/* --- MTR (Material Transfer Requests) --- */}
                 <TabsContent value="mtr" className="space-y-4">
+                    <div className="flex justify-end">
+                        <Button size="sm" onClick={() => setMtrRequestOpen(true)} className="gap-2">
+                            <Plus size={14} /> New Transfer Request
+                        </Button>
+                    </div>
+                    <MaterialTransferApprovalPanel projectId={activeProjectId} />
                     <MTRPanel />
                 </TabsContent>
 
