@@ -29,6 +29,9 @@ export interface DocumentVersion {
     isLatest: boolean
     fileSize?: number
     mimeType?: string
+    status?: 'ACTIVE' | 'ARCHIVED' | 'SUPERSEDED'
+    isLocked?: boolean
+    lockedBy?: string
     createdAt: string
 }
 
@@ -298,6 +301,9 @@ function rowToVersion(row: any): DocumentVersion {
         isLatest: row.is_latest !== false,
         fileSize: row.file_size,
         mimeType: row.mime_type,
+        status: row.status || 'ACTIVE',
+        isLocked: !!row.is_locked,
+        lockedBy: row.locked_by || undefined,
         createdAt: row.created_at,
     }
 }

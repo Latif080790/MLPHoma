@@ -98,6 +98,7 @@ export function DocumentVersionHistory({
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Version</TableHead>
+                                <TableHead>Status</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead>Size</TableHead>
                                 <TableHead>Notes</TableHead>
@@ -114,6 +115,22 @@ export function DocumentVersionHistory({
                                             {v.isLatest && (
                                                 <Badge variant="default" className="text-xs bg-green-100 text-green-800">
                                                     <Check className="h-3 w-3 mr-1" /> Current
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-1.5">
+                                            {v.status === 'ARCHIVED' ? (
+                                                <Badge variant="outline" className="text-xs bg-slate-100 text-slate-700 border-slate-300">ARCHIVED</Badge>
+                                            ) : v.status === 'SUPERSEDED' ? (
+                                                <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-300">SUPERSEDED</Badge>
+                                            ) : (
+                                                <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-300">ACTIVE</Badge>
+                                            )}
+                                            {v.isLocked && (
+                                                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-300">
+                                                    LOCKED{v.lockedBy ? ` · ${v.lockedBy}` : ''}
                                                 </Badge>
                                             )}
                                         </div>

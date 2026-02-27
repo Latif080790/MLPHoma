@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useProjectStore } from "@/store/projectStore"
 import { useAuthStore } from "@/store/authStore"
-import { documentService, ProjectDocument } from "@/services/documentService"
+import { documentService, ProjectDocument, getDocumentGovernanceState } from "@/services/documentService"
 import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
@@ -181,6 +181,7 @@ export default function Documents() {
                         const isArchived = doc.status === 'ARCHIVED'
                         const isSuperseded = doc.status === 'SUPERSEDED'
                         const isLocked = doc.is_locked
+                        const governance = getDocumentGovernanceState(doc)
 
                         return (
                             <Card
@@ -212,6 +213,7 @@ export default function Documents() {
                                                 size="icon"
                                                 className={`text-neutral-400 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity ${isLocked ? 'text-orange-500 opacity-100' : ''}`}
                                                 onClick={() => handleToggleLock(doc)}
+                                                disabled={!governance.canLock && !governance.canUnlock}
                                                 title={isLocked ? `Locked by ${doc.locked_by}` : 'Lock document'}
                                             >
                                                 {isLocked ? <Lock size={14} /> : <LockOpen size={14} />}
@@ -221,6 +223,7 @@ export default function Documents() {
                                                 size="icon"
                                                 className={`text-neutral-400 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity ${isArchived ? 'text-slate-500 opacity-100' : ''}`}
                                                 onClick={() => handleToggleArchive(doc)}
+                                                disabled={!governance.canArchive && !governance.canUnarchive}
                                                 title={isArchived ? 'Restore from archive' : 'Archive document'}
                                             >
                                                 {isArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
@@ -230,6 +233,7 @@ export default function Documents() {
                                                 size="icon"
                                                 className="text-neutral-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 onClick={() => setVersionDoc(doc)}
+                                                disabled={!governance.canCreateVersion && doc.status === 'ACTIVE'}
                                                 title="Version History"
                                             >
                                                 <History size={14} />
@@ -239,6 +243,7 @@ export default function Documents() {
                                                 size="icon"
                                                 className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 onClick={() => setPendingDeleteDoc(doc)}
+                                                disabled={!governance.canDelete}
                                             >
                                                 <Trash2 size={14} />
                                             </Button>
@@ -247,8 +252,13 @@ export default function Documents() {
                                     <div>
                                         <div className="flex items-center gap-1.5 mb-1">
                                             <h4 className="font-semibold truncate flex-1" title={doc.title}>{doc.title}</h4>
-                                            {(isArchived || isSuperseded || isLocked) && (
+                                            {(isArchived || isSuperseded || isLocked || doc.status === 'ACTIVE') && (
                                                 <div className="flex gap-1">
+                                                    {doc.status === 'ACTIVE' && !isLocked && (
+                                                        <Badge variant="outline" className="text-xs px-1 py-0 bg-emerald-50 text-emerald-700 border-emerald-200">
+                                                            ACTIVE
+                                                        </Badge>
+                                                    )}
                                                     {isLocked && (
                                                         <Badge variant="outline" className="text-xs px-1 py-0 bg-orange-50 text-orange-700 border-orange-200">
                                                             <Lock className="h-2 w-2 mr-0.5" /> LOCKED

@@ -31,6 +31,65 @@ export interface ProjectDocument {
     successor_id?: string   // Next version
 }
 
+export interface DocumentGovernanceState {
+    canCreateVersion: boolean
+    canArchive: boolean
+    canUnarchive: boolean
+    canLock: boolean
+    canUnlock: boolean
+    canDelete: boolean
+    reason?: string
+}
+
+export function getDocumentGovernanceState(doc: ProjectDocument): DocumentGovernanceState {
+    const isArchived = doc.status === 'ARCHIVED'
+    const isSuperseded = doc.status === 'SUPERSEDED'
+    const isActiveLatest = doc.status === 'ACTIVE' && !!doc.is_latest
+
+    if (doc.is_locked) {
+        return {
+            canCreateVersion: false,
+            canArchive: false,
+            canUnarchive: false,
+            canLock: false,
+            canUnlock: true,
+            canDelete: false,
+            reason: `Locked by ${doc.locked_by || 'another user'}`,
+        }
+    }
+
+    return {
+        canCreateVersion: isActiveLatest,
+        canArchive: doc.status === 'ACTIVE',
+        canUnarchive: isArchived,
+        canLock: doc.status === 'ACTIVE' && !isSuperseded,
+        canUnlock: false,
+        canDelete: !isActiveLatest,
+        reason: isActiveLatest
+            ? 'Active latest version should be archived instead of deleted'
+            : undefined,
+    }
+}
+
+function enforceGovernance(
+    action: 'CREATE_VERSION' | 'ARCHIVE' | 'UNARCHIVE' | 'LOCK' | 'UNLOCK' | 'DELETE',
+    doc: ProjectDocument
+): void {
+    const state = getDocumentGovernanceState(doc)
+    const denied = (
+        (action === 'CREATE_VERSION' && !state.canCreateVersion) ||
+        (action === 'ARCHIVE' && !state.canArchive) ||
+        (action === 'UNARCHIVE' && !state.canUnarchive) ||
+        (action === 'LOCK' && !state.canLock) ||
+        (action === 'UNLOCK' && !state.canUnlock) ||
+        (action === 'DELETE' && !state.canDelete)
+    )
+
+    if (denied) {
+        throw new Error(state.reason || `Document governance policy blocks action: ${action}`)
+    }
+}
+
 export const documentService = {
     async getDocuments(projectId: string, includeArchived = false): Promise<ProjectDocument[]> {
         const client = assertSupabase()
@@ -151,10 +210,7 @@ export const documentService = {
         
         if (fetchError || !oldDoc) throw new Error('Original document not found')
         
-        // Check if document is locked
-        if (oldDoc.is_locked) {
-            throw new Error(`Document is locked by ${oldDoc.locked_by || 'another user'}. Cannot create new version.`)
-        }
+        enforceGovernance('CREATE_VERSION', oldDoc as ProjectDocument)
         
         const newId = generateId()
         const newVersionNumber = oldDoc.version_number + 1
@@ -231,12 +287,18 @@ export const documentService = {
     async archiveDocument(id: string, userId?: string, userName?: string): Promise<void> {
         const client = assertSupabase()
         
-        // Get document title for audit
+        // Get document for governance + audit
         const { data: doc } = await client
             .from('documents')
-            .select('title')
+            .select('*')
             .eq('id', id)
             .single()
+
+        if (!doc) {
+            throw new Error('Document not found')
+        }
+
+        enforceGovernance('ARCHIVE', doc as ProjectDocument)
         
         const { error } = await client
             .from('documents')
@@ -246,7 +308,7 @@ export const documentService = {
         if (error) throw error
         
         // Audit log
-        if (doc && userId && userName) {
+        if (userId && userName) {
             await auditTrail.logDocumentArchived(id, doc.title, userId, userName)
         }
     },
@@ -256,6 +318,19 @@ export const documentService = {
      */
     async unarchiveDocument(id: string): Promise<void> {
         const client = assertSupabase()
+
+        const { data: doc } = await client
+            .from('documents')
+            .select('*')
+            .eq('id', id)
+            .single()
+
+        if (!doc) {
+            throw new Error('Document not found')
+        }
+
+        enforceGovernance('UNARCHIVE', doc as ProjectDocument)
+
         const { error } = await client
             .from('documents')
             .update({ status: 'ACTIVE' })
@@ -270,12 +345,18 @@ export const documentService = {
     async lockDocument(id: string, userId: string, userName: string): Promise<void> {
         const client = assertSupabase()
         
-        // Get document title for audit
+        // Get document for governance + audit
         const { data: doc } = await client
             .from('documents')
-            .select('title')
+            .select('*')
             .eq('id', id)
             .single()
+
+        if (!doc) {
+            throw new Error('Document not found')
+        }
+
+        enforceGovernance('LOCK', doc as ProjectDocument)
         
         const { error } = await client
             .from('documents')
@@ -289,9 +370,7 @@ export const documentService = {
         if (error) throw error
         
         // Audit log
-        if (doc) {
-            await auditTrail.logDocumentLocked(id, doc.title, userId, userName)
-        }
+        await auditTrail.logDocumentLocked(id, doc.title, userId, userName)
     },
 
     /**
@@ -300,12 +379,18 @@ export const documentService = {
     async unlockDocument(id: string, userId?: string, userName?: string): Promise<void> {
         const client = assertSupabase()
         
-        // Get document title for audit
+        // Get document for governance + audit
         const { data: doc } = await client
             .from('documents')
-            .select('title')
+            .select('*')
             .eq('id', id)
             .single()
+
+        if (!doc) {
+            throw new Error('Document not found')
+        }
+
+        enforceGovernance('UNLOCK', doc as ProjectDocument)
         
         const { error } = await client
             .from('documents')
@@ -319,7 +404,7 @@ export const documentService = {
         if (error) throw error
         
         // Audit log
-        if (doc && userId && userName) {
+        if (userId && userName) {
             await auditTrail.logDocumentUnlocked(id, doc.title, userId, userName)
         }
     },
@@ -327,12 +412,18 @@ export const documentService = {
     async deleteDocument(id: string, userId?: string, userName?: string) {
         const client = assertSupabase()
         
-        // Get document title for audit
+        // Get document for governance + audit
         const { data: doc } = await client
             .from('documents')
-            .select('title')
+            .select('*')
             .eq('id', id)
             .single()
+
+        if (!doc) {
+            throw new Error('Document not found')
+        }
+
+        enforceGovernance('DELETE', doc as ProjectDocument)
         
         // Soft delete
         const { error } = await client
@@ -343,7 +434,7 @@ export const documentService = {
         if (error) throw error
         
         // Audit log
-        if (doc && userId && userName) {
+        if (userId && userName) {
             await auditTrail.logDocumentDeleted(id, doc.title, userId, userName)
         }
     }
