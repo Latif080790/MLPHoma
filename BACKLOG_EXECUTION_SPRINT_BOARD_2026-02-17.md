@@ -119,10 +119,10 @@
     - `src/components/supply/**`
     - `src/pages/modules/v3/Finance.tsx`
 
-### Epic S2.2 Immutable Document Governance
-- [ ] Version-chain policy in frontend service adapter
+### Epic S2.2 Immutable Document Governance — ✅ COMPLETE
+- [x] Version-chain policy in frontend service adapter
   - Candidate file: `src/services/documentService.ts`
-- [ ] Archive/active indicator + lock UI state
+- [x] Archive/active indicator + lock UI state
   - Candidate files:
     - `src/pages/modules/v3/Documents.tsx`
     - `src/components/modules/DocumentVersionHistory.tsx`
