@@ -9,17 +9,17 @@
  * then selects a project. All hooks must run before any conditional returns.
  */
 
+import * as React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import ProjectCosting from '../ProjectCosting';
 
 // Mock all dependencies
-vi.mock('../../../store/projectStore', () => ({
+vi.mock('../../../../store/projectStore', () => ({
   useProjectStore: vi.fn(),
 }));
 
-vi.mock('../../../store/ahspStore', () => ({
+vi.mock('../../../../store/ahspStore', () => ({
   useAHSPStore: vi.fn(() => ({
     items: {},
     loading: false,
@@ -27,7 +27,7 @@ vi.mock('../../../store/ahspStore', () => ({
   })),
 }));
 
-vi.mock('../../../store/rabStore', () => ({
+vi.mock('../../../../store/rabStore', () => ({
   useRABStore: vi.fn(() => ({
     items: {},
     loading: false,
@@ -35,7 +35,7 @@ vi.mock('../../../store/rabStore', () => ({
   })),
 }));
 
-vi.mock('../../../store/rapStore', () => ({
+vi.mock('../../../../store/rapStore', () => ({
   useRAPStore: vi.fn(() => ({
     items: {},
     allocations: {},
@@ -44,7 +44,7 @@ vi.mock('../../../store/rapStore', () => ({
   })),
 }));
 
-vi.mock('../../../store/wbsStore', () => ({
+vi.mock('../../../../store/wbsStore', () => ({
   useWBSStore: vi.fn(() => ({
     nodes: [],
     loading: false,
@@ -52,7 +52,7 @@ vi.mock('../../../store/wbsStore', () => ({
   })),
 }));
 
-vi.mock('../../../hooks/useCostingMetrics', () => ({
+vi.mock('../../../../hooks/useCostingMetrics', () => ({
   default: vi.fn(() => ({
     totalCost: 0,
     margin: 0,
@@ -69,7 +69,8 @@ vi.mock('sonner', () => ({
   },
 }));
 
-import { useProjectStore } from '../../../store/projectStore';
+import { useProjectStore } from '../../../../store/projectStore';
+import ProjectCosting from '../ProjectCosting';
 
 describe('ProjectCosting - Sprint 0 Epic S0.1 Regression Tests', () => {
   beforeEach(() => {
@@ -335,6 +336,3 @@ describe('ProjectCosting - Sprint 0 Epic S0.1 Regression Tests', () => {
     });
   });
 });
-
-// Import React after mocks for hook spy to work
-import * as React from 'react';
