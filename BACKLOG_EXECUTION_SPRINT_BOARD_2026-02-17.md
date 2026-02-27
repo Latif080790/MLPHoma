@@ -99,13 +99,13 @@
     - `src/components/layout/**`
     - `src/pages/Home.tsx`
 
-### Epic S1.3 Unified Approval Queue (Minimum Slice)
-- [ ] Introduce queue item interface (cross-domain)
+### Epic S1.3 Unified Approval Queue (Minimum Slice) — ✅ COMPLETE
+- [x] Introduce queue item interface (cross-domain)
   - New file: `src/types/approvalQueue.ts`
-- [ ] Build queue widget (PO/MTR/Invoice payment scope awal)
+- [x] Build queue widget (PO/MTR/Invoice payment scope awal)
   - New file: `src/components/dashboard/ApprovalQueueWidget.tsx`
-- [ ] Render queue widget in command center/home
-  - File: `src/pages/Home.tsx`
+- [x] Render queue widget in command center/home
+  - File: `src/pages/modules/v3/CommandCenter.tsx`
 
 ---
 
