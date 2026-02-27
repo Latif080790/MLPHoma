@@ -60,6 +60,25 @@ export const auditTrail = {
     },
 
     /**
+     * Log payment approval request submission
+     */
+    async logPaymentApprovalRequested(
+        invoiceId: string,
+        invoiceNumber: string,
+        amount: number,
+        userId: string,
+        userName: string
+    ): Promise<void> {
+        await logAction('PAYMENT', `Payment approval requested for invoice ${invoiceNumber}`, {
+            userId,
+            userName,
+            entityType: 'INVOICE',
+            entityId: invoiceId,
+            details: { invoiceNumber, amount, mode: 'APPROVAL_REQUEST' },
+        })
+    },
+
+    /**
      * Log invoice creation
      */
     async logInvoiceCreated(
@@ -309,6 +328,24 @@ export const auditTrail = {
             entityType: 'CHANGE_ORDER',
             entityId: coId,
             details: { coNumber, reason },
+        })
+    },
+
+    /**
+     * Log change order deletion
+     */
+    async logChangeOrderDeleted(
+        coId: string,
+        coNumber: string,
+        userId: string,
+        userName: string
+    ): Promise<void> {
+        await logAction('DELETE', `Change Order ${coNumber} deleted`, {
+            userId,
+            userName,
+            entityType: 'CHANGE_ORDER',
+            entityId: coId,
+            details: { coNumber },
         })
     },
 

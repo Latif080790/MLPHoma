@@ -127,10 +127,10 @@
     - `src/pages/modules/v3/Documents.tsx`
     - `src/components/modules/DocumentVersionHistory.tsx`
 
-### Epic S2.3 Unified Audit Trail (Append-only oriented)
-- [ ] Add audit log event helper
+### Epic S2.3 Unified Audit Trail (Append-only oriented) — ✅ COMPLETE
+- [x] Add audit log event helper
   - New file: `src/lib/auditTrail.ts`
-- [ ] Inject events on critical actions (approve/reject/delete/payment)
+- [x] Inject events on critical actions (approve/reject/delete/payment)
   - Candidate files:
     - `src/pages/modules/v3/Finance.tsx`
     - `src/pages/modules/v3/ChangeManagement.tsx`
