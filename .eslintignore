@@ -1,0 +1,24 @@
+# Build outputs
+dist/
+build/
+*.min.js
+
+# Dependencies
+node_modules/
+
+# Backups and archives
+backups/
+_archive/
+
+# Test outputs
+coverage/
+
+# Config files
+*.config.js
+*.config.ts
+vite.config.ts
+vitest.config.ts
+
+# Environment files
+.env
+.env.local

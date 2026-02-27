@@ -168,12 +168,12 @@ export default function ProjectManagement() {
                     {project.name}
                   </h3>
                   {project.id === activeProjectId && (
-                    <Badge variant="secondary" className="text-[10px] h-4 px-1 bg-emerald-100 text-emerald-700 border-0">ACTIVE</Badge>
+                    <Badge variant="secondary" className="text-xs h-4 px-1 bg-emerald-100 text-emerald-700 border-0">ACTIVE</Badge>
                   )}
                 </div>
                 <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
                   <span className="truncate max-w-[120px]">{project.code || 'NO_CODE'}</span>
-                  <Badge variant="outline" className="text-[10px] h-4 px-1 font-normal text-slate-500 border-slate-200">
+                  <Badge variant="outline" className="text-xs h-4 px-1 font-normal text-slate-500 border-slate-200">
                     {project.status || 'Planning'}
                   </Badge>
                 </div>

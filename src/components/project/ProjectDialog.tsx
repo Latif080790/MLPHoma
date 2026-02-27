@@ -86,7 +86,7 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
                 disabled={!!project}
                 placeholder="Auto-generated if empty"
               />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Leave blank to use internal numbering (PRJ-YYYY-XXXX).
               </p>
             </div>

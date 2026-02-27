@@ -83,12 +83,12 @@ export default function TaskListWithCPM({ projectId, onTaskClick }: Props) {
                 >
                   <div className="min-w-0">
                     <div className="truncate font-medium">{t.name}</div>
-                    <div className="text-[11px] text-neutral-500">
+                    <div className="text-xs text-neutral-500">
                       {t.startDate} → {t.endDate}
                     </div>
                   </div>
                   <div className="text-xs">
-                    {isCritical ? <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-[11px]">CRITICAL</span> : <span className="text-neutral-500">{t.duration}d</span>}
+                    {isCritical ? <span className="px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs">CRITICAL</span> : <span className="text-neutral-500">{t.duration}d</span>}
                   </div>
                 </li>
               )

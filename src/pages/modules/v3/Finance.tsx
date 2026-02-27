@@ -228,7 +228,7 @@ export default function Finance() {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-mono">Rp {inv.total_amount.toLocaleString()}</span>
-                                                    <Badge variant={inv.status === 'PAID' ? 'default' : inv.status === 'OVERDUE' ? 'destructive' : 'secondary'} className="text-[10px]">{inv.status}</Badge>
+                                                    <Badge variant={inv.status === 'PAID' ? 'default' : inv.status === 'OVERDUE' ? 'destructive' : 'secondary'} className="text-xs">{inv.status}</Badge>
                                                 </div>
                                             </div>
                                         ))}
@@ -258,7 +258,7 @@ export default function Finance() {
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-mono text-green-600">Rp {claim.amount.toLocaleString()}</span>
-                                                    <Badge variant="outline" className="text-[10px]">{claim.status}</Badge>
+                                                    <Badge variant="outline" className="text-xs">{claim.status}</Badge>
                                                 </div>
                                             </div>
                                         ))}
@@ -354,7 +354,7 @@ export default function Finance() {
                                                                     onClick={() => setMatchDialogInvoice(inv)}
                                                                     className="cursor-pointer hover:opacity-80 transition-opacity"
                                                                 >
-                                                                    <Badge className={`text-[10px] px-2 py-0.5 ${getMatchStatusColor(matchResult.status)}`}>
+                                                                    <Badge className={`text-xs px-2 py-0.5 ${getMatchStatusColor(matchResult.status)}`}>
                                                                         {getMatchStatusLabel(matchResult.status)}
                                                                     </Badge>
                                                                 </button>
@@ -366,7 +366,7 @@ export default function Finance() {
                                                             inv.status === 'PAID' ? 'default' :
                                                                 inv.status === 'OVERDUE' ? 'destructive' :
                                                                     'secondary'
-                                                        } className="text-[10px] font-normal px-2 py-0.5">{inv.status}</Badge>
+                                                        } className="text-xs font-normal px-2 py-0.5">{inv.status}</Badge>
                                                     </TableCell>
                                                     <TableCell className="p-3 text-right">
                                                         {inv.status !== 'PAID' && inv.status !== 'PENDING_PAYMENT' && (
@@ -479,7 +479,7 @@ export default function Finance() {
                                                     <TableRow key={t.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                                         <TableCell className="p-3 text-xs text-slate-500 font-mono">{format(new Date(t.transaction_date), 'dd MMM yyyy')}</TableCell>
                                                         <TableCell className="p-3 text-sm text-slate-700 dark:text-slate-300">{t.description}</TableCell>
-                                                        <TableCell className="p-3"><Badge variant="outline" className="text-[10px] font-normal text-slate-500">{t.category}</Badge></TableCell>
+                                                        <TableCell className="p-3"><Badge variant="outline" className="text-xs font-normal text-slate-500">{t.category}</Badge></TableCell>
                                                         <TableCell className={`p-3 text-right font-bold font-mono text-xs ${t.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                             Rp {t.amount.toLocaleString()}
                                                         </TableCell>

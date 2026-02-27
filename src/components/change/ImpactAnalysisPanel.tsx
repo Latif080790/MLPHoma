@@ -52,7 +52,7 @@ function StatusPipeline({ currentStatus }: { currentStatus: ChangeOrderStatus })
 
                 return (
                     <React.Fragment key={status}>
-                        <div className={`px-2 py-0.5 rounded-full text-[9px] font-semibold ${colorClass} transition-all`}>
+                        <div className={`px-2 py-0.5 rounded-full text-xs font-semibold ${colorClass} transition-all`}>
                             {isPassed ? '✓' : ''} {CCO_STATUS_LABELS[status]}
                         </div>
                         {idx < LIFECYCLE_ORDER.length - 1 && (
@@ -64,7 +64,7 @@ function StatusPipeline({ currentStatus }: { currentStatus: ChangeOrderStatus })
             {isRejected && (
                 <>
                     <ArrowRight size={10} className="text-red-400 shrink-0" />
-                    <div className={`px-2 py-0.5 rounded-full text-[9px] font-semibold ${CCO_STATUS_COLORS.REJECTED}`}>
+                    <div className={`px-2 py-0.5 rounded-full text-xs font-semibold ${CCO_STATUS_COLORS.REJECTED}`}>
                         {CCO_STATUS_LABELS.REJECTED}
                     </div>
                 </>
@@ -85,7 +85,7 @@ function ImpactGauge({ label, value, icon, suffix, isNegative }: {
     return (
         <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
             <div className="text-slate-400 mb-1">{icon}</div>
-            <p className="text-[10px] text-slate-500 uppercase font-semibold">{label}</p>
+            <p className="text-xs text-slate-500 uppercase font-semibold">{label}</p>
             <p className={`text-lg font-mono font-bold mt-1 ${color}`}>
                 {value > 0 ? '+' : ''}{typeof value === 'number' && suffix === 'Rp'
                     ? formatIDR(value)
@@ -142,7 +142,7 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
                         <CardTitle className="text-sm font-semibold">
                             {changeOrder.vo_number}: {changeOrder.title}
                         </CardTitle>
-                        <Badge className={`text-[9px] ${CCO_STATUS_COLORS[changeOrder.status]}`}>
+                        <Badge className={`text-xs ${CCO_STATUS_COLORS[changeOrder.status]}`}>
                             {CCO_STATUS_LABELS[changeOrder.status]}
                         </Badge>
                     </div>
@@ -186,7 +186,7 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
                     ) : (
                         <>
                             <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-                                <p className="text-[10px] text-slate-400 uppercase font-semibold">Items</p>
+                                <p className="text-xs text-slate-400 uppercase font-semibold">Items</p>
                                 <p className="text-lg font-mono font-bold text-slate-600 mt-1">{changeOrder.items?.length || 0}</p>
                             </div>
                             <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
@@ -194,7 +194,7 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
                                     <Loader2 size={16} className="mx-auto animate-spin text-slate-400 mt-2" />
                                 ) : (
                                     <>
-                                        <p className="text-[10px] text-slate-400 uppercase font-semibold">Preview</p>
+                                        <p className="text-xs text-slate-400 uppercase font-semibold">Preview</p>
                                         <p className="text-xs text-slate-400 mt-2">Available after review</p>
                                     </>
                                 )}
@@ -206,15 +206,15 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
                 {/* Change Items List */}
                 {changeOrder.items && changeOrder.items.length > 0 && (
                     <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
-                        <div className="bg-slate-50 dark:bg-slate-900/80 px-3 py-2 text-[10px] font-semibold text-slate-500 uppercase">
+                        <div className="bg-slate-50 dark:bg-slate-900/80 px-3 py-2 text-xs font-semibold text-slate-500 uppercase">
                             Change Items ({changeOrder.items.length})
                         </div>
                         <div className="divide-y divide-slate-100 dark:divide-slate-800">
                             {changeOrder.items.map(item => (
-                                <div key={item.id} className="flex items-center justify-between px-3 py-2 text-[11px]">
+                                <div key={item.id} className="flex items-center justify-between px-3 py-2 text-xs">
                                     <div className="flex-1 min-w-0">
                                         <span className="text-slate-700 dark:text-slate-300 font-medium truncate block">{item.item_description}</span>
-                                        {item.wbs_name && <span className="text-[9px] text-slate-400">WBS: {item.wbs_name}</span>}
+                                        {item.wbs_name && <span className="text-xs text-slate-400">WBS: {item.wbs_name}</span>}
                                     </div>
                                     <div className="text-right font-mono shrink-0 ml-3">
                                         <span className="text-slate-500">Δ Vol: {item.volume_delta > 0 ? '+' : ''}{item.volume_delta}</span>
@@ -277,7 +277,7 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
                         <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
                         <div>
                             <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Approved & Cascaded</p>
-                            <p className="text-[10px] text-emerald-600/70 mt-0.5">
+                            <p className="text-xs text-emerald-600/70 mt-0.5">
                                 RAB and Timeline have been updated with this change order.
                             </p>
                         </div>
@@ -289,7 +289,7 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
                         <XCircle size={16} className="text-red-600 shrink-0" />
                         <div>
                             <p className="text-xs font-semibold text-red-700 dark:text-red-400">Rejected</p>
-                            <p className="text-[10px] text-red-600/70 mt-0.5">
+                            <p className="text-xs text-red-600/70 mt-0.5">
                                 Revise to Draft to make changes and resubmit.
                             </p>
                         </div>

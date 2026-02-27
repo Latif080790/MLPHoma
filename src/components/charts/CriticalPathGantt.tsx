@@ -105,8 +105,8 @@ export function CriticalPathGantt() {
                                     {node.name}
                                 </span>
                                 <div className="flex justify-between items-center w-full mt-0.5 opacity-60">
-                                    <span className="text-[10px] text-slate-500">Float: {node.totalFloat}d</span>
-                                    <span className="text-[10px] text-slate-500">{node.progress}%</span>
+                                    <span className="text-xs text-slate-500">Float: {node.totalFloat}d</span>
+                                    <span className="text-xs text-slate-500">{node.progress}%</span>
                                 </div>
                             </div>
                         ))}
@@ -262,7 +262,7 @@ export function CriticalPathGantt() {
             </div>
 
             {/* Bottom Legend */}
-            <div className="shrink-0 h-10 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center px-4 gap-6 text-[10px] uppercase font-semibold text-slate-500">
+            <div className="shrink-0 h-10 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center px-4 gap-6 text-xs uppercase font-semibold text-slate-500">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm bg-red-500"></div> Critical Path (0 Float)
                 </div>

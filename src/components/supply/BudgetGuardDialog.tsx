@@ -166,7 +166,7 @@ export function BudgetGuardDialog({
                                 <p className={`font-semibold text-sm ${config.color}`}>{config.title}</p>
                                 <p className="text-xs text-slate-500 mt-0.5">{config.subtitle}</p>
                             </div>
-                            <Badge className={`ml-auto text-[10px] ${config.badgeClass}`}>
+                            <Badge className={`ml-auto text-xs ${config.badgeClass}`}>
                                 {result.hasExceeded ? 'BLOCKED' : result.requiresApproval ? 'NEEDS APPROVAL' : 'PASSED'}
                             </Badge>
                         </div>
@@ -176,7 +176,7 @@ export function BudgetGuardDialog({
                             <div className="max-h-[300px] overflow-auto">
                                 <Table>
                                     <TableHeader className="bg-slate-50 dark:bg-slate-900/80 sticky top-0 z-10">
-                                        <TableRow className="hover:bg-transparent text-[10px]">
+                                        <TableRow className="hover:bg-transparent text-xs">
                                             <TableHead className="h-8 px-3 font-semibold uppercase">Item</TableHead>
                                             <TableHead className="h-8 px-3 text-right font-semibold uppercase">Budget (RAP)</TableHead>
                                             <TableHead className="h-8 px-3 text-right font-semibold uppercase">Committed</TableHead>
@@ -191,7 +191,7 @@ export function BudgetGuardDialog({
                                             const pctRemaining = 100 - pctUsed
 
                                             return (
-                                                <TableRow key={item.rapItemId} className="text-[11px] border-b border-slate-100 dark:border-slate-800">
+                                                <TableRow key={item.rapItemId} className="text-xs border-b border-slate-100 dark:border-slate-800">
                                                     <TableCell className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 max-w-[160px] truncate">
                                                         {item.itemName}
                                                     </TableCell>
@@ -204,7 +204,7 @@ export function BudgetGuardDialog({
                                                     <TableCell className={`px-3 py-2 text-right font-mono font-semibold ${pctRemaining < 10 ? 'text-red-600' : pctRemaining < 25 ? 'text-amber-600' : 'text-emerald-600'
                                                         }`}>
                                                         {formatIDR(item.remaining)}
-                                                        <span className="text-[9px] ml-1 opacity-70">({pctRemaining.toFixed(0)}%)</span>
+                                                        <span className="text-xs ml-1 opacity-70">({pctRemaining.toFixed(0)}%)</span>
                                                     </TableCell>
                                                     <TableCell className="px-3 py-2 text-right font-mono text-slate-700 dark:text-slate-300 font-semibold">
                                                         {formatIDR(item.requested)}
@@ -213,17 +213,17 @@ export function BudgetGuardDialog({
                                                         {item.exceeds ? (
                                                             <div className="flex items-center justify-center gap-1 text-red-600">
                                                                 <XCircle size={12} />
-                                                                <span className="text-[9px] font-semibold">OVER by {formatIDR(item.overageAmount)}</span>
+                                                                <span className="text-xs font-semibold">OVER by {formatIDR(item.overageAmount)}</span>
                                                             </div>
                                                         ) : pctRemaining < 10 ? (
                                                             <div className="flex items-center justify-center gap-1 text-amber-600">
                                                                 <AlertTriangle size={12} />
-                                                                <span className="text-[9px] font-semibold">LOW</span>
+                                                                <span className="text-xs font-semibold">LOW</span>
                                                             </div>
                                                         ) : (
                                                             <div className="flex items-center justify-center gap-1 text-emerald-600">
                                                                 <CheckCircle2 size={12} />
-                                                                <span className="text-[9px] font-semibold">OK</span>
+                                                                <span className="text-xs font-semibold">OK</span>
                                                             </div>
                                                         )}
                                                     </TableCell>
@@ -245,7 +245,7 @@ export function BudgetGuardDialog({
 
                             return (
                                 <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                                    <div className="flex items-center justify-between text-[10px] text-slate-500 mb-1">
+                                    <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
                                         <span>Budget Utilization</span>
                                         <span>{formatIDR(totalUsed + totalReq)} / {formatIDR(totalBudget)}</span>
                                     </div>
@@ -254,7 +254,7 @@ export function BudgetGuardDialog({
                                         <div className={`h-full transition-all ${pctUsed + pctReq > 100 ? 'bg-red-500' : 'bg-amber-400'}`}
                                             style={{ width: `${Math.min(pctReq, 100 - pctUsed)}%` }} />
                                     </div>
-                                    <div className="flex items-center gap-4 mt-1 text-[9px] text-slate-400">
+                                    <div className="flex items-center gap-4 mt-1 text-xs text-slate-400">
                                         <span className="flex items-center gap-1"><span className="w-2 h-2 bg-blue-500 rounded-full" /> Committed</span>
                                         <span className="flex items-center gap-1"><span className="w-2 h-2 bg-amber-400 rounded-full" /> This PO</span>
                                     </div>

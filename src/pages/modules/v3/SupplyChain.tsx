@@ -166,7 +166,7 @@ export default function SupplyChain() {
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <h3 className="font-semibold text-slate-900 dark:text-slate-100">{mr.itemName}</h3>
-                                                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border ${getStatusColor(mr.status)}`}>
+                                                    <Badge variant="outline" className={`text-xs px-1.5 py-0 border ${getStatusColor(mr.status)}`}>
                                                         {mr.status}
                                                     </Badge>
                                                     {mockTrace.length > 0 && (
@@ -256,7 +256,7 @@ export default function SupplyChain() {
                                                         Rp {po.totalAmount.toLocaleString('id-ID')}
                                                     </TableCell>
                                                     <TableCell className="text-center py-2">
-                                                        <Badge variant="outline" className={`text-[10px] font-normal px-2 py-0.5 border ${getStatusColor(po.status)}`}>
+                                                        <Badge variant="outline" className={`text-xs font-normal px-2 py-0.5 border ${getStatusColor(po.status)}`}>
                                                             {po.status}
                                                         </Badge>
                                                     </TableCell>
@@ -302,7 +302,7 @@ export default function SupplyChain() {
                                     </div>
                                     <div className="flex items-end justify-between">
                                         <div className="space-y-1">
-                                            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total Movement</div>
+                                            <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Total Movement</div>
                                             <div className="flex gap-3 text-xs font-mono">
                                                 <span className="text-green-600 flex items-center gap-1">
                                                     <ArrowDown size={10} /> {item.totalIn}
@@ -317,7 +317,7 @@ export default function SupplyChain() {
                                             <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                                                 {item.currentStock}
                                             </div>
-                                            <div className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">Available</div>
+                                            <div className="text-xs font-medium text-slate-400 uppercase tracking-widest">Available</div>
                                         </div>
                                     </div>
                                 </CardContent>

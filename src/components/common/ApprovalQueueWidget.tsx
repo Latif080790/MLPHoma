@@ -70,12 +70,12 @@ export function ApprovalQueueWidget() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-semibold truncate">{approval.title}</p>
-                                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                                        <p className="text-xs text-muted-foreground mt-0.5">
                                             {APPROVAL_ENTITY_LABELS[approval.entityType] || approval.entityType}
                                             {' · '}
                                             {approval.requesterName || 'Unknown'}
                                         </p>
-                                        <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                                        <p className="text-xs text-muted-foreground/70 mt-0.5">
                                             {formatDistanceToNow(new Date(approval.createdAt), { addSuffix: true, locale: idLocale })}
                                         </p>
                                     </div>
@@ -84,7 +84,7 @@ export function ApprovalQueueWidget() {
                             ))}
 
                             {pendingApprovals.length > 5 && (
-                                <p className="text-center text-[10px] text-muted-foreground pt-1">
+                                <p className="text-center text-xs text-muted-foreground pt-1">
                                     +{pendingApprovals.length - 5} more pending
                                 </p>
                             )}

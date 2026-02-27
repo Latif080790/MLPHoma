@@ -154,7 +154,7 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
                                                 <div className="text-muted-foreground">
                                                     Need: <span className="font-mono">{s.netDemand.toFixed(2)}</span> {s.unit}
                                                     {s.currentStock > 0 && (
-                                                        <Badge variant="outline" className="ml-1 text-[10px]">
+                                                        <Badge variant="outline" className="ml-1 text-xs">
                                                             Stock: {s.currentStock.toFixed(1)}
                                                         </Badge>
                                                     )}

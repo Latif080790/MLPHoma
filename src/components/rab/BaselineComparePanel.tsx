@@ -33,7 +33,7 @@ function VarianceBadge({ status }: { status: BaselineVariance['status'] }) {
         removed: { label: '× Removed', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
     }
     const c = config[status]
-    return <Badge variant="outline" className={`text-[9px] ${c.className}`}>{c.label}</Badge>
+    return <Badge variant="outline" className={`text-xs ${c.className}`}>{c.label}</Badge>
 }
 
 // ─── Main Component ───
@@ -78,7 +78,7 @@ export function BaselineComparePanel() {
                         </div>
                         <CardTitle className="text-sm font-semibold">RAB Baseline</CardTitle>
                         {hasBaseline && comparison && (
-                            <Badge variant="outline" className={`text-[10px] h-5 ${comparison.variancePercent > 5 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                            <Badge variant="outline" className={`text-xs h-5 ${comparison.variancePercent > 5 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
                                 comparison.variancePercent < -5 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
                                     'bg-slate-100 text-slate-500 dark:bg-slate-800'
                                 }`}>
@@ -104,7 +104,7 @@ export function BaselineComparePanel() {
                     <div className="text-center py-8">
                         <Lock size={28} className="mx-auto mb-2 text-slate-300 opacity-40" />
                         <p className="text-sm text-slate-400">No baseline frozen yet.</p>
-                        <p className="text-[11px] text-slate-400 mt-1">
+                        <p className="text-xs text-slate-400 mt-1">
                             Freeze the RAB baseline when project execution begins to track variance.
                         </p>
                     </div>
@@ -113,16 +113,16 @@ export function BaselineComparePanel() {
                         {/* Summary Cards */}
                         <div className="grid grid-cols-4 gap-3">
                             <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-                                <p className="text-[10px] text-slate-500 uppercase font-semibold">Baseline</p>
+                                <p className="text-xs text-slate-500 uppercase font-semibold">Baseline</p>
                                 <p className="text-sm font-mono font-bold text-slate-700 dark:text-slate-300 mt-1">
                                     {formatIDR(comparison.totalBaseline)}
                                 </p>
-                                <p className="text-[10px] text-slate-400 mt-0.5">
+                                <p className="text-xs text-slate-400 mt-0.5">
                                     {format(new Date(comparison.baseline.frozenAt), 'dd MMM yyyy')}
                                 </p>
                             </div>
                             <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-                                <p className="text-[10px] text-slate-500 uppercase font-semibold">Current</p>
+                                <p className="text-xs text-slate-500 uppercase font-semibold">Current</p>
                                 <p className="text-sm font-mono font-bold text-slate-700 dark:text-slate-300 mt-1">
                                     {formatIDR(comparison.totalCurrent)}
                                 </p>
@@ -131,26 +131,26 @@ export function BaselineComparePanel() {
                                 comparison.totalVariance < 0 ? 'border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20' :
                                     'border-slate-200 dark:border-slate-800'
                                 }`}>
-                                <p className="text-[10px] text-slate-500 uppercase font-semibold">Variance</p>
+                                <p className="text-xs text-slate-500 uppercase font-semibold">Variance</p>
                                 <p className={`text-sm font-mono font-bold mt-1 ${comparison.totalVariance > 0 ? 'text-red-600' : comparison.totalVariance < 0 ? 'text-green-600' : 'text-slate-500'
                                     }`}>
                                     {comparison.totalVariance > 0 ? '+' : ''}{formatIDR(comparison.totalVariance)}
                                 </p>
                             </div>
                             <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-                                <p className="text-[10px] text-slate-500 uppercase font-semibold">Changes</p>
+                                <p className="text-xs text-slate-500 uppercase font-semibold">Changes</p>
                                 <div className="flex items-center justify-center gap-2 mt-1">
                                     {comparison.addedCount > 0 && (
-                                        <span className="text-[10px] text-blue-600 font-semibold">+{comparison.addedCount}</span>
+                                        <span className="text-xs text-blue-600 font-semibold">+{comparison.addedCount}</span>
                                     )}
                                     {comparison.changedCount > 0 && (
-                                        <span className="text-[10px] text-amber-600 font-semibold">~{comparison.changedCount}</span>
+                                        <span className="text-xs text-amber-600 font-semibold">~{comparison.changedCount}</span>
                                     )}
                                     {comparison.removedCount > 0 && (
-                                        <span className="text-[10px] text-red-600 font-semibold">-{comparison.removedCount}</span>
+                                        <span className="text-xs text-red-600 font-semibold">-{comparison.removedCount}</span>
                                     )}
                                     {comparison.addedCount === 0 && comparison.changedCount === 0 && comparison.removedCount === 0 && (
-                                        <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                                        <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
                                             <CheckCircle2 size={10} /> No changes
                                         </span>
                                     )}
@@ -164,7 +164,7 @@ export function BaselineComparePanel() {
                                 <div className="max-h-[400px] overflow-auto">
                                     <Table>
                                         <TableHeader className="bg-slate-50 dark:bg-slate-900/80 sticky top-0 z-10">
-                                            <TableRow className="hover:bg-transparent text-[10px]">
+                                            <TableRow className="hover:bg-transparent text-xs">
                                                 <TableHead className="h-8 px-3 font-semibold uppercase">Item</TableHead>
                                                 <TableHead className="h-8 px-3 text-right font-semibold uppercase">Baseline</TableHead>
                                                 <TableHead className="h-8 px-3 text-right font-semibold uppercase">Current</TableHead>
@@ -177,7 +177,7 @@ export function BaselineComparePanel() {
                                                 .filter(v => v.status !== 'unchanged')
                                                 .sort((a, b) => Math.abs(b.totalChange) - Math.abs(a.totalChange))
                                                 .map(v => (
-                                                    <TableRow key={v.itemId} className="text-[11px] border-b border-slate-100 dark:border-slate-800">
+                                                    <TableRow key={v.itemId} className="text-xs border-b border-slate-100 dark:border-slate-800">
                                                         <TableCell className="px-3 py-2 font-medium text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
                                                             {v.name}
                                                         </TableCell>
@@ -190,7 +190,7 @@ export function BaselineComparePanel() {
                                                         <TableCell className={`px-3 py-2 text-right font-mono font-semibold ${v.totalChange > 0 ? 'text-red-600' : v.totalChange < 0 ? 'text-green-600' : 'text-slate-400'
                                                             }`}>
                                                             {v.totalChange > 0 ? '+' : ''}{formatIDR(v.totalChange)}
-                                                            <span className="text-[9px] ml-1 opacity-70">
+                                                            <span className="text-xs ml-1 opacity-70">
                                                                 ({v.totalChangePercent > 0 ? '+' : ''}{v.totalChangePercent.toFixed(1)}%)
                                                             </span>
                                                         </TableCell>

@@ -108,7 +108,7 @@ export default function ChangeManagement() {
                         const count = orders.filter(o => o.status === status).length
                         return (
                             <div key={status} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${CCO_STATUS_COLORS[status]}`}>
-                                <span className="text-[10px] opacity-70">{CCO_STATUS_LABELS[status]}</span>
+                                <span className="text-xs opacity-70">{CCO_STATUS_LABELS[status]}</span>
                                 <span className="font-mono font-bold">{count}</span>
                             </div>
                         )
@@ -157,7 +157,7 @@ export default function ChangeManagement() {
                                                     <div className="text-xs text-slate-500 truncate max-w-[300px]">{order.description}</div>
                                                 </TableCell>
                                                 <TableCell className="p-3">
-                                                    <Badge className={`text-[9px] font-semibold px-2 py-0.5 ${CCO_STATUS_COLORS[order.status]}`}>
+                                                    <Badge className={`text-xs font-semibold px-2 py-0.5 ${CCO_STATUS_COLORS[order.status]}`}>
                                                         {CCO_STATUS_LABELS[order.status]}
                                                     </Badge>
                                                 </TableCell>

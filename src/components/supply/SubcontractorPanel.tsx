@@ -132,7 +132,7 @@ export function SubcontractorPanel() {
                                     <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded text-slate-600 dark:text-slate-300">
                                         {sub.type === 'MANDOR' ? <HardHat size={20} /> : <Users size={20} />}
                                     </div>
-                                    <Badge variant="outline" className={`text-[10px] ${sub.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
+                                    <Badge variant="outline" className={`text-xs ${sub.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
                                         {sub.status}
                                     </Badge>
                                 </div>
@@ -179,7 +179,7 @@ export function SubcontractorPanel() {
                                                 {spk.contractValue.toLocaleString('id-ID')}
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Badge variant="outline" className={`text-[10px] ${spk.status === 'ACTIVE' ? 'bg-blue-50 text-blue-700' :
+                                                <Badge variant="outline" className={`text-xs ${spk.status === 'ACTIVE' ? 'bg-blue-50 text-blue-700' :
                                                         spk.status === 'DRAFT' ? 'bg-slate-50 text-slate-600' :
                                                             'bg-emerald-50 text-emerald-700'
                                                     }`}>

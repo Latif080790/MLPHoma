@@ -64,6 +64,13 @@ module.exports = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      // WCAG 2.1 AA Compliance: Enhanced focus indicators
+      ringWidth: {
+        DEFAULT: '2px', // Changed from 1px for better visibility
+      },
+      ringOffsetWidth: {
+        DEFAULT: '2px', // Add offset for clearer separation
+      },
       keyframes: {
         'accordion-down': {
           from: {

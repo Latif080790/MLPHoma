@@ -67,7 +67,7 @@ export default function StrategySimulation() {
                                 step={1}
                                 className="w-full"
                             />
-                            <p className="text-[10px] text-slate-400 italic">Simulates upstream delays (permits, logistical bottlenecks)</p>
+                            <p className="text-xs text-slate-400 italic">Simulates upstream delays (permits, logistical bottlenecks)</p>
                         </div>
 
                         <div className="space-y-4">
@@ -82,7 +82,7 @@ export default function StrategySimulation() {
                                 step={5}
                                 className="w-full"
                             />
-                            <p className="text-[10px] text-slate-400 italic">Simulates shifting labor to other emergency projects</p>
+                            <p className="text-xs text-slate-400 italic">Simulates shifting labor to other emergency projects</p>
                         </div>
 
                         <div className="pt-4 flex gap-2">
@@ -118,7 +118,7 @@ export default function StrategySimulation() {
                             <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                                        <div className="text-[10px] text-slate-500 uppercase mb-1">Schedule Impact (Avg SPI)</div>
+                                        <div className="text-xs text-slate-500 uppercase mb-1">Schedule Impact (Avg SPI)</div>
                                         <div className="flex items-center gap-3">
                                             <span className="text-2xl font-mono font-bold text-slate-400">{result.originalAvgSpi.toFixed(2)}</span>
                                             <TrendingDown className="text-red-500" size={16} />
@@ -126,7 +126,7 @@ export default function StrategySimulation() {
                                         </div>
                                     </div>
                                     <div className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                                        <div className="text-[10px] text-slate-500 uppercase mb-1">Liquidity Impact (Weekly Cashflow)</div>
+                                        <div className="text-xs text-slate-500 uppercase mb-1">Liquidity Impact (Weekly Cashflow)</div>
                                         <div className="flex items-center gap-3">
                                             <span className="text-2xl font-mono font-bold text-slate-400">{Math.round(result.originalCashflow)}M</span>
                                             <TrendingUp className="text-emerald-500" size={16} />

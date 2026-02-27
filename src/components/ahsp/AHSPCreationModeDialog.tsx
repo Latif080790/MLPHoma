@@ -177,12 +177,12 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                     <div className={`${colors.icon} rounded-xl p-2.5 text-white shadow-md`}>
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className={`${colors.badge} rounded-full px-2 py-1 text-[10px] font-black text-white`}>
+                    <span className={`${colors.badge} rounded-full px-2 py-1 text-xs font-black text-white`}>
                       {mode.badge}
                     </span>
                   </div>
                   <div className={`text-base font-black sm:text-lg ${colors.text}`}>{mode.title}</div>
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{mode.subtitle}</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{mode.subtitle}</div>
                   <p className="mt-2 text-xs leading-relaxed text-slate-600">{mode.description}</p>
                 </button>
               )
@@ -228,11 +228,11 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                       {sniItemsPreview.length > 0 && (
                         <div className="mb-3 grid grid-cols-2 gap-2">
                           <div className="rounded-lg border border-blue-100 bg-white p-2">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Rata-rata Harga</p>
+                            <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Rata-rata Harga</p>
                             <p className="text-xs font-black text-slate-800">{formatIDR(averageSNIPrice)}</p>
                           </div>
                           <div className="rounded-lg border border-blue-100 bg-white p-2">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Total Komponen</p>
+                            <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Total Komponen</p>
                             <p className="text-xs font-black text-slate-800">
                               {sniItemsPreview.reduce((sum, item) => sum + item.componentCount, 0)}
                             </p>
@@ -244,7 +244,7 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                         {sniItemsPreview.length === 0 ? (
                           <div className="rounded-lg border border-dashed border-blue-300 bg-white p-3">
                             <p className="text-xs text-blue-700">Belum ada data AHSP SNI aktif.</p>
-                            <p className="mt-1 text-[11px] text-slate-600">Gunakan mode Kustom untuk membuat item pertama, lalu tandai sebagai SNI.</p>
+                            <p className="mt-1 text-xs text-slate-600">Gunakan mode Kustom untuk membuat item pertama, lalu tandai sebagai SNI.</p>
                             <Button
                               type="button"
                               size="sm"
@@ -259,7 +259,7 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                           sniItemsPreview.map((item) => (
                             <div key={item.id} className="rounded-lg border border-blue-100 bg-white p-2.5">
                               <p className="text-xs font-black text-slate-900">{item.code} - {item.name}</p>
-                              <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-600">
+                              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600">
                                 <span className="rounded bg-slate-100 px-1.5 py-0.5">{item.category}</span>
                                 <span>{item.unit}</span>
                                 <span className="flex items-center gap-1"><CircleDollarSign className="h-3 w-3" />{formatIDR(item.finalPrice)}</span>

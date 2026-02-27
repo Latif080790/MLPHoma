@@ -481,7 +481,7 @@ export default function Timeline() {
             <div className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Schedule Range</div>
             <div className="text-sm font-bold text-slate-900 dark:text-white mt-1.5 flex flex-col">
               <span>{summary.start || '-'}</span>
-              <span className="text-slate-400 text-[10px] font-normal">to</span>
+              <span className="text-slate-400 text-xs font-normal">to</span>
               <span>{summary.end || '-'}</span>
             </div>
           </CardContent>
@@ -505,9 +505,9 @@ export default function Timeline() {
                 <div className="flex flex-col items-end shrink-0">
                   <div className="text-xs font-mono text-red-600 font-bold">{alert.actualProgress.toFixed(0)}% / {alert.expectedProgress.toFixed(0)}%</div>
                   {alert.severity === 'critical' ? (
-                    <span className="text-[10px] bg-red-100 text-red-700 px-1 py-0.5 mt-1 rounded">CRITICAL</span>
+                    <span className="text-xs bg-red-100 text-red-700 px-1 py-0.5 mt-1 rounded">CRITICAL</span>
                   ) : (
-                    <span className="text-[10px] bg-amber-100 text-amber-700 px-1 py-0.5 mt-1 rounded">WARNING</span>
+                    <span className="text-xs bg-amber-100 text-amber-700 px-1 py-0.5 mt-1 rounded">WARNING</span>
                   )}
                 </div>
               </div>

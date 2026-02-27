@@ -103,7 +103,7 @@ export function PriceHistoryDialog({
                                                 {getZoneName(recordZoneId)}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant="outline" className="text-[10px] uppercase">
+                                                <Badge variant="outline" className="text-xs uppercase">
                                                     {record.changeType?.replace('_', ' ')}
                                                 </Badge>
                                             </TableCell>

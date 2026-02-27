@@ -234,7 +234,7 @@ export function ApprovalInbox() {
                                         <div className="min-w-0 flex-1">
                                             <div className="font-medium text-sm truncate">{approval.title}</div>
                                             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                                                <Badge variant="outline" className="text-[10px] h-5">
+                                                <Badge variant="outline" className="text-xs h-5">
                                                     {ENTITY_LABELS[approval.entityType]}
                                                 </Badge>
                                                 <span>by {approval.requesterName || 'Unknown'}</span>

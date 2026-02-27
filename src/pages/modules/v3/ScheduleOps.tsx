@@ -114,7 +114,7 @@ export default function ScheduleOps() {
                                 >
                                     <Boxes size={18} /> New Resource Log
                                 </button>
-                                <p className="mt-4 text-[11px] text-slate-400 italic">
+                                <p className="mt-4 text-xs text-slate-400 italic">
                                     Mencatat pemakaian alat (HM/Shift) dan distribusi tenaga kerja secara spesifik.
                                 </p>
                             </div>
