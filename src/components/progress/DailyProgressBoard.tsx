@@ -1,0 +1,357 @@
+/**
+ * DailyProgressBoard.tsx
+ *
+ * Kanban-style "Today's Tasks" board for site progress capture.
+ * Shows tasks active today (from Timeline), overdue tasks,
+ * and provides evidence-based progress submission (photo, notes, weather, crew).
+ */
+
+import React, { useState, useMemo } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Badge } from '../ui/badge'
+import { Button } from '../ui/button'
+import { Slider } from '../ui/slider'
+import { Textarea } from '../ui/textarea'
+import { Input } from '../ui/input'
+import {
+    Sun, Cloud, CloudRain, CloudLightning,
+    Camera, Users, Clock, CheckCircle2, AlertTriangle,
+    MapPin, Send, CalendarClock, ChevronDown, ChevronRight,
+} from 'lucide-react'
+import { useProjectStore } from '../../store/projectStore'
+import {
+    progressCaptureService, type WeatherCondition, type ProgressEntry,
+} from '../../services/progressCaptureService'
+import type { TimelineTask } from '../../store/timelineStore'
+import { toast } from 'sonner'
+import { format } from 'date-fns'
+
+// ─── Weather Picker ───
+
+const WEATHER_OPTIONS: { value: WeatherCondition; icon: React.ReactNode; label: string }[] = [
+    { value: 'sunny', icon: <Sun size={16} />, label: 'Cerah' },
+    { value: 'cloudy', icon: <Cloud size={16} />, label: 'Berawan' },
+    { value: 'rainy', icon: <CloudRain size={16} />, label: 'Hujan' },
+    { value: 'stormy', icon: <CloudLightning size={16} />, label: 'Badai' },
+]
+
+// ─── Task Card ───
+
+interface TaskCardProps {
+    task: TimelineTask
+    projectId: string
+    isOverdue?: boolean
+    existingEntry?: ProgressEntry
+    onSubmitted: () => void
+}
+
+function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: TaskCardProps) {
+    const [expanded, setExpanded] = useState(false)
+    const [progress, setProgress] = useState(task.progress)
+    const [notes, setNotes] = useState('')
+    const [photoCount, setPhotoCount] = useState(0)
+    const [weather, setWeather] = useState<WeatherCondition>('sunny')
+    const [crewCount, setCrewCount] = useState(0)
+    const [submitting, setSubmitting] = useState(false)
+
+    const progressGain = progress - task.progress
+
+    const handleSubmit = async () => {
+        if (progress <= task.progress) {
+            toast.warning('Progress harus lebih besar dari sebelumnya')
+            return
+        }
+        setSubmitting(true)
+        try {
+            progressCaptureService.submitProgress({
+                projectId,
+                taskId: task.id,
+                taskName: task.name,
+                wbsId: task.wbsId,
+                progressBefore: task.progress,
+                progressAfter: progress,
+                photoCount,
+                photoNames: [],
+                notes,
+                weather,
+                crewCount,
+                capturedBy: 'current_user',
+            })
+            toast.success('Progress submitted', { description: `${task.name}: ${task.progress}% → ${progress}%` })
+            setExpanded(false)
+            onSubmitted()
+        } catch (err: any) {
+            toast.error('Failed', { description: err.message })
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    return (
+        <div className={`rounded-lg border transition-all ${isOverdue ? 'border-red-300 bg-red-50/50 dark:border-red-900 dark:bg-red-950/10' :
+                existingEntry ? 'border-emerald-300 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/10' :
+                    'border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700'
+            }`}>
+            {/* Header */}
+            <button
+                className="w-full flex items-center gap-3 p-3 text-left"
+                onClick={() => setExpanded(!expanded)}
+            >
+                <div className="shrink-0">
+                    {expanded ? <ChevronDown size={14} className="text-slate-400" /> : <ChevronRight size={14} className="text-slate-400" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{task.name}</span>
+                        {isOverdue && <Badge variant="destructive" className="text-[9px] h-4">Overdue</Badge>}
+                        {existingEntry && <Badge className="text-[9px] h-4 bg-emerald-100 text-emerald-700">Updated</Badge>}
+                        {task.wbsCode && (
+                            <Badge variant="outline" className="text-[9px] h-4 text-slate-400">{task.wbsCode}</Badge>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+                        <span className="flex items-center gap-1">
+                            <Clock size={10} /> {task.startDate} → {task.endDate}
+                        </span>
+                        <span className="font-mono font-semibold text-slate-600 dark:text-slate-300">
+                            {task.progress}%
+                        </span>
+                    </div>
+                </div>
+                {/* Mini progress bar */}
+                <div className="w-16 shrink-0">
+                    <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${task.progress >= 100 ? 'bg-emerald-500' :
+                                isOverdue ? 'bg-red-500' : 'bg-blue-500'
+                            }`} style={{ width: `${Math.min(task.progress, 100)}%` }} />
+                    </div>
+                </div>
+            </button>
+
+            {/* Expanded Form */}
+            {expanded && (
+                <div className="px-4 pb-4 space-y-3 border-t border-slate-100 dark:border-slate-800 pt-3">
+                    {/* Progress Slider */}
+                    <div>
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] text-slate-500 uppercase font-semibold">Progress Update</span>
+                            <span className="text-sm font-mono font-bold text-blue-600">
+                                {task.progress}% → {progress}%
+                                {progressGain > 0 && <span className="text-emerald-600 ml-1">(+{progressGain}%)</span>}
+                            </span>
+                        </div>
+                        <Slider
+                            value={[progress]}
+                            onValueChange={([v]) => setProgress(v)}
+                            min={task.progress}
+                            max={100}
+                            step={1}
+                            className="mt-1"
+                        />
+                    </div>
+
+                    {/* Evidence Row */}
+                    <div className="grid grid-cols-3 gap-3">
+                        {/* Photo Count */}
+                        <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1">
+                                <Camera size={10} /> Foto Evidence
+                            </label>
+                            <Input
+                                type="number"
+                                min={0}
+                                value={photoCount}
+                                onChange={e => setPhotoCount(Number(e.target.value))}
+                                className="h-8 mt-1 text-xs"
+                                placeholder="0"
+                            />
+                        </div>
+                        {/* Crew Count */}
+                        <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1">
+                                <Users size={10} /> Jumlah Crew
+                            </label>
+                            <Input
+                                type="number"
+                                min={0}
+                                value={crewCount}
+                                onChange={e => setCrewCount(Number(e.target.value))}
+                                className="h-8 mt-1 text-xs"
+                                placeholder="0"
+                            />
+                        </div>
+                        {/* Weather */}
+                        <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-semibold">Cuaca</label>
+                            <div className="flex gap-1 mt-1">
+                                {WEATHER_OPTIONS.map(w => (
+                                    <button
+                                        key={w.value}
+                                        onClick={() => setWeather(w.value)}
+                                        className={`p-1.5 rounded-md transition-colors ${weather === w.value
+                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700'
+                                            }`}
+                                        title={w.label}
+                                    >
+                                        {w.icon}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Notes */}
+                    <Textarea
+                        placeholder="Catatan progress hari ini..."
+                        value={notes}
+                        onChange={e => setNotes(e.target.value)}
+                        className="h-16 text-xs resize-none"
+                    />
+
+                    {/* Submit */}
+                    <div className="flex justify-end">
+                        <Button
+                            size="sm"
+                            disabled={submitting || progress <= task.progress}
+                            onClick={handleSubmit}
+                            className="gap-1"
+                        >
+                            <Send size={12} /> Submit Progress
+                        </Button>
+                    </div>
+                </div>
+            )}
+        </div>
+    )
+}
+
+// ─── Main Board ───
+
+export function DailyProgressBoard() {
+    const activeProjectId = useProjectStore(s => s.activeProjectId)
+    const [refreshKey, setRefreshKey] = useState(0)
+
+    const todayTasks = useMemo(() => {
+        if (!activeProjectId) return []
+        return progressCaptureService.getTodayTasks(activeProjectId)
+    }, [activeProjectId, refreshKey])
+
+    const overdueTasks = useMemo(() => {
+        if (!activeProjectId) return []
+        return progressCaptureService.getOverdueTasks(activeProjectId)
+    }, [activeProjectId, refreshKey])
+
+    const todayEntries = useMemo(() => {
+        if (!activeProjectId) return []
+        return progressCaptureService.getTodayEntries(activeProjectId)
+    }, [activeProjectId, refreshKey])
+
+    const report = useMemo(() => {
+        if (!activeProjectId) return null
+        return progressCaptureService.getDailyReport(activeProjectId)
+    }, [activeProjectId, refreshKey])
+
+    const entryMap = new Map(todayEntries.map(e => [e.taskId, e]))
+
+    if (!activeProjectId) return null
+
+    const totalTasks = todayTasks.length + overdueTasks.length
+
+    return (
+        <div className="space-y-4">
+            {/* Summary Header */}
+            <div className="grid grid-cols-4 gap-3">
+                <Card className="border-blue-200 dark:border-blue-900">
+                    <CardContent className="p-3 text-center">
+                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Tugas Hari Ini</p>
+                        <p className="text-2xl font-bold text-blue-600 mt-1">{todayTasks.length}</p>
+                    </CardContent>
+                </Card>
+                <Card className={overdueTasks.length > 0 ? 'border-red-300 dark:border-red-900' : ''}>
+                    <CardContent className="p-3 text-center">
+                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Overdue</p>
+                        <p className={`text-2xl font-bold mt-1 ${overdueTasks.length > 0 ? 'text-red-600' : 'text-slate-400'}`}>
+                            {overdueTasks.length}
+                        </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-3 text-center">
+                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Sudah Update</p>
+                        <p className="text-2xl font-bold text-emerald-600 mt-1">{todayEntries.length}</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-3 text-center">
+                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Crew Deployed</p>
+                        <p className="text-2xl font-bold text-slate-700 dark:text-slate-300 mt-1">
+                            {report?.totalCrewDeployed || 0}
+                        </p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Overdue Tasks */}
+            {overdueTasks.length > 0 && (
+                <Card className="border-red-200 dark:border-red-900">
+                    <CardHeader className="pb-2 pt-3 px-4">
+                        <CardTitle className="text-sm flex items-center gap-2 text-red-600">
+                            <AlertTriangle size={14} />
+                            Overdue Tasks ({overdueTasks.length})
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-4 pb-4 space-y-2">
+                        {overdueTasks.map(task => (
+                            <TaskCard
+                                key={task.id}
+                                task={task}
+                                projectId={activeProjectId}
+                                isOverdue
+                                existingEntry={entryMap.get(task.id)}
+                                onSubmitted={() => setRefreshKey(k => k + 1)}
+                            />
+                        ))}
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Today's Tasks */}
+            <Card>
+                <CardHeader className="pb-2 pt-3 px-4">
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                            <CalendarClock size={14} className="text-blue-600" />
+                            Tugas Aktif Hari Ini
+                            <Badge variant="outline" className="text-[10px] h-5">{format(new Date(), 'EEEE, dd MMM yyyy')}</Badge>
+                        </CardTitle>
+                        {report && report.avgProgressGain > 0 && (
+                            <Badge className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                Avg +{report.avgProgressGain.toFixed(1)}% progress
+                            </Badge>
+                        )}
+                    </div>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 space-y-2">
+                    {todayTasks.length === 0 ? (
+                        <div className="text-center py-8">
+                            <CheckCircle2 size={28} className="mx-auto mb-2 text-emerald-400 opacity-40" />
+                            <p className="text-sm text-slate-400">Tidak ada tugas aktif hari ini.</p>
+                            <p className="text-[11px] text-slate-400 mt-1">Tugas akan muncul berdasarkan jadwal Timeline.</p>
+                        </div>
+                    ) : (
+                        todayTasks.map(task => (
+                            <TaskCard
+                                key={task.id}
+                                task={task}
+                                projectId={activeProjectId}
+                                existingEntry={entryMap.get(task.id)}
+                                onSubmitted={() => setRefreshKey(k => k + 1)}
+                            />
+                        ))
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    )
+}

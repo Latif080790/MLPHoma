@@ -13,6 +13,8 @@ import { ApprovalInbox } from '@/components/dashboard/ApprovalInbox'
 import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
 import { GenerateReportDialog } from '@/components/dashboard/GenerateReportDialog'
 import { FileDown } from 'lucide-react'
+import { MRPAlertPanel } from '@/components/supply/MRPAlertPanel'
+import { AuditLogViewer } from '@/components/audit/AuditLogViewer'
 
 import { useNavigate } from 'react-router-dom'
 
@@ -400,9 +402,12 @@ export default function CommandCenter() {
                         </div>
                     </CardContent>
                 </Card>
-                {/* F. APPROVAL INBOX (Full Width) */}
+                {/* F. APPROVAL INBOX & MRP ALERTS (Side by Side) */}
                 <div className="md:col-span-2">
                     <ApprovalInbox />
+                </div>
+                <div className="md:col-span-2">
+                    <MRPAlertPanel compact />
                 </div>
 
                 {/* G. CRITICAL PATH WARNING PANEL */}
@@ -411,6 +416,11 @@ export default function CommandCenter() {
                         projectId={activeProjectId}
                         maxAlerts={5}
                     />
+                </div>
+
+                {/* H. AUDIT TRAIL (Recent Activity) */}
+                <div className="md:col-span-4">
+                    <AuditLogViewer compact title="Recent Activity" />
                 </div>
 
 

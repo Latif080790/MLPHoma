@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Receipt, TrendingUp, TrendingDown, FileText, Plus, Zap, AlertTriangle, DollarSign, Clock, CheckCircle, ArrowRightLeft, Send, ShieldCheck } from "lucide-react"
+import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, Download, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -26,11 +26,16 @@ import { progressBillingService } from "@/services/progressBillingService"
 import { InvoiceDialog } from "@/components/finance/InvoiceDialog"
 import { ClaimDialog } from "@/components/finance/ClaimDialog"
 import { AgingReport } from "@/components/finance/AgingReport"
+import { OverheadCostPanel } from "@/components/finance/OverheadCostPanel"
 import { ThreeWayMatch } from "@/components/finance/ThreeWayMatch"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 import { CashflowForecastWidget } from "@/components/finance/CashflowForecastWidget"
 import { approvalService } from "@/services/approvalService"
 import { useAuthStore } from "@/store/authStore"
+import { InvoiceMatchDialog } from "@/components/finance/InvoiceMatchDialog"
+import { matchInvoice, getMatchStatusColor, getMatchStatusLabel } from "@/services/invoiceMatchingService"
+import { useSupplyChainStore } from "@/store/supplyChainStore"
+import type { Invoice } from "@/types/finance"
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
@@ -38,6 +43,8 @@ export default function Finance() {
     const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
     const [claimDialogOpen, setClaimDialogOpen] = useState(false)
     const [pendingInvoicePayment, setPendingInvoicePayment] = useState<{ id: string; project_id: string; total_amount: number; invoice_number: string; vendor_name?: string } | null>(null)
+    const [matchDialogInvoice, setMatchDialogInvoice] = useState<Invoice | null>(null)
+    const { purchaseOrders, inventoryTransactions } = useSupplyChainStore()
 
     const {
         invoices, claims, transactions, loading,
@@ -188,6 +195,9 @@ export default function Finance() {
                     <TabsTrigger value="cashflow" className="gap-2">
                         <TrendingUp size={14} /> Cash Flow
                     </TabsTrigger>
+                    <TabsTrigger value="overhead" className="gap-2">
+                        <PieChart size={14} /> Overhead
+                    </TabsTrigger>
                 </TabsList>
 
                 {/* --- OVERVIEW --- */}
@@ -299,6 +309,7 @@ export default function Finance() {
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Trace</TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Due Date</TableHead>
                                             <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
+                                            <TableHead className="p-3 text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Match</TableHead>
                                             <TableHead className="p-3 text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
                                             <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
                                         </TableRow>
@@ -331,6 +342,21 @@ export default function Finance() {
                                                     </TableCell>
                                                     <TableCell className="p-3 text-xs text-slate-500">{format(new Date(inv.due_date || new Date()), 'dd MMM yyyy')}</TableCell>
                                                     <TableCell className="p-3 text-right font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">Rp {inv.total_amount.toLocaleString()}</TableCell>
+                                                    <TableCell className="p-3 text-center">
+                                                        {(() => {
+                                                            const matchResult = matchInvoice(inv, purchaseOrders, inventoryTransactions)
+                                                            return (
+                                                                <button
+                                                                    onClick={() => setMatchDialogInvoice(inv)}
+                                                                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                                                                >
+                                                                    <Badge className={`text-[10px] px-2 py-0.5 ${getMatchStatusColor(matchResult.status)}`}>
+                                                                        {getMatchStatusLabel(matchResult.status)}
+                                                                    </Badge>
+                                                                </button>
+                                                            )
+                                                        })()}
+                                                    </TableCell>
                                                     <TableCell className="p-3 text-center">
                                                         <Badge variant={
                                                             inv.status === 'PAID' ? 'default' :
@@ -416,7 +442,7 @@ export default function Finance() {
                     <ThreeWayMatch projectId={activeProjectId!} invoices={invoices} />
                 </TabsContent>
 
-                {/* --- CASH FLOW --- */}
+                {/* --- CASHFLOW SUMMARY --- */}
                 <TabsContent value="cashflow">
                     <div className="grid gap-4 md:grid-cols-2 mb-6">
                         <Card className="bg-green-50">
@@ -475,6 +501,14 @@ export default function Finance() {
                 open={claimDialogOpen}
                 onOpenChange={setClaimDialogOpen}
                 projectId={activeProjectId!}
+            />
+            <InvoiceMatchDialog
+                open={!!matchDialogInvoice}
+                onOpenChange={(open) => { if (!open) setMatchDialogInvoice(null) }}
+                invoice={matchDialogInvoice}
+                onApprove={(id) => {
+                    if (activeProjectId) payInvoice(id, activeProjectId, matchDialogInvoice?.total_amount || 0)
+                }}
             />
 
             <AlertDialog open={!!pendingInvoicePayment} onOpenChange={(open) => { if (!open) setPendingInvoicePayment(null) }}>

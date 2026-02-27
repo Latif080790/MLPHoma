@@ -1,5 +1,5 @@
 
-export type ChangeOrderStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED'
+export type ChangeOrderStatus = 'DRAFT' | 'SUBMITTED' | 'REVIEWED' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED'
 
 export interface ChangeOrder {
     id: string
@@ -17,9 +17,20 @@ export interface ChangeOrder {
     created_at: string
     updated_at?: string
 
+    /** Reviewer who evaluated the CO */
+    reviewed_by?: string
+    reviewed_at?: string
+    review_comment?: string
+
+    /** Approver who approved/rejected */
+    approved_by?: string
+    approved_at?: string
+    approval_comment?: string
+
     // Joins
     items?: ChangeOrderItem[]
 }
+
 
 export interface ChangeOrderItem {
     id: string

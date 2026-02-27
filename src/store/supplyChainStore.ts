@@ -91,6 +91,16 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
 
     createMaterialRequest: async (data: any) => {
         set(state => ({ loading: { ...state.loading, mr: true }, error: null }))
+
+        // WBS Traceability: warn if no wbs_id linked
+        if (!data.wbs_id) {
+            const { toast: sonnerToast } = await import('sonner')
+            sonnerToast.warning('WBS Not Linked', {
+                description: 'Material Request created without WBS reference. Link to a WBS item for full traceability.',
+                duration: 5000,
+            })
+        }
+
         try {
             await supplyChainService.createMaterialRequest(data)
             // Refresh list if logical, or just add to state

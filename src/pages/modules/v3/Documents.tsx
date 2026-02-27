@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { DocumentVersionHistory } from "@/components/modules/DocumentVersionHistory"
+import { QRValidationBadge } from "@/components/document/QRValidationBadge"
 
 const CATEGORIES = ["Contracts", "Drawings", "Reports", "Invoices", "Correspondence", "Other"]
 
@@ -185,14 +186,14 @@ export default function Documents() {
                             <Card
                                 key={doc.id}
                                 className={`hover:border-blue-500 transition-colors group ${isArchived ? 'opacity-60 border-slate-300' :
-                                        isSuperseded ? 'opacity-50 border-yellow-300' : ''
+                                    isSuperseded ? 'opacity-50 border-yellow-300' : ''
                                     }`}
                             >
                                 <CardContent className="p-4 flex flex-col justify-between h-full min-h-[140px]">
                                     <div className="flex items-start justify-between">
                                         <div className={`p-2 rounded ${isArchived ? 'bg-slate-50 text-slate-400' :
-                                                isSuperseded ? 'bg-yellow-50 text-yellow-600' :
-                                                    'bg-blue-50 text-blue-600'
+                                            isSuperseded ? 'bg-yellow-50 text-yellow-600' :
+                                                'bg-blue-50 text-blue-600'
                                             }`}>
                                             <FileText size={20} />
                                         </div>
@@ -276,6 +277,16 @@ export default function Documents() {
                                                 🔒 {doc.locked_by}
                                             </div>
                                         )}
+                                        <div className="mt-3 flex justify-end">
+                                            <QRValidationBadge
+                                                documentId={doc.id}
+                                                projectId={activeProjectId!}
+                                                documentTitle={doc.title}
+                                                versionNumber={doc.version_number}
+                                                category={doc.category}
+                                                status={isLocked ? 'APPROVED' : 'DRAFT'}
+                                            />
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>

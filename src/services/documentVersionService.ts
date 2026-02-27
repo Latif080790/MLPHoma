@@ -42,6 +42,9 @@ export interface UploadVersionInput {
     mimeType?: string
 }
 
+/** In-memory lock registry (would be a DB column in production) */
+const lockedDocuments = new Map<string, { lockedBy: string; lockedAt: string }>()
+
 // ---------- Service ----------
 
 export const documentVersionService = {
@@ -80,6 +83,12 @@ export const documentVersionService = {
      * Marks previous version as not-latest.
      */
     async uploadNewVersion(input: UploadVersionInput): Promise<DocumentVersion> {
+        // Check lock status first
+        if (lockedDocuments.has(input.documentId)) {
+            const lockInfo = lockedDocuments.get(input.documentId)!
+            throw new Error(`Document is locked by ${lockInfo.lockedBy} since ${lockInfo.lockedAt}. Unlock before uploading.`)
+        }
+
         const client = assertSupabase()
 
         // 1. Get the existing document to inherit metadata
@@ -223,6 +232,53 @@ export const documentVersionService = {
         } catch (e) {
             console.warn('Audit log failed:', e)
         }
+    },
+
+    // ─── Document Lock Policy ───
+
+    /**
+     * Lock a document group, preventing new version uploads.
+     * Used for approved/finalized documents.
+     */
+    lockDocument(documentId: string, lockedBy: string): void {
+        lockedDocuments.set(documentId, {
+            lockedBy,
+            lockedAt: new Date().toISOString(),
+        })
+
+        auditService.log({
+            action: 'DOCUMENT_LOCKED',
+            entity: 'documents',
+            entityType: 'DOCUMENT',
+            entityId: documentId,
+            userName: lockedBy,
+            details: { action: 'document_locked' },
+        })
+    },
+
+    /**
+     * Unlock a document group (PM/admin only).
+     */
+    unlockDocument(documentId: string, unlockedBy: string): void {
+        lockedDocuments.delete(documentId)
+
+        auditService.log({
+            action: 'DOCUMENT_UNLOCKED',
+            entity: 'documents',
+            entityType: 'DOCUMENT',
+            entityId: documentId,
+            userName: unlockedBy,
+            details: { action: 'document_unlocked' },
+        })
+    },
+
+    /**
+     * Check if a document is currently locked.
+     */
+    isDocumentLocked(documentId: string): { locked: boolean; lockedBy?: string; lockedAt?: string } {
+        const info = lockedDocuments.get(documentId)
+        if (info) return { locked: true, lockedBy: info.lockedBy, lockedAt: info.lockedAt }
+        return { locked: false }
     },
 }
 

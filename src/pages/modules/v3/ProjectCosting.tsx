@@ -6,12 +6,15 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { useProjectStore } from '@/store/projectStore'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import AHSP from '../AHSP'
+import WBS from '../WBS'
 import RAB from '../RAB'
 import RAP from '../RAP'
 
+type CostingTab = 'ahsp' | 'wbs' | 'rab' | 'rap'
+
 export default function ProjectCosting() {
   const { activeProjectId, projects } = useProjectStore()
-  const [activeTab, setActiveTab] = useState<'ahsp' | 'rab' | 'rap'>('ahsp')
+  const [activeTab, setActiveTab] = useState<CostingTab>('ahsp')
 
   const activeProject = activeProjectId ? projects[activeProjectId] : null
 
@@ -20,27 +23,32 @@ export default function ProjectCosting() {
   }
 
   const renderContent = () => {
-    if (activeTab === 'ahsp') {
-      return (
-        <ErrorBoundary errorMessage="AHSP module failed to render">
-          <AHSP />
-        </ErrorBoundary>
-      )
+    switch (activeTab) {
+      case 'ahsp':
+        return (
+          <ErrorBoundary errorMessage="AHSP module failed to render">
+            <AHSP />
+          </ErrorBoundary>
+        )
+      case 'wbs':
+        return (
+          <ErrorBoundary errorMessage="WBS module failed to render">
+            <WBS />
+          </ErrorBoundary>
+        )
+      case 'rab':
+        return (
+          <ErrorBoundary errorMessage="RAB module failed to render">
+            <RAB />
+          </ErrorBoundary>
+        )
+      case 'rap':
+        return (
+          <ErrorBoundary errorMessage="RAP module failed to render">
+            <RAP />
+          </ErrorBoundary>
+        )
     }
-
-    if (activeTab === 'rab') {
-      return (
-        <ErrorBoundary errorMessage="RAB module failed to render">
-          <RAB />
-        </ErrorBoundary>
-      )
-    }
-
-    return (
-      <ErrorBoundary errorMessage="RAP module failed to render">
-        <RAP />
-      </ErrorBoundary>
-    )
   }
 
   return (
@@ -53,9 +61,10 @@ export default function ProjectCosting() {
       />
 
       <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'ahsp' | 'rab' | 'rap')}>
-          <TabsList className="grid h-auto w-full grid-cols-3 gap-1 bg-slate-50/70 p-1 dark:bg-slate-950/40">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as CostingTab)}>
+          <TabsList className="grid h-auto w-full grid-cols-4 gap-1 bg-slate-50/70 p-1 dark:bg-slate-950/40">
             <TabsTrigger value="ahsp">AHSP</TabsTrigger>
+            <TabsTrigger value="wbs">WBS</TabsTrigger>
             <TabsTrigger value="rab">RAB</TabsTrigger>
             <TabsTrigger value="rap">RAP</TabsTrigger>
           </TabsList>

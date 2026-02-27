@@ -8,6 +8,7 @@ import { Plus, CheckCircle2, DollarSign, Calendar, MapPin, Search, ArrowRight, L
 import { useProjectStore, type Project } from '../../store/projectStore'
 import { ProjectDialog } from '../../components/project/ProjectDialog'
 import { formatIDR } from '../../lib/utils'
+import { generateId } from '../../lib/idGenerator'
 import { toast } from 'sonner'
 import {
   DropdownMenu,
@@ -96,8 +97,17 @@ export default function ProjectManagement() {
     if (editingProject) {
       updateProject(editingProject.id, data)
     } else {
-      if (data.name) addProject(data as Project)
-      else toast.error("Name required")
+      if (data.name) {
+        // Auto-generate ID if not provided or empty
+        if (!data.id) {
+          data.id = generateId('proj')
+        }
+        addProject(data as Project)
+        // Reload from Supabase after a small delay to let sync complete
+        setTimeout(() => loadProjects(), 1500)
+      } else {
+        toast.error("Name required")
+      }
     }
     setShowDialog(false)
   }

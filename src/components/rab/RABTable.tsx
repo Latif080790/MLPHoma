@@ -121,6 +121,7 @@ export function RABTable({ projectId }: RABTableProps) {
   } = useAHSPStore()
 
   const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot } = useRabStore()
+  const [activeTab, setActiveTab] = useState<'direct' | 'overhead'>('direct')
   const allItems = getItems(projectId)
   const items = allItems.filter(i => activeTab === 'direct' ? !i.is_overhead : i.is_overhead)
   const draftCount = getDraftCount(projectId)
@@ -144,7 +145,6 @@ export function RABTable({ projectId }: RABTableProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedUnit, setSelectedUnit] = useState<string>('all')
-  const [activeTab, setActiveTab] = useState<'direct' | 'overhead'>('direct')
   const [confirmScheduleOpen, setConfirmScheduleOpen] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
