@@ -197,11 +197,166 @@ Validation performed during this refactor cycle:
 
 ---
 
-## 7) Quick Rollout Checklist
+## 7) Smoke Test Checklist
 
-- [ ] Smoke test AHSP create/edit/delete/import in active project
-- [ ] Smoke test RAB item editing + auto schedule generation
-- [ ] Smoke test RAP import-from-RAB path
-- [ ] Smoke test Timeline/WBS destructive actions and confirmations
-- [ ] Smoke test Documents/Finance/Handover critical actions
-- [ ] Verify toast and dialog behavior in both light and dark themes
+### 🎯 Priority 1: Costing Route (`/costing`) - Critical Path
+
+**Pre-requisites**:
+- [ ] Active project selected (not null)
+- [ ] User authenticated with proper permissions
+- [ ] Test data: Sample AHSP items, RAB entries, RAP data
+
+**A. Route Access & Initialization**:
+- [ ] Navigate to `/costing` - page loads without crash
+- [ ] Verify no React hook order violations (check browser console)
+- [ ] Verify no runtime invariant errors
+- [ ] Test project switching flow (no project → select project → reload costing)
+- [ ] Verify sticky header/footer render correctly
+- [ ] Verify WBS navigation panel displays
+
+**B. AHSP Module**:
+- [ ] Create new AHSP item (Normal/Marking/Pooling modes)
+- [ ] Edit existing AHSP item - save changes persist
+- [ ] Delete AHSP item - confirmation dialog appears and works
+- [ ] Import AHSP from file (Excel/CSV) - parse and validate
+- [ ] Open price history dialog - data loads correctly
+- [ ] Switch between creation modes - UI updates appropriately
+- [ ] Verify WCAG compliance: All text ≥12px (no text-[9/10/11px])
+- [ ] Verify resource search and component breakdown display
+
+**C. RAB Module**:
+- [ ] Add RAB line item - form validation works
+- [ ] Edit RAB item inline - changes save correctly
+- [ ] Delete RAB item - confirmation dialog + toast feedback
+- [ ] Toggle columns visibility - persists across sessions
+- [ ] Filter by Pareto class (A/B/C) - results correct
+- [ ] Auto-generate schedule from RAB - timeline updates
+- [ ] Verify AHSP analysis panel displays component breakdown
+- [ ] Test TKDN percentage input (0-100 validation)
+- [ ] Verify sticky table header on scroll
+- [ ] Verify footer totals calculation accuracy
+
+**D. RAP Module**:
+- [ ] Import RAP from RAB - data transfer correctly
+- [ ] Edit RAP weekly allocation - calculations update
+- [ ] View RAP progress tracking - percentages display
+- [ ] Verify weekly/monthly aggregation accuracy
+- [ ] Test date range filter - results match criteria
+
+**E. Cross-Module Integration**:
+- [ ] AHSP → RAB flow: Select AHSP item for RAB entry
+- [ ] RAB → Schedule: Generate timeline from RAB items
+- [ ] RAB → RAP: Import RAB for resource planning
+- [ ] Verify command center summary metrics update (margin, TKDN, progress)
+- [ ] Verify telemetry refresh button works
+
+**F. Error Handling**:
+- [ ] Test with no active project - appropriate empty state displays
+- [ ] Test with network error - toast error message appears
+- [ ] Test with invalid input - validation errors show
+- [ ] Test undo/redo operations - state management correct
+- [ ] Verify no console errors during normal operations
+
+**G. Accessibility (WCAG 2.1 AA)**:
+- [ ] All typography ≥12px (text-xs minimum)
+- [ ] Keyboard navigation works (Tab, Enter, Escape)
+- [ ] Focus indicators visible on interactive elements
+- [ ] Screen reader support (ARIA labels present)
+- [ ] Color contrast meets 4.5:1 ratio
+
+**H. Performance**:
+- [ ] Table with 100+ items renders smoothly
+- [ ] Virtual scrolling works for large datasets
+- [ ] No memory leaks after multiple operations
+- [ ] Toast notifications don't stack excessively
+
+---
+
+### 🎯 Priority 2: Related Modules
+
+**Timeline & WBS**:
+- [ ] Smoke test Timeline Gantt chart rendering
+- [ ] Smoke test WBS destructive actions (delete task) + confirmations
+- [ ] Verify critical path highlighting works
+
+**Documents**:
+- [ ] Smoke test document upload/download
+- [ ] Smoke test document delete confirmation dialog
+- [ ] Verify version history and revert functionality
+
+**Finance**:
+- [ ] Smoke test invoice payment confirmation
+- [ ] Verify overhead cost panel calculations
+- [ ] Test opname board reconciliation flow
+
+**Supply Chain**:
+- [ ] Smoke test purchase order creation
+- [ ] Smoke test material request dialog
+- [ ] Verify budget guard warnings (if over budget)
+
+**Change Management**:
+- [ ] Smoke test change order creation
+- [ ] Smoke test rejection confirmation dialog
+- [ ] Verify impact analysis panel
+
+**Handover & Project Management**:
+- [ ] Smoke test project archive confirmation
+- [ ] Smoke test project delete confirmation  
+- [ ] Verify handover wizard flow
+
+---
+
+### 🎯 Priority 3: Visual Consistency
+
+**UI Primitives**:
+- [ ] Verify AlertDialog glass overlay/content style consistency
+- [ ] Verify Dialog modals match design system
+- [ ] Test toast notifications (success/error/info) display correctly
+- [ ] Verify hover states on interactive elements
+- [ ] Test both light and dark theme modes
+
+**Responsive Design**:
+- [ ] Test on desktop (1920×1080, 1366×768)
+- [ ] Test on tablet (768px width)
+- [ ] Test on mobile (375px width) - fallback behavior
+- [ ] Verify sticky elements work on all screen sizes
+
+---
+
+### ✅ Validation Status Summary
+
+**Completed Validations**:
+- ✅ TypeScript/compile error checks - PASSED
+- ✅ Unit test suite - 325 passed, 0 failed
+- ✅ WCAG 2.1 AA Typography Compliance - 100% (359 violations fixed)
+- ✅ ESLint enforcement - Active with pre-commit hooks
+- ✅ No React hook order violations in costing page
+
+**Pending Manual Smoke Tests**:
+- ⏳ Full costing route workflow (AHSP/RAB/RAP)
+- ⏳ Cross-module integration scenarios
+- ⏳ Accessibility keyboard navigation
+- ⏳ Performance with large datasets (100+ items)
+- ⏳ Theme consistency (light/dark modes)
+
+---
+
+### 📋 Smoke Test Execution Template
+
+**Date**: ___________  
+**Tester**: ___________  
+**Environment**: ☐ Local Dev ☐ Staging ☐ Production  
+**Browser**: ☐ Chrome ☐ Firefox ☐ Safari ☐ Edge  
+**Device**: ☐ Desktop ☐ Tablet ☐ Mobile  
+
+**Results**:
+- **Costing Route**: ☐ PASS ☐ FAIL ☐ BLOCKED
+- **Related Modules**: ☐ PASS ☐ FAIL ☐ BLOCKED
+- **Visual Consistency**: ☐ PASS ☐ FAIL ☐ BLOCKED
+
+**Blocker Issues** (if any):
+1. _____________________
+2. _____________________
+
+**Notes**: 
+_____________________
