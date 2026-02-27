@@ -8,11 +8,12 @@
 - ✅ Crash fix deployed in code: hook-order stabilization pada halaman costing.
 - ✅ Validation: no editor/type problems on changed file + targeted tests passed.
 - ✅ **WCAG 2.1 AA Typography Compliance COMPLETE** (359 violations fixed, automated enforcement active)
-- ▶️ Backlog now moved from planning into sprint board tasks.
+- ✅ **Sprint 0 COMPLETE** (All 3 epics: WCAG compliance, costing stability, release safety)
+- ▶️ **Sprint 1 READY** - Control gates implementation can begin
 
 ---
 
-## Sprint 0 (Hotfix & Stabilization) — IN PROGRESS
+## Sprint 0 (Hotfix & Stabilization) — ✅ COMPLETE
 
 ### Epic S0.0 WCAG Accessibility Foundation — ✅ COMPLETE
 - [x] Phase 1: Fix 103 WCAG typography violations in module pages
@@ -33,19 +34,22 @@
 - **Status**: ✅ Deployed to GitHub, automated enforcement active
 - **Next**: Enable branch protection rules on GitHub repository
 
-### Epic S0.1 Costing Runtime Stability
+### Epic S0.1 Costing Runtime Stability — ✅ COMPLETE
 - [x] Fix hook order violation in costing page (prevent React runtime invariant crash)
   - File: `src/pages/modules/v3/ProjectCosting.tsx`
   - Result: all hooks now run before conditional return.
-- [ ] Add guard regression test/scenario for project switching (no active project -> active project)
-  - Target: add test near costing route/render flow
-  - Candidate files:
-    - `src/pages/modules/v3/ProjectCosting.tsx`
-    - `src/test/**` (new component test)
+- [x] Add guard regression test/scenario for project switching (no active project -> active project)
+  - File: `src/pages/modules/v3/__tests__/ProjectCosting.test.tsx`
+  - Result: 6 comprehensive test scenarios covering hook order compliance
+  - Tests: no project state, project switching, rapid switching, data fetching, edge cases
+  - Status: ✅ Regression test suite complete
 
-### Epic S0.2 Release Safety
-- [ ] Add smoke checklist in repo docs for `/costing` route
+### Epic S0.2 Release Safety — ✅ COMPLETE
+- [x] Add smoke checklist in repo docs for `/costing` route
   - File: `UIUX_REFACTOR_RELEASE_NOTES_2026-02-16.md`
+  - Result: Comprehensive 3-priority smoke test checklist added
+  - Coverage: AHSP/RAB/RAP modules, cross-module integration, WCAG compliance, performance
+  - Status: ✅ Smoke test checklist documented with execution template
 
 ---
 
