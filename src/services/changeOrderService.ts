@@ -3,6 +3,7 @@
 import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
 import { ChangeOrder, ChangeOrderItem } from '../types/change-order'
+import { auditTrail } from '../lib/auditTrail'
 
 export const changeOrderService = {
     async getChangeOrders(projectId: string): Promise<ChangeOrder[]> {
@@ -84,18 +85,40 @@ export const changeOrderService = {
         return newOrder
     },
 
-    async updateChangeOrderStatus(id: string, status: string) {
+    async updateChangeOrderStatus(id: string, status: string, userId?: string, userName?: string) {
         const client = assertSupabase()
+
+        const { data: currentOrder } = await client
+            .from('change_orders')
+            .select('id, vo_number')
+            .eq('id', id)
+            .single()
+
         const { error } = await client
             .from('change_orders')
             .update({ status })
             .eq('id', id)
 
         if (error) throw error
+
+        if (currentOrder?.vo_number && userId && userName) {
+            if (status === 'APPROVED') {
+                await auditTrail.logChangeOrderApproved(id, currentOrder.vo_number, userId, userName)
+            }
+            if (status === 'REJECTED') {
+                await auditTrail.logChangeOrderRejected(id, currentOrder.vo_number, 'Rejected by reviewer', userId, userName)
+            }
+        }
     },
 
-    async deleteChangeOrder(id: string) {
+    async deleteChangeOrder(id: string, userId?: string, userName?: string) {
         const client = assertSupabase()
+
+        const { data: currentOrder } = await client
+            .from('change_orders')
+            .select('id, vo_number')
+            .eq('id', id)
+            .single()
 
         // Items cascade delete usually, but good to be safe if not set in DB
         const { error } = await client
@@ -104,5 +127,9 @@ export const changeOrderService = {
             .eq('id', id)
 
         if (error) throw error
+
+        if (currentOrder?.vo_number && userId && userName) {
+            await auditTrail.logChangeOrderDeleted(id, currentOrder.vo_number, userId, userName)
+        }
     }
 }

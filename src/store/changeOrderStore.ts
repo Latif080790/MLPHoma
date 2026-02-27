@@ -4,6 +4,7 @@ import { ChangeOrder, ChangeOrderItem } from '../types/change-order'
 import { changeOrderService } from '../services/changeOrderService'
 import { changeOrderCascade } from '../services/changeOrderCascade'
 import { toast } from 'sonner'
+import { useAuthStore } from './authStore'
 
 interface CascadePreview {
     affectedRabItems: number
@@ -69,7 +70,13 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
 
     updateStatus: async (id: string, status: string) => {
         try {
-            await changeOrderService.updateChangeOrderStatus(id, status)
+            const user = useAuthStore.getState().user
+            await changeOrderService.updateChangeOrderStatus(
+                id,
+                status,
+                user?.id,
+                user?.user_metadata?.full_name || user?.email || 'System'
+            )
             set(state => ({
                 orders: state.orders.map(o => o.id === id ? { ...o, status: status as any } : o)
             }))
@@ -100,7 +107,12 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
 
     deleteOrder: async (id: string) => {
         try {
-            await changeOrderService.deleteChangeOrder(id)
+            const user = useAuthStore.getState().user
+            await changeOrderService.deleteChangeOrder(
+                id,
+                user?.id,
+                user?.user_metadata?.full_name || user?.email || 'System'
+            )
             set(state => ({
                 orders: state.orders.filter(o => o.id !== id)
             }))

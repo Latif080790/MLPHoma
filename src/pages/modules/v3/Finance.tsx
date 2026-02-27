@@ -37,6 +37,7 @@ import { InvoiceMatchDialog } from "@/components/finance/InvoiceMatchDialog"
 import { matchInvoice, getMatchStatusColor, getMatchStatusLabel } from "@/services/invoiceMatchingService"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import type { Invoice } from "@/types/finance"
+import { auditTrail } from "@/lib/auditTrail"
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
@@ -81,6 +82,16 @@ export default function Finance() {
                 approverRole: 'manager',
                 impactSummary: { amount: pendingInvoicePayment.total_amount, vendor: pendingInvoicePayment.vendor_name }
             })
+
+            if (user?.id) {
+                await auditTrail.logPaymentApprovalRequested(
+                    pendingInvoicePayment.id,
+                    pendingInvoicePayment.invoice_number,
+                    pendingInvoicePayment.total_amount,
+                    user.id,
+                    profile?.full_name || user.email || 'Finance'
+                )
+            }
 
             // Mark invoice as pending locally
             useFinanceStore.getState().updateInvoiceStatus(pendingInvoicePayment.id, 'PENDING_PAYMENT', pendingInvoicePayment.project_id)
