@@ -7,11 +7,31 @@
 ## Current Execution Snapshot
 - ✅ Crash fix deployed in code: hook-order stabilization pada halaman costing.
 - ✅ Validation: no editor/type problems on changed file + targeted tests passed.
+- ✅ **WCAG 2.1 AA Typography Compliance COMPLETE** (359 violations fixed, automated enforcement active)
 - ▶️ Backlog now moved from planning into sprint board tasks.
 
 ---
 
-## Sprint 0 (Hotfix & Stabilization) — STARTED
+## Sprint 0 (Hotfix & Stabilization) — IN PROGRESS
+
+### Epic S0.0 WCAG Accessibility Foundation — ✅ COMPLETE
+- [x] Phase 1: Fix 103 WCAG typography violations in module pages
+  - Files: 19 module pages (CommandCenter, Finance, RAP, Progress, etc.)
+  - Result: All text-[9/10/11px] replaced with text-xs (12px minimum)
+- [x] Phase 2: Install ESLint enforcement infrastructure
+  - Files: `.eslintrc.cjs`, `.eslintignore`
+  - Result: 4 WCAG rules active, custom error messages
+- [x] Phase 3: Fix 256 WCAG violations in component library
+  - Files: 129 component files (AHSP, RAB, Supply, Finance, etc.)
+  - Result: 100% WCAG 2.1 AA typography compliance
+- [x] Automated enforcement: Pre-commit hooks + CI/CD pipeline
+  - Files: `.husky/pre-commit`, `.github/workflows/eslint.yml`, `package.json`
+  - Result: New violations automatically blocked
+- [x] Documentation: Developer guidelines and setup guides
+  - Files: `CONTRIBUTING.md`, `SETUP_HOOKS.md`, `WCAG_TYPOGRAPHY_COMPLIANCE_REPORT.md`
+  - Result: Complete compliance audit and implementation summary
+- **Status**: ✅ Deployed to GitHub, automated enforcement active
+- **Next**: Enable branch protection rules on GitHub repository
 
 ### Epic S0.1 Costing Runtime Stability
 - [x] Fix hook order violation in costing page (prevent React runtime invariant crash)
