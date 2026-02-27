@@ -51,8 +51,8 @@ function presetsKey(projectId: string) {
  */
 let XLSX: any = null
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  XLSX = require('xlsx')
+  // Dynamic import for optional xlsx dependency - will be loaded when needed
+  void import('xlsx').then(m => { XLSX = m.default || m }).catch(() => { XLSX = null })
 } catch (e) {
   XLSX = null
 }

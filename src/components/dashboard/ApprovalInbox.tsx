@@ -107,14 +107,19 @@ function ImpactPreview({ impact }: { impact: Record<string, any> }) {
 }
 
 function TimeAgo({ date }: { date: string }) {
-    const diff = Date.now() - new Date(date).getTime()
-    const mins = Math.floor(diff / 60000)
-    if (mins < 1) return <span>baru saja</span>
-    if (mins < 60) return <span>{mins}m ago</span>
-    const hours = Math.floor(mins / 60)
-    if (hours < 24) return <span>{hours}h ago</span>
-    const days = Math.floor(hours / 24)
-    return <span>{days}d ago</span>
+    // Memoize time calculation to avoid impure function call during render
+    const timeAgo = React.useMemo(() => {
+        const diff = Date.now() - new Date(date).getTime()
+        const mins = Math.floor(diff / 60000)
+        if (mins < 1) return 'baru saja'
+        if (mins < 60) return `${mins}m ago`
+        const hours = Math.floor(mins / 60)
+        if (hours < 24) return `${hours}h ago`
+        const days = Math.floor(hours / 24)
+        return `${days}d ago`
+    }, [date])
+
+    return <span>{timeAgo}</span>
 }
 
 export function ApprovalInbox() {

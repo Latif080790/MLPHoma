@@ -57,7 +57,12 @@ function parseCSV(text: string): string[][] {
 
 /* ── XLSX loader (guarded) ── */
 let XLSX: any = null
-try { XLSX = require('xlsx') } catch { XLSX = null }
+try { 
+  // Dynamic import for optional xlsx dependency - will be loaded when needed
+  void import('xlsx').then(m => { XLSX = m.default || m }).catch(() => { XLSX = null })
+} catch { 
+  XLSX = null 
+}
 
 /* ── Types ── */
 interface ParsedRow {

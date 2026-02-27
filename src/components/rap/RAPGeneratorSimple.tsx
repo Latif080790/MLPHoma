@@ -38,10 +38,19 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
   const getItems = useRabStore((s) => s.getItems)
   const items = getItems(projectId)
 
-  // tasks state
-  const [tasks, setTasks] = useState<ScheduleTask[]>([
-    { id: 't-1', title: 'Phase 1', startDate: new Date().toISOString().slice(0, 10), endDate: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString().slice(0, 10) },
-  ])
+  // tasks state - use lazy initializer for date calculations
+  const [tasks, setTasks] = useState<ScheduleTask[]>(() => {
+    const now = new Date()
+    const weekLater = new Date(Date.now() + 7 * 24 * 3600 * 1000)
+    return [
+      { 
+        id: 't-1', 
+        title: 'Phase 1', 
+        startDate: now.toISOString().slice(0, 10), 
+        endDate: weekLater.toISOString().slice(0, 10) 
+      }
+    ]
+  })
 
   const [distribution, setDistribution] = useState<Record<string, any> | null>(null)
 

@@ -222,7 +222,7 @@ export function OverheadCostPanel() {
                                     {summary.items.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={5} className="h-32 text-center text-slate-500">
-                                                No indirect costs defined. Click "Load Template" to start.
+                                                No indirect costs defined. Click &quot;Load Template&quot; to start.
                                             </TableCell>
                                         </TableRow>
                                     ) : (

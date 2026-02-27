@@ -98,7 +98,7 @@ function loadColumnPrefs(): Set<ColumnKey> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_COLS)
     if (raw) return new Set(JSON.parse(raw))
-  } catch { }
+  } catch { /* Fallback to defaults on parse error */ }
   return new Set(COLUMN_DEFS.filter(c => c.defaultVisible).map(c => c.key))
 }
 function saveColumnPrefs(cols: Set<ColumnKey>) {
@@ -226,7 +226,7 @@ export function RABTable({ projectId }: RABTableProps) {
   }
   const visibleColCount = COLUMN_DEFS.filter(c => visibleColumns.has(c.key)).length
 
-  // Expand/collapse row — fetch components on expand
+  // Expand/collapse row ï¿½ fetch components on expand
   const toggleExpand = (id: string, itemCode?: string) => {
     setExpandedRows(prev => {
       const next = new Set(prev)
@@ -689,8 +689,8 @@ export function RABTable({ projectId }: RABTableProps) {
               Lock RAB Baseline?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This will capture the current AHSP prices and store them as a "Snapshot" for this project.
-              Future changes to global AHSP prices will not affect this project's RAB.
+              This will capture the current AHSP prices and store them as a &quot;Snapshot&quot; for this project.
+              Future changes to global AHSP prices will not affect this project&apos;s RAB.
               Price editing will be disabled.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1219,7 +1219,7 @@ export function RABTable({ projectId }: RABTableProps) {
                     <TableCell colSpan={visibleColCount} className="text-center py-12 text-slate-400 bg-slate-50/20 w-full">
                       <div className="flex flex-col items-center gap-2">
                         <Search className="h-8 w-8 opacity-20" />
-                        <p>No items in RAB. Click "Add Item" to start.</p>
+                        <p>No items in RAB. Click &quot;Add Item&quot; to start.</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1251,7 +1251,7 @@ export function RABTable({ projectId }: RABTableProps) {
                                 <div className="rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
                                   <div className="bg-white dark:bg-slate-900 px-4 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
                                     <Layers size={12} className="text-blue-500" />
-                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">AHSP Analysis: {analysis.ahsp.code} — {analysis.ahsp.name}</span>
+                                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">AHSP Analysis: {analysis.ahsp.code} ï¿½ {analysis.ahsp.name}</span>
                                   </div>
                                   {(() => {
                                     const grouped: Record<string, typeof analysis.components> = {}
@@ -1289,7 +1289,7 @@ export function RABTable({ projectId }: RABTableProps) {
                                                     <span className="w-[220px] text-xs text-slate-700 dark:text-slate-300 truncate">{name}</span>
                                                     <span className="w-[50px] text-xs text-center text-slate-500 font-mono">{unit}</span>
                                                     <span className="w-[80px] text-xs text-right text-slate-600 dark:text-slate-400 font-mono">{Number(coeff).toFixed(4)}</span>
-                                                    <span className="w-[16px] text-xs text-center text-slate-400">×</span>
+                                                    <span className="w-[16px] text-xs text-center text-slate-400">ï¿½</span>
                                                     <span className="w-[100px] text-xs text-right text-slate-600 dark:text-slate-400 font-mono">{formatIDR(price)}</span>
                                                     <span className="w-[16px] text-xs text-center text-slate-400">=</span>
                                                     <span className="w-[110px] text-xs text-right font-mono font-semibold text-slate-700 dark:text-slate-300">{formatIDR(sub)}</span>
@@ -1308,7 +1308,7 @@ export function RABTable({ projectId }: RABTableProps) {
                                   })()}
                                 </div>
                               ) : (
-                                <div className="text-xs text-slate-400 italic py-2">No AHSP analysis linked — item code not found in catalog.</div>
+                                <div className="text-xs text-slate-400 italic py-2">No AHSP analysis linked ï¿½ item code not found in catalog.</div>
                               )}
                             </div>
                           </TableCell>

@@ -419,7 +419,7 @@ export function RABApprovalPanel({
                           <div className="font-medium">{entry.userName}</div>
                           <div className="text-gray-600 capitalize">{entry.action} at step {entry.stepNumber}</div>
                           {entry.comments && (
-                            <div className="text-gray-500 text-xs mt-1 italic">"{entry.comments}"</div>
+                            <div className="text-gray-500 text-xs mt-1 italic">&quot;{entry.comments}&quot;</div>
                           )}
                         </div>
                         <div className="text-xs text-gray-400">

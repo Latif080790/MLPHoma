@@ -122,6 +122,12 @@ export function ListSkeleton({ items = 5 }: { items?: number }) {
  * Chart skeleton
  */
 export function ChartSkeleton() {
+  // Generate random bar heights once on mount for consistent rendering
+  const barHeights = React.useMemo(
+    () => Array.from({ length: 12 }).map(() => Math.random() * 60 + 40),
+    []
+  )
+
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="mb-4 space-y-2">
@@ -129,11 +135,11 @@ export function ChartSkeleton() {
         <Skeleton className="h-4 w-48" />
       </div>
       <div className="flex h-64 items-end gap-2">
-        {Array.from({ length: 12 }).map((_, i) => (
+        {barHeights.map((height, i) => (
           <Skeleton
             key={`bar-${i}`}
             className="flex-1"
-            style={{ height: `${Math.random() * 60 + 40}%` }}
+            style={{ height: `${height}%` }}
           />
         ))}
       </div>

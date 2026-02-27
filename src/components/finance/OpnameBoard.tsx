@@ -81,7 +81,7 @@ export function OpnameBoard() {
         try {
             const draft = subcontractorService.draftOpname(selectedSpk.id, reqProgress, val)
             setDraftOpname(draft)
-        } catch (e: any) { }
+        } catch (e: any) { /* Intentionally empty - draft calculation is optional */ }
     }
 
     const handleSaveDraft = () => {

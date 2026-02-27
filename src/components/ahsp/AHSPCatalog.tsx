@@ -820,7 +820,7 @@ export function AHSPCatalog({
             <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
             <AlertDialogDescription>
               Tindakan ini tidak dapat dibatalkan. Ini akan menghapus permanen item AHSP
-              "{pendingDeleteItem?.name}" beserta seluruh mapping komponennya.
+              &quot;{pendingDeleteItem?.name}&quot; beserta seluruh mapping komponennya.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
