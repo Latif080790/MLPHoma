@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { checkBudgetAvailability, formatBudgetCheckMessage, commitBudget, BudgetCheckResult } from "@/services/budgetGuardService"
 import { approvalService } from "@/services/approvalService"
 import { useAuthStore } from "@/store/authStore"
+import { BudgetGuardDialog } from "./BudgetGuardDialog"
 
 const poItemSchema = z.object({
     rap_item_id: z.string().optional(),
@@ -44,6 +45,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
     const { items: rapItems, fetchItems } = useRapStore()
     const [budgetCheck, setBudgetCheck] = useState<BudgetCheckResult | null>(null)
     const [isCheckingBudget, setIsCheckingBudget] = useState(false)
+    const [budgetGuardOpen, setBudgetGuardOpen] = useState(false)
+    const [pendingSubmission, setPendingSubmission] = useState<PoFormValues | null>(null)
 
     const form = useForm<PoFormValues>({
         resolver: zodResolver(poSchema),
@@ -59,31 +62,35 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
         name: "items"
     })
 
-    async function onSubmit(data: PoFormValues) {
+    async function submitForApproval(data: PoFormValues) {
+        const totalAmount = data.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
+        const user = useAuthStore.getState().user
+        const profile = useAuthStore.getState().profile
+
+        await approvalService.createApproval({
+            projectId: projectId,
+            entityType: 'PURCHASE_ORDER',
+            entityId: data.po_number,
+            title: `PO ${data.po_number} — Budget Near Limit`,
+            description: `Vendor: ${data.vendor_name || 'N/A'}, Total: Rp ${totalAmount.toLocaleString('id-ID')}. Budget utilization exceeds 90% threshold.`,
+            requesterId: user?.id || 'unknown',
+            requesterName: profile?.full_name || user?.email || 'Unknown',
+            impactSummary: { poData: data, totalAmount, budgetUtilization: budgetCheck?.message || 'Budget guard triggered' }
+        })
+
+        toast.success('PO submitted for approval', {
+            description: 'Budget guard triggered — PM/Admin approval required before commit.'
+        })
+        setBudgetGuardOpen(false)
+        onOpenChange(false)
+        form.reset()
+        setPendingSubmission(null)
+    }
+
+    async function createDirectPO(data: PoFormValues) {
         try {
             const totalAmount = data.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
             const user = useAuthStore.getState().user
-            const profile = useAuthStore.getState().profile
-
-            // If approval is required, route through approval workflow instead of direct PO creation
-            if (budgetCheck?.requiresApproval) {
-                await approvalService.createApproval({
-                    projectId: projectId,
-                    entityType: 'PURCHASE_ORDER',
-                    entityId: data.po_number,
-                    title: `PO ${data.po_number} — Budget Near Limit`,
-                    description: `Vendor: ${data.vendor_name || 'N/A'}, Total: Rp ${totalAmount.toLocaleString('id-ID')}. Budget utilization exceeds 90% threshold.`,
-                    requesterId: user?.id || 'unknown',
-                    requesterName: profile?.full_name || user?.email || 'Unknown',
-                    impactSummary: { poData: data, totalAmount, budgetUtilization: budgetCheck.message }
-                })
-                toast.success('PO submitted for approval', {
-                    description: 'Budget near limit — PM/Admin approval required before commit.'
-                })
-                onOpenChange(false)
-                form.reset()
-                return
-            }
 
             // Direct creation (within budget)
             await createPurchaseOrder({
@@ -108,11 +115,45 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
             toast.success('Purchase Order created', {
                 description: `PO ${data.po_number} — Budget committed for ${data.items.filter(i => i.rap_item_id).length} RAP items.`
             })
+            setBudgetGuardOpen(false)
             onOpenChange(false)
             form.reset()
+            setPendingSubmission(null)
         } catch (err: any) {
             toast.error('Failed to create PO: ' + err.message)
         }
+    }
+
+    async function onSubmit(data: PoFormValues) {
+        if (isCheckingBudget) {
+            toast.info('Budget check is still running, please wait...')
+            return
+        }
+        if (!budgetCheck) {
+            toast.error('Budget guard result not ready. Please review item links and try again.')
+            return
+        }
+
+        setPendingSubmission(data)
+        setBudgetGuardOpen(true)
+    }
+
+    const handleGuardProceed = async () => {
+        if (!pendingSubmission || !budgetCheck) return
+        if (budgetCheck.hasExceeded || budgetCheck.requiresApproval) {
+            toast.warning('Direct PO creation is blocked by Budget Guard. Please request override approval.')
+            return
+        }
+        await createDirectPO(pendingSubmission)
+    }
+
+    const handleGuardOverride = async () => {
+        if (!pendingSubmission || !budgetCheck) return
+        if (!budgetCheck.hasExceeded && !budgetCheck.requiresApproval) {
+            await createDirectPO(pendingSubmission)
+            return
+        }
+        await submitForApproval(pendingSubmission)
     }
 
     const searchedItems = form.watch("items")
@@ -169,6 +210,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
     const isOverBudget = utilizationPercent > 100
 
     return (
+        <>
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -319,5 +361,14 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                 </form>
             </DialogContent>
         </Dialog >
+        <BudgetGuardDialog
+            open={budgetGuardOpen}
+            onOpenChange={setBudgetGuardOpen}
+            result={budgetCheck}
+            loading={isCheckingBudget}
+            onProceed={() => { void handleGuardProceed() }}
+            onRequestOverride={() => { void handleGuardOverride() }}
+        />
+        </>
     )
 }

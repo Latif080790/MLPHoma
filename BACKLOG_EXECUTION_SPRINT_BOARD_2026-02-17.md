@@ -10,7 +10,7 @@
 - ✅ **WCAG 2.1 AA Typography Compliance COMPLETE** (359 violations fixed, automated enforcement active)
 - ✅ **Sprint 0 COMPLETE** (All 3 epics: WCAG compliance, costing stability, release safety)
 - ✅ **ESLint Critical Errors Fixed** (19 errors resolved across 14 files)
-- ▶️ **Sprint 1 READY** - Control gates implementation can begin
+- 🚧 **Sprint 1 IN PROGRESS** - Control gates implementation underway (S1.1 + S1.2 implemented)
 
 ---
 
@@ -75,26 +75,26 @@
 
 ---
 
-## Sprint 1 (Control Gates) — NEXT
+## Sprint 1 (Control Gates) — IN PROGRESS
 
-### Epic S1.1 Budget Guard on Procurement
-- [ ] Add service contract for budget-availability check before PO commit
+### Epic S1.1 Budget Guard on Procurement — ✅ COMPLETE
+- [x] Add service contract for budget-availability check before PO commit
   - New file: `src/services/budgetGuardService.ts`
-- [ ] Add store/action wrapper for guarded PO submit flow
+- [x] Add store/action wrapper for guarded PO submit flow
   - Candidate file: `src/store/` (supply/procurement-related store)
-- [ ] UI feedback states for over-budget block + approval-required prompt
+- [x] UI feedback states for over-budget block + approval-required prompt
   - Candidate files:
     - `src/components/supply/**`
     - `src/pages/modules/**`
 
-### Epic S1.2 Material Transfer Request (MTR) Approval Flow
-- [ ] Define frontend model and status enum (`PENDING`, `APPROVED`, `REJECTED`)
+### Epic S1.2 Material Transfer Request (MTR) Approval Flow — ✅ COMPLETE
+- [x] Define frontend model and status enum (`PENDING`, `APPROVED`, `REJECTED`)
   - New file: `src/types/materialTransfer.ts`
-- [ ] Add request form + PM approval dialog scaffolding
+- [x] Add request form + PM approval dialog scaffolding
   - New files:
     - `src/components/supply/MaterialTransferRequestDialog.tsx`
     - `src/components/supply/MaterialTransferApprovalPanel.tsx`
-- [ ] Add notification badge integration point for pending approvals
+- [x] Add notification badge integration point for pending approvals
   - Candidate files:
     - `src/components/layout/**`
     - `src/pages/Home.tsx`
