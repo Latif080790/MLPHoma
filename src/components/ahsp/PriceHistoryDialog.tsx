@@ -38,16 +38,16 @@ export function PriceHistoryDialog({
     const { fetchPriceHistory, loading, zones } = useAHSPStore()
     const [history, setHistory] = useState<PriceHistory[]>([])
 
+    const loadHistory = async () => {
+        const data = await fetchPriceHistory(ahspId, zoneId)
+        setHistory(data)
+    }
+
     useEffect(() => {
         if (open && ahspId) {
             loadHistory()
         }
     }, [open, ahspId, zoneId])
-
-    const loadHistory = async () => {
-        const data = await fetchPriceHistory(ahspId, zoneId)
-        setHistory(data)
-    }
 
     const getZoneName = (zoneId?: string) => {
         if (!zoneId) return 'Harga Master'

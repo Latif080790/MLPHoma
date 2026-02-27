@@ -349,7 +349,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="resourceInput">Add Resource</Label>
-                  <p className="text-xs text-slate-500 mb-2">Ketik nama posisi (misal: "Tukang") atau nama alat (misal: "Excavator") lalu tekan **Enter**.</p>
+                  <p className="text-xs text-slate-500 mb-2">Ketik nama posisi (misal: &quot;Tukang&quot;) atau nama alat (misal: &quot;Excavator&quot;) lalu tekan **Enter**.</p>
                   <Input
                     id="resourceInput"
                     placeholder="Contoh: 1 Unit PC-200, 5 Tukang Besi... (Enter)"

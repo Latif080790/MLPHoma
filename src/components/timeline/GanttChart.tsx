@@ -117,8 +117,9 @@ function inclusiveDays(startISO: string, endISO: string): number {
  */
 function buildDates(minISO: string, maxISO: string): string[] {
   const out: string[] = []
-  let cur = parseISODate(minISO)
+  const start = parseISODate(minISO)
   const end = parseISODate(maxISO)
+  let cur = start
   while (cur.getTime() <= end.getTime()) {
     out.push(toISODate(cur))
     cur.setUTCDate(cur.getUTCDate() + 1)
