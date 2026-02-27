@@ -15,6 +15,7 @@ import { GenerateReportDialog } from '@/components/dashboard/GenerateReportDialo
 import { FileDown } from 'lucide-react'
 import { MRPAlertPanel } from '@/components/supply/MRPAlertPanel'
 import { AuditLogViewer } from '@/components/audit/AuditLogViewer'
+import { ApprovalQueueWidget } from '@/components/dashboard/ApprovalQueueWidget'
 
 import { useNavigate } from 'react-router-dom'
 
@@ -403,6 +404,9 @@ export default function CommandCenter() {
                     </CardContent>
                 </Card>
                 {/* F. APPROVAL INBOX & MRP ALERTS (Side by Side) */}
+                <div className="md:col-span-2">
+                    <ApprovalQueueWidget projectId={activeProjectId} />
+                </div>
                 <div className="md:col-span-2">
                     <ApprovalInbox />
                 </div>
