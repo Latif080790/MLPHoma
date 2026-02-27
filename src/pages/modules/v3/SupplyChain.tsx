@@ -154,12 +154,13 @@ export default function SupplyChain() {
                         />
                     ) : (
                         <div className="grid gap-3">
-                            {materialRequests.map((mr, idx) => {
-                                // Mock trace data - show if MR converted to PO
-                                const hasDownstream = mr.status === 'PO_CREATED' || (mr.status === 'APPROVED' && idx % 3 === 0)
-                                const mockTrace = hasDownstream ? [
-                                    { type: 'PO' as const, ref: `PO-${String(idx + 10).padStart(4, '0')}` }
-                                ] : []
+                            {materialRequests.map((mr) => {
+                                const traceChain = mr.status === 'PO_CREATED'
+                                    ? [
+                                        { type: 'MR' as const, ref: `MR-${mr.id.slice(0, 6).toUpperCase()}` },
+                                        { type: 'PO' as const, ref: 'PO-LINKED' }
+                                    ]
+                                    : []
 
                                 return (
                                     <div key={mr.id} className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-md transition-all hover:border-blue-200 dark:hover:border-blue-800">
@@ -173,8 +174,8 @@ export default function SupplyChain() {
                                                     <Badge variant="outline" className={`text-xs px-1.5 py-0 border ${getStatusColor(mr.status)}`}>
                                                         {mr.status}
                                                     </Badge>
-                                                    {mockTrace.length > 0 && (
-                                                        <TraceChain chain={mockTrace} size="sm" />
+                                                    {traceChain.length > 0 && (
+                                                        <TraceChain chain={traceChain} size="sm" />
                                                     )}
                                                 </div>
                                                 <div className="text-sm text-slate-500 flex items-center gap-3 mt-0.5">
@@ -218,17 +219,17 @@ export default function SupplyChain() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {purchaseOrders.map((po, idx) => {
-                                            // Mock trace data - will be replaced with real backend data
-                                            const hasUpstream = idx % 3 === 0
-                                            const hasDownstream = po.status === 'APPROVED' && idx % 2 === 0
-                                            const mockTrace = hasUpstream || hasDownstream ? {
-                                                upstream: hasUpstream ? [{ type: 'MR' as const, ref: `MR-${String(idx + 1).padStart(4, '0')}` }] : [],
-                                                downstream: hasDownstream ? [
-                                                    { type: 'GRN' as const, ref: `GRN-${String(idx).padStart(3, '0')}` },
-                                                    ...(idx % 4 === 0 ? [{ type: 'INVOICE' as const, ref: `INV-${String(idx).padStart(3, '0')}` }] : [])
-                                                ] : []
-                                            } : null
+                                        {purchaseOrders.map((po) => {
+                                            const traceChain = [
+                                                { type: 'PO' as const, ref: po.poNumber }
+                                            ]
+                                            if (po.status === 'PARTIALLY_RECEIVED' || po.status === 'COMPLETED') {
+                                                traceChain.push({ type: 'GRN' as const, ref: `GRN-${po.poNumber.slice(-4)}` })
+                                            }
+                                            if (po.status === 'COMPLETED') {
+                                                traceChain.push({ type: 'INVOICE' as const, ref: `INV-${po.poNumber.slice(-4)}` })
+                                            }
+                                            const downstreamCount = Math.max(0, traceChain.length - 1)
 
                                             return (
                                                 <TableRow key={po.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors" onClick={() => setTracePo(po)}>
@@ -239,17 +240,14 @@ export default function SupplyChain() {
                                                         {po.vendorName || '-'}
                                                     </TableCell>
                                                     <TableCell className="py-2">
-                                                        {mockTrace && (mockTrace.upstream.length > 0 || mockTrace.downstream.length > 0) ? (
+                                                        {traceChain.length > 0 ? (
                                                             <div className="flex items-center gap-1.5">
-                                                                {mockTrace.upstream.length > 0 && (
-                                                                    <TraceCountBadge count={mockTrace.upstream.length} direction="upstream" />
-                                                                )}
                                                                 <TraceChain
-                                                                    chain={[...mockTrace.upstream, ...mockTrace.downstream]}
+                                                                    chain={traceChain}
                                                                     size="sm"
                                                                 />
-                                                                {mockTrace.downstream.length > 0 && (
-                                                                    <TraceCountBadge count={mockTrace.downstream.length} direction="downstream" />
+                                                                {downstreamCount > 0 && (
+                                                                    <TraceCountBadge count={downstreamCount} direction="downstream" />
                                                                 )}
                                                             </div>
                                                         ) : (

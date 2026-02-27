@@ -109,12 +109,12 @@
 
 ---
 
-## Sprint 2 (Traceability & Governance)
+## Sprint 2 (Traceability & Governance) — IN PROGRESS
 
 ### Epic S2.1 WBS Trace Flow (MR -> PO -> GRN -> AP)
-- [ ] Define trace-link metadata contract
+- [x] Define trace-link metadata contract
   - New file: `src/types/traceability.ts`
-- [ ] Add trace chip/metadata visibility in key views
+- [x] Add trace chip/metadata visibility in key views
   - Candidate files:
     - `src/components/supply/**`
     - `src/pages/modules/v3/Finance.tsx`

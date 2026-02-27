@@ -142,3 +142,26 @@ export interface TraceQueryOptions {
     /** Maximum depth for traversal */
     maxDepth?: number
 }
+
+/**
+ * Lightweight metadata used by Supply Chain cards/tables.
+ * Keeps lineage display deterministic without requiring full graph fetch.
+ */
+export interface ProcurementTraceMetadata {
+    mrRef?: string
+    poRef?: string
+    grnRef?: string
+    invoiceRef?: string
+    hasUpstream: boolean
+    hasDownstream: boolean
+}
+
+/**
+ * AP-focused trace metadata for invoice visibility in Finance module.
+ */
+export interface APTraceMetadata {
+    invoiceRef: string
+    poRef?: string
+    grnRef?: string
+    sourceType: 'DIRECT' | 'PO_LINKED'
+}
