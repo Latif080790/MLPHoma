@@ -449,7 +449,7 @@ export function WorkOrderPanel({ projectId }: WorkOrderPanelProps) {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className={`text-[10px] ${getStatusColor(wo.status)}`}>
+                                            <Badge variant="outline" className={`text-xs ${getStatusColor(wo.status)}`}>
                                                 {wo.status}
                                             </Badge>
                                         </TableCell>

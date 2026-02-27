@@ -180,7 +180,7 @@ export default function RAP(): JSX.Element {
                       </div>
                     </TooltipTrigger>
                     {draftCount > 0 && (
-                      <TooltipContent className="bg-amber-50 text-amber-700 border-amber-200 text-[11px] max-w-[240px]">
+                      <TooltipContent className="bg-amber-50 text-amber-700 border-amber-200 text-xs max-w-[240px]">
                         <p className="font-bold flex items-center gap-1.5 mb-1 text-amber-900">
                           <Info size={14} />
                           Unpublished Changes
@@ -203,7 +203,7 @@ export default function RAP(): JSX.Element {
 
                   <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight flex items-center gap-1">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-tight flex items-center gap-1">
                         <TrendingUp size={10} className="text-emerald-500" />
                         Profit Simulation
                       </span>
@@ -220,7 +220,7 @@ export default function RAP(): JSX.Element {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 px-2 text-[10px] font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800"
+                          className="h-7 px-2 text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800"
                           onClick={handleApplyProfitSimulation}
                           disabled={isSimulating || !items.length}
                         >
@@ -239,12 +239,12 @@ export default function RAP(): JSX.Element {
                 <Table>
                   <TableHeader className="sticky-glass-tablehead">
                     <TableRow className="border-b border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                      <TableHead className="h-8 w-[300px] bg-transparent text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Item Name</TableHead>
-                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Total Budget</TableHead>
-                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Committed</TableHead>
-                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Actual Cost</TableHead>
-                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Remaining</TableHead>
-                      <TableHead className="h-8 w-[100px] bg-transparent text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Status</TableHead>
+                      <TableHead className="h-8 w-[300px] bg-transparent text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Item Name</TableHead>
+                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Total Budget</TableHead>
+                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Committed</TableHead>
+                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Actual Cost</TableHead>
+                      <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Remaining</TableHead>
+                      <TableHead className="h-8 w-[100px] bg-transparent text-center text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -294,7 +294,7 @@ export default function RAP(): JSX.Element {
                               <div className="flex flex-col">
                                 <span className="text-xs font-semibold">{(item as any).name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-[10px] text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Vol: {item.qty_budget}</span>
+                                  <span className="text-xs text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Vol: {item.qty_budget}</span>
                                 </div>
                               </div>
                             </TableCell>
@@ -315,11 +315,11 @@ export default function RAP(): JSX.Element {
                                 <div className={`h-2 w-12 rounded-full ${statusColor}`} title={`${statusText}: ${utilizationPct}% used (Committed + Actual)`} />
                                 <Badge
                                   variant={statusText === 'CRITICAL' ? 'destructive' : statusText === 'Danger' ? 'secondary' : 'outline'}
-                                  className="h-4 px-1.5 text-[9px] font-semibold uppercase tracking-wider"
+                                  className="h-4 px-1.5 text-xs font-semibold uppercase tracking-wider"
                                 >
                                   {statusText}
                                 </Badge>
-                                <span className="text-[10px] font-mono text-slate-400">{utilizationPct}%</span>
+                                <span className="text-xs font-mono text-slate-400">{utilizationPct}%</span>
                               </div>
                             </TableCell>
                           </TableRow>

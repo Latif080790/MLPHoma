@@ -346,7 +346,7 @@ export default function BoQImportDialog({ open, onOpenChange, projectId }: BoQIm
                                             <td className="px-2 py-1 text-center">
                                                 <button
                                                     onClick={() => toggleRowOverhead(i)}
-                                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${row.is_overhead
+                                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold transition-colors ${row.is_overhead
                                                         ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-400'
                                                         : 'bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400'
                                                         }`}

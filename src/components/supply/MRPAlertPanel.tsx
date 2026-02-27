@@ -29,7 +29,7 @@ function SeverityBadge({ severity }: { severity: MaterialAlert['severity'] }) {
         info: { label: 'Info', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800' },
     }
     const c = config[severity]
-    return <Badge variant="outline" className={`text-[10px] font-semibold ${c.className}`}>{c.label}</Badge>
+    return <Badge variant="outline" className={`text-xs font-semibold ${c.className}`}>{c.label}</Badge>
 }
 
 // ─── Alert Row ───
@@ -55,7 +55,7 @@ function AlertRow({ alert, onCreateMR }: { alert: MaterialAlert; onCreateMR?: (a
                     </span>
                     <SeverityBadge severity={alert.severity} />
                 </div>
-                <div className="flex items-center gap-3 mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                     <span>Need: <strong className="text-slate-700 dark:text-slate-300">{alert.totalNeeded.toLocaleString()}</strong> {alert.unit}</span>
                     <span>Stock: <strong>{alert.currentStock.toLocaleString()}</strong></span>
                     <span className="text-red-600 dark:text-red-400 font-semibold">
@@ -63,7 +63,7 @@ function AlertRow({ alert, onCreateMR }: { alert: MaterialAlert; onCreateMR?: (a
                     </span>
                 </div>
                 {alert.taskName && (
-                    <div className="flex items-center gap-1 mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">
+                    <div className="flex items-center gap-1 mt-0.5 text-xs text-slate-400 dark:text-slate-500">
                         <Clock size={10} />
                         <span>{alert.taskName}</span>
                         {alert.daysUntilNeeded !== null && (
@@ -130,17 +130,17 @@ export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProp
                     </div>
                     <div className="flex items-center gap-1.5">
                         {criticalCount > 0 && (
-                            <Badge variant="outline" className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] h-5">
+                            <Badge variant="outline" className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-xs h-5">
                                 {criticalCount} Critical
                             </Badge>
                         )}
                         {warningCount > 0 && (
-                            <Badge variant="outline" className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-[10px] h-5">
+                            <Badge variant="outline" className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs h-5">
                                 {warningCount} Warning
                             </Badge>
                         )}
                         {totalAlerts === 0 && (
-                            <Badge variant="outline" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] h-5">
+                            <Badge variant="outline" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs h-5">
                                 <CheckCircle2 size={10} className="mr-1" /> All Clear
                             </Badge>
                         )}
@@ -153,7 +153,7 @@ export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProp
                     <div className="text-center py-6 text-sm text-slate-400 dark:text-slate-500">
                         <Package size={28} className="mx-auto mb-2 opacity-40" />
                         <p>No material shortages detected.</p>
-                        <p className="text-[11px] mt-1">All materials are within planned supply levels.</p>
+                        <p className="text-xs mt-1">All materials are within planned supply levels.</p>
                     </div>
                 ) : (
                     <div className="space-y-1.5 mt-1">
@@ -161,7 +161,7 @@ export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProp
                             <AlertRow key={alert.id} alert={alert} onCreateMR={onCreateMR} />
                         ))}
                         {compact && totalAlerts > 3 && (
-                            <p className="text-center text-[11px] text-slate-400 mt-2">
+                            <p className="text-center text-xs text-slate-400 mt-2">
                                 +{totalAlerts - 3} more alerts in Supply Chain module
                             </p>
                         )}

@@ -368,14 +368,14 @@ export function TKDNResourceManager() {
               <Table>
                 <TableHeader className="sticky-glass-tablehead z-10">
                   <TableRow>
-                    <TableHead className="h-8 w-[30%] text-[11px] font-semibold uppercase tracking-wider">Nama</TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold uppercase tracking-wider">Kategori</TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold uppercase tracking-wider">Asal</TableHead>
-                    <TableHead className="h-8 text-right text-[11px] font-semibold uppercase tracking-wider">Volume</TableHead>
-                    <TableHead className="h-8 text-right text-[11px] font-semibold uppercase tracking-wider">Harga Satuan</TableHead>
-                    <TableHead className="h-8 text-right text-[11px] font-semibold uppercase tracking-wider">Total</TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold uppercase tracking-wider">Supplier</TableHead>
-                    <TableHead className="h-8 w-[80px] text-[11px] font-semibold uppercase tracking-wider">Aksi</TableHead>
+                    <TableHead className="h-8 w-[30%] text-xs font-semibold uppercase tracking-wider">Nama</TableHead>
+                    <TableHead className="h-8 text-xs font-semibold uppercase tracking-wider">Kategori</TableHead>
+                    <TableHead className="h-8 text-xs font-semibold uppercase tracking-wider">Asal</TableHead>
+                    <TableHead className="h-8 text-right text-xs font-semibold uppercase tracking-wider">Volume</TableHead>
+                    <TableHead className="h-8 text-right text-xs font-semibold uppercase tracking-wider">Harga Satuan</TableHead>
+                    <TableHead className="h-8 text-right text-xs font-semibold uppercase tracking-wider">Total</TableHead>
+                    <TableHead className="h-8 text-xs font-semibold uppercase tracking-wider">Supplier</TableHead>
+                    <TableHead className="h-8 w-[80px] text-xs font-semibold uppercase tracking-wider">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -402,7 +402,7 @@ export function TKDNResourceManager() {
                       <TableCell className="py-2 text-right font-mono text-xs tabular-nums">{item.quantity.toLocaleString('id-ID')} {item.unit}</TableCell>
                       <TableCell className="py-2 text-right font-mono text-xs tabular-nums">{formatRp(item.unit_price)}</TableCell>
                       <TableCell className="py-2 text-right font-mono text-xs font-semibold tabular-nums">{formatRp(item.total_value)}</TableCell>
-                      <TableCell className="py-2 text-[11px] text-neutral-500">
+                      <TableCell className="py-2 text-xs text-neutral-500">
                         {item.supplier || '-'}
                         {item.country_of_origin && <span className="block">{item.country_of_origin}</span>}
                       </TableCell>

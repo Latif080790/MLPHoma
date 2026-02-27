@@ -103,14 +103,14 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                     <table className="w-full text-sm">
                         <thead className="sticky-glass-tablehead z-10 bg-muted/70 text-left">
                             <tr>
-                                <th className="p-2.5 text-[11px] font-semibold uppercase tracking-wider">Risk Description</th>
-                                <th className="p-2.5 text-[11px] font-semibold uppercase tracking-wider">Category</th>
-                                <th className="p-2.5 text-center text-[11px] font-semibold uppercase tracking-wider">Prob</th>
-                                <th className="p-2.5 text-center text-[11px] font-semibold uppercase tracking-wider">Imp</th>
-                                <th className="p-2.5 text-center text-[11px] font-semibold uppercase tracking-wider">Score</th>
-                                <th className="p-2.5 text-[11px] font-semibold uppercase tracking-wider">Mitigation</th>
-                                <th className="p-2.5 text-[11px] font-semibold uppercase tracking-wider">Status</th>
-                                <th className="p-2.5 text-right text-[11px] font-semibold uppercase tracking-wider">Actions</th>
+                                <th className="p-2.5 text-xs font-semibold uppercase tracking-wider">Risk Description</th>
+                                <th className="p-2.5 text-xs font-semibold uppercase tracking-wider">Category</th>
+                                <th className="p-2.5 text-center text-xs font-semibold uppercase tracking-wider">Prob</th>
+                                <th className="p-2.5 text-center text-xs font-semibold uppercase tracking-wider">Imp</th>
+                                <th className="p-2.5 text-center text-xs font-semibold uppercase tracking-wider">Score</th>
+                                <th className="p-2.5 text-xs font-semibold uppercase tracking-wider">Mitigation</th>
+                                <th className="p-2.5 text-xs font-semibold uppercase tracking-wider">Status</th>
+                                <th className="p-2.5 text-right text-xs font-semibold uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -131,7 +131,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                                             )}
                                         </td>
                                         <td className="p-2.5">
-                                            <Badge variant="outline" className="text-[10px] uppercase tracking-wider">{risk.category}</Badge>
+                                            <Badge variant="outline" className="text-xs uppercase tracking-wider">{risk.category}</Badge>
                                         </td>
                                         <td className="p-2.5 text-center text-xs">{risk.probability}</td>
                                         <td className="p-2.5 text-center text-xs">{risk.impact}</td>
@@ -140,11 +140,11 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                                                 {risk.risk_score}
                                             </span>
                                         </td>
-                                        <td className="max-w-[250px] truncate p-2.5 text-[11px] text-neutral-600" title={risk.mitigation_plan}>
+                                        <td className="max-w-[250px] truncate p-2.5 text-xs text-neutral-600" title={risk.mitigation_plan}>
                                             {risk.mitigation_plan || '-'}
                                         </td>
                                         <td className="p-2.5">
-                                            <Badge variant={risk.status === 'OPEN' ? 'destructive' : risk.status === 'MITIGATED' ? 'secondary' : 'outline'} className="text-[10px] uppercase tracking-wider">
+                                            <Badge variant={risk.status === 'OPEN' ? 'destructive' : risk.status === 'MITIGATED' ? 'secondary' : 'outline'} className="text-xs uppercase tracking-wider">
                                                 {risk.status}
                                             </Badge>
                                         </td>

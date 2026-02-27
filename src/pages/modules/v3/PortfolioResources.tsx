@@ -42,7 +42,7 @@ export default function PortfolioResources() {
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                                     {res.resourceName}
-                                    <Badge variant="outline" className="text-[10px] font-normal uppercase">
+                                    <Badge variant="outline" className="text-xs font-normal uppercase">
                                         {res.type}
                                     </Badge>
                                 </CardTitle>
@@ -53,7 +53,7 @@ export default function PortfolioResources() {
                         </CardHeader>
                         <CardContent className="pt-4 space-y-4">
                             <div className="space-y-1">
-                                <div className="flex justify-between text-[10px] text-slate-500 uppercase">
+                                <div className="flex justify-between text-xs text-slate-500 uppercase">
                                     <span>Portfolio Allocation</span>
                                     <span>{res.allocation.length} Projects</span>
                                 </div>
@@ -61,12 +61,12 @@ export default function PortfolioResources() {
                             </div>
 
                             <div className="space-y-2">
-                                <h4 className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-1">
+                                <h4 className="text-xs text-slate-500 font-bold uppercase flex items-center gap-1">
                                     <Info size={10} /> Active Distribution
                                 </h4>
                                 {res.allocation.map((alloc, idx) => (
                                     <div key={idx} className="flex items-center justify-between group/item">
-                                        <span className="text-[11px] text-slate-700 dark:text-slate-300 truncate w-32">
+                                        <span className="text-xs text-slate-700 dark:text-slate-300 truncate w-32">
                                             {alloc.projectName}
                                         </span>
                                         <div className="flex items-center gap-2">
@@ -76,7 +76,7 @@ export default function PortfolioResources() {
                                                     style={{ width: `${alloc.usagePercent}%` }}
                                                 />
                                             </div>
-                                            <span className="text-[10px] font-mono w-8 text-right">
+                                            <span className="text-xs font-mono w-8 text-right">
                                                 {Math.round(alloc.usagePercent)}%
                                             </span>
                                         </div>

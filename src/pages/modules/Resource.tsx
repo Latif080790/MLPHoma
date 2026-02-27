@@ -286,7 +286,7 @@ export default function Resource() {
                           <TableRow key={idx} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors">
                             <TableCell className="py-2 text-sm font-medium text-slate-800 dark:text-slate-200">{res.name}</TableCell>
                             <TableCell className="py-2">
-                              <Badge variant="outline" className="capitalize text-[10px] font-normal border-slate-200 text-slate-500">
+                              <Badge variant="outline" className="capitalize text-xs font-normal border-slate-200 text-slate-500">
                                 {res.type}
                               </Badge>
                             </TableCell>

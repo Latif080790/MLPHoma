@@ -86,7 +86,7 @@ export function TraceChip({
             className={cn(
                 'font-mono gap-1.5 cursor-pointer hover:shadow-sm transition-all',
                 config.color,
-                size === 'sm' ? 'text-[10px] px-1.5 py-0' : 'text-xs px-2 py-0.5',
+                size === 'sm' ? 'text-xs px-1.5 py-0' : 'text-xs px-2 py-0.5',
                 onClick && 'hover:scale-105',
                 className
             )}
@@ -158,7 +158,7 @@ export function TraceCountBadge({ count, direction, className }: TraceCountBadge
         <Badge 
             variant="secondary" 
             className={cn(
-                'text-[9px] px-1.5 py-0 font-mono',
+                'text-xs px-1.5 py-0 font-mono',
                 direction === 'upstream' 
                     ? 'bg-blue-50 text-blue-700 border-blue-200' 
                     : 'bg-purple-50 text-purple-700 border-purple-200',

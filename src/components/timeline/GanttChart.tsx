@@ -1089,8 +1089,8 @@ export default function GanttChart({
                         const dow = parseISODate(d).getUTCDay()
                         const label = viewMode === 'month' ? `${new Date(d).toISOString().slice(8, 10)}` : ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dow]
                         return (
-                          <div key={globalIdx} className="absolute top-0 h-8 border-l text-[11px] text-neutral-500 flex items-center px-1 select-none" style={{ left, width: pxPerDay }} title={d}>
-                            {showLabel ? <div className="text-[11px]">{label}</div> : null}
+                          <div key={globalIdx} className="absolute top-0 h-8 border-l text-xs text-neutral-500 flex items-center px-1 select-none" style={{ left, width: pxPerDay }} title={d}>
+                            {showLabel ? <div className="text-xs">{label}</div> : null}
                           </div>
                         )
                       })}
@@ -1132,7 +1132,7 @@ export default function GanttChart({
             {showTodayLine && todayIndex >= startDay && todayIndex < endDay ? (
               <div className="absolute pointer-events-none z-20" style={{ left: leftColWidth + (todayIndex - startDay) * pxPerDay - 1, top: 6, height: effectiveRows.length * rowHeight + 30 }} aria-hidden="true">
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-                  <div className="text-[11px] px-2 py-0.5 rounded-full text-white shadow-sm" style={{ background: palette.critical }}>
+                  <div className="text-xs px-2 py-0.5 rounded-full text-white shadow-sm" style={{ background: palette.critical }}>
                     {todayISO}
                   </div>
                 </div>
@@ -1250,7 +1250,7 @@ export default function GanttChart({
                           <div className="min-w-0 flex-1">
                             <div className="truncate text-sm font-medium">{t.name}</div>
                             {t.assignedResources && t.assignedResources.length > 0 && (
-                              <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium truncate mt-0.5">
+                              <div className="text-xs text-blue-600 dark:text-blue-400 font-medium truncate mt-0.5">
                                 {t.assignedResources.join(', ')}
                               </div>
                             )}

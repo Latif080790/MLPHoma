@@ -114,7 +114,7 @@ export function MTRPanel() {
                 <div className="flex items-center gap-2">
                     <Truck size={18} className="text-blue-600" />
                     <h3 className="font-semibold text-sm">Material Transfer Requests</h3>
-                    <Badge variant="outline" className="text-[10px]">{mtrs.length}</Badge>
+                    <Badge variant="outline" className="text-xs">{mtrs.length}</Badge>
                 </div>
                 {can(ACTIONS.CREATE_MR) && (
                     <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -136,7 +136,7 @@ export function MTRPanel() {
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
-                                <TableRow className="text-[11px] uppercase tracking-wider">
+                                <TableRow className="text-xs uppercase tracking-wider">
                                     <TableHead className="p-3 w-28">ID</TableHead>
                                     <TableHead className="p-3">Transfer</TableHead>
                                     <TableHead className="p-3 text-right">Value</TableHead>
@@ -149,51 +149,51 @@ export function MTRPanel() {
                                     const nextStatuses = mtrService.getNextStatuses(mtr.id)
                                     return (
                                         <TableRow key={mtr.id} className="text-xs">
-                                            <TableCell className="p-3 font-mono text-[10px]">{mtr.id.slice(0, 12)}</TableCell>
+                                            <TableCell className="p-3 font-mono text-xs">{mtr.id.slice(0, 12)}</TableCell>
                                             <TableCell className="p-3">
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="font-medium">{mtr.sourceWbsLabel}</span>
                                                     <ArrowRight size={12} className="text-slate-400" />
                                                     <span className="font-medium">{mtr.targetWbsLabel}</span>
                                                 </div>
-                                                <div className="text-[10px] text-slate-500 mt-0.5">{mtr.reason}</div>
+                                                <div className="text-xs text-slate-500 mt-0.5">{mtr.reason}</div>
                                             </TableCell>
                                             <TableCell className="p-3 text-right font-mono font-semibold">
                                                 Rp {mtr.totalValue.toLocaleString()}
                                             </TableCell>
                                             <TableCell className="p-3">
-                                                <Badge className={`text-[9px] ${MTR_STATUS_COLORS[mtr.status]}`}>
+                                                <Badge className={`text-xs ${MTR_STATUS_COLORS[mtr.status]}`}>
                                                     {MTR_STATUS_LABELS[mtr.status]}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="p-3 text-right">
                                                 <div className="flex items-center gap-1 justify-end">
                                                     {nextStatuses.includes('SUBMITTED') && (
-                                                        <Button size="sm" variant="outline" className="h-6 text-[10px] px-2"
+                                                        <Button size="sm" variant="outline" className="h-6 text-xs px-2"
                                                             onClick={() => handleAction(mtr, 'SUBMITTED')}>
                                                             <Send size={10} className="mr-0.5" /> Submit
                                                         </Button>
                                                     )}
                                                     {nextStatuses.includes('APPROVED') && can(ACTIONS.APPROVE_MR) && (
-                                                        <Button size="sm" variant="default" className="h-6 text-[10px] px-2 bg-green-600 hover:bg-green-700"
+                                                        <Button size="sm" variant="default" className="h-6 text-xs px-2 bg-green-600 hover:bg-green-700"
                                                             onClick={() => handleAction(mtr, 'APPROVED')}>
                                                             <Check size={10} className="mr-0.5" /> Approve
                                                         </Button>
                                                     )}
                                                     {nextStatuses.includes('REJECTED') && can(ACTIONS.APPROVE_MR) && (
-                                                        <Button size="sm" variant="destructive" className="h-6 text-[10px] px-2"
+                                                        <Button size="sm" variant="destructive" className="h-6 text-xs px-2"
                                                             onClick={() => handleAction(mtr, 'REJECTED')}>
                                                             <X size={10} className="mr-0.5" /> Reject
                                                         </Button>
                                                     )}
                                                     {nextStatuses.includes('POSTED') && (
-                                                        <Button size="sm" variant="default" className="h-6 text-[10px] px-2"
+                                                        <Button size="sm" variant="default" className="h-6 text-xs px-2"
                                                             onClick={() => handleAction(mtr, 'POSTED')}>
                                                             <FileText size={10} className="mr-0.5" /> Post
                                                         </Button>
                                                     )}
                                                     {nextStatuses.includes('DRAFT') && (
-                                                        <Button size="sm" variant="outline" className="h-6 text-[10px] px-2"
+                                                        <Button size="sm" variant="outline" className="h-6 text-xs px-2"
                                                             onClick={() => handleAction(mtr, 'DRAFT')}>
                                                             Revise
                                                         </Button>

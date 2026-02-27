@@ -99,14 +99,14 @@ const SnapshotDiffViewer: FC<Props> = ({ base, compare }) => {
       <ul className="space-y-2">
         {diffs.map((d) => (
           <li key={d.path} className="rounded-md border p-2 dark:border-neutral-800">
-            <div className="font-mono text-[11px] text-neutral-700 dark:text-neutral-300 mb-1">{d.path}</div>
+            <div className="font-mono text-xs text-neutral-700 dark:text-neutral-300 mb-1">{d.path}</div>
             <div className="grid grid-cols-2 gap-2">
               <div className="text-rose-600">
-                <div className="text-[11px] text-neutral-500">Before</div>
+                <div className="text-xs text-neutral-500">Before</div>
                 <pre className="whitespace-pre-wrap text-[12px]">{JSON.stringify(d.before, null, 2)}</pre>
               </div>
               <div className="text-green-600">
-                <div className="text-[11px] text-neutral-500">After</div>
+                <div className="text-xs text-neutral-500">After</div>
                 <pre className="whitespace-pre-wrap text-[12px]">{JSON.stringify(d.after, null, 2)}</pre>
               </div>
             </div>

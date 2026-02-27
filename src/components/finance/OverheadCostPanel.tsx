@@ -192,7 +192,7 @@ export function OverheadCostPanel() {
                                             </div>
                                             <div className="font-mono text-slate-900 dark:text-white font-semibold flex flex-col items-end">
                                                 Rp {c.total.toLocaleString('id-ID')}
-                                                <span className="text-[10px] text-slate-400 font-sans font-normal">
+                                                <span className="text-xs text-slate-400 font-sans font-normal">
                                                     {((c.total / summary.totalOverhead) * 100).toFixed(1)}%
                                                 </span>
                                             </div>
@@ -235,7 +235,7 @@ export function OverheadCostPanel() {
                                                     <div className="text-xs text-slate-500 mt-0.5">{OVERHEAD_CATEGORY_LABELS[item.category]}</div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant="outline" className="text-[10px] uppercase font-normal bg-slate-50 dark:bg-slate-900">
+                                                    <Badge variant="outline" className="text-xs uppercase font-normal bg-slate-50 dark:bg-slate-900">
                                                         {item.method}
                                                     </Badge>
                                                 </TableCell>

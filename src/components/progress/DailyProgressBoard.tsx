@@ -121,13 +121,13 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{task.name}</span>
-                        {isOverdue && <Badge variant="destructive" className="text-[9px] h-4">Overdue</Badge>}
-                        {existingEntry && <Badge className="text-[9px] h-4 bg-emerald-100 text-emerald-700">Updated</Badge>}
+                        {isOverdue && <Badge variant="destructive" className="text-xs h-4">Overdue</Badge>}
+                        {existingEntry && <Badge className="text-xs h-4 bg-emerald-100 text-emerald-700">Updated</Badge>}
                         {task.wbsCode && (
-                            <Badge variant="outline" className="text-[9px] h-4 text-slate-400">{task.wbsCode}</Badge>
+                            <Badge variant="outline" className="text-xs h-4 text-slate-400">{task.wbsCode}</Badge>
                         )}
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+                    <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
                         <span className="flex items-center gap-1">
                             <Clock size={10} /> {task.startDate} → {task.endDate}
                         </span>
@@ -152,7 +152,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                     {/* Progress Slider */}
                     <div>
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] text-slate-500 uppercase font-semibold">Progress Update</span>
+                            <span className="text-xs text-slate-500 uppercase font-semibold">Progress Update</span>
                             <span className="text-sm font-mono font-bold text-blue-600">
                                 {task.progress}% → {progress}%
                                 {progressGain > 0 && <span className="text-emerald-600 ml-1">(+{progressGain}%)</span>}
@@ -172,7 +172,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                     <div className="grid grid-cols-3 gap-3">
                         {/* Photo Count */}
                         <div>
-                            <label className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1">
+                            <label className="text-xs text-slate-500 uppercase font-semibold flex items-center gap-1">
                                 <Camera size={10} /> Foto Evidence
                             </label>
                             <Input
@@ -186,7 +186,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                         </div>
                         {/* Crew Count */}
                         <div>
-                            <label className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1">
+                            <label className="text-xs text-slate-500 uppercase font-semibold flex items-center gap-1">
                                 <Users size={10} /> Jumlah Crew
                             </label>
                             <Input
@@ -200,7 +200,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                         </div>
                         {/* Weather */}
                         <div>
-                            <label className="text-[10px] text-slate-500 uppercase font-semibold">Cuaca</label>
+                            <label className="text-xs text-slate-500 uppercase font-semibold">Cuaca</label>
                             <div className="flex gap-1 mt-1">
                                 {WEATHER_OPTIONS.map(w => (
                                     <button
@@ -305,13 +305,13 @@ export function DailyProgressBoard() {
             <div className="grid grid-cols-4 gap-3">
                 <Card className="border-blue-200 dark:border-blue-900">
                     <CardContent className="p-3 text-center">
-                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Tugas Hari Ini</p>
+                        <p className="text-xs text-slate-500 uppercase font-semibold">Tugas Hari Ini</p>
                         <p className="text-2xl font-bold text-blue-600 mt-1">{todayTasks.length}</p>
                     </CardContent>
                 </Card>
                 <Card className={overdueTasks.length > 0 ? 'border-red-300 dark:border-red-900' : ''}>
                     <CardContent className="p-3 text-center">
-                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Overdue</p>
+                        <p className="text-xs text-slate-500 uppercase font-semibold">Overdue</p>
                         <p className={`text-2xl font-bold mt-1 ${overdueTasks.length > 0 ? 'text-red-600' : 'text-slate-400'}`}>
                             {overdueTasks.length}
                         </p>
@@ -319,13 +319,13 @@ export function DailyProgressBoard() {
                 </Card>
                 <Card>
                     <CardContent className="p-3 text-center">
-                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Sudah Update</p>
+                        <p className="text-xs text-slate-500 uppercase font-semibold">Sudah Update</p>
                         <p className="text-2xl font-bold text-emerald-600 mt-1">{todayEntries.length}</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardContent className="p-3 text-center">
-                        <p className="text-[10px] text-slate-500 uppercase font-semibold">Crew Deployed</p>
+                        <p className="text-xs text-slate-500 uppercase font-semibold">Crew Deployed</p>
                         <p className="text-2xl font-bold text-slate-700 dark:text-slate-300 mt-1">
                             {report?.totalCrewDeployed || 0}
                         </p>
@@ -364,10 +364,10 @@ export function DailyProgressBoard() {
                         <CardTitle className="text-sm flex items-center gap-2">
                             <CalendarClock size={14} className="text-blue-600" />
                             Tugas Aktif Hari Ini
-                            <Badge variant="outline" className="text-[10px] h-5">{format(new Date(), 'EEEE, dd MMM yyyy')}</Badge>
+                            <Badge variant="outline" className="text-xs h-5">{format(new Date(), 'EEEE, dd MMM yyyy')}</Badge>
                         </CardTitle>
                         {report && report.avgProgressGain > 0 && (
-                            <Badge className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                            <Badge className="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                                 Avg +{report.avgProgressGain.toFixed(1)}% progress
                             </Badge>
                         )}
@@ -378,7 +378,7 @@ export function DailyProgressBoard() {
                         <div className="text-center py-8">
                             <CheckCircle2 size={28} className="mx-auto mb-2 text-emerald-400 opacity-40" />
                             <p className="text-sm text-slate-400">Tidak ada tugas aktif hari ini.</p>
-                            <p className="text-[11px] text-slate-400 mt-1">Tugas akan muncul berdasarkan jadwal Timeline.</p>
+                            <p className="text-xs text-slate-400 mt-1">Tugas akan muncul berdasarkan jadwal Timeline.</p>
                         </div>
                     ) : (
                         todayTasks.map(task => (

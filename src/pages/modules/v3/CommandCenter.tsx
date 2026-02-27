@@ -82,7 +82,7 @@ export default function CommandCenter() {
                         {/* Report Generator */}
                         {!isPortfolioMode && activeProject && stats && (
                             <GenerateReportDialog projectId={activeProjectId} projectName={activeProject.name} stats={stats}>
-                                <Button variant="outline" size="sm" className="h-7 text-[10px] font-mono border-slate-700 text-slate-400 hover:text-white bg-slate-900">
+                                <Button variant="outline" size="sm" className="h-7 text-xs font-mono border-slate-700 text-slate-400 hover:text-white bg-slate-900">
                                     <FileDown className="mr-2 h-3 w-3" /> EXPORT REPORT
                                 </Button>
                             </GenerateReportDialog>
@@ -91,12 +91,12 @@ export default function CommandCenter() {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className={`h-7 text-[10px] font-mono border border-slate-700 ${isPortfolioMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-400 hover:text-white'}`}
+                            className={`h-7 text-xs font-mono border border-slate-700 ${isPortfolioMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-400 hover:text-white'}`}
                             onClick={() => setIsPortfolioMode(!isPortfolioMode)}
                         >
                             {isPortfolioMode ? 'EXIT PORTFOLIO' : 'ENTER PORTFOLIO'}
                         </Button>
-                        <Badge variant="outline" className="bg-slate-900 text-slate-300 border-slate-700 font-mono text-[10px]">
+                        <Badge variant="outline" className="bg-slate-900 text-slate-300 border-slate-700 font-mono text-xs">
                             v3.2.0-STABLE
                         </Badge>
                     </div>
@@ -104,11 +104,11 @@ export default function CommandCenter() {
 
                 {/* MARQUEE TICKER */}
                 <div className="h-6 bg-black/40 rounded border border-slate-800/50 overflow-hidden flex items-center">
-                    <div className="bg-red-600/20 text-red-500 px-2 py-0.5 text-[9px] font-bold border-r border-red-500/30 flex items-center gap-1 z-10 uppercase">
+                    <div className="bg-red-600/20 text-red-500 px-2 py-0.5 text-xs font-bold border-r border-red-500/30 flex items-center gap-1 z-10 uppercase">
                         <AlertTriangle size={10} /> Alerts
                     </div>
                     <div className="flex-1 overflow-hidden relative">
-                        <div className="animate-marquee whitespace-nowrap text-[10px] font-mono text-slate-400 flex items-center gap-8 pl-4">
+                        <div className="animate-marquee whitespace-nowrap text-xs font-mono text-slate-400 flex items-center gap-8 pl-4">
                             {isPortfolioMode ? (
                                 <>
                                     <span>CRITICAL: {portfolioStats?.globalAlertCounts?.CRITICAL || 0} alerts across {portfolioStats?.totalProjects || 0} projects</span>
@@ -155,8 +155,8 @@ export default function CommandCenter() {
                                 </div>
                                 <div className="h-10 w-px bg-slate-800" />
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] text-slate-500 uppercase">Rating</span>
-                                    <Badge variant="outline" className={`text-[10px] uppercase ${(isPortfolioMode ? portfolioStats?.avgPhi || 0 : stats?.phi?.score || 0) >= 85 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : (isPortfolioMode ? portfolioStats?.avgPhi || 0 : stats?.phi?.score || 0) >= 70 ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                    <span className="text-xs text-slate-500 uppercase">Rating</span>
+                                    <Badge variant="outline" className={`text-xs uppercase ${(isPortfolioMode ? portfolioStats?.avgPhi || 0 : stats?.phi?.score || 0) >= 85 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : (isPortfolioMode ? portfolioStats?.avgPhi || 0 : stats?.phi?.score || 0) >= 70 ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
                                         }`}>
                                         {isPortfolioMode ? (portfolioStats?.avgPhi >= 85 ? 'OPTIMAL' : portfolioStats?.avgPhi >= 70 ? 'STABLE' : 'CRITICAL') : stats?.phi?.rating || 'UNKNOWN'}
                                     </Badge>
@@ -165,7 +165,7 @@ export default function CommandCenter() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="h-7 text-[9px] font-mono text-slate-500 hover:text-white border border-slate-800 hover:bg-blue-600 transition-all uppercase tracking-tighter"
+                                        className="h-7 text-xs font-mono text-slate-500 hover:text-white border border-slate-800 hover:bg-blue-600 transition-all uppercase tracking-tighter"
                                         onClick={() => navigate('/strategy-simulation')}
                                     >
                                         Analyze Impact
@@ -176,7 +176,7 @@ export default function CommandCenter() {
 
                         <div className="flex items-center gap-8 mt-4">
                             <div>
-                                <div className="text-[10px] text-slate-500 uppercase">
+                                <div className="text-xs text-slate-500 uppercase">
                                     {isPortfolioMode ? 'Avg CPI' : 'CPI'}
                                 </div>
                                 <div className={`text-sm font-mono font-bold ${(isPortfolioMode ? portfolioStats?.avgCpi || 0 : stats?.cpi || 0) >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -184,7 +184,7 @@ export default function CommandCenter() {
                                 </div>
                             </div>
                             <div>
-                                <div className="text-[10px] text-slate-500 uppercase">
+                                <div className="text-xs text-slate-500 uppercase">
                                     {isPortfolioMode ? 'Avg SPI' : 'SPI'}
                                 </div>
                                 <div className={`text-sm font-mono font-bold ${(isPortfolioMode ? portfolioStats?.avgSpi || 0 : stats?.spi || 0) >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -193,7 +193,7 @@ export default function CommandCenter() {
                             </div>
                             <div className="h-6 w-px bg-slate-800" />
                             <div>
-                                <div className="text-[10px] text-slate-500 uppercase">
+                                <div className="text-xs text-slate-500 uppercase">
                                     {isPortfolioMode ? 'Active Projects' : 'Cost Variance'}
                                 </div>
                                 <div className="text-sm font-mono text-slate-300">
@@ -206,7 +206,7 @@ export default function CommandCenter() {
                             </div>
                             <div className="h-6 w-px bg-slate-800" />
                             <div>
-                                <div className="text-[10px] text-slate-500 uppercase">
+                                <div className="text-xs text-slate-500 uppercase">
                                     {isPortfolioMode ? 'Total Budget' : 'Schedule Var'}
                                 </div>
                                 <div className="text-sm font-mono text-slate-300">
@@ -239,14 +239,14 @@ export default function CommandCenter() {
                         <div className="mt-2 space-y-1">
                             {isPortfolioMode ? (
                                 portfolioStats?.topGlobalRisks?.slice(0, 3).map((risk: any, i: number) => (
-                                    <div key={i} className="text-[10px] text-red-600 dark:text-red-400 truncate font-medium flex items-center gap-1">
+                                    <div key={i} className="text-xs text-red-600 dark:text-red-400 truncate font-medium flex items-center gap-1">
                                         <div className="h-1 w-1 bg-red-500 rounded-full" />
                                         [{risk.projectName}] {risk.description}
                                     </div>
                                 ))
                             ) : (
                                 stats?.topRisks?.slice(0, 2).map((risk, i) => (
-                                    <div key={i} className="text-[10px] text-red-600 dark:text-red-400 truncate font-medium flex items-center gap-1">
+                                    <div key={i} className="text-xs text-red-600 dark:text-red-400 truncate font-medium flex items-center gap-1">
                                         <div className="h-1 w-1 bg-red-500 rounded-full" />
                                         {risk.description}
                                     </div>
@@ -272,13 +272,13 @@ export default function CommandCenter() {
                             <div className="text-3xl font-bold font-mono text-slate-900 dark:text-white">
                                 {isPortfolioMode ? portfolioStats?.globalAlertCounts?.CRITICAL || 0 : stats?.alertCounts?.CRITICAL || 0}
                             </div>
-                            <div className="text-[10px] text-red-500 font-bold mb-1 uppercase">Critical</div>
+                            <div className="text-xs text-red-500 font-bold mb-1 uppercase">Critical</div>
                         </div>
                         <div className="mt-2 flex gap-1">
-                            <Badge variant="outline" className="text-[9px] h-4 px-1 bg-amber-500/10 text-amber-600 border-amber-500/20">
+                            <Badge variant="outline" className="text-xs h-4 px-1 bg-amber-500/10 text-amber-600 border-amber-500/20">
                                 {isPortfolioMode ? portfolioStats?.globalAlertCounts?.MODERATE || 0 : stats?.alertCounts?.MODERATE || 0} MOD
                             </Badge>
-                            <Badge variant="outline" className="text-[9px] h-4 px-1 bg-blue-500/10 text-blue-600 border-blue-500/20">
+                            <Badge variant="outline" className="text-xs h-4 px-1 bg-blue-500/10 text-blue-600 border-blue-500/20">
                                 {isPortfolioMode ? portfolioStats?.globalAlertCounts?.MINOR || 0 : stats?.alertCounts?.MINOR || 0} MIN
                             </Badge>
                         </div>
@@ -288,7 +288,7 @@ export default function CommandCenter() {
                 {/* D. STRATEGIC ANOMALIES (Phase 13) */}
                 <Card className="md:col-span-1 shadow-sm border-slate-200 dark:border-slate-800 bg-slate-900 text-white">
                     <CardHeader className="pb-2 border-b border-slate-800/10 flex flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                        <CardTitle className="text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                             <Zap size={12} className="text-yellow-400" /> Strategic Anomalies
                         </CardTitle>
                         <Button
@@ -303,7 +303,7 @@ export default function CommandCenter() {
                     </CardHeader>
                     <CardContent className="p-3 space-y-2 min-h-[80px] flex flex-col justify-center">
                         {isPortfolioMode ? (
-                            <div className="text-[9px] text-slate-500 italic text-center">
+                            <div className="text-xs text-slate-500 italic text-center">
                                 Analyzing global pattern drift...
                             </div>
                         ) : stats?.anomalies && stats.anomalies.length > 0 ? (
@@ -311,13 +311,13 @@ export default function CommandCenter() {
                                 <div key={idx} className="p-1.5 rounded border border-red-500/20 bg-red-500/5">
                                     <div className="flex items-center gap-1 mb-0.5">
                                         <AlertTriangle size={8} className="text-red-500" />
-                                        <span className="text-[8px] font-bold text-red-500 uppercase">{anno.type}</span>
+                                        <span className="text-xs font-bold text-red-500 uppercase">{anno.type}</span>
                                     </div>
-                                    <div className="text-[9px] text-slate-300 leading-tight">{anno.description}</div>
+                                    <div className="text-xs text-slate-300 leading-tight">{anno.description}</div>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-[9px] text-emerald-500 font-mono text-center flex flex-col items-center gap-1">
+                            <div className="text-xs text-emerald-500 font-mono text-center flex flex-col items-center gap-1">
                                 <Activity size={14} className="animate-pulse" />
                                 SYSTEMS OPTIMAL
                             </div>
@@ -334,8 +334,8 @@ export default function CommandCenter() {
                                 {isPortfolioMode ? 'Portfolio Aggregate Cashflow' : 'Macro Cashflow Projection'}
                             </CardTitle>
                             <div className="flex gap-2">
-                                <Badge variant="outline" className="text-[10px]">Weekly</Badge>
-                                <Badge variant="outline" className="text-[10px] bg-slate-100 dark:bg-slate-800">Monthly</Badge>
+                                <Badge variant="outline" className="text-xs">Weekly</Badge>
+                                <Badge variant="outline" className="text-xs bg-slate-100 dark:bg-slate-800">Monthly</Badge>
                             </div>
                         </div>
                     </CardHeader>

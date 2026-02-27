@@ -46,7 +46,7 @@ export default function HistoryPanel({ projectId = 'default' }: HistoryPanelProp
         ) : (
           audit.slice().reverse().map((a) => (
             <div key={a.id} className="border-b py-1">
-              <div className="font-mono text-[11px] text-neutral-600">{new Date(a.timestamp).toLocaleString()}</div>
+              <div className="font-mono text-xs text-neutral-600">{new Date(a.timestamp).toLocaleString()}</div>
               <div className="text-sm">{a.action}</div>
               <div className="text-xs text-neutral-500">{JSON.stringify(a.payload)}</div>
             </div>

@@ -150,7 +150,7 @@ export function ProfitControlDashboard({ projectId }: ProfitControlDashboardProp
                                 </div>
                                 <div className="flex flex-col items-center gap-1">
                                     <StatusIcon className={`h-10 w-10 ${cfg.color}`} />
-                                    <Badge variant="outline" className={`text-[10px] ${cfg.badge}`}>
+                                    <Badge variant="outline" className={`text-xs ${cfg.badge}`}>
                                         {cfg.label}
                                     </Badge>
                                 </div>
@@ -247,7 +247,7 @@ export function ProfitControlDashboard({ projectId }: ProfitControlDashboardProp
                     <div className="flex h-6 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
                         {rapPct > 0 && (
                             <div
-                                className="bg-red-500 transition-all flex items-center justify-center text-[10px] text-white font-medium"
+                                className="bg-red-500 transition-all flex items-center justify-center text-xs text-white font-medium"
                                 style={{ width: `${rapPct}%` }}
                                 title={`RAP Actual: ${rapPct.toFixed(1)}%`}
                             >
@@ -256,7 +256,7 @@ export function ProfitControlDashboard({ projectId }: ProfitControlDashboardProp
                         )}
                         {equipPct > 0 && (
                             <div
-                                className="bg-orange-500 transition-all flex items-center justify-center text-[10px] text-white font-medium"
+                                className="bg-orange-500 transition-all flex items-center justify-center text-xs text-white font-medium"
                                 style={{ width: `${equipPct}%` }}
                                 title={`Equipment: ${equipPct.toFixed(1)}%`}
                             >
@@ -265,7 +265,7 @@ export function ProfitControlDashboard({ projectId }: ProfitControlDashboardProp
                         )}
                         {commitPct > 0 && (
                             <div
-                                className="bg-blue-400 transition-all flex items-center justify-center text-[10px] text-white font-medium"
+                                className="bg-blue-400 transition-all flex items-center justify-center text-xs text-white font-medium"
                                 style={{ width: `${commitPct}%` }}
                                 title={`Committed Remaining: ${commitPct.toFixed(1)}%`}
                             >
@@ -319,7 +319,7 @@ export function ProfitControlDashboard({ projectId }: ProfitControlDashboardProp
                                                         {item.profitPctActual.toFixed(1)}%
                                                     </td>
                                                     <td className="py-2 text-center">
-                                                        <Badge variant="outline" className={`text-[10px] ${itemCfg.badge}`}>
+                                                        <Badge variant="outline" className={`text-xs ${itemCfg.badge}`}>
                                                             {itemCfg.label}
                                                         </Badge>
                                                     </td>
@@ -419,7 +419,7 @@ function KpiCard({
                     <span className="text-xs text-muted-foreground">{label}</span>
                 </div>
                 <div className={`text-lg font-bold tabular-nums ${color}`}>{value}</div>
-                {sub && <div className="text-[10px] text-muted-foreground mt-0.5">{sub}</div>}
+                {sub && <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>}
             </CardContent>
         </Card>
     )

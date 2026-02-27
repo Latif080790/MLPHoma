@@ -105,9 +105,9 @@ function MetricCard({
                 <Icon size={16} className="text-slate-400" />
             </div>
             <div className="flex-1 min-w-0">
-                <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">{label}</div>
+                <div className="text-xs text-slate-500 uppercase tracking-wider font-medium">{label}</div>
                 <div className="text-lg font-mono font-bold text-slate-200 mt-0.5">{displayValue}</div>
-                {subtitle && <div className="text-[10px] text-slate-500 mt-0.5">{subtitle}</div>}
+                {subtitle && <div className="text-xs text-slate-500 mt-0.5">{subtitle}</div>}
             </div>
             {trend && value !== null && (
                 <TrendIcon
@@ -244,7 +244,7 @@ export default function CostForecastDashboard() {
                 <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <CardContent className="p-6 relative z-10">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">
+                        <div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">
                             Cost Performance Index
                         </div>
                         <div className="flex items-end gap-3">
@@ -272,7 +272,7 @@ export default function CostForecastDashboard() {
                 <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <CardContent className="p-6 relative z-10">
-                        <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">
+                        <div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">
                             Schedule Performance Index
                         </div>
                         <div className="flex items-end gap-3">
@@ -386,14 +386,14 @@ export default function CostForecastDashboard() {
                     <CardContent className="space-y-4">
                         {/* Forecast Date */}
                         <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                            <div className="text-[10px] text-slate-500 uppercase tracking-wider">Completion Date</div>
+                            <div className="text-xs text-slate-500 uppercase tracking-wider">Completion Date</div>
                             <div className="text-xl font-mono font-bold text-slate-200 mt-1">
                                 {evmData?.forecasts.forecastDate || '—'}
                             </div>
                             {evmData?.forecasts.confidence && (
                                 <Badge
                                     variant="outline"
-                                    className={`mt-2 text-[10px] ${evmData.forecasts.confidence === 'high'
+                                    className={`mt-2 text-xs ${evmData.forecasts.confidence === 'high'
                                             ? 'border-emerald-500/40 text-emerald-400'
                                             : evmData.forecasts.confidence === 'medium'
                                                 ? 'border-amber-500/40 text-amber-400'
@@ -407,7 +407,7 @@ export default function CostForecastDashboard() {
 
                         {/* Forecast Cost */}
                         <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                            <div className="text-[10px] text-slate-500 uppercase tracking-wider">Forecast Total Cost</div>
+                            <div className="text-xs text-slate-500 uppercase tracking-wider">Forecast Total Cost</div>
                             <div className="text-xl font-mono font-bold text-slate-200 mt-1">
                                 {evmData ? formatCurrency(evmData.forecasts.forecastCost) : '—'}
                             </div>
@@ -420,7 +420,7 @@ export default function CostForecastDashboard() {
 
                         {/* Progress */}
                         <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                            <div className="text-[10px] text-slate-500 uppercase tracking-wider">Overall Progress</div>
+                            <div className="text-xs text-slate-500 uppercase tracking-wider">Overall Progress</div>
                             <div className="text-xl font-mono font-bold text-slate-200 mt-1">
                                 {evmData ? `${evmData.progress}%` : '—'}
                             </div>
@@ -435,7 +435,7 @@ export default function CostForecastDashboard() {
                         {/* Insights */}
                         {evmData && evmData.health.insights.length > 0 && (
                             <div className="space-y-2">
-                                <div className="text-[10px] text-slate-500 uppercase tracking-wider">Insights</div>
+                                <div className="text-xs text-slate-500 uppercase tracking-wider">Insights</div>
                                 {evmData.health.insights.map((insight, i) => (
                                     <div
                                         key={i}
@@ -464,13 +464,13 @@ export default function CostForecastDashboard() {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-slate-700/50">
-                                        <th className="text-left py-2 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-medium">WBS ID</th>
-                                        <th className="text-right py-2 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-medium">Items</th>
-                                        <th className="text-right py-2 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-medium">Planned</th>
-                                        <th className="text-right py-2 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-medium">Committed</th>
-                                        <th className="text-right py-2 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-medium">Actual</th>
-                                        <th className="text-right py-2 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-medium">Variance</th>
-                                        <th className="text-right py-2 px-3 text-[10px] text-slate-500 uppercase tracking-wider font-medium">Var%</th>
+                                        <th className="text-left py-2 px-3 text-xs text-slate-500 uppercase tracking-wider font-medium">WBS ID</th>
+                                        <th className="text-right py-2 px-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Items</th>
+                                        <th className="text-right py-2 px-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Planned</th>
+                                        <th className="text-right py-2 px-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Committed</th>
+                                        <th className="text-right py-2 px-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Actual</th>
+                                        <th className="text-right py-2 px-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Variance</th>
+                                        <th className="text-right py-2 px-3 text-xs text-slate-500 uppercase tracking-wider font-medium">Var%</th>
                                     </tr>
                                 </thead>
                                 <tbody>

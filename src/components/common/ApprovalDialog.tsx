@@ -102,7 +102,7 @@ export function ApprovalDialog({ approval, open, onClose, onApproved, onRejected
                         {approval.description && (
                             <p className="text-xs text-muted-foreground">{approval.description}</p>
                         )}
-                        <div className="flex items-center gap-4 text-[11px] text-muted-foreground pt-1">
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
                             <span>By: <strong>{approval.requesterName || 'Unknown'}</strong></span>
                             <span>{format(new Date(approval.createdAt), 'dd/MM/yyyy HH:mm')}</span>
                         </div>

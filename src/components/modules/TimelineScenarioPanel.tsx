@@ -167,7 +167,7 @@ export function TimelineScenarioPanel({ projectId }: TimelineScenarioPanelProps)
                                             <TableCell className="text-xs">{t.endDate}</TableCell>
                                             <TableCell className="text-xs">{t.durationDays}d</TableCell>
                                             <TableCell>
-                                                {t.isCritical && <Badge variant="destructive" className="text-[10px]">Critical</Badge>}
+                                                {t.isCritical && <Badge variant="destructive" className="text-xs">Critical</Badge>}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <Badge variant={t.deltaFromOriginal > 0 ? "destructive" : "default"} className="text-xs">

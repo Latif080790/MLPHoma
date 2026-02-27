@@ -80,13 +80,13 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
                 <Table>
                     <TableHeader className="sticky top-0 bg-white dark:bg-slate-900 z-10">
                         <TableRow>
-                            <TableHead className="text-[10px] font-bold uppercase">Work Package / WBS</TableHead>
-                            <TableHead className="text-right text-[10px] font-bold uppercase">RAB (Est)</TableHead>
-                            <TableHead className="text-right text-[10px] font-bold uppercase">RAP (Budget)</TableHead>
-                            <TableHead className="text-right text-[10px] font-bold uppercase">Actual + Comm</TableHead>
-                            <TableHead className="text-right text-[10px] font-bold uppercase">Target Prof</TableHead>
-                            <TableHead className="text-right text-[10px] font-bold uppercase">Actual Prof</TableHead>
-                            <TableHead className="text-center text-[10px] font-bold uppercase">Status</TableHead>
+                            <TableHead className="text-xs font-bold uppercase">Work Package / WBS</TableHead>
+                            <TableHead className="text-right text-xs font-bold uppercase">RAB (Est)</TableHead>
+                            <TableHead className="text-right text-xs font-bold uppercase">RAP (Budget)</TableHead>
+                            <TableHead className="text-right text-xs font-bold uppercase">Actual + Comm</TableHead>
+                            <TableHead className="text-right text-xs font-bold uppercase">Target Prof</TableHead>
+                            <TableHead className="text-right text-xs font-bold uppercase">Actual Prof</TableHead>
+                            <TableHead className="text-center text-xs font-bold uppercase">Status</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -107,7 +107,7 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
                                         {(item.profitActual || 0).toLocaleString('id-ID')}
                                     </TableCell>
                                     <TableCell className="text-center py-2">
-                                        <Badge variant="outline" className={`h-4 px-1.5 text-[9px] border-none text-white ${statusColor}`}>
+                                        <Badge variant="outline" className={`h-4 px-1.5 text-xs border-none text-white ${statusColor}`}>
                                             {item.healthStatus?.toUpperCase()}
                                         </Badge>
                                     </TableCell>
@@ -120,17 +120,17 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
             <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border flex justify-between items-center text-xs">
                 <div className="flex gap-4">
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-muted-foreground uppercase">Target Margin</span>
+                        <span className="text-xs text-muted-foreground uppercase">Target Margin</span>
                         <span className="font-bold">{data.targetProfitPct}%</span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[10px] text-muted-foreground uppercase">Projected Margin</span>
+                        <span className="text-xs text-muted-foreground uppercase">Projected Margin</span>
                         <span className={`font-bold ${isCritical ? 'text-red-600' : isHealthy ? 'text-emerald-600' : 'text-amber-600'}`}>
                             {data.projectedProfitPct.toFixed(1)}%
                         </span>
                     </div>
                 </div>
-                <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={load}>
+                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={load}>
                     <RefreshCw className={`h-3 w-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
                     Refresh Stats
                 </Button>
@@ -182,7 +182,7 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
                     <div className="flex gap-2">
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-7 text-[10px]">
+                                <Button variant="outline" size="sm" className="h-7 text-xs">
                                     <ExternalLink size={12} className="mr-1" />
                                     Details
                                 </Button>
@@ -247,12 +247,12 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
                 {(data.warningCount > 0 || data.criticalCount > 0) && (
                     <div className="flex gap-2 text-xs pt-2 border-t">
                         {data.criticalCount > 0 && (
-                            <Badge variant="destructive" className="text-[10px]">
+                            <Badge variant="destructive" className="text-xs">
                                 {data.criticalCount} Critical Packages
                             </Badge>
                         )}
                         {data.warningCount > 0 && (
-                            <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-700">
+                            <Badge variant="outline" className="text-xs border-amber-300 text-amber-700">
                                 {data.warningCount} Warning Packages
                             </Badge>
                         )}

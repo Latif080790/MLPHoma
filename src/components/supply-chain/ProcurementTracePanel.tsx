@@ -192,7 +192,7 @@ export function ProcurementTracePanel({
                                     <span className="font-mono font-bold text-sm text-purple-700 dark:text-purple-400">
                                         {po.poNumber}
                                     </span>
-                                    <Badge variant="outline" className={`text-[10px] ${statusColor(po.status)}`}>
+                                    <Badge variant="outline" className={`text-xs ${statusColor(po.status)}`}>
                                         {statusIcon(po.status)}
                                         <span className="ml-1">{po.status}</span>
                                     </Badge>
@@ -232,12 +232,12 @@ export function ProcurementTracePanel({
                                                 <span className="font-mono font-bold text-xs text-emerald-700 dark:text-emerald-400">
                                                     {grn.grnNumber}
                                                 </span>
-                                                <Badge variant="outline" className={`text-[10px] ${statusColor(grn.status)}`}>
+                                                <Badge variant="outline" className={`text-xs ${statusColor(grn.status)}`}>
                                                     {statusIcon(grn.status)}
                                                     <span className="ml-1">{grn.status}</span>
                                                 </Badge>
                                             </div>
-                                            <div className="text-[11px] text-muted-foreground space-y-0.5">
+                                            <div className="text-xs text-muted-foreground space-y-0.5">
                                                 <div>Received by: <span className="text-foreground">{grn.receiverName || '-'}</span></div>
                                                 <div>Date: {grn.receivedDate ? format(new Date(grn.receivedDate), 'dd MMM yyyy') : '-'}</div>
                                                 <div>Items: {(grn.items || []).length} ({(grn.items || []).reduce((s, i) => s + (i.qtyReceived || 0), 0)} units received)</div>
@@ -274,12 +274,12 @@ export function ProcurementTracePanel({
                                                 <span className="font-mono font-bold text-xs text-orange-700 dark:text-orange-400">
                                                     {inv.invoiceNumber}
                                                 </span>
-                                                <Badge variant="outline" className={`text-[10px] ${statusColor(inv.status)}`}>
+                                                <Badge variant="outline" className={`text-xs ${statusColor(inv.status)}`}>
                                                     {statusIcon(inv.status)}
                                                     <span className="ml-1">{inv.status}</span>
                                                 </Badge>
                                             </div>
-                                            <div className="text-[11px] text-muted-foreground space-y-0.5">
+                                            <div className="text-xs text-muted-foreground space-y-0.5">
                                                 <div>Amount: <span className="text-foreground font-mono font-bold">Rp {inv.totalAmount.toLocaleString('id-ID')}</span></div>
                                                 {inv.dueDate && <div>Due: {format(new Date(inv.dueDate), 'dd MMM yyyy')}</div>}
                                             </div>
@@ -298,15 +298,15 @@ export function ProcurementTracePanel({
                             <div className="grid grid-cols-3 gap-3 text-center">
                                 <div>
                                     <div className="text-lg font-bold text-purple-600">{grns.length}</div>
-                                    <div className="text-[10px] text-muted-foreground">GRNs</div>
+                                    <div className="text-xs text-muted-foreground">GRNs</div>
                                 </div>
                                 <div>
                                     <div className="text-lg font-bold text-emerald-600">{totalReceived}</div>
-                                    <div className="text-[10px] text-muted-foreground">Units Received</div>
+                                    <div className="text-xs text-muted-foreground">Units Received</div>
                                 </div>
                                 <div>
                                     <div className="text-lg font-bold text-orange-600">{invoices.length}</div>
-                                    <div className="text-[10px] text-muted-foreground">Invoices</div>
+                                    <div className="text-xs text-muted-foreground">Invoices</div>
                                 </div>
                             </div>
                             <div className="flex justify-between text-xs pt-2 border-t border-dashed">

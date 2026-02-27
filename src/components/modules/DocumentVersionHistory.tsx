@@ -112,7 +112,7 @@ export function DocumentVersionHistory({
                                             <FileText className="h-4 w-4 text-blue-500" />
                                             <span className="font-medium">v{v.versionNumber}</span>
                                             {v.isLatest && (
-                                                <Badge variant="default" className="text-[10px] bg-green-100 text-green-800">
+                                                <Badge variant="default" className="text-xs bg-green-100 text-green-800">
                                                     <Check className="h-3 w-3 mr-1" /> Current
                                                 </Badge>
                                             )}

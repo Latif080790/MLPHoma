@@ -87,7 +87,7 @@ export function ProjectSettingsDialog({ projectId, open, onOpenChange }: Project
                                 <Percent size={14} />
                             </div>
                         </div>
-                        <p className="text-[10px] text-slate-500 italic">Used as a benchmark in RAP simulations and AHSP calculations.</p>
+                        <p className="text-xs text-slate-500 italic">Used as a benchmark in RAP simulations and AHSP calculations.</p>
                     </div>
 
                     <div className="grid gap-2">
@@ -107,7 +107,7 @@ export function ProjectSettingsDialog({ projectId, open, onOpenChange }: Project
                                 <Percent size={14} />
                             </div>
                         </div>
-                        <p className="text-[10px] text-slate-500 italic">Default overhead applied to new AHSP items in this project.</p>
+                        <p className="text-xs text-slate-500 italic">Default overhead applied to new AHSP items in this project.</p>
                     </div>
                 </div>
 

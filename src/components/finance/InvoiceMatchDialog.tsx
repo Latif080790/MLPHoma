@@ -113,7 +113,7 @@ export function InvoiceMatchDialog({
                                     <FileText size={13} /> Purchase Order
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="px-3 pb-3 space-y-1 text-[11px]">
+                            <CardContent className="px-3 pb-3 space-y-1 text-xs">
                                 {result.po ? (
                                     <>
                                         <div className="flex justify-between">
@@ -132,7 +132,7 @@ export function InvoiceMatchDialog({
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-slate-500">Status</span>
-                                            <Badge variant="outline" className="text-[9px] h-4">{result.po.poStatus}</Badge>
+                                            <Badge variant="outline" className="text-xs h-4">{result.po.poStatus}</Badge>
                                         </div>
                                     </>
                                 ) : (
@@ -148,7 +148,7 @@ export function InvoiceMatchDialog({
                                     <Package size={13} /> Goods Receipt
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="px-3 pb-3 space-y-1 text-[11px]">
+                            <CardContent className="px-3 pb-3 space-y-1 text-xs">
                                 {result.grn ? (
                                     <>
                                         <div className="flex justify-between">
@@ -181,7 +181,7 @@ export function InvoiceMatchDialog({
                                     <Truck size={13} /> Invoice
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="px-3 pb-3 space-y-1 text-[11px]">
+                            <CardContent className="px-3 pb-3 space-y-1 text-xs">
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">Invoice #</span>
                                     <span className="font-mono font-medium">{invoice.invoice_number}</span>
@@ -198,7 +198,7 @@ export function InvoiceMatchDialog({
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">Status</span>
-                                    <Badge variant="outline" className="text-[9px] h-4">{invoice.status}</Badge>
+                                    <Badge variant="outline" className="text-xs h-4">{invoice.status}</Badge>
                                 </div>
                             </CardContent>
                         </Card>
@@ -212,7 +212,7 @@ export function InvoiceMatchDialog({
                             </h4>
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="text-[10px]">
+                                    <TableRow className="text-xs">
                                         <TableHead className="h-7">Field</TableHead>
                                         <TableHead className="h-7 text-right">Expected</TableHead>
                                         <TableHead className="h-7 text-right">Actual</TableHead>
@@ -222,7 +222,7 @@ export function InvoiceMatchDialog({
                                 </TableHeader>
                                 <TableBody>
                                     {result.discrepancies.map((d, i) => (
-                                        <TableRow key={i} className="text-[11px]">
+                                        <TableRow key={i} className="text-xs">
                                             <TableCell className="py-1.5 font-medium">{d.field}</TableCell>
                                             <TableCell className="py-1.5 text-right font-mono">
                                                 {typeof d.expected === 'number' ? d.expected.toLocaleString() : d.expected}
@@ -236,9 +236,9 @@ export function InvoiceMatchDialog({
                                             </TableCell>
                                             <TableCell className="py-1.5 text-center">
                                                 {d.tolerable ? (
-                                                    <Badge variant="outline" className="text-[9px] bg-amber-50 text-amber-600 border-amber-200">Within Tolerance</Badge>
+                                                    <Badge variant="outline" className="text-xs bg-amber-50 text-amber-600 border-amber-200">Within Tolerance</Badge>
                                                 ) : (
-                                                    <Badge variant="outline" className="text-[9px] bg-red-50 text-red-600 border-red-200">Exceeds Limit</Badge>
+                                                    <Badge variant="outline" className="text-xs bg-red-50 text-red-600 border-red-200">Exceeds Limit</Badge>
                                                 )}
                                             </TableCell>
                                         </TableRow>

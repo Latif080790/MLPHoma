@@ -80,7 +80,7 @@ export function AppSidebar({ collapsed, setCollapsed }: AppSidebarProps) {
                     <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
                         Estimator Pro
                     </span>
-                    <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                    <span className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
                         Engineering Grade
                     </span>
                 </div>

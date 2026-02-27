@@ -106,16 +106,16 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                         <div className="space-y-4">
                             <div className="flex justify-between items-end">
                                 <div className="space-y-1">
-                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Efficiency Progress</div>
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Efficiency Progress</div>
                                     <div className="text-sm font-semibold">Budget Health Analysis</div>
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="text-right">
-                                        <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Market Leakage</div>
+                                        <div className="text-xs font-bold text-red-500 uppercase tracking-widest">Market Leakage</div>
                                         <div className="text-xs font-bold font-mono">{formatIDR(leakage)}</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Market Savings</div>
+                                        <div className="text-xs font-bold text-green-500 uppercase tracking-widest">Market Savings</div>
                                         <div className="text-xs font-bold font-mono text-green-600">{formatIDR(savings)}</div>
                                     </div>
                                 </div>
@@ -143,7 +143,7 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                             <CardTitle className="text-sm">Significant Price Divergence</CardTitle>
                             <CardDescription className="text-xs">Items contributing most to budget impact</CardDescription>
                         </div>
-                        <Badge variant="outline" className="text-[10px] font-mono">
+                        <Badge variant="outline" className="text-xs font-mono">
                             Last Check: {new Date(lastChecked).toLocaleTimeString()}
                         </Badge>
                     </div>
@@ -165,11 +165,11 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                                             <div>
                                                 <div className="text-xs font-bold text-slate-800">{item.itemName}</div>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-[10px] font-mono text-slate-400">{formatIDR(item.baselinePrice)}</span>
+                                                    <span className="text-xs font-mono text-slate-400">{formatIDR(item.baselinePrice)}</span>
                                                     <ArrowRight size={10} className="text-slate-300" />
-                                                    <span className="text-[10px] font-mono font-bold text-blue-600">{formatIDR(item.currentAhspPrice)}</span>
+                                                    <span className="text-xs font-mono font-bold text-blue-600">{formatIDR(item.currentAhspPrice)}</span>
                                                     {item.livingPrice && (
-                                                        <Badge variant="secondary" className="h-4 px-1.5 text-[9px] bg-amber-50 text-amber-600 border-amber-200">
+                                                        <Badge variant="secondary" className="h-4 px-1.5 text-xs bg-amber-50 text-amber-600 border-amber-200">
                                                             <ShoppingCart size={8} className="mr-1" />
                                                             Latest: {formatIDR(item.livingPrice)}
                                                         </Badge>
@@ -181,7 +181,7 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                                             <div className={`text-xs font-black font-mono ${item.potentialImpact > 0 ? 'text-red-500' : 'text-green-500'}`}>
                                                 {item.potentialImpact > 0 ? '+' : '-'}{formatIDR(Math.abs(item.potentialImpact))}
                                             </div>
-                                            <div className="text-[9px] text-slate-400 mt-0.5">
+                                            <div className="text-xs text-slate-400 mt-0.5">
                                                 Budget Impact ({item.volume} {item.unit})
                                             </div>
                                         </div>

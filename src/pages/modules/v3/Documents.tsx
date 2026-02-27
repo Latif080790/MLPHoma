@@ -250,17 +250,17 @@ export default function Documents() {
                                             {(isArchived || isSuperseded || isLocked) && (
                                                 <div className="flex gap-1">
                                                     {isLocked && (
-                                                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-orange-50 text-orange-700 border-orange-200">
+                                                        <Badge variant="outline" className="text-xs px-1 py-0 bg-orange-50 text-orange-700 border-orange-200">
                                                             <Lock className="h-2 w-2 mr-0.5" /> LOCKED
                                                         </Badge>
                                                     )}
                                                     {isArchived && (
-                                                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-slate-100 text-slate-600 border-slate-300">
+                                                        <Badge variant="outline" className="text-xs px-1 py-0 bg-slate-100 text-slate-600 border-slate-300">
                                                             ARCHIVED
                                                         </Badge>
                                                     )}
                                                     {isSuperseded && (
-                                                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
+                                                        <Badge variant="outline" className="text-xs px-1 py-0 bg-yellow-50 text-yellow-700 border-yellow-200">
                                                             SUPERSEDED
                                                         </Badge>
                                                     )}
@@ -273,7 +273,7 @@ export default function Documents() {
                                             {doc.file_size ? ` • ${(doc.file_size / 1024).toFixed(0)} KB` : ''}
                                         </div>
                                         {isLocked && doc.locked_by && (
-                                            <div className="text-[10px] text-orange-600 mt-1">
+                                            <div className="text-xs text-orange-600 mt-1">
                                                 🔒 {doc.locked_by}
                                             </div>
                                         )}

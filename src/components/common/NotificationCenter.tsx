@@ -96,7 +96,7 @@ export function NotificationCenter() {
             >
                 <Bell size={18} />
                 {unreadCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white animate-pulse">
+                    <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white animate-pulse">
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
@@ -172,7 +172,7 @@ export function NotificationCenter() {
                                             )}
                                         </div>
                                         <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{n.message}</p>
-                                        <p className="mt-1 text-[10px] text-muted-foreground/70">
+                                        <p className="mt-1 text-xs text-muted-foreground/70">
                                             {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: idLocale })}
                                         </p>
                                     </div>

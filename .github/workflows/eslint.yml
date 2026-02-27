@@ -1,0 +1,45 @@
+name: ESLint WCAG Compliance Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  eslint:
+    name: Run ESLint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run ESLint
+        run: npm run lint
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+          
+      - name: WCAG Compliance Check
+        run: |
+          echo "Checking for WCAG typography violations..."
+          ! grep -r "text-\[9px\]" src/ --include="*.tsx" --include="*.ts" --exclude-dir=node_modules --exclude-dir=backups --exclude-dir=_archive
+          ! grep -r "text-\[10px\]" src/ --include="*.tsx" --include="*.ts" --exclude-dir=node_modules --exclude-dir=backups --exclude-dir=_archive
+          ! grep -r "text-\[11px\]" src/ --include="*.tsx" --include="*.ts" --exclude-dir=node_modules --exclude-dir=backups --exclude-dir=_archive
+          echo "✅ No WCAG typography violations found"
+          
+      - name: Report results
+        if: failure()
+        run: |
+          echo "❌ ESLint check failed. Please fix the violations before merging."
+          echo "Run 'npm run lint:fix' to auto-fix issues."
+          exit 1

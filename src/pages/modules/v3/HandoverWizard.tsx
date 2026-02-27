@@ -241,7 +241,7 @@ export default function HandoverWizard() {
                                                 </Button>
                                             </PermissionGuard>
                                             {outstanding.length > 0 && (
-                                                <p className="text-[10px] text-red-500 mt-1">
+                                                <p className="text-xs text-red-500 mt-1">
                                                     Resolve all issues to archive
                                                 </p>
                                             )}

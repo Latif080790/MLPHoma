@@ -172,17 +172,17 @@ export function OpnameBoard() {
                                         <TableRow key={op.id} className="text-xs">
                                             <TableCell>
                                                 <div className="font-mono font-medium">{parentSpk?.spkNumber}</div>
-                                                <div className="text-[10px] text-slate-500">Period: {op.periodNumber} • {format(new Date(op.date), 'dd MMM yyyy')}</div>
+                                                <div className="text-xs text-slate-500">Period: {op.periodNumber} • {format(new Date(op.date), 'dd MMM yyyy')}</div>
                                             </TableCell>
                                             <TableCell>
                                                 <div className="font-medium text-blue-700">{op.progressPercentage}%</div>
-                                                <div className="text-[10px] text-slate-500">(+{op.currentPeriodProgressPercentage}%)</div>
+                                                <div className="text-xs text-slate-500">(+{op.currentPeriodProgressPercentage}%)</div>
                                             </TableCell>
                                             <TableCell className="text-right font-mono font-bold text-slate-900 dark:text-slate-100">
                                                 Rp {op.netPayable.toLocaleString('id-ID')}
                                             </TableCell>
                                             <TableCell className="text-center">
-                                                <Badge variant="outline" className={`text-[10px] ${op.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                <Badge variant="outline" className={`text-xs ${op.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                                                         op.status === 'POSTED_TO_FINANCE' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                                                             op.status === 'SUBMITTED' ? 'bg-orange-50 text-orange-700 border-orange-200' :
                                                                 'bg-slate-50 text-slate-600'
@@ -195,12 +195,12 @@ export function OpnameBoard() {
                                                     <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-600" title="Submit" onClick={() => handleSubmit(op.id)}><Play size={12} /></Button>
                                                 )}
                                                 {op.status === 'SUBMITTED' && (
-                                                    <Button size="sm" variant="outline" className="h-6 text-[10px] bg-orange-50 text-orange-700 border-orange-200" onClick={() => { setReviewOpname(op); setReviewOpen(true) }}>
+                                                    <Button size="sm" variant="outline" className="h-6 text-xs bg-orange-50 text-orange-700 border-orange-200" onClick={() => { setReviewOpname(op); setReviewOpen(true) }}>
                                                         Review
                                                     </Button>
                                                 )}
                                                 {op.status === 'APPROVED' && (
-                                                    <Button size="sm" variant="outline" className="h-6 text-[10px] bg-blue-50 text-blue-700 border-blue-200" onClick={() => handlePostToAP(op.id)}>
+                                                    <Button size="sm" variant="outline" className="h-6 text-xs bg-blue-50 text-blue-700 border-blue-200" onClick={() => handlePostToAP(op.id)}>
                                                         <Wallet size={12} className="mr-1" /> Post AP
                                                     </Button>
                                                 )}
@@ -230,7 +230,7 @@ export function OpnameBoard() {
                                 <div className="space-y-1">
                                     <Label className="text-xs text-slate-500">Cumulative Target %</Label>
                                     <Input type="number" value={reqProgress} onChange={e => handleProgressChange(Number(e.target.value))} />
-                                    <div className="text-[10px] flex justify-between">
+                                    <div className="text-xs flex justify-between">
                                         <span className="text-slate-400">Previous: {draftOpname.previousProgressPercentage}%</span>
                                         <span className="text-blue-600 font-bold">This period: +{draftOpname.currentPeriodProgressPercentage}%</span>
                                     </div>

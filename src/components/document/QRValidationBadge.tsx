@@ -77,7 +77,7 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
     // Visual variants based on state
     if (status !== 'APPROVED') {
         return (
-            <Badge variant="outline" className="text-[10px] text-slate-400 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-1 py-0 h-4">
+            <Badge variant="outline" className="text-xs text-slate-400 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-1 py-0 h-4">
                 <Shield size={10} className="mr-1" /> No QR (Draft)
             </Badge>
         )
@@ -91,11 +91,11 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
                 title="View Document QR Validation"
             >
                 {record ? (
-                    <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/30 px-1 py-0 h-4 hover:bg-emerald-100 dark:hover:bg-emerald-800 transition-colors">
+                    <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-900/30 px-1 py-0 h-4 hover:bg-emerald-100 dark:hover:bg-emerald-800 transition-colors">
                         <QrCode size={10} className="mr-1" /> Validated
                     </Badge>
                 ) : (
-                    <Badge variant="outline" className="text-[10px] text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-900/30 px-1 py-0 h-4 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
+                    <Badge variant="outline" className="text-xs text-blue-600 border-blue-200 bg-blue-50 dark:bg-blue-900/30 px-1 py-0 h-4 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors">
                         <QrCode size={10} className="mr-1" /> Gen QR
                     </Badge>
                 )}
@@ -137,7 +137,7 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
 
                                 <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-left space-y-2 border">
                                     <div>
-                                        <div className="text-[10px] text-slate-500 uppercase font-semibold">Validation Hash</div>
+                                        <div className="text-xs text-slate-500 uppercase font-semibold">Validation Hash</div>
                                         <div className="font-mono text-sm font-bold flex items-center justify-between">
                                             {record.validationHash}
                                             <Button variant="ghost" size="icon" className="h-5 w-5" onClick={handleCopyHash}><Copy size={12} /></Button>
@@ -145,11 +145,11 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 text-xs">
                                         <div>
-                                            <div className="text-[10px] text-slate-500 uppercase font-semibold">Issued By</div>
+                                            <div className="text-xs text-slate-500 uppercase font-semibold">Issued By</div>
                                             <div className="font-medium truncate">{record.issuedBy}</div>
                                         </div>
                                         <div>
-                                            <div className="text-[10px] text-slate-500 uppercase font-semibold">Version</div>
+                                            <div className="text-xs text-slate-500 uppercase font-semibold">Version</div>
                                             <div className="font-medium">v{record.versionNumber}</div>
                                         </div>
                                     </div>

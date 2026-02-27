@@ -366,7 +366,7 @@ export default function Progress() {
                     <SelectContent>
                       {wbsItems.filter(i => i.level > 1).map((item) => (
                         <SelectItem key={item.id} value={item.id}>
-                          <span className="font-mono text-[10px] mr-2 opacity-50">{item.code}</span>
+                          <span className="font-mono text-xs mr-2 opacity-50">{item.code}</span>
                           {item.name}
                         </SelectItem>
                       ))}
@@ -375,7 +375,7 @@ export default function Progress() {
                       )}
                     </SelectContent>
                   </Select>
-                  <p className="text-[10px] text-blue-600/70 italic">*Wajib dipilih agar Actual Cost ter-link otomatis ke Budget Control.</p>
+                  <p className="text-xs text-blue-600/70 italic">*Wajib dipilih agar Actual Cost ter-link otomatis ke Budget Control.</p>
                 </div>
 
                 <div className="flex items-center gap-2 mt-2">
@@ -391,12 +391,12 @@ export default function Progress() {
                     Capture GPS Location
                   </Button>
                   {gpsCoords && (
-                    <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200">
+                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                       {gpsCoords.latitude.toFixed(4)}, {gpsCoords.longitude.toFixed(4)}
                     </Badge>
                   )}
                   {allowNoGps && !gpsCoords && (
-                    <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700 border-amber-200">
+                    <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
                       GPS Unavailable (Allowed)
                     </Badge>
                   )}
@@ -430,7 +430,7 @@ export default function Progress() {
                       }}
                       className="border-blue-500"
                     />
-                    <p className="text-[10px] text-muted-foreground mt-1">*Input Volume, Progress % hits auto.</p>
+                    <p className="text-xs text-muted-foreground mt-1">*Input Volume, Progress % hits auto.</p>
                   </div>
                   <div>
                     <Label htmlFor="cost">Actual Cost (IDR)</Label>
@@ -526,14 +526,14 @@ export default function Progress() {
                     <div key={r.id} className="grid grid-cols-6 items-center border-b p-2 text-sm last:border-b-0 dark:border-neutral-800">
                       <div>
                         {new Date(r.date).toLocaleDateString("id-ID")}
-                        {r.wbsName && <div className="text-[10px] text-blue-600 font-medium truncate">{r.wbsName}</div>}
+                        {r.wbsName && <div className="text-xs text-blue-600 font-medium truncate">{r.wbsName}</div>}
                       </div>
                       <div>
                         {r.photoUrl ? (
                           <div className="flex flex-col gap-1 items-start">
                             <img src={r.photoUrl} alt="Evidence" className="h-8 w-12 object-cover rounded cursor-pointer border" onClick={() => window.open(r.photoUrl, '_blank')} />
                             {r.gpsCoords && (
-                              <span className="text-[9px] text-green-600">
+                              <span className="text-xs text-green-600">
                                 {r.gpsCoords.latitude.toFixed(3)}, {r.gpsCoords.longitude.toFixed(3)}
                               </span>
                             )}
@@ -544,16 +544,16 @@ export default function Progress() {
                       </div>
                       <div className="text-right font-mono">{(r.actualProgress ?? 0).toFixed(1)}%</div>
                       <div className="text-right">
-                        {r.qc_status === 'approved' && <Badge className="bg-green-500 text-[10px] h-4">APPROVED</Badge>}
-                        {r.qc_status === 'rejected' && <Badge className="bg-red-500 text-[10px] h-4">REJECTED</Badge>}
-                        {(r.qc_status === 'pending' || !r.qc_status) && <Badge className="bg-amber-500 text-[10px] h-4">PENDING</Badge>}
+                        {r.qc_status === 'approved' && <Badge className="bg-green-500 text-xs h-4">APPROVED</Badge>}
+                        {r.qc_status === 'rejected' && <Badge className="bg-red-500 text-xs h-4">REJECTED</Badge>}
+                        {(r.qc_status === 'pending' || !r.qc_status) && <Badge className="bg-amber-500 text-xs h-4">PENDING</Badge>}
                       </div>
                       <div className="truncate text-slate-400">{r.notes || "-"}</div>
                       <div className="text-right flex justify-end gap-1">
                         {(r.qc_status === 'pending' || !r.qc_status) && (
                           <RoleGuard allowedRoles={['QC_ENGINEER', 'PROJECT_MANAGER', 'ADMIN']}>
-                            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleApproveQC(r.id)}>✔</Button>
-                            <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleRejectQC(r.id)}>✖</Button>
+                            <Button size="sm" variant="outline" className="h-6 text-xs px-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleApproveQC(r.id)}>✔</Button>
+                            <Button size="sm" variant="outline" className="h-6 text-xs px-2 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleRejectQC(r.id)}>✖</Button>
                           </RoleGuard>
                         )}
                       </div>

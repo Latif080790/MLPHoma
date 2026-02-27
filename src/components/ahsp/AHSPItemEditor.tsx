@@ -505,7 +505,7 @@ export function AHSPItemEditor({
                 {mode && !item && (
                   <Badge 
                     variant="secondary" 
-                    className={`uppercase font-bold text-[10px] tracking-wider ${
+                    className={`uppercase font-bold text-xs tracking-wider ${
                       mode === 'sni' ? 'bg-blue-100 text-blue-700' : 
                       mode === 'historical' ? 'bg-green-100 text-green-700' : 
                       'bg-purple-100 text-purple-700'
@@ -741,7 +741,7 @@ export function AHSPItemEditor({
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-blue-400">%</span>
                     </div>
-                    <p className="text-[10px] text-blue-400 leading-tight font-medium uppercase tracking-wider">Biaya untuk manajemen proyek dan logistik lapangan</p>
+                    <p className="text-xs text-blue-400 leading-tight font-medium uppercase tracking-wider">Biaya untuk manajemen proyek dan logistik lapangan</p>
                   </div>
 
                   <div className="bg-emerald-50/30 p-6 rounded-3xl border border-emerald-100 space-y-4">
@@ -758,7 +758,7 @@ export function AHSPItemEditor({
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-emerald-400">%</span>
                     </div>
-                    <p className="text-[10px] text-emerald-400 leading-tight font-medium uppercase tracking-wider">Margin keuntungan bersih untuk keseluruhan item AHSP</p>
+                    <p className="text-xs text-emerald-400 leading-tight font-medium uppercase tracking-wider">Margin keuntungan bersih untuk keseluruhan item AHSP</p>
                   </div>
                 </div>
               </div>
@@ -795,12 +795,12 @@ export function AHSPItemEditor({
                       <Table className="min-w-[1200px]">
                         <TableHeader className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10 border-b">
                           <TableRow className="hover:bg-transparent">
-                            <TableHead className="w-32 text-[10px] font-black uppercase tracking-widest text-slate-500 py-4 pl-6">Type</TableHead>
-                            <TableHead className="min-w-[400px] text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Resource Description</TableHead>
-                            <TableHead className="w-24 text-center text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Unit</TableHead>
-                            <TableHead className="w-40 text-right text-[10px] font-black uppercase tracking-widest text-slate-500 py-4">Rate</TableHead>
-                            <TableHead className="w-36 text-center text-[10px] font-black uppercase tracking-widest text-slate-800 py-4 bg-blue-50/50 italic">Coeff</TableHead>
-                            <TableHead className="w-40 text-right text-[10px] font-black uppercase tracking-widest text-slate-900 py-4 pr-6">Subtotal</TableHead>
+                            <TableHead className="w-32 text-xs font-black uppercase tracking-widest text-slate-500 py-4 pl-6">Type</TableHead>
+                            <TableHead className="min-w-[400px] text-xs font-black uppercase tracking-widest text-slate-500 py-4">Resource Description</TableHead>
+                            <TableHead className="w-24 text-center text-xs font-black uppercase tracking-widest text-slate-500 py-4">Unit</TableHead>
+                            <TableHead className="w-40 text-right text-xs font-black uppercase tracking-widest text-slate-500 py-4">Rate</TableHead>
+                            <TableHead className="w-36 text-center text-xs font-black uppercase tracking-widest text-slate-800 py-4 bg-blue-50/50 italic">Coeff</TableHead>
+                            <TableHead className="w-40 text-right text-xs font-black uppercase tracking-widest text-slate-900 py-4 pr-6">Subtotal</TableHead>
                             <TableHead className="w-20"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -811,7 +811,7 @@ export function AHSPItemEditor({
                               <div className="flex flex-col items-center gap-2 opacity-30">
                                 <Plus className="h-10 w-10" />
                                 <p className="font-bold text-slate-400 uppercase tracking-widest text-xs">Belum ada komponen analisa.</p>
-                                <p className="text-[10px] text-slate-400">Cari resource di bawah untuk memulai analisa.</p>
+                                <p className="text-xs text-slate-400">Cari resource di bawah untuk memulai analisa.</p>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -821,7 +821,7 @@ export function AHSPItemEditor({
                             {manualComponents.map((comp) => (
                               <TableRow key={comp.tempId} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-0">
                                 <TableCell className="pl-6">
-                                  <Badge variant="secondary" className="font-black text-[9px] uppercase tracking-wider h-5 bg-slate-100 text-slate-500 border-none">
+                                  <Badge variant="secondary" className="font-black text-xs uppercase tracking-wider h-5 bg-slate-100 text-slate-500 border-none">
                                     {comp.type}
                                   </Badge>
                                 </TableCell>
@@ -839,7 +839,7 @@ export function AHSPItemEditor({
                                   )}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                  <span className="text-[10px] font-black text-slate-400 uppercase">{comp.unit}</span>
+                                  <span className="text-xs font-black text-slate-400 uppercase">{comp.unit}</span>
                                 </TableCell>
                                 <TableCell className="text-right font-mono text-xs text-slate-500">
                                   {formatIDR(comp.unitPrice)}
@@ -874,7 +874,7 @@ export function AHSPItemEditor({
                               <TableRow key={component.id} className="group hover:bg-blue-50/20 transition-colors border-b border-slate-100 last:border-0">
                                 <TableCell className="pl-6">
                                   <Badge
-                                    className={`font-black text-[9px] uppercase tracking-wider h-5 border-none ${component.type === 'material' ? 'bg-blue-100 text-blue-700' :
+                                    className={`font-black text-xs uppercase tracking-wider h-5 border-none ${component.type === 'material' ? 'bg-blue-100 text-blue-700' :
                                       component.type === 'labor' ? 'bg-orange-100 text-orange-700' :
                                         'bg-indigo-100 text-indigo-700'
                                       }`}
@@ -885,10 +885,10 @@ export function AHSPItemEditor({
                                 <TableCell>
                                   <div className="flex flex-col">
                                     <span className="font-bold text-slate-800 text-sm">{component.resource?.name}</span>
-                                    <span className="text-[9px] font-mono text-slate-400 lowercase tracking-widest">{component.resourceId}</span>
+                                    <span className="text-xs font-mono text-slate-400 lowercase tracking-widest">{component.resourceId}</span>
                                   </div>
                                 </TableCell>
-                                <TableCell className="text-center font-black text-[10px] text-slate-400 uppercase">
+                                <TableCell className="text-center font-black text-xs text-slate-400 uppercase">
                                   {component.unit}
                                 </TableCell>
                                 <TableCell className="text-right font-mono text-xs text-slate-500">
@@ -934,7 +934,7 @@ export function AHSPItemEditor({
                         <Search className="h-4 w-4 text-blue-600" />
                         <h4 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Integrasi Resource Library</h4>
                       </div>
-                      <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest text-slate-400 border-slate-200">
+                      <Badge variant="outline" className="text-xs font-bold uppercase tracking-widest text-slate-400 border-slate-200">
                         {filteredResources.length} tersedia di katalog
                       </Badge>
                     </div>
@@ -978,15 +978,15 @@ export function AHSPItemEditor({
                               <div className="flex flex-col text-left">
                                 <span className="font-bold text-slate-800 text-sm group-hover:text-blue-700">{res.name}</span>
                                 <div className="flex items-center gap-3 mt-0.5">
-                                  <span className="text-[10px] font-mono font-medium text-slate-400 uppercase">{res.code}</span>
+                                  <span className="text-xs font-mono font-medium text-slate-400 uppercase">{res.code}</span>
                                   <div className="h-1 w-1 rounded-full bg-slate-200" />
-                                  <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-black uppercase">{res.unit}</span>
+                                  <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-black uppercase">{res.unit}</span>
                                 </div>
                               </div>
                             </div>
                             <div className="flex flex-col items-end">
                               <span className="font-mono text-sm font-black text-slate-900">{formatIDR(res.unitPrice)}</span>
-                              <Button size="sm" variant="ghost" className="h-8 px-4 text-[10px] font-black uppercase text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button size="sm" variant="ghost" className="h-8 px-4 text-xs font-black uppercase text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
                                 Tambahkan
                               </Button>
                             </div>
@@ -1016,7 +1016,7 @@ export function AHSPItemEditor({
                   <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-600/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4" />
 
                   <div className="relative z-10 flex flex-col items-center text-center">
-                    <Label className="text-[10px] uppercase font-black tracking-[0.3em] text-blue-400 mb-4 opacity-80 decoration-blue-500/30 underline-offset-8 underline">Kalkulasi Akhir AHSP</Label>
+                    <Label className="text-xs uppercase font-black tracking-[0.3em] text-blue-400 mb-4 opacity-80 decoration-blue-500/30 underline-offset-8 underline">Kalkulasi Akhir AHSP</Label>
                     <div className="text-4xl sm:text-5xl lg:text-6xl font-black font-mono tracking-tighter tabular-nums mb-2 break-all">
                       {formatIDR(totals.final)}
                     </div>
@@ -1036,7 +1036,7 @@ export function AHSPItemEditor({
                     <div className="space-y-4 bg-slate-50/50 p-8 rounded-[2rem] border border-slate-100">
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Biaya Material</span>
+                          <span className="text-xs font-black uppercase tracking-widest text-slate-400">Biaya Material</span>
                           <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.material)}</span>
                         </div>
                         <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -1046,7 +1046,7 @@ export function AHSPItemEditor({
 
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Biaya Tenaga Kerja</span>
+                          <span className="text-xs font-black uppercase tracking-widest text-slate-400">Biaya Tenaga Kerja</span>
                           <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.labor)}</span>
                         </div>
                         <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -1056,7 +1056,7 @@ export function AHSPItemEditor({
 
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Alat / Peralatan</span>
+                          <span className="text-xs font-black uppercase tracking-widest text-slate-400">Alat / Peralatan</span>
                           <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.equipment + totals.subcontractor)}</span>
                         </div>
                         <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -1081,7 +1081,7 @@ export function AHSPItemEditor({
                       <div className="space-y-6">
                         <div className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-emerald-100/50">
                           <div className="flex flex-col text-left">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Penyesuaian Overhead</span>
+                            <span className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-1">Penyesuaian Overhead</span>
                             <span className="text-xs font-bold text-slate-400">{formData.overheadPercentage}% of base</span>
                           </div>
                           <span className="font-mono font-bold text-emerald-700 text-sm">+{formatIDR(totals.base * (formData.overheadPercentage / 100))}</span>
@@ -1089,7 +1089,7 @@ export function AHSPItemEditor({
 
                         <div className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-emerald-100/50">
                           <div className="flex flex-col text-left">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">Target Keuntungan</span>
+                            <span className="text-xs font-black uppercase tracking-widest text-emerald-600 mb-1">Target Keuntungan</span>
                             <span className="text-xs font-bold text-slate-400">{formData.profitPercentage}% of base</span>
                           </div>
                           <span className="font-mono font-bold text-emerald-700 text-sm">+{formatIDR(totals.base * (formData.profitPercentage / 100))}</span>
@@ -1097,7 +1097,7 @@ export function AHSPItemEditor({
                       </div>
 
                       <div className="p-4 bg-emerald-600 rounded-2xl text-white text-center">
-                        <div className="text-[10px] font-black uppercase tracking-[0.2em] mb-1 opacity-80">Total Penyesuaian</div>
+                        <div className="text-xs font-black uppercase tracking-[0.2em] mb-1 opacity-80">Total Penyesuaian</div>
                         <div className="text-2xl font-black font-mono">{formatIDR(totals.final - totals.base)}</div>
                       </div>
                     </div>

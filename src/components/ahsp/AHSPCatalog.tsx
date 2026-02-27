@@ -593,7 +593,7 @@ export function AHSPCatalog({
                           key={`section-${row.label}`}
                           className="bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/40"
                         >
-                          <TableCell colSpan={10} className="py-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                          <TableCell colSpan={10} className="py-2 text-xs font-bold uppercase tracking-wider text-slate-500">
                             {row.label}
                           </TableCell>
                         </TableRow>
@@ -626,18 +626,18 @@ export function AHSPCatalog({
                             className="translate-y-0.5 border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                           />
                         </TableCell>
-                        <TableCell className="text-center font-mono text-[10px] text-slate-400 py-1.5">{row.rowNumber}</TableCell>
+                        <TableCell className="text-center font-mono text-xs text-slate-400 py-1.5">{row.rowNumber}</TableCell>
                         <TableCell className="py-1.5">
                           <div className="flex flex-col">
                             <div className="flex items-center gap-1.5">
                               <span className="font-medium text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
-                              {hasZoneOverride && <Badge variant="secondary" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">Adj Zona</Badge>}
+                              {hasZoneOverride && <Badge variant="secondary" className="h-4 px-1.5 text-xs uppercase tracking-wider">Adj Zona</Badge>}
                             </div>
-                            <span className="text-[10px] font-mono text-slate-400">{item.code}</span>
+                            <span className="text-xs font-mono text-slate-400">{item.code}</span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-center text-[11px] text-slate-500 py-1.5">{item.unit}</TableCell>
-                        <TableCell className="text-right font-mono text-[11px] text-slate-600 py-1.5 bg-blue-50/10">
+                        <TableCell className="text-center text-xs text-slate-500 py-1.5">{item.unit}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-blue-50/10">
                           {isUnallocated ? (
                             <span className="text-amber-600 font-bold" title="Komponen belum terhubung. Harga berasal dari data master.">
                               {formatIDR(item.finalPrice)} (!)
@@ -646,9 +646,9 @@ export function AHSPCatalog({
                             matPrice > 0 ? formatIDR(matPrice) : '-'
                           )}
                         </TableCell>
-                        <TableCell className="text-right font-mono text-[11px] text-slate-600 py-1.5 bg-orange-50/10">{!isUnallocated && labPrice > 0 ? formatIDR(labPrice) : '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-[11px] text-slate-600 py-1.5 bg-indigo-50/10">{!isUnallocated && eqpPrice > 0 ? formatIDR(eqpPrice) : '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-[11px] text-slate-600 py-1.5 bg-purple-50/10">{!isUnallocated && subPrice > 0 ? formatIDR(subPrice) : '-'}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-orange-50/10">{!isUnallocated && labPrice > 0 ? formatIDR(labPrice) : '-'}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-indigo-50/10">{!isUnallocated && eqpPrice > 0 ? formatIDR(eqpPrice) : '-'}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-purple-50/10">{!isUnallocated && subPrice > 0 ? formatIDR(subPrice) : '-'}</TableCell>
                         <TableCell className="text-right font-mono text-xs font-bold text-slate-800 dark:text-slate-200 py-1.5">{formatIDR(totalPrice)}</TableCell>
                         <TableCell className="py-1.5 text-right">
                           <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
@@ -717,29 +717,29 @@ export function AHSPCatalog({
           <div className="border-t border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4 dark:border-slate-800 dark:bg-slate-900/80 sticky bottom-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <div className="grid grid-cols-2 gap-4 md:grid-cols-6 items-center">
               <div className="md:col-span-1">
-                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Material</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-1">Material</div>
                 <div className="font-mono text-xs font-bold text-blue-700">{formatIDR(totals.materialTotal)}</div>
               </div>
               <div className="md:col-span-1">
-                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Labor</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-1">Labor</div>
                 <div className="font-mono text-xs font-bold text-orange-700">{formatIDR(totals.laborTotal)}</div>
               </div>
               <div className="md:col-span-1">
-                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Equipment</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-1">Equipment</div>
                 <div className="font-mono text-xs font-bold text-indigo-700">{formatIDR(totals.equipmentTotal)}</div>
               </div>
               <div className="md:col-span-1">
-                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Subcon</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-1">Subcon</div>
                 <div className="font-mono text-xs font-bold text-purple-700">{formatIDR(totals.subconTotal)}</div>
               </div>
               {totals.unallocatedTotal > 0 && (
                 <div className="md:col-span-1">
-                  <div className="text-[10px] uppercase font-bold tracking-widest text-red-400 mb-1">Belum Teralokasi</div>
+                  <div className="text-xs uppercase font-bold tracking-widest text-red-400 mb-1">Belum Teralokasi</div>
                   <div className="font-mono text-xs font-bold text-red-600">{formatIDR(totals.unallocatedTotal)}</div>
                 </div>
               )}
               <div className={totals.unallocatedTotal > 0 ? "md:col-span-1 text-right" : "md:col-span-2 text-right"}>
-                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-1">Grand Total Katalog</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-slate-500 mb-1">Grand Total Katalog</div>
                 <div className="font-mono text-lg font-black text-slate-900 dark:text-white tabular-nums">
                   {formatIDR(totals.grandTotal)}
                 </div>
