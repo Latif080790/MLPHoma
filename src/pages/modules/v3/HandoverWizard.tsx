@@ -16,7 +16,6 @@ import { Check, Download, AlertTriangle, FileText, ArrowRight, Loader2 } from "l
 import { useProjectStore } from '@/store/projectStore'
 import { PermissionGuard } from '@/components/common/PermissionGuard'
 import { toast } from 'sonner'
-import { assertSupabase } from '@/lib/supabaseClient'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
 import ModulePageState from '@/components/common/ModulePageState'
 
@@ -38,11 +37,16 @@ export default function HandoverWizard() {
     const [pageError, setPageError] = useState<string | null>(null)
 
     useEffect(() => {
-        if (!projectId) { setLoading(false); return }
+        if (!projectId) {
+            queueMicrotask(() => setLoading(false))
+            return
+        }
         let cancelled = false
         const load = async () => {
-            setLoading(true)
-            setPageError(null)
+            queueMicrotask(() => {
+                setLoading(true)
+                setPageError(null)
+            })
             const result = await handleAsync(async () => {
                 const [s, o] = await Promise.all([
                     handoverService.getHandoverSummary(projectId),
@@ -143,7 +147,7 @@ export default function HandoverWizard() {
         <div className="max-w-4xl mx-auto space-y-8 p-6">
             <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">Project Handover Wizard</h1>
-                <p className="text-muted-foreground">Finalize "{project.name}" and generate completion documents.</p>
+                <p className="text-muted-foreground">Finalize &quot;{project.name}&quot; and generate completion documents.</p>
             </div>
 
             {/* Steps Indicator */}

@@ -16,6 +16,7 @@
 - ✅ **Sprint 5.2 COMPLETE** - Strict validation enforced for feature snapshot save/restore
 - ✅ **Sprint 5.3 COMPLETE** - Feature config audit trail integrated (who/when/changes)
 - ✅ **Sprint 5.4 COMPLETE** - Module page skeleton standardized across 10 v3 pages
+- ✅ **Lint blocker cleanup (v3 scope) COMPLETE** - react-hooks/purity errors resolved on standardized pages
 
 ---
 

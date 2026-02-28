@@ -32,8 +32,10 @@ export default function CommandCenter() {
 
     // Load Data
     useEffect(() => {
-        setLoading(true)
-        setPageError(null)
+        queueMicrotask(() => {
+            setLoading(true)
+            setPageError(null)
+        })
         if (isPortfolioMode) {
             dashboardService.getPortfolioStats()
                 .then(setPortfolioStats)
@@ -51,7 +53,7 @@ export default function CommandCenter() {
                 })
                 .finally(() => setLoading(false))
         } else {
-            setLoading(false)
+            queueMicrotask(() => setLoading(false))
         }
     }, [activeProjectId, isPortfolioMode])
 

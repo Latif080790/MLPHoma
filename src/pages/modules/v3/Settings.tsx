@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { Settings as SettingsIcon, Save, Users, Database, Globe } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -21,23 +21,28 @@ export default function Settings() {
     const [project, setProject] = useState<any>(null)
     const [loading, setLoading] = useState(false)
 
-    useEffect(() => {
-        if (activeProjectId) {
-            // projects is a Record<string, Project>, so simply access it
-            const p = projects[activeProjectId]
-            if (p) setProject(p)
-            else loadProject(activeProjectId)
-        }
-    }, [activeProjectId, projects])
-
-    async function loadProject(id: string) {
+    const loadProject = useCallback(async (id: string) => {
         const data = await handleAsync(async () => {
             const client = assertSupabase()
             const res = await client.from('projects').select('*').eq('id', id).single()
             return res.data
         }, 'data.sync_failed')
         if (data) setProject(data)
-    }
+    }, [handleAsync])
+
+    useEffect(() => {
+        if (activeProjectId) {
+            // projects is a Record<string, Project>, so simply access it
+            const p = projects[activeProjectId]
+            if (p) {
+                queueMicrotask(() => setProject(p))
+            } else {
+                queueMicrotask(() => {
+                    void loadProject(activeProjectId)
+                })
+            }
+        }
+    }, [activeProjectId, projects, loadProject])
 
     async function handleSave() {
         if (!project || !activeProjectId) return
