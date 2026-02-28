@@ -22,6 +22,7 @@ import ModulePageState from '@/components/common/ModulePageState'
 import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
 
 export default function HandoverWizard() {
+    type InventoryItem = HandoverSummary['inventory'][number]
     const { handleAsync } = useErrorHandler()
     const activeProjectId = useProjectStore((s) => s.activeProjectId)
     const projects = useProjectStore((s) => s.projects)
@@ -225,7 +226,7 @@ export default function HandoverWizard() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {summary?.inventory.map((i: any, idx: number) => (
+                                            {summary?.inventory.map((i: InventoryItem, idx: number) => (
                                                 <tr key={idx} className="border-b last:border-0 hover:bg-slate-50">
                                                     <td className="p-3">{i.materialName}</td>
                                                     <td className="p-3 text-right">{i.current} {i.unit}</td>

@@ -14,11 +14,17 @@ import { assertSupabase } from "@/lib/supabaseClient"
 import { TeamManagementPanel } from "@/components/modules/TeamManagementPanel"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
+import type { Project } from "@/store/projectStore"
 
 export default function Settings() {
+    type SettingsProject = Project & {
+        start_date?: string
+        end_date?: string
+    }
+
     const { activeProjectId, projects, updateProject } = useProjectStore()
     const { handleAsync } = useErrorHandler()
-    const [project, setProject] = useState<any>(null)
+    const [project, setProject] = useState<SettingsProject | null>(null)
     const [loading, setLoading] = useState(false)
 
     const loadProject = useCallback(async (id: string) => {
