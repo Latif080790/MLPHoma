@@ -8,18 +8,27 @@
  * Note: tests use vitest/jest style. If your CI uses a different runner, adapt accordingly.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useFeatureStore } from '../featureStore'
+import { useAuthStore } from '../authStore'
 import { generateDefaultFeatureConfig } from '../../lib/featureDefaults'
+import { auditService } from '../../services/auditService'
 
 describe('featureStore basic operations', () => {
   const pid = 'test-project-1'
+  const logSpy = vi.spyOn(auditService, 'log').mockResolvedValue(undefined)
+
   beforeEach(() => {
     // clear localStorage keys for a clean slate
     localStorage.removeItem(`featureConfig:${pid}`)
     localStorage.removeItem(`featureConfigSnapshots:${pid}`)
     // reset in-memory store
     useFeatureStore.setState({ configs: {} } as any)
+    useAuthStore.setState({
+      user: { id: 'u-feature-1', email: 'feature@audit.test' },
+      profile: { full_name: 'Feature Auditor' },
+    } as any)
+    logSpy.mockClear()
   })
 
   it('loads default config when none exists', () => {
@@ -94,5 +103,60 @@ describe('featureStore basic operations', () => {
     const store = useFeatureStore.getState()
     expect(store.listSnapshots(pid)).toEqual([])
     expect(store.restoreSnapshot(pid, 'broken-1')).toBeNull()
+  })
+
+  it('logs audit trail with actor context on module updates and snapshot lifecycle', () => {
+    const store = useFeatureStore.getState()
+    store.loadConfig(pid)
+
+    store.updateModuleConfig(pid, 'reporting', {
+      dashboard: {
+        widgets: ['kpiBudget'],
+        refreshIntervalSeconds: 10,
+        defaultDateRangeDays: 30,
+      },
+    })
+
+    const snapshot = store.saveSnapshot(pid, 'Audit Snapshot')
+    store.restoreSnapshot(pid, snapshot.id)
+
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'u-feature-1',
+        userName: 'Feature Auditor',
+        entity: 'feature_config',
+        entityType: 'FEATURE_CONFIG',
+        entityId: pid,
+      })
+    )
+
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'UPDATE',
+        details: expect.objectContaining({
+          operation: 'update_module',
+          moduleKey: 'reporting',
+        }),
+      })
+    )
+
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'SNAPSHOT',
+        details: expect.objectContaining({
+          operation: 'save_snapshot',
+          snapshotName: 'Audit Snapshot',
+        }),
+      })
+    )
+
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'REVERT',
+        details: expect.objectContaining({
+          operation: 'restore_snapshot',
+        }),
+      })
+    )
   })
 })

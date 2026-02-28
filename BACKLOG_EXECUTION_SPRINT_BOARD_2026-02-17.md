@@ -14,6 +14,7 @@
 - ✅ **Sprint 4 COMPLETE** - Error handling & cross-cutting domains delivered (S4.1 + S4.2 + S4.3 + S4.4 + S4.5)
 - ✅ **Sprint 5.1 COMPLETE** - Feature schema modularized per-domain with centralized versioning
 - ✅ **Sprint 5.2 COMPLETE** - Strict validation enforced for feature snapshot save/restore
+- ✅ **Sprint 5.3 COMPLETE** - Feature config audit trail integrated (who/when/changes)
 
 ---
 
@@ -221,6 +222,17 @@
 - [x] Tambah regression test untuk snapshot invalid
   - File: `src/store/__tests__/featureStore.test.ts`
   - Cases: reject save invalid shape, ignore invalid snapshot list/restore
+- [x] Validasi terfokus lulus
+  - Tests: `featureStore.test.ts`, `featureMigrations.test.ts` (pass)
+
+### Epic S5.3 Feature Config Audit Trail — ✅ COMPLETE
+- [x] Integrasi `featureStore` dengan `auditService` untuk perubahan config dan snapshot lifecycle
+  - File: `src/store/featureStore.ts`
+  - Events: `set_config`, `update_module`, `reset_to_default`, `save_snapshot`, `restore_snapshot`
+- [x] Tambahkan actor context (siapa) dari `authStore` (`userId`, `userName`) di payload audit
+  - File: `src/store/featureStore.ts`
+- [x] Tambahkan metadata perubahan (changes) di detail audit
+  - Fields: `operation`, `changedModules`/`changedFields`, `snapshotId`, `snapshotName`, `schemaVersion`
 - [x] Validasi terfokus lulus
   - Tests: `featureStore.test.ts`, `featureMigrations.test.ts` (pass)
 
