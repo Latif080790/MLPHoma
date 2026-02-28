@@ -5,7 +5,8 @@
  * Berguna untuk inisialisasi proyek baru, testing, dan UI preview.
  */
 
-import type { FeatureConfig } from '../config/featureSchema'
+import { FEATURE_SCHEMA_VERSION } from '../config/features'
+import type { FeatureConfig } from '../config/features'
 
 /**
  * generateDefaultFeatureConfig
@@ -20,7 +21,7 @@ export function generateDefaultFeatureConfig(projectId: string): FeatureConfig {
   const metaBase = {
     projectId,
     name: `Default config for ${projectId}`,
-    schemaVersion: '1.0.0',
+    schemaVersion: FEATURE_SCHEMA_VERSION,
     updatedAt: now,
     updatedBy: 'system',
   }

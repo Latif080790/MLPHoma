@@ -6,7 +6,11 @@
  * - Designed to be extended as schema evolves.
  */
 
-import type { FeatureConfig } from '../config/featureSchema'
+import {
+  FEATURE_MODULE_KEYS,
+  FEATURE_SCHEMA_VERSION,
+} from '../config/features'
+import type { FeatureConfig } from '../config/features'
 
 /**
  * migrateConfig
@@ -20,7 +24,7 @@ export function migrateConfig(cfg: any): FeatureConfig {
     if (!cfg || typeof cfg !== 'object') throw new Error('invalid config')
     const version = String(cfg?.projectManagement?.meta?.schemaVersion || cfg?.schemaVersion || '1.0.0')
     // current version for this app (bump when making breaking changes)
-    const CURRENT = '1.0.0'
+    const CURRENT = FEATURE_SCHEMA_VERSION
 
     // For now only ensure meta fields exist and version set. Extendable.
     if (!cfg.projectId && cfg.projectId !== '') {
@@ -49,8 +53,7 @@ export function migrateConfig(cfg: any): FeatureConfig {
     }
 
     // apply for known module keys
-    const moduleKeys = ['projectManagement', 'wbs', 'ahsp', 'rab', 'timeline', 'rap', 'curvas', 'resources', 'cashflow', 'progress', 'reporting']
-    moduleKeys.forEach((k) => {
+    FEATURE_MODULE_KEYS.forEach((k) => {
       ensureMeta(k)
     })
 
@@ -64,7 +67,7 @@ export function migrateConfig(cfg: any): FeatureConfig {
     const fallback: FeatureConfig = {
       projectId: cfg?.projectId || 'unknown',
       projectManagement: {
-        meta: { projectId: cfg?.projectId || 'unknown', name: 'fallback', schemaVersion: '1.0.0', updatedAt: new Date().toISOString(), updatedBy: 'migration' },
+        meta: { projectId: cfg?.projectId || 'unknown', name: 'fallback', schemaVersion: FEATURE_SCHEMA_VERSION, updatedAt: new Date().toISOString(), updatedBy: 'migration' },
         workflow: { enableMultiStage: true, stages: ['Init', 'Plan', 'Execute', 'Close'], autoArchiveAfterDays: 365 },
         templates: { enableProjectTemplates: false, defaultTemplateId: undefined, preserveWbsOnClone: true, preserveBudgetOnClone: false },
         numbering: { prefix: 'PRJ', counterStart: 1, useYearInCode: true },

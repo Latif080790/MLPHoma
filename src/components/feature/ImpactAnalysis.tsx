@@ -12,7 +12,7 @@ import React, { useMemo } from 'react'
 import type { FC } from 'react'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import { SAMPLE_RAB_ITEMS, computeUsingFeatureConfig, computeRABTotals } from '../../lib/sampleData/rabSample'
-import type { FeatureConfig } from '../../config/featureSchema'
+import type { FeatureConfig } from '../../config/features'
 
 /**
  * Props for ImpactAnalysis

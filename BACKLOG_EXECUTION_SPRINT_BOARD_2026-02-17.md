@@ -12,6 +12,7 @@
 - ✅ **ESLint Critical Errors Fixed** (19 errors resolved across 14 files)
 - ✅ **Sprint 3 COMPLETE** - Predictive & quality controls delivered (S3.1 + S3.2 + S3.3)
 - ✅ **Sprint 4 COMPLETE** - Error handling & cross-cutting domains delivered (S4.1 + S4.2 + S4.3 + S4.4 + S4.5)
+- ✅ **Sprint 5.1 COMPLETE** - Feature schema modularized per-domain with centralized versioning
 
 ---
 
@@ -193,6 +194,24 @@
     - `src/services/__tests__/userManagementService.test.ts`
     - `src/services/__tests__/ahspSnapshotService.test.ts`
     - `src/services/__tests__/tkdnService.test.ts`
+
+---
+
+## Sprint 5 (Feature Config Governance + UI Consistency) — IN PROGRESS
+
+### Epic S5.1 Feature Schema Modularization — ✅ COMPLETE
+- [x] Pisahkan `featureSchema.ts` per domain menjadi modul `src/config/features/*.ts`
+  - Files:
+    - `src/config/features/shared.ts`
+    - `src/config/features/{projectManagement,wbs,ahsp,rab,timeline,rap,curvaS,resourcePlanning,cashflow,progressTracking,reporting}.ts`
+    - `src/config/features/featureConfig.ts`
+    - `src/config/features/versioning.ts`
+    - `src/config/features/index.ts`
+    - `src/config/featureSchema.ts` (compatibility re-export)
+- [x] Migrasikan konsumsi utama ke modular import `src/config/features`
+  - Files: `featureStore`, `featureDefaults`, `featureMigrations`, `featureApi`, `FeatureSettings`, `ImpactAnalysis`, `rabSample`
+- [x] Validasi terfokus lulus
+  - Tests: `featureStore.test.ts`, `featureMigrations.test.ts` (pass)
 
 ---
 
