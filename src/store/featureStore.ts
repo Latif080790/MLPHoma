@@ -13,6 +13,7 @@
  */
 
 import { create } from 'zustand'
+import { FEATURE_MODULE_KEYS } from '../config/features'
 import type { FeatureConfig } from '../config/features'
 import { generateDefaultFeatureConfig } from '../lib/featureDefaults'
 import { migrateConfig } from '../lib/featureMigrations'
@@ -74,6 +75,32 @@ function snapshotsKey(projectId: string) {
   return `featureConfigSnapshots:${projectId}`
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isValidFeatureConfigShape(config: unknown, projectId?: string): config is FeatureConfig {
+  if (!isRecord(config)) return false
+  if (typeof config.projectId !== 'string' || config.projectId.trim().length === 0) return false
+  if (projectId && config.projectId !== projectId) return false
+
+  return FEATURE_MODULE_KEYS.every((moduleKey) => {
+    const moduleValue = config[moduleKey]
+    if (!isRecord(moduleValue)) return false
+    if (!isRecord(moduleValue.meta)) return false
+    if (typeof moduleValue.meta.projectId !== 'string' || moduleValue.meta.projectId.trim().length === 0) return false
+    return moduleValue.meta.projectId === config.projectId
+  })
+}
+
+function isValidSnapshotShape(snapshot: unknown, projectId: string): snapshot is FeatureSnapshot {
+  if (!isRecord(snapshot)) return false
+  if (typeof snapshot.id !== 'string' || snapshot.id.trim().length === 0) return false
+  if (typeof snapshot.name !== 'string' || snapshot.name.trim().length === 0) return false
+  if (typeof snapshot.createdAt !== 'string' || snapshot.createdAt.trim().length === 0) return false
+  return isValidFeatureConfigShape(snapshot.config, projectId)
+}
+
 /**
  * Safe parse from localStorage
  * @param projectId - project identifier
@@ -114,8 +141,9 @@ function readSnapshotsFromStorage(projectId: string): FeatureSnapshot[] {
   try {
     const raw = localStorage.getItem(snapshotsKey(projectId))
     if (!raw) return []
-    const parsed = JSON.parse(raw) as FeatureSnapshot[]
-    return Array.isArray(parsed) ? parsed : []
+    const parsed = JSON.parse(raw) as unknown
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((snapshot) => isValidSnapshotShape(snapshot, projectId))
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn('featureStore: failed to read snapshots', e)
@@ -216,6 +244,11 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
   saveSnapshot: (projectId: string, name?: string) => {
     if (!projectId) throw new Error('saveSnapshot requires projectId')
     const cfg = get().configs[projectId] ?? readFromStorage(projectId) ?? generateDefaultFeatureConfig(projectId)
+
+    if (!isValidFeatureConfigShape(cfg, projectId)) {
+      toast.error('Snapshot Validation Error', 'Configuration shape is invalid for snapshot.')
+      throw new Error('Invalid snapshot config')
+    }
     
     const snapshotData = {
       projectId,
@@ -236,6 +269,12 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
       createdAt: new Date().toISOString(),
       config: JSON.parse(JSON.stringify(cfg)),
     }
+
+    if (!isValidSnapshotShape(snap, projectId)) {
+      toast.error('Snapshot Validation Error', 'Snapshot payload is invalid.')
+      throw new Error('Invalid snapshot payload')
+    }
+
     const snaps = readSnapshotsFromStorage(projectId)
     snaps.unshift(snap) // latest first
     // keep reasonable limit (e.g., 50)
@@ -257,7 +296,18 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
       toast.error('Snapshot not found', `Snapshot ID: ${snapshotId}`)
       return null
     }
+
+    if (!isValidSnapshotShape(found, projectId)) {
+      toast.error('Snapshot invalid', 'Snapshot data failed strict validation.')
+      return null
+    }
+
     const cfg = migrateConfig(found.config)
+    if (!isValidFeatureConfigShape(cfg, projectId)) {
+      toast.error('Snapshot invalid', 'Restored config failed strict validation.')
+      return null
+    }
+
     // persist restored config
     set((s) => ({ configs: { ...s.configs, [projectId]: cfg } }))
     writeToStorage(projectId, cfg)

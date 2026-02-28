@@ -66,4 +66,33 @@ describe('featureStore basic operations', () => {
     snaps = store.listSnapshots(pid)
     expect(snaps.find((s) => s.id === snap.id)).toBeUndefined()
   })
+
+  it('rejects saveSnapshot when config shape is invalid', () => {
+    useFeatureStore.setState({
+      configs: {
+        [pid]: {
+          projectId: pid,
+        } as any,
+      },
+    } as any)
+
+    expect(() => useFeatureStore.getState().saveSnapshot(pid, 'invalid-shape')).toThrow('Invalid snapshot config')
+  })
+
+  it('ignores invalid snapshot entries during restore/list', () => {
+    const invalidSnapshot = {
+      id: 'broken-1',
+      name: 'Broken Snapshot',
+      createdAt: new Date().toISOString(),
+      config: {
+        projectId: pid,
+      },
+    }
+
+    localStorage.setItem(`featureConfigSnapshots:${pid}`, JSON.stringify([invalidSnapshot]))
+
+    const store = useFeatureStore.getState()
+    expect(store.listSnapshots(pid)).toEqual([])
+    expect(store.restoreSnapshot(pid, 'broken-1')).toBeNull()
+  })
 })
