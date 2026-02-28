@@ -18,6 +18,8 @@ import type { FeatureConfig } from '../config/features'
 import { generateDefaultFeatureConfig } from '../lib/featureDefaults'
 import { migrateConfig } from '../lib/featureMigrations'
 import { nanoid } from 'nanoid/non-secure'
+import { auditService } from '../services/auditService'
+import { useAuthStore } from './authStore'
 import { notify as toast } from '@/lib/toast'
 import { validate, mergeErrorMessages } from '@/lib/validationMiddleware'
 import {
@@ -101,6 +103,38 @@ function isValidSnapshotShape(snapshot: unknown, projectId: string): snapshot is
   return isValidFeatureConfigShape(snapshot.config, projectId)
 }
 
+function getFeatureConfigActor() {
+  const { user, profile } = useAuthStore.getState()
+  return {
+    userId: user?.id,
+    userName: profile?.full_name || user?.email || 'system',
+  }
+}
+
+function getChangedModuleKeys(prev: FeatureConfig | null, next: FeatureConfig): string[] {
+  if (!prev) return [...FEATURE_MODULE_KEYS]
+  return FEATURE_MODULE_KEYS.filter((moduleKey) => {
+    return JSON.stringify(prev[moduleKey]) !== JSON.stringify(next[moduleKey])
+  })
+}
+
+function logFeatureConfigAudit(
+  action: 'UPDATE' | 'SNAPSHOT' | 'REVERT',
+  projectId: string,
+  details: Record<string, unknown>
+) {
+  const actor = getFeatureConfigActor()
+  void auditService.log({
+    userId: actor.userId,
+    userName: actor.userName,
+    action,
+    entity: 'feature_config',
+    entityType: 'FEATURE_CONFIG',
+    entityId: projectId,
+    details,
+  })
+}
+
 /**
  * Safe parse from localStorage
  * @param projectId - project identifier
@@ -181,6 +215,7 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
 
   setConfig: (projectId: string, cfg: FeatureConfig) => {
     if (!projectId) return
+    const prev = get().configs[projectId] ?? readFromStorage(projectId)
     // ensure migrated
     const next = migrateConfig(cfg)
     set((s) => {
@@ -189,6 +224,12 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
       return { configs: nextMap }
     })
     writeToStorage(projectId, next)
+
+    logFeatureConfigAudit('UPDATE', projectId, {
+      operation: 'set_config',
+      changedModules: getChangedModuleKeys(prev, next),
+      schemaVersion: next?.projectManagement?.meta?.schemaVersion,
+    })
     
     // Sync to Supabase
     syncFeatureConfig(next)
@@ -214,6 +255,12 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
       
       // Sync to Supabase
       syncFeatureConfig(nextConfig)
+
+      logFeatureConfigAudit('UPDATE', projectId, {
+        operation: 'update_module',
+        moduleKey,
+        changedFields: Object.keys(patch || {}),
+      })
       
       return { configs: { ...s.configs, [projectId]: nextConfig } }
     })
@@ -221,9 +268,17 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
 
   resetToDefault: (projectId: string) => {
     if (!projectId) throw new Error('resetToDefault requires projectId')
+    const prev = get().configs[projectId] ?? readFromStorage(projectId)
     const def = generateDefaultFeatureConfig(projectId)
     set((s) => ({ configs: { ...s.configs, [projectId]: def } }))
     writeToStorage(projectId, def)
+
+    logFeatureConfigAudit('REVERT', projectId, {
+      operation: 'reset_to_default',
+      changedModules: getChangedModuleKeys(prev, def),
+      schemaVersion: def?.projectManagement?.meta?.schemaVersion,
+    })
+
     return def
   },
 
@@ -283,6 +338,12 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     
     // Sync to Supabase
     syncFeatureSnapshot(snap)
+
+    logFeatureConfigAudit('SNAPSHOT', projectId, {
+      operation: 'save_snapshot',
+      snapshotId: snap.id,
+      snapshotName: snap.name,
+    })
     
     toast.success('Snapshot saved successfully', snapshotData.name)
     return snap
@@ -311,6 +372,13 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     // persist restored config
     set((s) => ({ configs: { ...s.configs, [projectId]: cfg } }))
     writeToStorage(projectId, cfg)
+
+    logFeatureConfigAudit('REVERT', projectId, {
+      operation: 'restore_snapshot',
+      snapshotId: found.id,
+      snapshotName: found.name,
+      schemaVersion: cfg?.projectManagement?.meta?.schemaVersion,
+    })
     
     toast.success('Snapshot restored successfully', found.name)
     return cfg
