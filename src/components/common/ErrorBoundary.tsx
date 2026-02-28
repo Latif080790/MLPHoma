@@ -16,6 +16,7 @@
 
 import React from 'react'
 import { AlertTriangle, RefreshCw, Home, Copy } from 'lucide-react'
+import { buildExternalErrorLog, reportExternalError } from '@/services/errorLoggingService'
 
 /**
  * State ErrorBoundary.
@@ -57,6 +58,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    const nextErrorCount = this.state.errorCount + 1
+
     // Update state with error details and increment error count
     this.setState((prevState) => ({
       error,
@@ -72,7 +75,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       this.props.onError(error, errorInfo)
     }
 
-    // TODO: Integrasi logging eksternal jika dibutuhkan (Sentry/console server)
+    const payload = buildExternalErrorLog(error, errorInfo, nextErrorCount)
+    reportExternalError(payload).catch((loggingError) => {
+      console.warn('External error logging failed:', loggingError)
+    })
   }
 
   private handleRetry = () => {

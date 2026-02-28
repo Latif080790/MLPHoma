@@ -11,7 +11,7 @@
 - ✅ **Sprint 0 COMPLETE** (All 3 epics: WCAG compliance, costing stability, release safety)
 - ✅ **ESLint Critical Errors Fixed** (19 errors resolved across 14 files)
 - ✅ **Sprint 3 COMPLETE** - Predictive & quality controls delivered (S3.1 + S3.2 + S3.3)
-- 🚧 **Sprint 4 IN PROGRESS** - Error handling & cross-cutting domains (S4.1 + S4.2 complete)
+- 🚧 **Sprint 4 IN PROGRESS** - Error handling & cross-cutting domains (S4.1 + S4.2 + S4.3 complete)
 
 ---
 
@@ -176,8 +176,8 @@
   - Files: `ChangeManagement`, `CostForecastDashboard`, `Documents`, `Finance`, `HandoverWizard`, `ProjectOverview`, `Settings`, `StrategySimulation`
 
 ### Epic S4.3 External Error Logging
-- [ ] Integrasi external logging hook di `ErrorBoundary`
-  - Candidate file: `src/components/ErrorBoundary.tsx`
+- [x] Integrasi external logging hook di `ErrorBoundary`
+  - Files: `src/components/common/ErrorBoundary.tsx`, `src/services/errorLoggingService.ts`
 
 ### Epic S4.4 Sync Correlation ID
 - [ ] Tambahkan correlation ID ke `SyncQueueManager` tasks
