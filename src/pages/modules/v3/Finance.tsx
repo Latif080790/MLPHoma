@@ -39,6 +39,7 @@ import { useSupplyChainStore } from "@/store/supplyChainStore"
 import type { Invoice } from "@/types/finance"
 import { auditTrail } from "@/lib/auditTrail"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
+import ModulePageState from "@/components/common/ModulePageState"
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
@@ -126,7 +127,29 @@ export default function Finance() {
         )
     }
 
-    if (!activeProjectId) return <EmptyState title="No Project Selected" description="Select a project to view financials." />
+    if (!activeProjectId) {
+        return (
+            <ModulePageState
+                icon={<TrendingUp size={18} />}
+                title="Finance"
+                description="Manage AP (Invoices), AR (Claims), Aging, and 3-Way Matching."
+                variant="empty"
+                message="Select an active project to view financial data."
+            />
+        )
+    }
+
+    if (loading && invoices.length === 0 && claims.length === 0 && transactions.length === 0) {
+        return (
+            <ModulePageState
+                icon={<TrendingUp size={18} />}
+                title="Finance"
+                description="Manage AP (Invoices), AR (Claims), Aging, and 3-Way Matching."
+                variant="loading"
+                message="Loading financial data..."
+            />
+        )
+    }
 
     return (
         <div className="space-y-6">

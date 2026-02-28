@@ -18,6 +18,7 @@ import { ImpactAnalysisPanel } from "@/components/change/ImpactAnalysisPanel"
 import { CCO_STATUS_LABELS, CCO_STATUS_COLORS } from "@/services/ccoStateMachine"
 import type { ChangeOrderStatus } from "@/types/change-order"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
+import ModulePageState from "@/components/common/ModulePageState"
 
 export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
@@ -94,6 +95,30 @@ export default function ChangeManagement() {
     const totalTimeImpact = orders.reduce((sum, o) => sum + (o.schedule_impact_days || 0), 0)
     const approvedCost = orders.filter(o => o.status === 'APPROVED').reduce((sum, o) => sum + (o.cost_impact || 0), 0)
     const pendingCost = orders.filter(o => o.status === 'PENDING_APPROVAL').reduce((sum, o) => sum + (o.cost_impact || 0), 0)
+
+    if (!activeProjectId) {
+        return (
+            <ModulePageState
+                icon={<GitPullRequest size={18} />}
+                title="Change Management (CCO)"
+                description="Track Contract Change Orders (CCO) and Variation Orders (VO)."
+                variant="empty"
+                message="Select an active project to manage change orders."
+            />
+        )
+    }
+
+    if (loading && orders.length === 0) {
+        return (
+            <ModulePageState
+                icon={<GitPullRequest size={18} />}
+                title="Change Management (CCO)"
+                description="Track Contract Change Orders (CCO) and Variation Orders (VO)."
+                variant="loading"
+                message="Loading change orders..."
+            />
+        )
+    }
 
     return (
         <div className="space-y-6">
