@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, Search, Filter, PackageCheck, ArrowRightLeft, ClipboardList } from "lucide-react"
+import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, Search, PackageCheck, ArrowRightLeft, ClipboardList } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,6 @@ import { InventoryTransactionDialog } from "@/components/supply-chain/InventoryT
 import { GRNDialog } from "@/components/supply-chain/GRNDialog"
 import { MaterialTransferDialog } from "@/components/supply-chain/MaterialTransferDialog"
 import { MaterialTransferPanel } from "@/components/supply-chain/MaterialTransferPanel"
-import { WorkOrderPanel } from "@/components/modules/WorkOrderPanel"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 import { ProcurementTracePanel } from "@/components/supply-chain/ProcurementTracePanel"
 import { MTRPanel } from "@/components/supply/MTRPanel"
@@ -33,7 +32,6 @@ export default function SupplyChain() {
         materialRequests,
         purchaseOrders,
         inventoryStock,
-        loading,
         fetchMaterialRequests,
         fetchPurchaseOrders,
         fetchInventory,
@@ -58,7 +56,7 @@ export default function SupplyChain() {
             if (activeTab === "inventory") fetchInventory(activeProjectId)
             if (activeTab === "transfers") fetchTransfers(activeProjectId)
         }
-    }, [activeProjectId, activeTab])
+    }, [activeProjectId, activeTab, fetchInventory, fetchMaterialRequests, fetchPurchaseOrders, fetchTransfers])
 
     if (!activeProjectId) return <EmptyState title="No Project Selected" description="Please select a project to manage supply chain." />
 
