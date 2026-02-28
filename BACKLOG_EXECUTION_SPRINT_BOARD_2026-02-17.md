@@ -11,7 +11,7 @@
 - ✅ **Sprint 0 COMPLETE** (All 3 epics: WCAG compliance, costing stability, release safety)
 - ✅ **ESLint Critical Errors Fixed** (19 errors resolved across 14 files)
 - ✅ **Sprint 3 COMPLETE** - Predictive & quality controls delivered (S3.1 + S3.2 + S3.3)
-- 🚧 **Sprint 4 IN PROGRESS** - Error handling & cross-cutting domains (S4.1 complete)
+- 🚧 **Sprint 4 IN PROGRESS** - Error handling & cross-cutting domains (S4.1 + S4.2 complete)
 
 ---
 
@@ -172,8 +172,8 @@
   - New file: `src/lib/__tests__/errorMessages.test.ts`
 
 ### Epic S4.2 Async Workflow Error Pipeline
-- [ ] Wajibkan `useErrorHandler` / `handleAsync` di async workflow halaman v3
-  - Candidate files: `src/pages/modules/v3/**`
+- [x] Wajibkan `useErrorHandler` / `handleAsync` di async workflow halaman v3
+  - Files: `ChangeManagement`, `CostForecastDashboard`, `Documents`, `Finance`, `HandoverWizard`, `ProjectOverview`, `Settings`, `StrategySimulation`
 
 ### Epic S4.3 External Error Logging
 - [ ] Integrasi external logging hook di `ErrorBoundary`

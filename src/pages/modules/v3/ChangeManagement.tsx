@@ -17,9 +17,11 @@ import { toast } from "sonner"
 import { ImpactAnalysisPanel } from "@/components/change/ImpactAnalysisPanel"
 import { CCO_STATUS_LABELS, CCO_STATUS_COLORS } from "@/services/ccoStateMachine"
 import type { ChangeOrderStatus } from "@/types/change-order"
+import { useErrorHandler } from "@/hooks/useErrorHandler"
 
 export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
+    const { handleAsync } = useErrorHandler()
     const { orders, fetchOrders, loading, updateStatus, previewCascade, cascadePreview, previewLoading, clearPreview } = useChangeOrderStore()
     const [activeTab, setActiveTab] = useState("log")
     const [dialogOpen, setDialogOpen] = useState(false)
@@ -37,27 +39,32 @@ export default function ChangeManagement() {
 
     const handleApproveClick = async (orderId: string) => {
         setPendingApprovalId(orderId)
-        try {
+        const result = await handleAsync(async () => {
             await previewCascade(orderId)
+            return true
+        }, 'conflict.version', { showToast: false })
+
+        if (result) {
             setConfirmOpen(true)
-        } catch {
-            // Error already toasted by store
         }
     }
 
     const handleConfirmApprove = async () => {
         if (!pendingApprovalId) return
         setActionLoading(pendingApprovalId)
-        try {
+        const result = await handleAsync(async () => {
             await updateStatus(pendingApprovalId, 'APPROVED')
-        } catch (err: any) {
-            toast.error('Approval failed: ' + err.message)
-        } finally {
-            setActionLoading(null)
-            setConfirmOpen(false)
-            setPendingApprovalId(null)
-            clearPreview()
+            return true
+        }, 'approval.general')
+
+        if (result) {
+            toast.success('Change Order approved')
         }
+
+        setActionLoading(null)
+        setConfirmOpen(false)
+        setPendingApprovalId(null)
+        clearPreview()
     }
 
     const handleRejectClick = (orderId: string) => {
@@ -68,16 +75,18 @@ export default function ChangeManagement() {
     const handleRejectConfirm = async () => {
         if (!pendingRejectId) return
         setActionLoading(pendingRejectId)
-        try {
+        const result = await handleAsync(async () => {
             await updateStatus(pendingRejectId, 'REJECTED')
+            return true
+        }, 'approval.general')
+
+        if (result) {
             toast.success('Change Order rejected')
-        } catch (err: any) {
-            toast.error('Rejection failed: ' + err.message)
-        } finally {
-            setActionLoading(null)
-            setRejectConfirmOpen(false)
-            setPendingRejectId(null)
         }
+
+        setActionLoading(null)
+        setRejectConfirmOpen(false)
+        setPendingRejectId(null)
     }
 
     // Calculate Impact Analysis

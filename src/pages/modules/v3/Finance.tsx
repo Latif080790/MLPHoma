@@ -38,9 +38,11 @@ import { matchInvoice, getMatchStatusColor, getMatchStatusLabel } from "@/servic
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import type { Invoice } from "@/types/finance"
 import { auditTrail } from "@/lib/auditTrail"
+import { useErrorHandler } from "@/hooks/useErrorHandler"
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
+    const { handleAsync } = useErrorHandler()
     const [activeTab, setActiveTab] = useState("overview")
     const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
     const [claimDialogOpen, setClaimDialogOpen] = useState(false)
@@ -69,7 +71,7 @@ export default function Finance() {
     const handlePayConfirm = async () => {
         if (!pendingInvoicePayment) return
 
-        try {
+        const approved = await handleAsync(async () => {
             const { user, profile } = useAuthStore.getState()
             await approvalService.createApproval({
                 projectId: pendingInvoicePayment.project_id,
@@ -95,11 +97,12 @@ export default function Finance() {
 
             // Mark invoice as pending locally
             useFinanceStore.getState().updateInvoiceStatus(pendingInvoicePayment.id, 'PENDING_PAYMENT', pendingInvoicePayment.project_id)
+            return true
+        }, 'approval.general')
 
+        if (approved) {
             toast.success("Payment approval requested", { description: "Sent to PM's Command Center" })
             setPendingInvoicePayment(null)
-        } catch (err: any) {
-            toast.error("Failed to request approval", { description: err.message })
         }
     }
 
@@ -405,14 +408,17 @@ export default function Finance() {
                 <TabsContent value="ar">
                     <div className="flex justify-end mb-4 gap-2">
                         <Button size="sm" variant="outline" className="gap-2" onClick={async () => {
-                            try {
-                                const pct = parseFloat(prompt("Enter current overall progress % (e.g. 35.5):", "0") || "0")
-                                if (pct <= 0) { toast.info("Cancelled"); return }
+                            const pct = parseFloat(prompt("Enter current overall progress % (e.g. 35.5):", "0") || "0")
+                            if (pct <= 0) { toast.info("Cancelled"); return }
+
+                            const generated = await handleAsync(async () => {
                                 await progressBillingService.generateMonthlyBilling(activeProjectId!, pct)
+                                return true
+                            }, 'finance.general')
+
+                            if (generated) {
                                 toast.success("Monthly billing generated", { description: "Claims created from progress data." })
                                 fetchAll(activeProjectId!)
-                            } catch (err: any) {
-                                toast.error("Billing generation failed", { description: err.message })
                             }
                         }}>
                             <Zap size={14} /> Auto-Generate Billing

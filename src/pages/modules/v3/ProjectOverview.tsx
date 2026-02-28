@@ -50,6 +50,7 @@ import { formatIDR } from '../../../lib/utils'
 import { format } from 'date-fns'
 import { ProjectSettingsDialog } from '../../../components/project/ProjectSettingsDialog'
 import { Settings2 } from 'lucide-react'
+import { useErrorHandler } from '../../../hooks/useErrorHandler'
 
 // ─── Helper: risk score color ───────────────────────────────────────────────
 function riskScoreColor(score: number) {
@@ -375,6 +376,7 @@ function QuickLinksSection() {
 
 export default function ProjectOverview() {
   const navigate = useNavigate()
+  const { handleAsync } = useErrorHandler()
   const activeProjectId = useProjectStore((s) => s.activeProjectId)
   const projectsMap = useProjectStore((s) => s.projects)
   const activeProject: Project | undefined = activeProjectId ? projectsMap[activeProjectId] : undefined
@@ -391,7 +393,7 @@ export default function ProjectOverview() {
 
   const loadData = useCallback(async (projectId: string) => {
     setLoading(true)
-    try {
+    const loaded = await handleAsync(async () => {
       const [kpiData, upcomingData, overdueData, riskData, teamData, activityData] =
         await Promise.allSettled([
           projectOverviewService.getProjectKPIs(projectId),
@@ -408,12 +410,15 @@ export default function ProjectOverview() {
       if (riskData.status === 'fulfilled') setRisks(riskData.value)
       if (teamData.status === 'fulfilled') setTeam(teamData.value)
       if (activityData.status === 'fulfilled') setActivities(activityData.value)
-    } catch (err) {
-      console.error('Failed to load project overview data', err)
-    } finally {
-      setLoading(false)
+      return true
+    }, 'data.sync_failed')
+
+    if (!loaded) {
+      console.error('Failed to load project overview data')
     }
-  }, [])
+
+    setLoading(false)
+  }, [handleAsync])
 
   useEffect(() => {
     if (activeProjectId) {

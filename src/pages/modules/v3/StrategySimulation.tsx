@@ -8,8 +8,10 @@ import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import { BrainCircuit, Play, RotateCcw, TrendingDown, TrendingUp, AlertCircle } from 'lucide-react'
 import { simulationService, SimulationResult } from '@/services/simulationService'
 import { toast } from 'sonner'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 
 export default function StrategySimulation() {
+    const { handleAsync } = useErrorHandler()
     const [delay, setDelay] = useState(0)
     const [resourceShift, setResourceShift] = useState(0)
     const [result, setResult] = useState<SimulationResult | null>(null)
@@ -17,21 +19,20 @@ export default function StrategySimulation() {
 
     const runSimulation = async () => {
         setSimulating(true)
-        try {
-            // Mocking a scenario where we delay all active projects by 'delay' days
-            // and reduce resources by 'resourceShift'%
-            const res = await simulationService.simulatePortfolioImpact([{
+        const res = await handleAsync(async () => {
+            return simulationService.simulatePortfolioImpact([{
                 projectId: 'global',
                 shiftDays: delay,
                 resourceChange: -resourceShift / 100
             }])
+        }, 'calculation.invalid_input')
+
+        if (res) {
             setResult(res)
             toast.success("Simulation complete")
-        } catch (error) {
-            toast.error("Simulation failed")
-        } finally {
-            setSimulating(false)
         }
+
+        setSimulating(false)
     }
 
     const reset = () => {
