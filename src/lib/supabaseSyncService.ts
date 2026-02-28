@@ -24,6 +24,7 @@ export type SyncOperation = 'insert' | 'update' | 'delete' | 'upsert'
  */
 export interface SyncTask {
   id: string
+  correlationId: string
   operation: SyncOperation
   table: string
   data: any
@@ -58,7 +59,7 @@ class SyncQueueManager {
   /**
    * Add task to sync queue
    */
-  enqueue(task: Omit<SyncTask, 'id' | 'timestamp' | 'retryCount'>): string {
+  enqueue(task: Omit<SyncTask, 'id' | 'timestamp' | 'retryCount' | 'correlationId'> & Partial<Pick<SyncTask, 'correlationId'>>): string {
     // Check queue size to prevent quota exceeded
     if (this.queue.length >= this.maxQueueSize) {
       console.warn('Queue is full, clearing old processed tasks')
@@ -69,6 +70,7 @@ class SyncQueueManager {
     const fullTask: SyncTask = {
       ...task,
       id,
+      correlationId: task.correlationId || this.generateCorrelationId(),
       timestamp: Date.now(),
       retryCount: 0,
       maxRetries: task.maxRetries || this.maxRetries,
@@ -102,6 +104,9 @@ class SyncQueueManager {
           : await this.executeTask(task)
 
         if (result.success) {
+          if (process.env.NODE_ENV === 'development') {
+            console.debug(`[SyncQueue][${task.correlationId}] ${task.operation.toUpperCase()} ${task.table} success`)
+          }
           // Remove successful task
           this.queue.shift()
           this.saveQueue()
@@ -204,11 +209,12 @@ class SyncQueueManager {
    */
   private async handleFailedTask(task: SyncTask, error?: string) {
     task.retryCount++
+    const correlationLabel = task.correlationId.slice(-8)
 
     if (task.retryCount >= task.maxRetries) {
       // Max retries reached, move to failed queue
-      console.error(`Task ${task.id} failed after ${task.retryCount} retries:`, error)
-      toast.error(`Sync failed: ${error || 'Unknown error'}. Please check your connection.`)
+      console.error(`Task ${task.id} [${task.correlationId}] failed after ${task.retryCount} retries:`, error)
+      toast.error(`Sync failed (${correlationLabel}): ${error || 'Unknown error'}. Please check your connection.`)
 
       // Remove from queue
       this.queue.shift()
@@ -219,7 +225,7 @@ class SyncQueueManager {
     } else {
       // Retry with exponential backoff
       const delay = this.retryDelay * Math.pow(2, task.retryCount - 1)
-      console.warn(`Retrying task ${task.id} in ${delay}ms (attempt ${task.retryCount}/${task.maxRetries})`)
+      console.warn(`Retrying task ${task.id} [${task.correlationId}] in ${delay}ms (attempt ${task.retryCount}/${task.maxRetries})`)
 
       await this.delay(delay)
       this.saveQueue()
@@ -275,7 +281,11 @@ class SyncQueueManager {
     try {
       const saved = localStorage.getItem('supabase-sync-queue')
       if (saved) {
-        this.queue = JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        this.queue = (Array.isArray(parsed) ? parsed : []).map((task: SyncTask) => ({
+          ...task,
+          correlationId: task.correlationId || this.generateCorrelationId(),
+        }))
         // Limit loaded queue size
         if (this.queue.length > this.maxQueueSize) {
           console.warn(`Loaded queue too large (${this.queue.length}), keeping only last ${this.maxQueueSize} tasks`)
@@ -363,6 +373,13 @@ class SyncQueueManager {
    */
   private generateTaskId(): string {
     return `sync-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  }
+
+  /**
+   * Utility: Generate correlation ID for tracing sync lifecycle
+   */
+  private generateCorrelationId(): string {
+    return `corr-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`
   }
 
   /**
