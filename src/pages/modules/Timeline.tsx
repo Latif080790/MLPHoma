@@ -173,7 +173,6 @@ function seedDemoTasks(projectId: string): boolean {
 export default function Timeline() {
   const activeProject = useProjectStore((s) => s.getActiveProject())
   const projectId = activeProject?.id || ''
-  const projectName = activeProject?.name || '—'
 
   const { getTasks, removeTask } = useTimelineStore()
   const [editorOpen, setEditorOpen] = useState(false)
@@ -184,12 +183,12 @@ export default function Timeline() {
 
   // Toolbar states
   const [criticalOnly, setCriticalOnly] = useState<boolean>(false)
-  const [showTooltip, setShowTooltip] = useState<boolean>(true)
+  const [showTooltip] = useState<boolean>(true)
   const [pxPerDay, setPxPerDay] = useState<number>(24)
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week')
   const [showDeps, setShowDeps] = useState(true)
   const [showBaseline, setShowBaseline] = useState(true)
-  const [showTodayLine, setShowTodayLine] = useState(true)
+  const [showTodayLine] = useState(true)
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 

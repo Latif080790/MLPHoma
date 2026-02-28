@@ -102,7 +102,6 @@ async function exportPDF(element: HTMLElement | null, filename = "Progress.pdf")
  */
 export default function Progress() {
   const project = useProjectStore((s) => (s as any).getActiveProject?.() ?? null)
-  const projectName = project?.name ?? "—"
   const projectId = project?.id ?? "demo"
 
   const { addDataPoint, getDataPoints } = useCurvaSStore()
@@ -260,11 +259,6 @@ export default function Progress() {
     })
     setGpsCoords(null)
   }
-
-  const currentPlanned = useMemo(() => {
-    const p = all.find(d => d.date === form.date)
-    return p ? { progress: p.plannedProgress, cost: p.plannedCost } : null
-  }, [all, form.date])
 
   const handleApproveQC = async (id: string) => {
     // In a real app we'd fetch the log id from Supabase, but CurvaS store might just have client ids.

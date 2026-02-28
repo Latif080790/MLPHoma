@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Gauge, LayoutList, CalendarClock, Search, Info } from 'lucide-react'
-import { ModuleHeader } from '../../components/modules/ModuleHeader'
+import { LayoutList, CalendarClock, Search, Info } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import { useRapStore } from '../../store/rapStore'
 import { useRabStore } from '../../store/rabStore'
@@ -110,7 +109,7 @@ export default function RAP(): JSX.Element {
   }
 
   // --- Scheduler Logic (Simplified for brevity, keeping core UI) ---
-  const handleGenerate = (opts?: any) => {
+  const handleGenerate = () => {
     const keys = makeMonthKeys(monthsInput)
     const generated = planFromWeights(keys, targetTotal, weightsBell(monthsInput))
     setPlan(generated)
@@ -258,7 +257,7 @@ export default function RAP(): JSX.Element {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredItems.map((item, idx) => {
+                      filteredItems.map((item) => {
                         // Traffic Light Logic (Budget Guard)
                         const totalBudget = item.total_budget || (item.qty_budget * item.unit_price_budget) || 0
                         const committedCost = item.committed_cost || 0

@@ -7,11 +7,10 @@
 
 import React, { useMemo, useRef, useCallback } from "react"
 import { ModuleHeader } from "../../components/modules/ModuleHeader"
-import { Boxes, CalendarDays, Package, Receipt, TrendingUp, Download, FileSpreadsheet, FileText, HardHat, Hammer, Truck } from "lucide-react"
+import { Boxes, CalendarDays, Package, TrendingUp, Download, FileSpreadsheet, FileText, HardHat, Truck } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
 import { Badge } from "../../components/ui/badge"
 import { useProjectStore } from "../../store/projectStore"
-import { useRapStore } from "../../store/rapStore"
 import { useRabStore } from "../../store/rabStore"
 import { useAHSPStore } from "../../store/ahspStore"
 import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, Legend } from "recharts"
@@ -94,7 +93,6 @@ async function exportPDF(element: HTMLElement | null, filename = "Resource.pdf")
  */
 export default function Resource() {
   const project = useProjectStore((s: any) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
-  const projectName = project?.name ?? "—"
   const projectId = project?.id ?? "demo"
 
   // Stable selectors

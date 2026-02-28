@@ -7,7 +7,7 @@
 import React, { useState, useCallback } from 'react'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { useProjectStore } from '../../store/projectStore'
-import { useWBSStore, getWBSTree, validateWBS } from '../../store/wbsStore'
+import { useWBSStore, validateWBS } from '../../store/wbsStore'
 import { WBSTree } from '../../components/wbs/WBSTree'
 import { WBSEditor } from '../../components/wbs/WBSEditor'
 import { EmptyState } from '../../components/common/EmptyState'
@@ -35,7 +35,6 @@ import type { WBSItem } from '../../types/wbs'
 export default function WBS() {
   // Project context
   const activeProject = useProjectStore((s) => s.getActiveProject())
-  const projectName = activeProject?.name ?? '—'
   const projectId = activeProject?.id ?? ''
 
   // WBS state
@@ -57,7 +56,6 @@ export default function WBS() {
   } = useWBSStore()
 
   const items = itemsByProject[projectId] || []
-  const tree = getWBSTree(items)
   const validation = validateWBS(items)
 
   // Editor state

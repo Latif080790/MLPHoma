@@ -200,7 +200,6 @@ async function exportPDF(element: HTMLElement | null, filename = "Reports.pdf") 
  */
 export default function Reports() {
   const project = useProjectStore((s: any) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
-  const projectName = project?.name ?? "—"
   const projectId = project?.id ?? "demo"
 
   const rab = useRabSummary(projectId)
@@ -208,11 +207,10 @@ export default function Reports() {
   const cashFlow = useCashFlowSummary(projectId, project?.budget ?? 0, project?.paymentTerms)
   const topResources = useResourceSummary(projectId)
 
-  const rapItems = useRapStore((s) => s.items)
   const rap_plan = useMemo(() => {
     const plan = useRapStore.getState().getPlan(projectId)
     return plan
-  }, [rapItems, projectId])
+  }, [projectId])
   const totalRap = useMemo(
     () =>
       rap_plan.reduce(
