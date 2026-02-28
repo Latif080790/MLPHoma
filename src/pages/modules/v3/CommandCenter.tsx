@@ -16,6 +16,8 @@ import { FileDown } from 'lucide-react'
 import { MRPAlertPanel } from '@/components/supply/MRPAlertPanel'
 import { AuditLogViewer } from '@/components/audit/AuditLogViewer'
 import { ApprovalQueueWidget } from '@/components/dashboard/ApprovalQueueWidget'
+import { ModuleHeader } from '@/components/modules/ModuleHeader'
+import ModulePageState from '@/components/common/ModulePageState'
 
 import { useNavigate } from 'react-router-dom'
 
@@ -26,19 +28,27 @@ export default function CommandCenter() {
     const [portfolioStats, setPortfolioStats] = useState<any>(null)
     const [isPortfolioMode, setIsPortfolioMode] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [pageError, setPageError] = useState<string | null>(null)
 
     // Load Data
     useEffect(() => {
         setLoading(true)
+        setPageError(null)
         if (isPortfolioMode) {
             dashboardService.getPortfolioStats()
                 .then(setPortfolioStats)
-                .catch(() => toast.error("Failed to load portfolio data"))
+                .catch(() => {
+                    setPageError('Unable to load portfolio telemetry data.')
+                    toast.error("Failed to load portfolio data")
+                })
                 .finally(() => setLoading(false))
         } else if (activeProjectId) {
             dashboardService.getProjectStats(activeProjectId)
                 .then(setStats)
-                .catch(() => toast.error("Failed to load project data"))
+                .catch(() => {
+                    setPageError('Unable to load command center metrics for the active project.')
+                    toast.error("Failed to load project data")
+                })
                 .finally(() => setLoading(false))
         } else {
             setLoading(false)
@@ -49,20 +59,47 @@ export default function CommandCenter() {
 
     if (!activeProjectId) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 animate-in fade-in zoom-in duration-500">
-                <div className="p-6 bg-slate-100 dark:bg-slate-900 rounded-full">
-                    <Layout className="h-12 w-12 text-slate-400" />
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Command Center Offline</h2>
-                <p className="text-slate-500 max-w-md text-center">
-                    Select a project from the sidebar to initialize the Head-Up Display (HUD) and view real-time telemetry.
-                </p>
-            </div>
+            <ModulePageState
+                icon={<Layout size={18} />}
+                title="Command Center"
+                description="Project telemetry and operational overview."
+                variant="empty"
+                message="Select an active project to initialize the Command Center telemetry panel."
+            />
+        )
+    }
+
+    if (loading && !stats && !portfolioStats) {
+        return (
+            <ModulePageState
+                icon={<Layout size={18} />}
+                title="Command Center"
+                description="Project telemetry and operational overview."
+                variant="loading"
+                message="Loading command center telemetry..."
+            />
+        )
+    }
+
+    if (pageError && !stats && !portfolioStats) {
+        return (
+            <ModulePageState
+                icon={<Layout size={18} />}
+                title="Command Center"
+                description="Project telemetry and operational overview."
+                variant="error"
+                message={pageError}
+            />
         )
     }
 
     return (
         <div className="space-y-4">
+            <ModuleHeader
+                icon={<Layout size={18} />}
+                title="Command Center"
+                description="Project telemetry and operational overview."
+            />
             {/* 1. HUD HEADER: Ticker & Status */}
             <div className="flex flex-col gap-2 bg-slate-950 text-white p-3 rounded-lg border border-slate-800 shadow-lg">
                 <div className="flex items-center justify-between">

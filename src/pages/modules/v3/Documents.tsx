@@ -28,6 +28,7 @@ import { toast } from "sonner"
 import { DocumentVersionHistory } from "@/components/modules/DocumentVersionHistory"
 import { QRValidationBadge } from "@/components/document/QRValidationBadge"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
+import ModulePageState from "@/components/common/ModulePageState"
 
 const CATEGORIES = ["Contracts", "Drawings", "Reports", "Invoices", "Correspondence", "Other"]
 
@@ -50,6 +51,7 @@ export default function Documents() {
     // Version History State
     const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
     const [pendingDeleteDoc, setPendingDeleteDoc] = useState<ProjectDocument | null>(null)
+    const [pageError, setPageError] = useState<string | null>(null)
 
     useEffect(() => {
         if (activeProjectId) loadDocs()
@@ -58,6 +60,7 @@ export default function Documents() {
     async function loadDocs() {
         if (!activeProjectId) return
         setLoading(true)
+        setPageError(null)
         const data = await handleAsync(async () => {
             const data = await documentService.getDocuments(activeProjectId, true) // Include archived
             return data
@@ -66,6 +69,7 @@ export default function Documents() {
         if (data) {
             setDocuments(data)
         } else {
+            setPageError('Failed to load document repository data.')
             toast.error("Failed to load documents")
         }
 
@@ -155,7 +159,42 @@ export default function Documents() {
         return matchesSearch && matchesCategory
     })
 
-    if (!activeProjectId) return <EmptyState title="No Project Selected" description="Select a project to view documents." />
+    if (!activeProjectId) {
+        return (
+            <ModulePageState
+                icon={<Folder size={18} />}
+                title="Documents"
+                description="Centralized project repository."
+                variant="empty"
+                message="Select an active project to view and manage documents."
+            />
+        )
+    }
+
+    if (loading && documents.length === 0) {
+        return (
+            <ModulePageState
+                icon={<Folder size={18} />}
+                title="Documents"
+                description="Centralized project repository."
+                variant="loading"
+                message="Loading documents..."
+            />
+        )
+    }
+
+    if (pageError && documents.length === 0) {
+        return (
+            <ModulePageState
+                icon={<Folder size={18} />}
+                title="Documents"
+                description="Centralized project repository."
+                variant="error"
+                message={pageError}
+                onRetry={loadDocs}
+            />
+        )
+    }
 
     return (
         <div className="space-y-6">

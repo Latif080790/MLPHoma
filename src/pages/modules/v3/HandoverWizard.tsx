@@ -18,6 +18,7 @@ import { PermissionGuard } from '@/components/common/PermissionGuard'
 import { toast } from 'sonner'
 import { assertSupabase } from '@/lib/supabaseClient'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
+import ModulePageState from '@/components/common/ModulePageState'
 
 import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
 
@@ -34,12 +35,14 @@ export default function HandoverWizard() {
     const [summary, setSummary] = useState<HandoverSummary | null>(null)
     const [outstanding, setOutstanding] = useState<OutstandingIssue[]>([])
     const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
+    const [pageError, setPageError] = useState<string | null>(null)
 
     useEffect(() => {
         if (!projectId) { setLoading(false); return }
         let cancelled = false
         const load = async () => {
             setLoading(true)
+            setPageError(null)
             const result = await handleAsync(async () => {
                 const [s, o] = await Promise.all([
                     handoverService.getHandoverSummary(projectId),
@@ -54,6 +57,7 @@ export default function HandoverWizard() {
             }
 
             if (!result && !cancelled) {
+                setPageError('Failed to load handover metrics and outstanding issues.')
                 toast.error("Failed to load handover data")
             }
 
@@ -99,7 +103,41 @@ export default function HandoverWizard() {
         }
     }
 
-    if (!project) return <div className="p-8 text-center text-muted-foreground">Select a project to start handover.</div>
+    if (!project) {
+        return (
+            <ModulePageState
+                icon={<Check size={18} />}
+                title="Project Handover Wizard"
+                description="Finalize project and generate handover documents."
+                variant="empty"
+                message="Select an active project to start handover workflow."
+            />
+        )
+    }
+
+    if (loading && !summary) {
+        return (
+            <ModulePageState
+                icon={<Check size={18} />}
+                title="Project Handover Wizard"
+                description="Finalize project and generate handover documents."
+                variant="loading"
+                message="Loading handover readiness data..."
+            />
+        )
+    }
+
+    if (pageError && !summary) {
+        return (
+            <ModulePageState
+                icon={<Check size={18} />}
+                title="Project Handover Wizard"
+                description="Finalize project and generate handover documents."
+                variant="error"
+                message={pageError}
+            />
+        )
+    }
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 p-6">

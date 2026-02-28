@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { assertSupabase } from "@/lib/supabaseClient"
 import { TeamManagementPanel } from "@/components/modules/TeamManagementPanel"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
+import ModulePageState from "@/components/common/ModulePageState"
 
 export default function Settings() {
     const { activeProjectId, projects, updateProject } = useProjectStore()
@@ -59,7 +60,29 @@ export default function Settings() {
         setLoading(false)
     }
 
-    if (!activeProjectId || !project) return <EmptyState title="No Project Selected" description="Select a project to configure." />
+    if (!activeProjectId || !project) {
+        return (
+            <ModulePageState
+                icon={<SettingsIcon size={18} />}
+                title="Settings"
+                description="Project configuration and master data."
+                variant="empty"
+                message="Select an active project to configure settings."
+            />
+        )
+    }
+
+    if (loading && !project) {
+        return (
+            <ModulePageState
+                icon={<SettingsIcon size={18} />}
+                title="Settings"
+                description="Project configuration and master data."
+                variant="loading"
+                message="Loading project settings..."
+            />
+        )
+    }
 
     return (
         <div className="space-y-6">

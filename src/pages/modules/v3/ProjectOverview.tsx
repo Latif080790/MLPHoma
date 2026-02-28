@@ -51,6 +51,7 @@ import { format } from 'date-fns'
 import { ProjectSettingsDialog } from '../../../components/project/ProjectSettingsDialog'
 import { Settings2 } from 'lucide-react'
 import { useErrorHandler } from '../../../hooks/useErrorHandler'
+import ModulePageState from '../../../components/common/ModulePageState'
 
 // ─── Helper: risk score color ───────────────────────────────────────────────
 function riskScoreColor(score: number) {
@@ -429,60 +430,26 @@ export default function ProjectOverview() {
   // ─── Guard: No active project ─────────────────────────────────────────────
   if (!activeProjectId || !activeProject) {
     return (
-      <div className="space-y-6">
-        <ModuleHeader
-          icon={<ClipboardList size={18} />}
-          title="Project Overview"
-          description="Operational overview of the active project."
-        />
-        <div className="text-center py-16 border rounded-xl bg-muted/10">
-          <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold">No Active Project Selected</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Select a project from the Projects page to view its overview dashboard.
-          </p>
-          <Button onClick={() => navigate('/projects')}>
-            Go to Projects <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <ModulePageState
+        icon={<ClipboardList size={18} />}
+        title="Project Overview"
+        description="Operational overview of the active project."
+        variant="empty"
+        message="Select a project from the Projects page to view overview metrics."
+      />
     )
   }
 
   // ─── Loading skeleton ─────────────────────────────────────────────────────
   if (loading && !kpis) {
     return (
-      <div className="space-y-6">
-        <ModuleHeader
-          icon={<ClipboardList size={18} />}
-          title="Project Overview"
-          description={activeProject.name}
-        />
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="pt-4 pb-3 px-4">
-                <div className="h-4 w-20 bg-muted animate-pulse rounded mb-2" />
-                <div className="h-6 w-28 bg-muted animate-pulse rounded" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className={i === 0 ? 'lg:col-span-2' : ''}>
-              <CardContent className="pt-6 pb-4 px-4">
-                <div className="h-4 w-32 bg-muted animate-pulse rounded mb-4" />
-                <div className="space-y-3">
-                  {Array.from({ length: 3 }).map((_, j) => (
-                    <div key={j} className="h-10 bg-muted animate-pulse rounded" />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      <ModulePageState
+        icon={<ClipboardList size={18} />}
+        title="Project Overview"
+        description={activeProject.name}
+        variant="loading"
+        message="Loading project overview metrics..."
+      />
     )
   }
 

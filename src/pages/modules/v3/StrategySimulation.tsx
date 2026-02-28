@@ -9,6 +9,7 @@ import { BrainCircuit, Play, RotateCcw, TrendingDown, TrendingUp, AlertCircle } 
 import { simulationService, SimulationResult } from '@/services/simulationService'
 import { toast } from 'sonner'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
+import ModulePageState from '@/components/common/ModulePageState'
 
 export default function StrategySimulation() {
     const { handleAsync } = useErrorHandler()
@@ -16,9 +17,11 @@ export default function StrategySimulation() {
     const [resourceShift, setResourceShift] = useState(0)
     const [result, setResult] = useState<SimulationResult | null>(null)
     const [simulating, setSimulating] = useState(false)
+    const [pageError, setPageError] = useState<string | null>(null)
 
     const runSimulation = async () => {
         setSimulating(true)
+        setPageError(null)
         const res = await handleAsync(async () => {
             return simulationService.simulatePortfolioImpact([{
                 projectId: 'global',
@@ -30,6 +33,8 @@ export default function StrategySimulation() {
         if (res) {
             setResult(res)
             toast.success("Simulation complete")
+        } else {
+            setPageError('Failed to calculate simulation forecast.')
         }
 
         setSimulating(false)
@@ -39,6 +44,20 @@ export default function StrategySimulation() {
         setDelay(0)
         setResourceShift(0)
         setResult(null)
+        setPageError(null)
+    }
+
+    if (pageError && !result) {
+        return (
+            <ModulePageState
+                icon={<BrainCircuit size={18} />}
+                title="Strategic Simulation Sandbox"
+                description="Model ripple effects of timeline and resource changes."
+                variant="error"
+                message={pageError}
+                onRetry={runSimulation}
+            />
+        )
     }
 
     return (

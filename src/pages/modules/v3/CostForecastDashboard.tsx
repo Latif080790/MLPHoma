@@ -30,6 +30,8 @@ import { computeEVM, computeForecasts, classifyHealth, calcPlannedProgressPercen
 import type { PerformanceMetrics } from '@/types/curvaS'
 import CurvaSChart from '@/components/charts/CurvaSChart'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
+import { ModuleHeader } from '@/components/modules/ModuleHeader'
+import ModulePageState from '@/components/common/ModulePageState'
 
 // ─── Helpers ───
 
@@ -138,6 +140,7 @@ export default function CostForecastDashboard() {
 
     const [stats, setStats] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [pageError, setPageError] = useState<string | null>(null)
 
     // Fetch data on mount
     useEffect(() => {
@@ -146,6 +149,7 @@ export default function CostForecastDashboard() {
 
         async function load() {
             setLoading(true)
+            setPageError(null)
             const dashStats = await handleAsync(async () => {
                 await fetchRapItems(activeProjectId!)
                 return dashboardService.getProjectStats(activeProjectId!)
@@ -154,6 +158,8 @@ export default function CostForecastDashboard() {
             if (!cancelled && dashStats) {
                 setStats(dashStats)
                 analyzeProject(activeProjectId!)
+            } else if (!cancelled && !dashStats) {
+                setPageError('Unable to load forecast metrics for the active project.')
             }
 
             if (!cancelled) setLoading(false)
@@ -206,47 +212,76 @@ export default function CostForecastDashboard() {
 
     if (!activeProjectId) {
         return (
-            <div className="flex items-center justify-center h-64 text-slate-500">
-                Select a project to view cost forecast
-            </div>
+            <ModulePageState
+                icon={<BarChart3 size={18} />}
+                title="Cost Forecast & EVM"
+                description="Earned value and forecast analysis dashboard."
+                variant="empty"
+                message="Select an active project to analyze cost forecasts."
+            />
+        )
+    }
+
+    if (loading && !stats) {
+        return (
+            <ModulePageState
+                icon={<BarChart3 size={18} />}
+                title="Cost Forecast & EVM"
+                description="Earned value and forecast analysis dashboard."
+                variant="loading"
+                message="Loading forecast metrics and RAP baselines..."
+            />
+        )
+    }
+
+    if (pageError && !stats) {
+        return (
+            <ModulePageState
+                icon={<BarChart3 size={18} />}
+                title="Cost Forecast & EVM"
+                description="Earned value and forecast analysis dashboard."
+                variant="error"
+                message={pageError}
+            />
         )
     }
 
     return (
         <div className="space-y-6 p-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-100">Cost Forecast & EVM</h1>
-                    <p className="text-sm text-slate-500 mt-0.5">
-                        Earned Value Management analysis for {project?.name || 'project'}
-                    </p>
-                </div>
-                <div className="flex items-center gap-3">
-                    {evmData && getHealthBadge(evmData.health.status)}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                            setLoading(true)
-                            const s = await handleAsync(async () => {
-                                return dashboardService.getProjectStats(activeProjectId!)
-                            }, 'finance.general')
+            <ModuleHeader
+                icon={<BarChart3 size={18} />}
+                title="Cost Forecast & EVM"
+                description={`Earned Value Management analysis for ${project?.name || 'project'}`}
+                actions={
+                    <div className="flex items-center gap-3">
+                        {evmData && getHealthBadge(evmData.health.status)}
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={async () => {
+                                setLoading(true)
+                                setPageError(null)
+                                const s = await handleAsync(async () => {
+                                    return dashboardService.getProjectStats(activeProjectId!)
+                                }, 'finance.general')
 
-                            if (s) {
-                                setStats(s)
-                                analyzeProject(activeProjectId!)
-                            }
+                                if (s) {
+                                    setStats(s)
+                                    analyzeProject(activeProjectId!)
+                                } else {
+                                    setPageError('Unable to refresh forecast metrics.')
+                                }
 
-                            setLoading(false)
-                        }}
-                        className="border-slate-700 text-slate-400 hover:text-slate-200"
-                    >
-                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                        Refresh
-                    </Button>
-                </div>
-            </div>
+                                setLoading(false)
+                            }}
+                            className="border-slate-700 text-slate-400 hover:text-slate-200"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </Button>
+                    </div>
+                }
+            />
 
             {/* Primary KPI Row: CPI / SPI Gauges */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

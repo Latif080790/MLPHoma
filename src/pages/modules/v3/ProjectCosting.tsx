@@ -3,6 +3,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Calculator } from 'lucide-react'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import { EmptyState } from '@/components/common/EmptyState'
+import ModulePageState from '@/components/common/ModulePageState'
 import { useProjectStore } from '@/store/projectStore'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import AHSP from '../AHSP'
@@ -19,7 +20,15 @@ export default function ProjectCosting() {
   const activeProject = activeProjectId ? projects[activeProjectId] : null
 
   if (!activeProjectId || !activeProject) {
-    return <EmptyState title="No Project Selected" description="Select a project to view costing data." />
+    return (
+      <ModulePageState
+        icon={<Calculator size={18} />}
+        title="Project Costing"
+        description="Integrated AHSP/WBS/RAB/RAP workspace."
+        variant="empty"
+        message="Select an active project to access costing modules."
+      />
+    )
   }
 
   const renderContent = () => {
