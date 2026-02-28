@@ -21,10 +21,11 @@ import ModulePageState from '@/components/common/ModulePageState'
 import { useNavigate } from 'react-router-dom'
 
 export default function CommandCenter() {
+    type PortfolioStats = Awaited<ReturnType<typeof dashboardService.getPortfolioStats>>
     const navigate = useNavigate()
     const { activeProjectId, projects } = useProjectStore()
     const [stats, setStats] = useState<DashboardStats | null>(null)
-    const [portfolioStats, setPortfolioStats] = useState<any>(null)
+    const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null)
     const [isPortfolioMode, setIsPortfolioMode] = useState(false)
     const [loading, setLoading] = useState(false)
     const [pageError, setPageError] = useState<string | null>(null)
@@ -277,7 +278,7 @@ export default function CommandCenter() {
                         </div>
                         <div className="mt-2 space-y-1">
                             {isPortfolioMode ? (
-                                portfolioStats?.topGlobalRisks?.slice(0, 3).map((risk: any, i: number) => (
+                                portfolioStats?.topGlobalRisks?.slice(0, 3).map((risk, i: number) => (
                                     <div key={i} className="text-xs text-red-600 dark:text-red-400 truncate font-medium flex items-center gap-1">
                                         <div className="h-1 w-1 bg-red-500 rounded-full" />
                                         [{risk.projectName}] {risk.description}

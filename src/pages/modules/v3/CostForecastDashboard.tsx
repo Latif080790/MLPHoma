@@ -25,12 +25,13 @@ import {
 import { useProjectStore } from '@/store/projectStore'
 import { useRapStore } from '@/store/rapStore'
 import useCurvaSStore from '@/store/curvaSStore'
-import { dashboardService } from '@/services/dashboardService'
+import { dashboardService, DashboardStats } from '@/services/dashboardService'
 import { computeEVM, computeForecasts, classifyHealth, calcPlannedProgressPercent } from '@/services/evmService'
 import CurvaSChart from '@/components/charts/CurvaSChart'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
+import type { Project } from '@/store/projectStore'
 
 // ─── Helpers ───
 
@@ -124,6 +125,11 @@ function MetricCard({
 // ─── Main Component ───
 
 export default function CostForecastDashboard() {
+    type ProjectDateLike = Project & {
+        start_date?: string
+        end_date?: string
+    }
+
     const { handleAsync } = useErrorHandler()
     const activeProjectId = useProjectStore((s) => s.activeProjectId)
     const projects = useProjectStore((s) => s.projects)
@@ -136,7 +142,7 @@ export default function CostForecastDashboard() {
     const curvaSAnalysis = useCurvaSStore((s) => activeProjectId ? s.getAnalysis(activeProjectId) : null)
     const analyzeProject = useCurvaSStore((s) => s.analyzeProject)
 
-    const [stats, setStats] = useState<any>(null)
+    const [stats, setStats] = useState<DashboardStats | null>(null)
     const [loading, setLoading] = useState(true)
     const [pageError, setPageError] = useState<string | null>(null)
     const [fallbackDates] = useState(() => {
@@ -184,8 +190,9 @@ export default function CostForecastDashboard() {
 
         if (totalBudget <= 0) return null
 
-        const startDate = (project as any)?.start_date || (project as any)?.startDate || fallbackDates.startDate
-        const endDate = (project as any)?.end_date || (project as any)?.endDate || fallbackDates.endDate
+        const projectDates = project as ProjectDateLike | null
+        const startDate = projectDates?.start_date || projectDates?.startDate || fallbackDates.startDate
+        const endDate = projectDates?.end_date || projectDates?.endDate || fallbackDates.endDate
 
         const { percent: plannedPercent, daysElapsed } = calcPlannedProgressPercent(startDate, endDate)
 
