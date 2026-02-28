@@ -11,7 +11,7 @@
 - ✅ **Sprint 0 COMPLETE** (All 3 epics: WCAG compliance, costing stability, release safety)
 - ✅ **ESLint Critical Errors Fixed** (19 errors resolved across 14 files)
 - ✅ **Sprint 3 COMPLETE** - Predictive & quality controls delivered (S3.1 + S3.2 + S3.3)
-- 🚧 **Sprint 4 IN PROGRESS** - Error handling & cross-cutting domains (S4.1 + S4.2 + S4.3 + S4.4 complete)
+- ✅ **Sprint 4 COMPLETE** - Error handling & cross-cutting domains delivered (S4.1 + S4.2 + S4.3 + S4.4 + S4.5)
 
 ---
 
@@ -184,8 +184,15 @@
   - File: `src/lib/supabaseSyncService.ts`
 
 ### Epic S4.5 Service Test Hardening (remaining)
-- [ ] Tambah test: documentVersion/rabPriceOverride/rapProfit/timelineScenario/userManagement/ahspSnapshot/tkdn
-  - Candidate files: `src/services/__tests__/*.test.ts`
+- [x] Tambah test: documentVersion/rabPriceOverride/rapProfit/timelineScenario/userManagement/ahspSnapshot/tkdn
+  - Files:
+    - `src/services/__tests__/documentVersionService.test.ts`
+    - `src/services/__tests__/rabPriceOverrideService.test.ts`
+    - `src/services/__tests__/rapProfitService.test.ts`
+    - `src/services/__tests__/timelineScenarioService.test.ts`
+    - `src/services/__tests__/userManagementService.test.ts`
+    - `src/services/__tests__/ahspSnapshotService.test.ts`
+    - `src/services/__tests__/tkdnService.test.ts`
 
 ---
 
