@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { Folder, FileText, Upload, Download, Trash2, Search, History, Lock, LockOpen, Archive, ArchiveRestore } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -53,11 +53,7 @@ export default function Documents() {
     const [pendingDeleteDoc, setPendingDeleteDoc] = useState<ProjectDocument | null>(null)
     const [pageError, setPageError] = useState<string | null>(null)
 
-    useEffect(() => {
-        if (activeProjectId) loadDocs()
-    }, [activeProjectId])
-
-    async function loadDocs() {
+    const loadDocs = useCallback(async () => {
         if (!activeProjectId) return
         setLoading(true)
         setPageError(null)
@@ -74,7 +70,15 @@ export default function Documents() {
         }
 
         setLoading(false)
-    }
+    }, [activeProjectId, handleAsync])
+
+    useEffect(() => {
+        if (activeProjectId) {
+            queueMicrotask(() => {
+                void loadDocs()
+            })
+        }
+    }, [activeProjectId, loadDocs])
 
     async function handleUpload() {
         if (!newDocTitle) return toast.error("Title required")

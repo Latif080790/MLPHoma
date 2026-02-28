@@ -376,7 +376,6 @@ function QuickLinksSection() {
 // ─── Main Page Component ────────────────────────────────────────────────────
 
 export default function ProjectOverview() {
-  const navigate = useNavigate()
   const { handleAsync } = useErrorHandler()
   const activeProjectId = useProjectStore((s) => s.activeProjectId)
   const projectsMap = useProjectStore((s) => s.projects)
@@ -423,7 +422,9 @@ export default function ProjectOverview() {
 
   useEffect(() => {
     if (activeProjectId) {
-      loadData(activeProjectId)
+      queueMicrotask(() => {
+        loadData(activeProjectId)
+      })
     }
   }, [activeProjectId, loadData])
 

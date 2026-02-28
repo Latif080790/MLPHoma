@@ -141,6 +141,13 @@ export default function CostForecastDashboard() {
     const [stats, setStats] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [pageError, setPageError] = useState<string | null>(null)
+    const [fallbackDates] = useState(() => {
+        const now = Date.now()
+        return {
+            startDate: new Date(now - 30 * 86400000).toISOString().split('T')[0],
+            endDate: new Date(now + 150 * 86400000).toISOString().split('T')[0],
+        }
+    })
 
     // Fetch data on mount
     useEffect(() => {
@@ -179,8 +186,8 @@ export default function CostForecastDashboard() {
 
         if (totalBudget <= 0) return null
 
-        const startDate = (project as any)?.start_date || (project as any)?.startDate || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
-        const endDate = (project as any)?.end_date || (project as any)?.endDate || new Date(Date.now() + 150 * 86400000).toISOString().split('T')[0]
+        const startDate = (project as any)?.start_date || (project as any)?.startDate || fallbackDates.startDate
+        const endDate = (project as any)?.end_date || (project as any)?.endDate || fallbackDates.endDate
 
         const { percent: plannedPercent, daysElapsed } = calcPlannedProgressPercent(startDate, endDate)
 
@@ -202,13 +209,13 @@ export default function CostForecastDashboard() {
         })
 
         return { metrics, health, forecasts, totalBudget, actualCost, progress }
-    }, [activeProjectId, stats, project])
+    }, [activeProjectId, stats, project, fallbackDates])
 
     // WBS cost breakdown
     const wbsCosts = useMemo(() => {
         if (!activeProjectId) return []
         return getCostByWBS(activeProjectId)
-    }, [activeProjectId, rapItems])
+    }, [activeProjectId, getCostByWBS])
 
     if (!activeProjectId) {
         return (
