@@ -166,7 +166,7 @@ export default function CurvaSPage() {
         <Alert className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            No baseline found. Click "Import from RAP" to load planned curve from RAP schedule, or use "Generate Baseline".
+            No baseline found. Click &quot;Import from RAP&quot; to load planned curve from RAP schedule, or use &quot;Generate Baseline&quot;.
           </AlertDescription>
         </Alert>
       )}

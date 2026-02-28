@@ -50,9 +50,9 @@ export default function ProjectManagement() {
   // Sync selected project if active changes externaly or on mount
   useEffect(() => {
     if (activeProjectId && !selectedProjectId) {
-      setSelectedProjectId(activeProjectId)
+      queueMicrotask(() => setSelectedProjectId(activeProjectId))
     }
-  }, [activeProjectId])
+  }, [activeProjectId, selectedProjectId])
 
   // Filter projects
   const filteredProjects = useMemo(() => {
@@ -384,7 +384,7 @@ export default function ProjectManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>Activate Project & Freeze Baseline?</AlertDialogTitle>
             <AlertDialogDescription>
-              Activating "{pendingActivateProject?.name}" will freeze its current Resource Allocation Budget (RAB) and Resource Allocation Plan (RAP) as the "Initial Baseline".
+              Activating &quot;{pendingActivateProject?.name}&quot; will freeze its current Resource Allocation Budget (RAB) and Resource Allocation Plan (RAP) as the &quot;Initial Baseline&quot;.
               <br /><br />
               This signifies that the project is moving into the Execution phase. Any future variations to the budget will be tracked against this baseline.
             </AlertDialogDescription>
