@@ -21,6 +21,7 @@
 - ✅ **v3 warning hygiene phase-2 COMPLETE** - remaining `no-explicit-any` warnings removed on target pages
 - ✅ **v3 warning hygiene phase-3 COMPLETE** - standardized 10-page scope now lint-clean (0 warning / 0 error)
 - ✅ **v3 lint sweep COMPLETE** - all `src/pages/modules/v3/*.tsx` now lint-clean (0 warning / 0 error)
+- ✅ **non-v3 lint error stabilization COMPLETE** - `src/pages/modules/*.tsx` now 0 error (warning backlog remains)
 
 ---
 

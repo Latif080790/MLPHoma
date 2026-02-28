@@ -549,7 +549,7 @@ export default function Timeline() {
               variant="outline"
               className="gap-2"
               onClick={() => {
-                ; (useTimelineStore as any).getState?.().setBaseline(projectId, true)
+                (useTimelineStore as any).getState?.().setBaseline(projectId, true)
                 toast.success('Baseline captured')
               }}
             >

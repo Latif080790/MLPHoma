@@ -343,7 +343,7 @@ export default function Resource() {
                       </BarChart>
                     </ResponsiveContainer>
                     <div className="mt-3 text-sm text-neutral-500">
-                      Catatan: Breakdown berdasarkan koefisien AHSP. Jika AHSP tidak ditemukan, biaya masuk ke "Other".
+                      Catatan: Breakdown berdasarkan koefisien AHSP. Jika AHSP tidak ditemukan, biaya masuk ke &quot;Other&quot;.
                     </div>
                   </CardContent>
                 </Card>
