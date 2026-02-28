@@ -11,6 +11,7 @@
 - ✅ **Sprint 0 COMPLETE** (All 3 epics: WCAG compliance, costing stability, release safety)
 - ✅ **ESLint Critical Errors Fixed** (19 errors resolved across 14 files)
 - ✅ **Sprint 3 COMPLETE** - Predictive & quality controls delivered (S3.1 + S3.2 + S3.3)
+- 🚧 **Sprint 4 IN PROGRESS** - Error handling & cross-cutting domains (S4.1 complete)
 
 ---
 
@@ -159,6 +160,32 @@
   - New file: `src/lib/cashflowForecast.ts`
 - [x] Add forecast widget in finance/dashboard
   - File: `src/pages/modules/v3/Finance.tsx`
+
+---
+
+## Sprint 4 (Error Handling & Cross-cutting Domains) — IN PROGRESS
+
+### Epic S4.1 Error Taxonomy per Domain — ✅ COMPLETE
+- [x] Definisikan error taxonomy per domain di `errorMessages.ts`
+  - File: `src/lib/errorMessages.ts`
+- [x] Tambahkan test unit taxonomy domain + category parsing
+  - New file: `src/lib/__tests__/errorMessages.test.ts`
+
+### Epic S4.2 Async Workflow Error Pipeline
+- [ ] Wajibkan `useErrorHandler` / `handleAsync` di async workflow halaman v3
+  - Candidate files: `src/pages/modules/v3/**`
+
+### Epic S4.3 External Error Logging
+- [ ] Integrasi external logging hook di `ErrorBoundary`
+  - Candidate file: `src/components/ErrorBoundary.tsx`
+
+### Epic S4.4 Sync Correlation ID
+- [ ] Tambahkan correlation ID ke `SyncQueueManager` tasks
+  - Candidate file: `src/lib/supabaseSyncService.ts`
+
+### Epic S4.5 Service Test Hardening (remaining)
+- [ ] Tambah test: documentVersion/rabPriceOverride/rapProfit/timelineScenario/userManagement/ahspSnapshot/tkdn
+  - Candidate files: `src/services/__tests__/*.test.ts`
 
 ---
 

@@ -19,13 +19,66 @@ export type ErrorCategory =
   | 'network'
   | 'auth'
   | 'permission'
-  | 'notFound'
+  | 'notfound'
   | 'conflict'
   | 'server'
   | 'client'
   | 'calculation'
   | 'data'
   | 'unknown'
+
+export type ErrorDomain =
+  | 'core'
+  | 'finance'
+  | 'supply'
+  | 'timeline'
+  | 'document'
+  | 'approval'
+  | 'feature'
+
+export interface DomainErrorTaxonomy {
+  prefix: string
+  defaultCode: string
+  supportedCategories: ErrorCategory[]
+}
+
+export const ERROR_DOMAIN_TAXONOMY: Record<ErrorDomain, DomainErrorTaxonomy> = {
+  core: {
+    prefix: 'core',
+    defaultCode: 'unknown.error',
+    supportedCategories: ['validation', 'network', 'auth', 'permission', 'notfound', 'conflict', 'server', 'client', 'calculation', 'data', 'unknown'],
+  },
+  finance: {
+    prefix: 'finance',
+    defaultCode: 'finance.general',
+    supportedCategories: ['validation', 'conflict', 'server', 'data', 'unknown'],
+  },
+  supply: {
+    prefix: 'supply',
+    defaultCode: 'supply.general',
+    supportedCategories: ['validation', 'conflict', 'server', 'data', 'unknown'],
+  },
+  timeline: {
+    prefix: 'timeline',
+    defaultCode: 'timeline.general',
+    supportedCategories: ['validation', 'conflict', 'calculation', 'data', 'unknown'],
+  },
+  document: {
+    prefix: 'document',
+    defaultCode: 'document.general',
+    supportedCategories: ['validation', 'permission', 'conflict', 'server', 'data', 'unknown'],
+  },
+  approval: {
+    prefix: 'approval',
+    defaultCode: 'approval.general',
+    supportedCategories: ['validation', 'permission', 'conflict', 'server', 'unknown'],
+  },
+  feature: {
+    prefix: 'feature',
+    defaultCode: 'feature.general',
+    supportedCategories: ['validation', 'conflict', 'server', 'data', 'unknown'],
+  },
+}
 
 /**
  * Error message templates organized by category
@@ -237,6 +290,66 @@ export const ERROR_MESSAGES: Record<string, ErrorMessage> = {
     severity: 'error',
   },
 
+  // Domain Errors - Finance
+  'finance.general': {
+    title: 'Gangguan Modul Keuangan',
+    message: 'Terjadi gangguan pada proses keuangan proyek.',
+    action: 'Coba ulang proses dan periksa data invoice/claim terbaru.',
+    severity: 'error',
+  },
+  'finance.payment_blocked': {
+    title: 'Pembayaran Tertahan',
+    message: 'Pembayaran tidak dapat diproses karena prasyarat belum terpenuhi.',
+    action: 'Periksa approval, status invoice, dan kelengkapan dokumen pendukung.',
+    severity: 'warning',
+  },
+
+  // Domain Errors - Supply
+  'supply.general': {
+    title: 'Gangguan Modul Supply',
+    message: 'Terjadi kendala pada proses pengadaan atau logistik.',
+    action: 'Periksa stok, status PO/MR, dan sinkronisasi data supply chain.',
+    severity: 'error',
+  },
+
+  // Domain Errors - Timeline
+  'timeline.general': {
+    title: 'Gangguan Modul Timeline',
+    message: 'Terjadi kendala saat memproses data jadwal proyek.',
+    action: 'Refresh timeline dan periksa dependensi serta data progress.',
+    severity: 'error',
+  },
+  'timeline.evidence_required': {
+    title: 'Bukti Progress Belum Lengkap',
+    message: 'Update progress membutuhkan bukti lengkap (foto, waktu, dan lokasi).',
+    action: 'Lengkapi evidence sebelum menyimpan kenaikan progress.',
+    severity: 'warning',
+  },
+
+  // Domain Errors - Document
+  'document.general': {
+    title: 'Gangguan Modul Dokumen',
+    message: 'Terjadi kendala saat memproses dokumen proyek.',
+    action: 'Periksa versi dokumen dan coba ulang tindakan Anda.',
+    severity: 'error',
+  },
+
+  // Domain Errors - Approval
+  'approval.general': {
+    title: 'Gangguan Modul Approval',
+    message: 'Terjadi kendala pada alur persetujuan.',
+    action: 'Periksa antrean approval dan ulangi permintaan jika diperlukan.',
+    severity: 'error',
+  },
+
+  // Domain Errors - Feature Config
+  'feature.general': {
+    title: 'Gangguan Konfigurasi Fitur',
+    message: 'Terjadi kendala pada validasi atau penyimpanan konfigurasi fitur.',
+    action: 'Periksa konfigurasi dan ulangi proses simpan/restore.',
+    severity: 'error',
+  },
+
   // Unknown/Default
   'unknown.error': {
     title: 'Terjadi Kesalahan',
@@ -259,10 +372,25 @@ export function getErrorMessage(code: string): ErrorMessage {
 export function getErrorCategory(code: string): ErrorCategory {
   const category = code.split('.')[0] as ErrorCategory
   const validCategories: ErrorCategory[] = [
-    'validation', 'network', 'auth', 'permission', 'notFound',
+    'validation', 'network', 'auth', 'permission', 'notfound',
     'conflict', 'server', 'client', 'calculation', 'data'
   ]
   return validCategories.includes(category) ? category : 'unknown'
+}
+
+export function getErrorDomain(code: string): ErrorDomain {
+  const normalized = String(code || '').toLowerCase()
+  const domain = normalized.split('.')[0] as ErrorDomain
+  if (domain in ERROR_DOMAIN_TAXONOMY) return domain
+  return 'core'
+}
+
+export function getDomainErrorMessage(domain: ErrorDomain, code?: string): ErrorMessage {
+  if (code && ERROR_MESSAGES[code]) {
+    return ERROR_MESSAGES[code]
+  }
+  const fallbackCode = ERROR_DOMAIN_TAXONOMY[domain].defaultCode
+  return ERROR_MESSAGES[fallbackCode] || ERROR_MESSAGES['unknown.error']
 }
 
 /**
