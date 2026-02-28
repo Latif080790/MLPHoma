@@ -1,7 +1,7 @@
 
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical, Boxes } from 'lucide-react'
 import WBS from '../WBS'
@@ -15,7 +15,6 @@ import { TimelineScenarioPanel } from '@/components/modules/TimelineScenarioPane
 import { ResourceUsageDialog } from '@/components/progress/ResourceUsageDialog'
 import { DailyProgressBoard } from '@/components/progress/DailyProgressBoard'
 import { CriticalPathGantt } from '@/components/charts/CriticalPathGantt'
-import { ClipboardCheck } from 'lucide-react'
 
 export default function ScheduleOps() {
     const { activeProjectId } = useProjectStore()
