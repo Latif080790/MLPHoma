@@ -203,36 +203,46 @@ describe('ProjectCosting - Sprint 0 Epic S0.1 Regression Tests', () => {
   });
 
   describe('Hook Order Compliance', () => {
-    it('should call all hooks before any conditional returns', () => {
-      // This test documents the fix: all hooks MUST run before any early returns
-      
+    it('should keep rendering stable across empty-to-active project transition', () => {
       const mockUseProjectStore = useProjectStore as any;
+
       mockUseProjectStore.mockReturnValue({
         activeProjectId: null,
         activeProject: null,
         projects: {},
       });
 
-      // Render with no project (triggers early return path)
-      const hookCallOrder: string[] = [];
-      
-      // Mock hook tracking
-      const originalUseState = vi.fn();
-      vi.spyOn(React, 'useState').mockImplementation((...args) => {
-        hookCallOrder.push('useState');
-        return originalUseState(...args);
-      });
-
-      render(
+      const { rerender } = render(
         <MemoryRouter>
           <ProjectCosting />
         </MemoryRouter>
       );
 
-      // Verify hooks were called (not skipped due to early return)
-      // This is a conceptual test - actual implementation would need
-      // more sophisticated hook call tracking
-      expect(hookCallOrder.length).toBeGreaterThan(0);
+      expect(screen.queryByText(/select.*project/i) || screen.queryByText(/no.*data/i)).toBeTruthy();
+
+      mockUseProjectStore.mockReturnValue({
+        activeProjectId: 'P-001',
+        activeProject: {
+          id: 'P-001',
+          name: 'Test Project',
+        },
+        projects: {
+          'P-001': {
+            id: 'P-001',
+            name: 'Test Project',
+          },
+        },
+      });
+
+      expect(() => {
+        rerender(
+          <MemoryRouter>
+            <ProjectCosting />
+          </MemoryRouter>
+        );
+      }).not.toThrow();
+
+      expect(screen.getByText('Project Costing')).toBeInTheDocument();
     });
   });
 

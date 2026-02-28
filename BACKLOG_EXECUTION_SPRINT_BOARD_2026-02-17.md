@@ -254,7 +254,7 @@
     - `src/pages/modules/v3/StrategySimulation.tsx`
 - [x] Validation
   - Editor/type check: pass (no errors)
-  - Targeted test: `ProjectCosting.test.tsx` has existing failure (`Cannot redefine property: useState`) outside this skeleton change scope
+  - Targeted test: `ProjectCosting.test.tsx` pass (6/6) after stabilizing hook-order regression test
 
 ---
 
