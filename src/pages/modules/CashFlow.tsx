@@ -46,7 +46,6 @@ export default function CashFlow(): JSX.Element {
    */
   const activeProject = useProjectStore((s) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = activeProject?.id ?? ''
-  const projectName = activeProject?.name ?? '-'
   const projectBudget = activeProject?.budget ?? 0
   const paymentTerms = activeProject?.paymentTerms || {}
 

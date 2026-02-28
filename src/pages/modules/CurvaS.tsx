@@ -37,7 +37,6 @@ const EMPTY_POINTS: any[] = Object.freeze([]) as unknown as any[]
 export default function CurvaSPage() {
   const activeProject = useProjectStore((s) => s.getActiveProject())
   const projectId = activeProject?.id || ''
-  const projectName = activeProject?.name || '—'
   const projectBudget = activeProject?.budget || 0
 
   // Curva-S store selections (do not create new arrays/objects)
