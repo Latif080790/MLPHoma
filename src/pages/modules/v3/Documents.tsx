@@ -27,11 +27,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner"
 import { DocumentVersionHistory } from "@/components/modules/DocumentVersionHistory"
 import { QRValidationBadge } from "@/components/document/QRValidationBadge"
+import { useErrorHandler } from "@/hooks/useErrorHandler"
 
 const CATEGORIES = ["Contracts", "Drawings", "Reports", "Invoices", "Correspondence", "Other"]
 
 export default function Documents() {
     const { activeProjectId } = useProjectStore()
+    const { handleAsync } = useErrorHandler()
     const { user } = useAuthStore()
     const [documents, setDocuments] = useState<ProjectDocument[]>([])
     const [loading, setLoading] = useState(false)
@@ -56,33 +58,39 @@ export default function Documents() {
     async function loadDocs() {
         if (!activeProjectId) return
         setLoading(true)
-        try {
+        const data = await handleAsync(async () => {
             const data = await documentService.getDocuments(activeProjectId, true) // Include archived
+            return data
+        }, 'document.general', { showToast: false })
+
+        if (data) {
             setDocuments(data)
-        } catch (err: any) {
+        } else {
             toast.error("Failed to load documents")
-        } finally {
-            setLoading(false)
         }
+
+        setLoading(false)
     }
 
     async function handleUpload() {
         if (!newDocTitle) return toast.error("Title required")
 
-        try {
+        const uploaded = await handleAsync(async () => {
             await documentService.uploadDocument({
                 project_id: activeProjectId!,
                 title: newDocTitle,
                 category: newDocCategory,
             }, newDocFile || undefined, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
+            return true
+        }, 'document.general')
+
+        if (uploaded) {
             toast.success("Document uploaded")
             setUploadOpen(false)
             loadDocs()
             setNewDocTitle("")
             setNewDocFile(null)
             if (fileInputRef.current) fileInputRef.current.value = ''
-        } catch (err: any) {
-            toast.error(err.message)
         }
     }
 
@@ -95,7 +103,7 @@ export default function Documents() {
     }
 
     async function handleToggleLock(doc: ProjectDocument) {
-        try {
+        const done = await handleAsync(async () => {
             if (doc.is_locked) {
                 await documentService.unlockDocument(doc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document unlocked")
@@ -103,14 +111,16 @@ export default function Documents() {
                 await documentService.lockDocument(doc.id, user?.id || '', user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document locked")
             }
+            return true
+        }, 'document.general')
+
+        if (done) {
             loadDocs()
-        } catch (err: any) {
-            toast.error(err.message)
         }
     }
 
     async function handleToggleArchive(doc: ProjectDocument) {
-        try {
+        const done = await handleAsync(async () => {
             if (doc.status === 'ARCHIVED') {
                 await documentService.unarchiveDocument(doc.id)
                 toast.success("Document restored")
@@ -118,17 +128,25 @@ export default function Documents() {
                 await documentService.archiveDocument(doc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document archived")
             }
+            return true
+        }, 'document.general')
+
+        if (done) {
             loadDocs()
-        } catch (err: any) {
-            toast.error(err.message)
         }
     }
 
     async function handleDelete() {
         if (!pendingDeleteDoc) return
-        await documentService.deleteDocument(pendingDeleteDoc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
-        setPendingDeleteDoc(null)
-        loadDocs()
+        const done = await handleAsync(async () => {
+            await documentService.deleteDocument(pendingDeleteDoc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
+            return true
+        }, 'document.general')
+
+        if (done) {
+            setPendingDeleteDoc(null)
+            loadDocs()
+        }
     }
 
     const filteredDocs = documents.filter(doc => {

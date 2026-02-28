@@ -29,6 +29,7 @@ import { dashboardService } from '@/services/dashboardService'
 import { computeEVM, computeForecasts, classifyHealth, calcPlannedProgressPercent } from '@/services/evmService'
 import type { PerformanceMetrics } from '@/types/curvaS'
 import CurvaSChart from '@/components/charts/CurvaSChart'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 
 // ─── Helpers ───
 
@@ -122,6 +123,7 @@ function MetricCard({
 // ─── Main Component ───
 
 export default function CostForecastDashboard() {
+    const { handleAsync } = useErrorHandler()
     const activeProjectId = useProjectStore((s) => s.activeProjectId)
     const projects = useProjectStore((s) => s.projects)
     const project = activeProjectId ? projects[activeProjectId] : null
@@ -144,14 +146,17 @@ export default function CostForecastDashboard() {
 
         async function load() {
             setLoading(true)
-            try {
+            const dashStats = await handleAsync(async () => {
                 await fetchRapItems(activeProjectId!)
-                const dashStats = await dashboardService.getProjectStats(activeProjectId!)
-                if (!cancelled) setStats(dashStats)
+                return dashboardService.getProjectStats(activeProjectId!)
+            }, 'finance.general')
+
+            if (!cancelled && dashStats) {
+                setStats(dashStats)
                 analyzeProject(activeProjectId!)
-            } finally {
-                if (!cancelled) setLoading(false)
             }
+
+            if (!cancelled) setLoading(false)
         }
 
         load()
@@ -222,13 +227,18 @@ export default function CostForecastDashboard() {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
+                        onClick={async () => {
                             setLoading(true)
-                            dashboardService.getProjectStats(activeProjectId!).then(s => {
+                            const s = await handleAsync(async () => {
+                                return dashboardService.getProjectStats(activeProjectId!)
+                            }, 'finance.general')
+
+                            if (s) {
                                 setStats(s)
                                 analyzeProject(activeProjectId!)
-                                setLoading(false)
-                            })
+                            }
+
+                            setLoading(false)
                         }}
                         className="border-slate-700 text-slate-400 hover:text-slate-200"
                     >

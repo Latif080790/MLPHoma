@@ -17,10 +17,12 @@ import { useProjectStore } from '@/store/projectStore'
 import { PermissionGuard } from '@/components/common/PermissionGuard'
 import { toast } from 'sonner'
 import { assertSupabase } from '@/lib/supabaseClient'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 
 import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
 
 export default function HandoverWizard() {
+    const { handleAsync } = useErrorHandler()
     const activeProjectId = useProjectStore((s) => s.activeProjectId)
     const projects = useProjectStore((s) => s.projects)
     const project = activeProjectId ? projects[activeProjectId] : null
@@ -38,20 +40,24 @@ export default function HandoverWizard() {
         let cancelled = false
         const load = async () => {
             setLoading(true)
-            try {
+            const result = await handleAsync(async () => {
                 const [s, o] = await Promise.all([
                     handoverService.getHandoverSummary(projectId),
                     handoverService.getOutstandingIssues(projectId)
                 ])
-                if (!cancelled) {
-                    setSummary(s)
-                    setOutstanding(o)
-                }
-            } catch (error) {
-                if (!cancelled) toast.error("Failed to load handover data")
-            } finally {
-                if (!cancelled) setLoading(false)
+                return { s, o }
+            }, 'data.sync_failed', { showToast: false })
+
+            if (result && !cancelled) {
+                setSummary(result.s)
+                setOutstanding(result.o)
             }
+
+            if (!result && !cancelled) {
+                toast.error("Failed to load handover data")
+            }
+
+            if (!cancelled) setLoading(false)
         }
         load()
         return () => { cancelled = true }
@@ -62,17 +68,19 @@ export default function HandoverWizard() {
 
     const handleGenerateReport = async () => {
         setGenerating(true)
-        try {
-            if (summary && project) {
+        if (summary && project) {
+            const generated = await handleAsync(async () => {
                 await handoverService.generateHandoverReport(project.id, summary, outstanding)
+                return true
+            }, 'document.general')
+
+            if (generated) {
                 setReportReady(true)
                 toast.success("Report Generated Successfully")
             }
-        } catch (error) {
-            toast.error("Failed to generate report")
-        } finally {
-            setGenerating(false)
         }
+
+        setGenerating(false)
     }
 
     const handleMarkResolved = (issueId: string) => {
@@ -81,12 +89,13 @@ export default function HandoverWizard() {
     }
 
     const handleArchiveProject = async () => {
-        try {
+        const archived = await handleAsync(async () => {
             await useProjectStore.getState().archiveProject(project!.id)
+            return true
+        }, 'document.general')
+
+        if (archived) {
             setConfirmArchiveOpen(false)
-            // No force reload needed, store updates state
-        } catch (err: any) {
-            toast.error("Archive Failed", { description: err.message })
         }
     }
 

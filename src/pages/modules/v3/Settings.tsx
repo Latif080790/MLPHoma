@@ -12,9 +12,11 @@ import { EmptyState } from "@/components/common/EmptyState"
 import { toast } from "sonner"
 import { assertSupabase } from "@/lib/supabaseClient"
 import { TeamManagementPanel } from "@/components/modules/TeamManagementPanel"
+import { useErrorHandler } from "@/hooks/useErrorHandler"
 
 export default function Settings() {
     const { activeProjectId, projects, updateProject } = useProjectStore()
+    const { handleAsync } = useErrorHandler()
     const [project, setProject] = useState<any>(null)
     const [loading, setLoading] = useState(false)
 
@@ -28,16 +30,18 @@ export default function Settings() {
     }, [activeProjectId, projects])
 
     async function loadProject(id: string) {
-        const client = assertSupabase()
-        const { data } = await client.from('projects').select('*').eq('id', id).single()
+        const data = await handleAsync(async () => {
+            const client = assertSupabase()
+            const res = await client.from('projects').select('*').eq('id', id).single()
+            return res.data
+        }, 'data.sync_failed')
         if (data) setProject(data)
     }
 
     async function handleSave() {
         if (!project || !activeProjectId) return
         setLoading(true)
-        try {
-            // Updated to use Store only (which handles Sync) to prevent double-writes
+        const result = await handleAsync(async () => {
             updateProject(activeProjectId, {
                 name: project.name,
                 location: project.location,
@@ -45,13 +49,14 @@ export default function Settings() {
                 endDate: project.end_date,
                 budget: project.budget
             })
+            return true
+        }, 'validation.invalid_format')
 
+        if (result) {
             toast.success("Project settings saved")
-        } catch (err: any) {
-            toast.error("Failed to save settings")
-        } finally {
-            setLoading(false)
         }
+
+        setLoading(false)
     }
 
     if (!activeProjectId || !project) return <EmptyState title="No Project Selected" description="Select a project to configure." />
