@@ -14,7 +14,7 @@ import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Button } from '../../components/ui/button'
 import { useProjectStore } from '../../store/projectStore'
 import { generateDefaultFeatureConfig } from '../../lib/featureDefaults'
-import type { FeatureConfig } from '../../config/featureSchema'
+import type { FeatureConfig } from '../../config/features'
 
 /**
  * downloadJSON

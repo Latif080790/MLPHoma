@@ -13,7 +13,7 @@
  */
 
 import { create } from 'zustand'
-import type { FeatureConfig } from '../config/featureSchema'
+import type { FeatureConfig } from '../config/features'
 import { generateDefaultFeatureConfig } from '../lib/featureDefaults'
 import { migrateConfig } from '../lib/featureMigrations'
 import { nanoid } from 'nanoid/non-secure'
