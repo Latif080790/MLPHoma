@@ -27,7 +27,6 @@ import { useRapStore } from '@/store/rapStore'
 import useCurvaSStore from '@/store/curvaSStore'
 import { dashboardService } from '@/services/dashboardService'
 import { computeEVM, computeForecasts, classifyHealth, calcPlannedProgressPercent } from '@/services/evmService'
-import type { PerformanceMetrics } from '@/types/curvaS'
 import CurvaSChart from '@/components/charts/CurvaSChart'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
@@ -130,7 +129,6 @@ export default function CostForecastDashboard() {
     const projects = useProjectStore((s) => s.projects)
     const project = activeProjectId ? projects[activeProjectId] : null
 
-    const rapItems = useRapStore((s) => s.items)
     const getCostByWBS = useRapStore((s) => s.getCostByWBS)
     const fetchRapItems = useRapStore((s) => s.fetchItems)
 
@@ -174,7 +172,7 @@ export default function CostForecastDashboard() {
 
         load()
         return () => { cancelled = true }
-    }, [activeProjectId])
+    }, [activeProjectId, analyzeProject, fetchRapItems, handleAsync])
 
     // Compute EVM metrics locally from RAP data
     const evmData = useMemo(() => {
