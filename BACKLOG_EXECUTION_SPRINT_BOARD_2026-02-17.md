@@ -11,7 +11,7 @@
 - ✅ **Sprint 0 COMPLETE** (All 3 epics: WCAG compliance, costing stability, release safety)
 - ✅ **ESLint Critical Errors Fixed** (19 errors resolved across 14 files)
 - ✅ **Sprint 3 COMPLETE** - Predictive & quality controls delivered (S3.1 + S3.2 + S3.3)
-- 🚧 **Sprint 4 IN PROGRESS** - Error handling & cross-cutting domains (S4.1 + S4.2 + S4.3 complete)
+- 🚧 **Sprint 4 IN PROGRESS** - Error handling & cross-cutting domains (S4.1 + S4.2 + S4.3 + S4.4 complete)
 
 ---
 
@@ -180,8 +180,8 @@
   - Files: `src/components/common/ErrorBoundary.tsx`, `src/services/errorLoggingService.ts`
 
 ### Epic S4.4 Sync Correlation ID
-- [ ] Tambahkan correlation ID ke `SyncQueueManager` tasks
-  - Candidate file: `src/lib/supabaseSyncService.ts`
+- [x] Tambahkan correlation ID ke `SyncQueueManager` tasks
+  - File: `src/lib/supabaseSyncService.ts`
 
 ### Epic S4.5 Service Test Hardening (remaining)
 - [ ] Tambah test: documentVersion/rabPriceOverride/rapProfit/timelineScenario/userManagement/ahspSnapshot/tkdn
