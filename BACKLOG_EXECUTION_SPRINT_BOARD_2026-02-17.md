@@ -13,6 +13,7 @@
 - ✅ **Sprint 3 COMPLETE** - Predictive & quality controls delivered (S3.1 + S3.2 + S3.3)
 - ✅ **Sprint 4 COMPLETE** - Error handling & cross-cutting domains delivered (S4.1 + S4.2 + S4.3 + S4.4 + S4.5)
 - ✅ **Sprint 5.1 COMPLETE** - Feature schema modularized per-domain with centralized versioning
+- ✅ **Sprint 5.2 COMPLETE** - Strict validation enforced for feature snapshot save/restore
 
 ---
 
@@ -210,6 +211,16 @@
     - `src/config/featureSchema.ts` (compatibility re-export)
 - [x] Migrasikan konsumsi utama ke modular import `src/config/features`
   - Files: `featureStore`, `featureDefaults`, `featureMigrations`, `featureApi`, `FeatureSettings`, `ImpactAnalysis`, `rabSample`
+- [x] Validasi terfokus lulus
+  - Tests: `featureStore.test.ts`, `featureMigrations.test.ts` (pass)
+
+### Epic S5.2 Strict Snapshot Validation — ✅ COMPLETE
+- [x] Perketat validasi runtime untuk `saveSnapshot` + `restoreSnapshot`
+  - File: `src/store/featureStore.ts`
+  - Rules: validasi struktur `FeatureConfig`, validasi project consistency, sanitasi snapshot invalid dari localStorage
+- [x] Tambah regression test untuk snapshot invalid
+  - File: `src/store/__tests__/featureStore.test.ts`
+  - Cases: reject save invalid shape, ignore invalid snapshot list/restore
 - [x] Validasi terfokus lulus
   - Tests: `featureStore.test.ts`, `featureMigrations.test.ts` (pass)
 
