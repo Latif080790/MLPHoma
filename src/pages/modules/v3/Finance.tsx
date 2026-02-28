@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, Download, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap, Wallet } from "lucide-react"
+import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap, Wallet } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -26,7 +26,6 @@ import { progressBillingService } from "@/services/progressBillingService"
 import { InvoiceDialog } from "@/components/finance/InvoiceDialog"
 import { ClaimDialog } from "@/components/finance/ClaimDialog"
 import { AgingReport } from "@/components/finance/AgingReport"
-import { OverheadCostPanel } from "@/components/finance/OverheadCostPanel"
 import { ThreeWayMatch } from "@/components/finance/ThreeWayMatch"
 import { OpnameBoard } from "@/components/finance/OpnameBoard"
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
@@ -63,7 +62,7 @@ export default function Finance() {
             // Auto-detect overdue invoices
             markOverdue(activeProjectId)
         }
-    }, [activeProjectId])
+    }, [activeProjectId, fetchAll, markOverdue])
 
     const handlePayClick = (inv: { id: string; project_id: string; total_amount: number; invoice_number: string; vendor_name?: string }) => {
         setPendingInvoicePayment(inv)
