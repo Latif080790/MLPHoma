@@ -69,7 +69,7 @@ export default function HandoverWizard() {
         }
         load()
         return () => { cancelled = true }
-    }, [projectId])
+    }, [projectId, handleAsync])
 
 
 

@@ -1,9 +1,9 @@
 
-import React, { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { GitPullRequest, DollarSign, Clock, AlertOctagon, Plus, TrendingUp, Check, X, Loader2, AlertTriangle } from "lucide-react"
+import { GitPullRequest, DollarSign, Clock, Plus, TrendingUp, Check, X, Loader2, AlertTriangle } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,7 +36,7 @@ export default function ChangeManagement() {
         if (activeProjectId) {
             fetchOrders(activeProjectId)
         }
-    }, [activeProjectId])
+    }, [activeProjectId, fetchOrders])
 
     const handleApproveClick = async (orderId: string) => {
         setPendingApprovalId(orderId)
