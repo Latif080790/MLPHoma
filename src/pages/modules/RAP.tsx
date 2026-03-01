@@ -101,8 +101,9 @@ export default function RAP(): JSX.Element {
       await rapProfitService.recalculateWithProfitFirst(projectId)
       await fetchItems(projectId)
       toast.success(`RAP recalculated with ${targetProfit}% Profit Target`)
-    } catch (err: any) {
-      toast.error('Failed to apply profit simulation: ' + err.message)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      toast.error('Failed to apply profit simulation: ' + message)
     } finally {
       setIsSimulating(false)
     }
@@ -117,7 +118,7 @@ export default function RAP(): JSX.Element {
 
   const filteredItems = items.filter(item => {
     if (!searchQuery) return true
-    const name = (item as any).name || item.ahsp_items?.name || item.rab_items?.name || ''
+    const name = item.name || item.ahsp_items?.name || item.rab_items?.name || ''
     return name.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
@@ -291,7 +292,7 @@ export default function RAP(): JSX.Element {
                           <TableRow key={item.id} className={`${rowClass} border-b border-slate-100 dark:border-slate-800 transition-colors`}>
                             <TableCell className="py-2 font-medium">
                               <div className="flex flex-col">
-                                <span className="text-xs font-semibold">{(item as any).name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
+                                <span className="text-xs font-semibold">{item.name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
                                 <div className="flex items-center gap-2 mt-0.5">
                                   <span className="text-xs text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Vol: {item.qty_budget}</span>
                                 </div>

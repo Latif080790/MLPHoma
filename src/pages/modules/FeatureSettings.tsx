@@ -24,7 +24,7 @@ import type { FeatureConfig } from '../../config/features'
  * @param data - object to be serialized
  * @param filename - filename for the download
  */
-function downloadJSON(data: any, filename = 'feature-config.json') {
+function downloadJSON(data: unknown, filename = 'feature-config.json') {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
