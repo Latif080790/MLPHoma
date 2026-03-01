@@ -27,6 +27,8 @@
 - ✅ **non-v3 warning quick-wins phase-3a COMPLETE** - warnings reduced from 55 to 49 (FeatureSettings + RAB + RAP)
 - ✅ **non-v3 warning quick-wins phase-3b COMPLETE** - warnings reduced from 49 to 29 (Timeline + Resource typed cleanup)
 - ✅ **non-v3 warning quick-wins phase-3c COMPLETE** - warnings reduced from 29 to 0 (Progress + Reports typed cleanup)
+- ✅ **services lint error stabilization COMPLETE** - `src/services/*.ts` now 0 error (fixed 5 `prefer-const` blockers)
+- ✅ **services warning quick-wins phase-1 COMPLETE** - warnings reduced from 154 to 135 (unused-vars + typed cleanup on low-risk files)
 
 ---
 

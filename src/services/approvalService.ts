@@ -9,13 +9,34 @@ import { generateId } from '../lib/idGenerator'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
 import { changeOrderCascade } from './changeOrderCascade'
-import type { ApprovalRequest, CreateApprovalInput, ApprovalStatus } from '../types/approval'
+import type { ApprovalRequest, CreateApprovalInput } from '../types/approval'
 
 // ------------------------------------------------------------------
 // Row ↔ Domain Mappers
 // ------------------------------------------------------------------
 
-function rowToApproval(row: any): ApprovalRequest {
+type ApprovalRow = {
+    id: string
+    project_id: string
+    requester_id?: string
+    requester_name?: string
+    entity_type: string
+    entity_id: string
+    approver_role: string
+    title: string
+    description?: string
+    impact_summary?: Record<string, unknown>
+    status: ApprovalRequest['status']
+    approved_by?: string
+    approver_name?: string
+    approved_at?: string
+    rejection_reason?: string
+    notes?: string
+    created_at: string
+    updated_at: string
+}
+
+function rowToApproval(row: ApprovalRow): ApprovalRequest {
     return {
         id: row.id,
         projectId: row.project_id,

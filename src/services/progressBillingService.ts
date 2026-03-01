@@ -11,7 +11,6 @@
  */
 
 import { assertSupabase } from '../lib/supabaseClient'
-import { generateId } from '../lib/idGenerator'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
 import { financeService } from './financeService'

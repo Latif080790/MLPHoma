@@ -111,7 +111,7 @@ export const OVERHEAD_CATEGORY_ICONS: Record<OverheadCategory, string> = {
 
 // ─── In-Memory Store ───
 
-let overheadStore: OverheadItem[] = []
+const overheadStore: OverheadItem[] = []
 
 // ─── Service ───
 

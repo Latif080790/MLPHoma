@@ -8,7 +8,6 @@
 import { generateId } from '../lib/idGenerator'
 import { auditService } from './auditService'
 import { toast } from 'sonner'
-import { v4 as uuidv4 } from 'uuid'
 
 // ─── Types ───
 
@@ -79,13 +78,13 @@ export interface Opname {
 
 // ─── Data Stores (In-Memory for Dev) ───
 
-let subcons: SubcontractorInfo[] = [
+const subcons: SubcontractorInfo[] = [
     { id: 'sub-001', name: 'Pak Budi', type: 'MANDOR', specialty: 'Bekisting', phone: '08123456789', bankAccount: 'BCA 1234', rating: 4.5, status: 'ACTIVE' },
     { id: 'sub-002', name: 'PT Indah Karya MEP', type: 'SUBCON', specialty: 'MEP', phone: '021-98765', bankAccount: 'Mandiri 9876', rating: 4.8, status: 'ACTIVE' },
 ]
 
-let spks: SPK[] = []
-let opnames: Opname[] = []
+const spks: SPK[] = []
+const opnames: Opname[] = []
 
 // ─── Service ───
 
@@ -266,7 +265,7 @@ export const subcontractorService = {
         }
     },
 
-    rejectOpname(opnameId: string, reason: string, userName: string) {
+    rejectOpname(opnameId: string, reason: string, _userName: string) {
         const opname = opnames.find(o => o.id === opnameId)
         if (!opname) throw new Error("Opname not found")
 
@@ -277,7 +276,7 @@ export const subcontractorService = {
         toast.error("Opname Rejected")
     },
 
-    postToFinance(opnameId: string, userName: string) {
+    postToFinance(opnameId: string, _userName: string) {
         const opname = opnames.find(o => o.id === opnameId)
         if (!opname) throw new Error("Opname not found")
         if (opname.status !== 'APPROVED') throw new Error("Opname must be approved first")
