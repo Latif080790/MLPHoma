@@ -17,8 +17,9 @@ import { RABTable } from '../../components/rab/RABTable'
 import { formatIDR } from '../../lib/utils'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { CardSkeleton } from '../../components/common/LoadingSkeleton'
+import type { RABItem } from '../../types/rab'
 
-const EMPTY_ARRAY: any[] = []
+const EMPTY_ARRAY: RABItem[] = []
 
 /** RAB module component */
 export default function RAB() {
@@ -45,8 +46,9 @@ export default function RAB() {
     try {
       await syncProjectToSupabase(currentProject.id)
       toast.success('RAB items synced to Supabase')
-    } catch (err: any) {
-      toast.error(err?.message || 'Sync failed')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Sync failed'
+      toast.error(message)
     } finally {
       setSyncing(false)
     }
