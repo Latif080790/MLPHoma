@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { rapService, RapItem } from '../services/rapService'
-import { syncRAPItem, syncRAPItems } from '../lib/supabaseSyncService'
-import { generateId } from '../lib/idGenerator'
+import { syncRAPItem } from '../lib/supabaseSyncService'
 import { toast } from 'sonner'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
 
@@ -12,7 +11,7 @@ interface RapState {
 
   fetchItems: (projectId: string) => Promise<void>
   updateItem: (item: Partial<RapItem>) => Promise<void>
-  initFromRab: (projectId: string, rabItems: any[]) => Promise<void>
+  initFromRab: (projectId: string, rabItems: Array<Record<string, unknown>>) => Promise<void>
   /** Return RAP items as monthly plan entries for Curva-S / CashFlow import */
   getPlan: (projectId: string) => { date: string; planned: number; actual: number }[]
   /** Aggregate RAP items by wbs_id for EVM cost drill-down */
@@ -36,8 +35,8 @@ export const useRapStore = create<RapState>((set, get) => {
       if (!items.length) return EMPTY_PLAN
       const monthly: Record<string, { planned: number; actual: number }> = {}
       items.forEach((i) => {
-        const key = (i as any).createdAt
-          ? (i as any).createdAt.substring(0, 7)
+        const key = (i as RapItem & { createdAt?: string }).createdAt
+          ? (i as RapItem & { createdAt?: string }).createdAt!.substring(0, 7)
           : new Date().toISOString().substring(0, 7)
         if (!monthly[key]) monthly[key] = { planned: 0, actual: 0 }
         monthly[key].planned += i.total_budget || 0
@@ -59,9 +58,9 @@ export const useRapStore = create<RapState>((set, get) => {
       try {
         const data = await rapService.getByProject(projectId)
         set({ items: data as RapItem[] })
-      } catch (err: any) {
-        set({ error: err.message })
-        toast.error('Failed to load RAP items: ' + err.message)
+      } catch (err: unknown) {
+        set({ error: (err as Error).message })
+        toast.error('Failed to load RAP items: ' + (err as Error).message)
       } finally {
         set({ isLoading: false })
       }
@@ -92,7 +91,7 @@ export const useRapStore = create<RapState>((set, get) => {
       }> = {}
 
       items.forEach(item => {
-        const wbsId = (item as any).wbs_id || 'unlinked'
+        const wbsId = (item as RapItem & { wbs_id?: string }).wbs_id || 'unlinked'
         if (!byWbs[wbsId]) {
           byWbs[wbsId] = { wbsId, itemCount: 0, plannedCost: 0, actualCost: 0, committedCost: 0 }
         }
@@ -111,15 +110,15 @@ export const useRapStore = create<RapState>((set, get) => {
       }))
     },
 
-    initFromRab: async (projectId: string, rabItems: any[]) => {
+    initFromRab: async (projectId: string, rabItems: Array<Record<string, unknown>>) => {
       set({ isLoading: true })
       try {
         const data = await rapService.initFromRab(projectId, rabItems)
         // Update local state with fresh data from DB
         set({ items: data as RapItem[] })
         toast.success(`RAP initialized with ${data.length} items from RAB`)
-      } catch (err: any) {
-        toast.error('Failed to initialize RAP: ' + err.message)
+      } catch (err: unknown) {
+        toast.error('Failed to initialize RAP: ' + (err as Error).message)
       } finally {
         set({ isLoading: false })
       }

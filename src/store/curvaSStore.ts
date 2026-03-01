@@ -397,8 +397,6 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
     if (!projectId || !entries || entries.length === 0) return
     const state = get()
     const existing = state.dataPoints[projectId] || EMPTY_POINTS
-    const cfg = state.configs[projectId]
-    const totalBudget = cfg?.totalBudget || 0
     const nowIso = new Date().toISOString()
 
     // Merge progress entries into data points

@@ -1,6 +1,6 @@
 
 import { create } from 'zustand'
-import { Risk, RiskStatus } from '../types/risk'
+import { Risk } from '../types/risk'
 import { riskService } from '../services/riskService'
 
 interface RiskState {
@@ -14,7 +14,7 @@ interface RiskState {
     deleteRisk: (id: string) => Promise<void>
 }
 
-export const useRiskStore = create<RiskState>((set, get) => ({
+export const useRiskStore = create<RiskState>((set) => ({
     risks: [],
     loading: false,
     error: null,
@@ -24,8 +24,8 @@ export const useRiskStore = create<RiskState>((set, get) => ({
         try {
             const data = await riskService.getRisks(projectId)
             set({ risks: data, loading: false })
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
         }
     },
 
@@ -47,8 +47,8 @@ export const useRiskStore = create<RiskState>((set, get) => ({
                 risks: [completeRisk, ...state.risks],
                 loading: false
             }))
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
             throw err
         }
     },
@@ -59,8 +59,8 @@ export const useRiskStore = create<RiskState>((set, get) => ({
             set(state => ({
                 risks: state.risks.map(r => r.id === id ? { ...r, ...updates } : r)
             }))
-        } catch (err: any) {
-            set({ error: err.message })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message })
             throw err
         }
     },
@@ -71,8 +71,8 @@ export const useRiskStore = create<RiskState>((set, get) => ({
             set(state => ({
                 risks: state.risks.filter(r => r.id !== id)
             }))
-        } catch (err: any) {
-            set({ error: err.message })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message })
         }
     }
 }))

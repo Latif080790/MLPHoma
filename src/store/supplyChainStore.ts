@@ -32,16 +32,16 @@ interface SupplyChainState {
 
     // Actions
     fetchMaterialRequests: (projectId: string) => Promise<void>
-    createMaterialRequest: (data: any) => Promise<void>
+    createMaterialRequest: (data: Partial<MaterialRequest>) => Promise<void>
     updateMrStatus: (id: string, status: MrStatus) => Promise<void>
 
     fetchPurchaseOrders: (projectId: string) => Promise<void>
-    createPurchaseOrder: (data: any, items: any[]) => Promise<void>
+    createPurchaseOrder: (data: Partial<PurchaseOrder>, items: Partial<PoItem>[]) => Promise<void>
     fetchPoItems: (poId: string) => Promise<void>
     updatePoStatus: (id: string, status: PoStatus, approverId?: string) => Promise<void>
 
     fetchInventory: (projectId: string) => Promise<void>
-    recordTransaction: (data: any) => Promise<void>
+    recordTransaction: (data: Partial<InventoryTransaction>) => Promise<void>
 
     // Budget Guard actions
     checkBudgetBeforePO: (projectId: string, items: CheckableItem[]) => Promise<BudgetCheckResult>
@@ -49,11 +49,11 @@ interface SupplyChainState {
 
     // MTR actions
     fetchTransfers: (projectId: string) => Promise<void>
-    createMaterialTransfer: (input: any, requesterId: string, requesterName: string) => Promise<void>
+    createMaterialTransfer: (input: Partial<MaterialTransferRequest>, requesterId: string, requesterName: string) => Promise<void>
     executeMaterialTransfer: (transferId: string) => Promise<void>
 }
 
-export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
+export const useSupplyChainStore = create<SupplyChainState>((set) => ({
     materialRequests: [],
     purchaseOrders: [],
     inventoryTransactions: [],
@@ -81,15 +81,15 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
                 materialRequests: data,
                 loading: { ...state.loading, mr: false }
             }))
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, mr: false }
             }))
         }
     },
 
-    createMaterialRequest: async (data: any) => {
+    createMaterialRequest: async (data: Partial<MaterialRequest>) => {
         set(state => ({ loading: { ...state.loading, mr: true }, error: null }))
 
         // WBS Traceability: warn if no wbs_id linked
@@ -115,9 +115,9 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
             } else {
                 set(state => ({ loading: { ...state.loading, mr: false } }))
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, mr: false }
             }))
             throw err
@@ -132,8 +132,8 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
                     mr.id === id ? { ...mr, status } : mr
                 )
             }))
-        } catch (err: any) {
-            set({ error: err.message })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message })
         }
     },
 
@@ -145,15 +145,15 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
                 purchaseOrders: data,
                 loading: { ...state.loading, po: false }
             }))
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, po: false }
             }))
         }
     },
 
-    createPurchaseOrder: async (data: any, items: any[]) => {
+    createPurchaseOrder: async (data: Partial<PurchaseOrder>, items: Partial<PoItem>[]) => {
         set(state => ({ loading: { ...state.loading, po: true }, error: null }))
         try {
             await supplyChainService.createPurchaseOrder(data, items)
@@ -166,9 +166,9 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
             } else {
                 set(state => ({ loading: { ...state.loading, po: false } }))
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, po: false }
             }))
             throw err
@@ -179,9 +179,9 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
         try {
             const items = await supplyChainService.getPoItems(poId)
             set({ activePoItems: items })
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err)
-            set({ error: err.message })
+            set({ error: (err as Error).message })
         }
     },
 
@@ -193,8 +193,8 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
                     po.id === id ? { ...po, status, approvedBy: approverId, approvedAt: status === 'APPROVED' ? new Date().toISOString() : po.approvedAt } : po
                 )
             }))
-        } catch (err: any) {
-            set({ error: err.message })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message })
         }
     },
 
@@ -211,15 +211,15 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
                 inventoryStock: stock,
                 loading: { ...state.loading, inventory: false }
             }))
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, inventory: false }
             }))
         }
     },
 
-    recordTransaction: async (data: any) => {
+    recordTransaction: async (data: Partial<InventoryTransaction>) => {
         set(state => ({ loading: { ...state.loading, inventory: true }, error: null }))
         try {
             await supplyChainService.recordTransaction(data)
@@ -235,9 +235,9 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
             } else {
                 set(state => ({ loading: { ...state.loading, inventory: false } }))
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, inventory: false }
             }))
             throw err
@@ -251,8 +251,8 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
             const result = await checkBudgetAvailability(projectId, items)
             set({ budgetCheckResult: result, budgetCheckLoading: false })
             return result
-        } catch (err: any) {
-            set({ budgetCheckLoading: false, error: err.message })
+        } catch (err: unknown) {
+            set({ budgetCheckLoading: false, error: (err as Error).message })
             throw err
         }
     },
@@ -270,15 +270,15 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
                 materialTransfers: data,
                 loading: { ...state.loading, transfer: false }
             }))
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, transfer: false }
             }))
         }
     },
 
-    createMaterialTransfer: async (input: any, requesterId: string, requesterName: string) => {
+    createMaterialTransfer: async (input: Partial<MaterialTransferRequest>, requesterId: string, requesterName: string) => {
         set(state => ({ loading: { ...state.loading, transfer: true }, error: null }))
         try {
             await materialTransferService.createTransfer(input, requesterId, requesterName)
@@ -292,9 +292,9 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
             } else {
                 set(state => ({ loading: { ...state.loading, transfer: false } }))
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, transfer: false }
             }))
             throw err
@@ -312,9 +312,9 @@ export const useSupplyChainStore = create<SupplyChainState>((set, get) => ({
                 ),
                 loading: { ...state.loading, transfer: false }
             }))
-        } catch (err: any) {
+        } catch (err: unknown) {
             set(state => ({
-                error: err.message,
+                error: (err as Error).message,
                 loading: { ...state.loading, transfer: false }
             }))
             throw err

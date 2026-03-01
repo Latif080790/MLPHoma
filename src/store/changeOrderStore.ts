@@ -40,8 +40,8 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
         try {
             const data = await changeOrderService.getChangeOrders(projectId)
             set({ orders: data, loading: false })
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
         }
     },
 
@@ -62,8 +62,8 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
 
             set({ orders: [newOrderWithItems, ...currentOrders], loading: false })
 
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
             throw err
         }
     },
@@ -78,7 +78,7 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
                 user?.user_metadata?.full_name || user?.email || 'System'
             )
             set(state => ({
-                orders: state.orders.map(o => o.id === id ? { ...o, status: status as any } : o)
+                orders: state.orders.map(o => o.id === id ? { ...o, status: status as ChangeOrder['status'] } : o)
             }))
 
             // FASE 2.4: Cascade on approval — update RAB items, timeline tasks, budget
@@ -94,13 +94,13 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
                             description: `RAB: ${result.rabItemsUpdated} item updated (Rp ${Math.abs(result.budgetDelta).toLocaleString('id-ID')}). Timeline: ${result.timelineTasksUpdated} task updated.`,
                         })
                     }
-                } catch (cascadeErr: any) {
+                } catch (cascadeErr: unknown) {
                     console.error('VO cascade failed:', cascadeErr)
-                    toast.error('VO approved but cascade failed', { description: cascadeErr.message })
+                    toast.error('VO approved but cascade failed', { description: (cascadeErr as Error).message })
                 }
             }
-        } catch (err: any) {
-            set({ error: err.message })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message })
             throw err
         }
     },
@@ -116,8 +116,8 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
             set(state => ({
                 orders: state.orders.filter(o => o.id !== id)
             }))
-        } catch (err: any) {
-            set({ error: err.message })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message })
         }
     },
 
@@ -127,9 +127,9 @@ export const useChangeOrderStore = create<ChangeOrderState>((set, get) => ({
             const preview = await changeOrderCascade.preview(id)
             set({ cascadePreview: preview, previewLoading: false })
             return preview
-        } catch (err: any) {
+        } catch (err: unknown) {
             set({ previewLoading: false })
-            toast.error('Failed to preview cascade: ' + err.message)
+            toast.error('Failed to preview cascade: ' + (err as Error).message)
             throw err
         }
     },

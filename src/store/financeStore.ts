@@ -132,8 +132,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         summary: calcSummary(invoices, claims, transactions),
         aging: calcAging(invoices)
       })
-    } catch (err: any) {
-      set({ error: err.message })
+    } catch (err: unknown) {
+      set({ error: (err as Error).message })
       toast.error('Failed to load finance data')
     } finally {
       set({ loading: false })
@@ -149,7 +149,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         summary: calcSummary(invoices, claims, transactions),
         aging: calcAging(invoices)
       })
-    } catch (err: any) {
+    } catch {
       toast.error('Failed to load invoices')
     }
   },
@@ -162,7 +162,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         claims,
         summary: calcSummary(invoices, claims, transactions)
       })
-    } catch (err: any) {
+    } catch {
       toast.error('Failed to load claims')
     }
   },
@@ -175,7 +175,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         transactions,
         summary: calcSummary(invoices, claims, transactions)
       })
-    } catch (err: any) {
+    } catch {
       toast.error('Failed to load transactions')
     }
   },
@@ -186,8 +186,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       await financeService.createInvoice(invoice)
       toast.success('Invoice created')
       if (invoice.project_id) await get().fetchInvoices(invoice.project_id)
-    } catch (err: any) {
-      toast.error('Failed to create invoice: ' + err.message)
+    } catch (err: unknown) {
+      toast.error('Failed to create invoice: ' + (err as Error).message)
     } finally {
       set({ loading: false })
     }
@@ -199,8 +199,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       await financeService.payInvoice(invoiceId, projectId, amount)
       toast.success('Payment recorded')
       await get().fetchAll(projectId)
-    } catch (err: any) {
-      toast.error('Payment failed: ' + err.message)
+    } catch (err: unknown) {
+      toast.error('Payment failed: ' + (err as Error).message)
     } finally {
       set({ loading: false })
     }
@@ -226,8 +226,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     try {
       await financeService.updateInvoiceStatus(id, status)
       await get().fetchInvoices(projectId)
-    } catch (err: any) {
-      toast.error('Failed to update invoice status: ' + err.message)
+    } catch (err: unknown) {
+      toast.error('Failed to update invoice status: ' + (err as Error).message)
     } finally {
       set({ loading: false })
     }
@@ -239,8 +239,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       await financeService.createClaim(claim)
       toast.success('Claim created')
       if (claim.project_id) await get().fetchClaims(claim.project_id)
-    } catch (err: any) {
-      toast.error('Failed to create claim: ' + err.message)
+    } catch (err: unknown) {
+      toast.error('Failed to create claim: ' + (err as Error).message)
     } finally {
       set({ loading: false })
     }
@@ -252,8 +252,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       await financeService.updateClaimStatus(id, status)
       toast.success(`Claim status updated to ${status}`)
       await get().fetchClaims(projectId)
-    } catch (err: any) {
-      toast.error('Failed to update claim: ' + err.message)
+    } catch (err: unknown) {
+      toast.error('Failed to update claim: ' + (err as Error).message)
     } finally {
       set({ loading: false })
     }
@@ -265,8 +265,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       await financeService.recordTransaction(txn)
       toast.success('Transaction recorded')
       if (txn.project_id) await get().fetchTransactions(txn.project_id)
-    } catch (err: any) {
-      toast.error('Failed to record transaction: ' + err.message)
+    } catch (err: unknown) {
+      toast.error('Failed to record transaction: ' + (err as Error).message)
     } finally {
       set({ loading: false })
     }

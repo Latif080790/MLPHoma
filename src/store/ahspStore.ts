@@ -4,13 +4,6 @@
  */
 
 import { create } from 'zustand'
-import { assertSupabase } from '../lib/supabaseClient'
-import type {
-  AhspItemRow,
-  ResourceRow,
-  AhspComponentRow,
-  AhspPriceHistoryRow
-} from '../lib/supabaseClient'
 import { devtools, persist } from 'zustand/middleware'
 import { ahspRepository } from '../lib/ahspRepository'
 import {
@@ -22,15 +15,14 @@ import {
   initializeAHSPComponent,
   calculateAHSPPriceInWorker
 } from '../services/ahspService'
-import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncAHSPComponents, syncDelete, syncAHSPItems, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
   resourceUpdateSchema,
   ahspItemInputSchema,
   ahspItemUpdateSchema,
-  ahspComponentInputSchema,
-  ahspComponentUpdateSchema
+  ahspComponentInputSchema
 } from '../lib/validationSchemas'
 import { toast } from 'sonner'
 import { generateId } from '../lib/idGenerator'
@@ -40,20 +32,10 @@ import type {
   AHSPItem,
   AHSPComponent,
   ResourceType,
-  ResourceUnit,
   AHSPState,
-  PriceHistory,
   Zone,
   AhspZonePrice
 } from '../types/ahsp'
-
-/**
- * Validate unit format
- */
-function validateUnit(unit: string): unit is ResourceUnit {
-  const validUnits: ResourceUnit[] = ['kg', 'm3', 'm2', 'm', 'ltr', 'bh', 'oh', 'jam', 'hr', 'hari', 'unit', 'ha', 'set', 'ls', 'btg', 'lembar']
-  return validUnits.includes(unit as ResourceUnit)
-}
 
 /**
  * Create AHSP Store with Zustand
@@ -427,7 +409,6 @@ export const useAHSPStore = create<AHSPStore>()(
         updateComponent: (id, updates) => {
           set((state) => {
             const newComponentsByAHSP = { ...state.componentsByAHSP }
-            let updatedAHSPId: string | null = null
 
             // Find and update component
             Object.keys(newComponentsByAHSP).forEach(ahspId => {
@@ -483,7 +464,6 @@ export const useAHSPStore = create<AHSPStore>()(
         deleteComponent: (id) => {
           set((state) => {
             const newComponentsByAHSP = { ...state.componentsByAHSP }
-            let deletedAHSPId: string | null = null
 
             Object.keys(newComponentsByAHSP).forEach(ahspId => {
               const components = newComponentsByAHSP[ahspId]
@@ -691,7 +671,7 @@ export const useAHSPStore = create<AHSPStore>()(
 
         fetchZonePrices: async (zoneId) => {
           set((s) => ({ loading: { ...s.loading, zonePrices: true } }))
-          const { data, error } = await ahspRepository.fetchZonePrices(zoneId)
+          const { data } = await ahspRepository.fetchZonePrices(zoneId)
           if (data) {
             set((s) => ({
               zonePricesByZone: { ...s.zonePricesByZone, [zoneId]: data },
@@ -705,8 +685,7 @@ export const useAHSPStore = create<AHSPStore>()(
         updateZonePrice: async (priceData) => {
           const zoneId = priceData.zoneId
           const ahspId = priceData.ahspId
-          const data = priceData as any
-          const id = data.id || generateId('zp')
+          const id = priceData.id || generateId('zp')
           const now = new Date().toISOString()
           const newPrice: AhspZonePrice = { ...priceData, id, createdAt: now, updatedAt: now }
 
@@ -725,7 +704,7 @@ export const useAHSPStore = create<AHSPStore>()(
 
         clearAllData: async () => {
           set((s) => ({ loading: { ...s.loading, ahspItems: true, resources: true } }))
-          const { success, error } = await ahspRepository.clearAllData()
+          const { success } = await ahspRepository.clearAllData()
           if (success) {
             set({
               resources: [], ahspItems: [], componentsByAHSP: {}, zones: [], zonePricesByZone: {},

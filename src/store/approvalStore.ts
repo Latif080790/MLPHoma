@@ -23,7 +23,7 @@ interface ApprovalState {
     reject: (approvalId: string, approverId: string, approverName: string, reason: string) => Promise<void>
 }
 
-export const useApprovalStore = create<ApprovalState>((set, get) => ({
+export const useApprovalStore = create<ApprovalState>((set) => ({
     approvals: [],
     pendingApprovals: [],
     pendingCount: 0,
@@ -35,8 +35,8 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
         try {
             const data = await approvalService.getApprovals(projectId)
             set({ approvals: data, loading: false })
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
         }
     },
 
@@ -45,8 +45,8 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
         try {
             const data = await approvalService.getPendingApprovals(projectId)
             set({ pendingApprovals: data, pendingCount: data.length, loading: false })
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
         }
     },
 
@@ -54,7 +54,7 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
         try {
             const count = await approvalService.getPendingCount(projectId)
             set({ pendingCount: count })
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.warn('Failed to fetch pending count:', err)
         }
     },
@@ -69,8 +69,8 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
                 loading: false,
             }))
             return approval
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
             throw err
         }
     },
@@ -85,8 +85,8 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
                 pendingCount: Math.max(0, state.pendingCount - 1),
                 loading: false,
             }))
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
             throw err
         }
     },
@@ -101,8 +101,8 @@ export const useApprovalStore = create<ApprovalState>((set, get) => ({
                 pendingCount: Math.max(0, state.pendingCount - 1),
                 loading: false,
             }))
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
             throw err
         }
     },
