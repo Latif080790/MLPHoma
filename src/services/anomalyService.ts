@@ -7,7 +7,15 @@ export interface Anomaly {
     severity: 'CRITICAL' | 'WARNING'
     description: string
     suggestedAction: string
-    metadata?: any
+    metadata?: Record<string, unknown>
+}
+
+type RapItemRow = {
+    id: string
+    qty_budget?: number
+    unit_price_budget?: number
+    actual_cost?: number
+    ahsp_items?: { name?: string } | Array<{ name?: string }>
 }
 
 export const anomalyService = {
@@ -24,7 +32,7 @@ export const anomalyService = {
             .select('id, qty_budget, unit_price_budget, actual_cost, ahsp_items(name)')
             .eq('project_id', projectId)
 
-        rapItems?.forEach((item: any) => {
+        rapItems?.forEach((item: RapItemRow) => {
             const budget = (item.qty_budget || 0) * (item.unit_price_budget || 0)
             const actual = item.actual_cost || 0
 

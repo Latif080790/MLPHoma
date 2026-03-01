@@ -67,7 +67,8 @@ function generateValidationHash(docId: string, projectId: string): string {
     const timestamp = Date.now().toString(36)
     const random = Math.random().toString(36).substring(2, 10)
     const prefix = docId.slice(0, 6).toUpperCase()
-    return `QR-${prefix}-${timestamp}-${random}`.toUpperCase()
+    const projectPrefix = projectId.slice(0, 4).toUpperCase()
+    return `QR-${projectPrefix}-${prefix}-${timestamp}-${random}`.toUpperCase()
 }
 
 /**

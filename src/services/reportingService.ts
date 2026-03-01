@@ -5,7 +5,8 @@ import 'jspdf-autotable'
 // Add types for jspdf-autotable since it extends jsPDF
 declare module 'jspdf' {
     interface jsPDF {
-        autoTable: (options: any) => jsPDF
+        autoTable: (options: unknown) => jsPDF
+        lastAutoTable?: { finalY: number }
     }
 }
 
@@ -65,7 +66,7 @@ export const reportingService = {
             headStyles: { fillColor: [30, 58, 138] },
         })
 
-        startY = (doc as any).lastAutoTable.finalY + 15
+        startY = (doc.lastAutoTable?.finalY || startY) + 15
 
         // Risks
         if (stats.topRisks && stats.topRisks.length > 0) {
@@ -78,7 +79,7 @@ export const reportingService = {
                 theme: 'striped',
                 headStyles: { fillColor: [220, 38, 38] }, // Red for risks
             })
-            startY = (doc as any).lastAutoTable.finalY + 15
+            startY = (doc.lastAutoTable?.finalY || startY) + 15
         }
 
         // Action Items / Anomalies

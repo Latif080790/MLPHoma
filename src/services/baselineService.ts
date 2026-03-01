@@ -9,7 +9,6 @@
  */
 
 import { useRabStore } from '../store/rabStore'
-import type { RABItem } from '../types/rab'
 import { generateId } from '../lib/idGenerator'
 import { auditService } from './auditService'
 import { useAuthStore } from '../store/authStore'

@@ -1,6 +1,9 @@
 
 import { assertSupabase } from '../lib/supabaseClient'
 
+type ProjectRow = { id: string; name?: string }
+type ToolUsageRow = { tool_name: string; project_id: string; hours_used?: number }
+
 export interface ResourceUtilization {
     resourceName: string
     type: 'EQUIPMENT' | 'LABOR'
@@ -21,7 +24,7 @@ export const resourceService = {
 
         // 1. Get Project Names for mapping
         const { data: projects } = await supabase.from('projects').select('id, name')
-        const projectMap = projects?.reduce((acc: any, p) => {
+        const projectMap = (projects as ProjectRow[] | null)?.reduce<Record<string, string>>((acc, p) => {
             acc[p.id] = p.name
             return acc
         }, {}) || {}
@@ -33,7 +36,7 @@ export const resourceService = {
 
         const equipmentMap: Record<string, ResourceUtilization> = {}
 
-        toolLogs?.forEach((log: any) => {
+        ;(toolLogs as ToolUsageRow[] | null)?.forEach((log) => {
             const tool = log.tool_name
             if (!equipmentMap[tool]) {
                 equipmentMap[tool] = {

@@ -100,7 +100,7 @@ const VALID_TRANSITIONS: Record<MTRStatus, MTRStatus[]> = {
 
 // ─── In-Memory Store (prod: Supabase) ───
 
-let mtrStore: MaterialTransferRequest[] = []
+const mtrStore: MaterialTransferRequest[] = []
 
 // ─── Service ───
 

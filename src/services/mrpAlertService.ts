@@ -51,7 +51,6 @@ export interface MRPSummary {
 // ─── Constants ───
 const CRITICAL_DAYS = 3
 const WARNING_DAYS = 7
-const INFO_DAYS = 14
 
 // ─── Core Engine ───
 

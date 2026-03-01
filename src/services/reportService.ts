@@ -4,6 +4,17 @@ import 'jspdf-autotable'
 import { assertSupabase } from '../lib/supabaseClient'
 import { format } from 'date-fns'
 
+type AutoTableDoc = jsPDF & {
+    autoTable: (options: {
+        startY: number
+        head: string[][]
+        body: Array<Array<string | number>>
+        headStyles?: { fillColor: number[] }
+        margin?: { left: number; right: number }
+    }) => void
+    lastAutoTable?: { finalY: number }
+}
+
 export const reportService = {
     /**
      * Generate a Daily Site Report (DSR) PDF
@@ -27,7 +38,7 @@ export const reportService = {
         if (!project) throw new Error('Project not found')
 
         // 2. Initialize PDF
-        const doc = new jsPDF()
+        const doc = new jsPDF() as AutoTableDoc
         const primaryColor = [37, 99, 235] // Blue-600
 
         // HEADER
@@ -66,7 +77,7 @@ export const reportService = {
                 log.gps_coordinates ? 'Captured' : 'Missing'
             ])
 
-                ; (doc as any).autoTable({
+                doc.autoTable({
                     startY: 100,
                     head: [['Activity/Notes', 'Progress', 'Volume', 'Weather', 'GPS']],
                     body: tableData,
@@ -80,7 +91,7 @@ export const reportService = {
         }
 
         // EVIDENCE SECTION
-        const lastY = (doc as any).lastAutoTable?.finalY || 100
+        const lastY = doc.lastAutoTable?.finalY || 100
         doc.setTextColor(50, 50, 50)
         doc.setFontSize(14)
         doc.text('Photo Evidence', 15, lastY + 20)
@@ -102,7 +113,7 @@ export const reportService = {
         })
 
         // FOOTER
-        const pageCount = (doc as any).internal.getNumberOfPages()
+        const pageCount = doc.internal.getNumberOfPages()
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i)
             doc.setFontSize(8)
