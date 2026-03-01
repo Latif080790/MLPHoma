@@ -23,6 +23,7 @@
 - ✅ **v3 lint sweep COMPLETE** - all `src/pages/modules/v3/*.tsx` now lint-clean (0 warning / 0 error)
 - ✅ **non-v3 lint error stabilization COMPLETE** - `src/pages/modules/*.tsx` now 0 error (warning backlog remains)
 - ✅ **non-v3 warning quick-wins phase-1 COMPLETE** - warnings reduced from 87 to 65 (`no-unused-vars` cleanup)
+- ✅ **non-v3 warning quick-wins phase-2 COMPLETE** - warnings reduced from 65 to 55 (typed cleanup on CashFlow + CurvaS)
 
 ---
 

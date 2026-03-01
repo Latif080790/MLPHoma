@@ -26,9 +26,10 @@ import { Alert, AlertDescription } from '../../components/ui/alert'
 import { Download, LineChart, Play, Rocket, RefreshCw, AlertTriangle, Rows, GitPullRequest } from 'lucide-react'
 import { downloadCSV, formatDate } from '../../lib/utils'
 import { shadowCurveService } from '../../services/shadowCurveService'
+import type { CurvaSDataPoint } from '../../types/curvaS'
 
 /** Stable empty array reference to avoid new [] creation in selectors/defaults. */
-const EMPTY_POINTS: any[] = Object.freeze([]) as unknown as any[]
+const EMPTY_POINTS: CurvaSDataPoint[] = []
 
 /**
  * CurvaSPage
@@ -85,8 +86,15 @@ export default function CurvaSPage() {
     if (!projectId) return
     const rapPlan = getRapPlan(projectId)
     if (!rapPlan || rapPlan.length === 0) return
-    const fallbackBudget = rapPlan.reduce((sum: number, p: any) => sum + (p.planned || 0), 0)
-    setPlannedFromRap(projectId, rapPlan as any, projectBudget || fallbackBudget)
+
+    const curvaPlan = rapPlan.map((entry) => ({
+      period: entry.date,
+      planned: entry.planned || 0,
+      actual: entry.actual || 0,
+    }))
+
+    const fallbackBudget = curvaPlan.reduce((sum, point) => sum + point.planned, 0)
+    setPlannedFromRap(projectId, curvaPlan, projectBudget || fallbackBudget)
     setTimeout(() => analyzeProject(projectId), 0)
   }
 
@@ -94,7 +102,7 @@ export default function CurvaSPage() {
   const handleExport = () => {
     if (!projectId || !dataPoints.length) return
     downloadCSV(
-      dataPoints.map((d: any) => ({
+      dataPoints.map((d: CurvaSDataPoint) => ({
         date: d.date,
         plannedProgress: d.plannedProgress,
         actualProgress: d.actualProgress,
