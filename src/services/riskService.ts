@@ -1,7 +1,9 @@
 
 import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
-import { Risk, RiskStatus } from '../types/risk'
+import { Risk } from '../types/risk'
+
+type RiskDbRow = { id: string; project_id?: string; wbs_id?: string; description?: string; category?: string; probability?: number; impact?: number; risk_score?: number; mitigation_plan?: string; owner?: string; status?: string; created_by?: string; created_at?: string; wbs?: { name?: string } | null; updated_at?: string }
 
 export const riskService = {
     async getRisks(projectId: string): Promise<Risk[]> {
@@ -25,7 +27,7 @@ export const riskService = {
             return []
         }
 
-        return (data || []).map((row: any) => ({
+        return (data || []).map((row: RiskDbRow) => ({
             id: row.id,
             project_id: row.project_id,
             wbs_id: row.wbs_id,

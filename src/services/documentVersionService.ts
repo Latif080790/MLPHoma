@@ -190,7 +190,8 @@ export const documentVersionService = {
         }
 
         // Group by document_group_id and pick latest version
-        const groupMap = new Map<string, any>()
+        type DocDbRow = (typeof data)[number]
+        const groupMap = new Map<string, DocDbRow>()
 
         for (const doc of (data || [])) {
             const groupKey = doc.document_group_id || doc.id
@@ -287,7 +288,9 @@ export const documentVersionService = {
 
 // ---------- Helper ----------
 
-function rowToVersion(row: any): DocumentVersion {
+type DocVersionRow = { id: string; document_group_id?: string; project_id?: string; category?: string; title?: string; file_url?: string; version_number?: number; change_notes?: string; uploaded_by?: string; is_latest?: boolean; file_size?: number; mime_type?: string; status?: string; is_locked?: boolean; locked_by?: string; created_at?: string }
+
+function rowToVersion(row: DocVersionRow): DocumentVersion {
     return {
         id: row.id,
         documentId: row.document_group_id || row.id,

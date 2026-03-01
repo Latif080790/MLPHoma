@@ -6,7 +6,6 @@
  * and the store (UI state). Pure orchestration — no Supabase calls, no Zustand set().
  */
 
-import { ahspRepository } from '../lib/ahspRepository'
 import { calculateAHSPPrice as calcAHSPPriceSync } from '../lib/calculationService'
 import { runCalculation } from '../hooks/useCalculationWorker'
 import type {
@@ -14,7 +13,6 @@ import type {
     AHSPComponent,
     Resource,
     ResourceType,
-    AhspZonePrice
 } from '../types/ahsp'
 import type { AhspItemRow, ResourceRow, AhspComponentRow } from '../lib/supabaseClient'
 import { generateId } from '../lib/idGenerator'
@@ -103,8 +101,10 @@ export async function recalculateAllInWorker(
 /**
  * Prepare import data — transforms raw import items into domain models.
  */
+type AhspImportItem = Partial<AHSPItem> & { components?: Array<{ code?: string; name?: string; price?: number; unitPrice?: number; category?: string; type?: string; unit?: string; coefficient?: number }> }
+
 export function prepareImportData(
-    items: any[],
+    items: AhspImportItem[],
     existingResources: Resource[]
 ) {
     const newItems: AHSPItem[] = []
@@ -125,8 +125,8 @@ export function prepareImportData(
         }
         newItems.push(newItem)
 
-        if ((item as any).components && Array.isArray((item as any).components)) {
-            (item as any).components.forEach((comp: any) => {
+        if (item.components && Array.isArray(item.components)) {
+            item.components.forEach((comp) => {
                 const typeRaw = (comp.category || comp.type || 'material').toLowerCase()
                 let type: ResourceType = 'material'
 
@@ -207,7 +207,7 @@ export function prepareImportData(
  * Initialize a new AHSP Item with defaults.
  */
 export function initializeAHSPItem(
-    data: any,
+    data: Partial<AHSPItem>,
     defaults: { overhead: number, profit: number }
 ): AHSPItem {
     return {
@@ -232,7 +232,7 @@ export function initializeAHSPItem(
  */
 export function initializeAHSPComponent(
     ahspId: string,
-    data: any,
+    data: Partial<AHSPComponent>,
     resources: Resource[] = []
 ): AHSPComponent {
     const resource = resources.find(r => r.id === data.resourceId)

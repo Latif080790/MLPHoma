@@ -14,8 +14,9 @@ import type { MaterialTransferRequest, CreateTransferInput } from '../types/mate
 // ------------------------------------------------------------------
 // Row ↔ Domain Mappers
 // ------------------------------------------------------------------
+type TransferDbRow = { id: string; project_id?: string; requester_id?: string; requester_name?: string; source_wbs_id?: string; source_wbs_name?: string; target_wbs_id?: string; target_wbs_name?: string; item_name?: string; item_id?: string; unit?: string; quantity?: number; unit_cost?: number; total_cost?: number; reason?: string; is_emergency?: boolean; status: string; approval_request_id?: string; approved_by?: string; approved_at?: string; rejection_reason?: string; created_at: string; updated_at?: string }
 
-function rowToTransfer(row: any): MaterialTransferRequest {
+function rowToTransfer(row: TransferDbRow): MaterialTransferRequest {
     return {
         id: row.id,
         projectId: row.project_id,
@@ -91,7 +92,7 @@ export const materialTransferService = {
             .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
 
         // Build impact summary for PM
-        const impactSummary: Record<string, any> = {
+        const impactSummary: Record<string, unknown> = {
             budgetImpact: -(input.quantity * (input.unitCost || 0)),
             sourceWbs: input.sourceWbsName || input.sourceWbsId,
             targetWbs: input.targetWbsName || input.targetWbsId,

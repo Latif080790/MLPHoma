@@ -131,9 +131,10 @@ export const geofenceService = {
             toast.success(`Location Validated (${distance}m from center)`, { id: 'gps-toast' })
             return userLoc
 
-        } catch (err: any) {
-            if (err.message !== "GEOFENCE_VIOLATION") {
-                toast.error(err.message, { id: 'gps-toast' })
+        } catch (err: unknown) {
+            const e = err as Error
+            if (e.message !== "GEOFENCE_VIOLATION") {
+                toast.error(e.message, { id: 'gps-toast' })
             }
             throw err;
         }

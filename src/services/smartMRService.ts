@@ -101,10 +101,12 @@ export const smartMRService = {
             }
         }
 
+type AhspCompRow = { type?: string; resource_id?: string; id?: string; coefficient?: number; resources?: { name?: string } | null }
+
         // 4. Build suggestions
         const suggestions: MaterialSuggestion[] = components
-            .filter((c: any) => c.type === 'material') // Only material components for MR
-            .map((comp: any) => {
+            .filter((c: AhspCompRow) => c.type === 'material') // Only material components for MR
+            .map((comp: AhspCompRow) => {
                 const resource = comp.resources || {}
                 const resourceName = resource.name || `Resource-${comp.resource_id}`
                 const requiredQty = Number(comp.coefficient) * volume

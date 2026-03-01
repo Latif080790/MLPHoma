@@ -1,5 +1,5 @@
 
-import { DashboardStats, dashboardService } from './dashboardService'
+import { dashboardService } from './dashboardService'
 
 export interface SimulationScenario {
     projectId: string
@@ -24,7 +24,6 @@ export const simulationService = {
         const portfolio = await dashboardService.getPortfolioStats()
 
         let simulatedSpiSum = 0
-        let simulatedCashflowSum = 0
 
         // Naive heuristic simulation logic
         scenarios.forEach(scenario => {
@@ -36,9 +35,6 @@ export const simulationService = {
             const originalSpi = 0.95 // Abstracted for demo
             const newSpi = Math.max(0.1, originalSpi - spiImpact - resourceImpact)
             simulatedSpiSum += newSpi
-
-            // Cashflow impact (simplified: delay pushes outflow back)
-            simulatedCashflowSum += portfolio.totalBudget * 0.1 // Simulated weekly inflow shift
         })
 
         const avgSimSpi = simulatedSpiSum / (scenarios.length || 1)

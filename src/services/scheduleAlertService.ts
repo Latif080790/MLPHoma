@@ -123,7 +123,8 @@ function normalizeDependencies(raw: unknown): string[] {
             return trimmed.length ? trimmed : null
         }
         if (value && typeof value === 'object') {
-            const candidate = (value as any).predecessorId ?? (value as any).id
+            const candidate = (value as { predecessorId?: string; id?: string }).predecessorId
+                ?? (value as { predecessorId?: string; id?: string }).id
             if (typeof candidate === 'string' && candidate.trim().length > 0) {
                 return candidate.trim()
             }
@@ -253,7 +254,6 @@ function analyzeTask(
 ): ScheduleAlert | null {
     const plannedEnd = new Date(task.plannedEndDate)
     const plannedStart = new Date(task.plannedStartDate)
-    const actualStart = task.actualStartDate ? new Date(task.actualStartDate) : null
 
     // Calculate expected progress based on planned dates
     const plannedDuration = Math.max(1, daysBetween(plannedStart, plannedEnd))
@@ -335,8 +335,10 @@ function analyzeTask(
     }
 }
 
-// ---------- Service ----------
+// ─── DB row types ───────────────────────────────────────────────────────────────
+type TaskDbRow = { id: string; name?: string; start_date: string; end_date: string; progress?: number | null; dependencies?: unknown; duration?: number | null; wbs_id?: string | null }
 
+// ─── Service ───────────────────────────────────────────────────────────────────────────
 export const scheduleAlertService = {
 
     getDefaultThresholds(): ScheduleAlertThresholds {
@@ -363,10 +365,10 @@ export const scheduleAlertService = {
         }
 
         // Convert to analysis format
-        const tasks: TaskForAnalysis[] = tasksData.map((row: any) => {
+        const tasks: TaskForAnalysis[] = tasksData.map((row: TaskDbRow) => {
             return {
                 id: row.id,
-                name: row.name,
+                name: row.name ?? '',
                 plannedStartDate: row.start_date,
                 plannedEndDate: row.end_date,
                 progress: row.progress || 0,
@@ -423,7 +425,7 @@ export const scheduleAlertService = {
             }
         }
 
-        const tasks: TaskForAnalysis[] = tasksData.map((row: any) => {
+        const tasks: TaskForAnalysis[] = tasksData.map((row: TaskDbRow) => {
             return {
                 id: row.id,
                 name: '',

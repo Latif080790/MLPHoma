@@ -88,7 +88,7 @@ export const rapService = {
      * Initialize RAP items from RAB (Import from Estimate)
      * Smart Merge Strategy: Updates existing, inserts new, deletes removed (if no costs)
      */
-    async initFromRab(projectId: string, rabItems: any[]) {
+    async initFromRab(projectId: string, rabItems: Array<Record<string, unknown>>) {
         const client = assertSupabase()
 
         // 1. Fetch existing RAP items
@@ -103,7 +103,7 @@ export const rapService = {
         const toUpsert = rabItems.map(rab => {
             const existing = existingMap.get(rab.id)
             return {
-                id: (rab as any).rap_id || existing?.id || generateId('rap'),
+                id: (rab as Record<string, unknown>).rap_id as string || existing?.id || generateId('rap'),
                 project_id: projectId,
                 rab_item_id: rab.id,
                 wbs_id: rab.wbs_id || rab.wbsId || null,
@@ -121,7 +121,7 @@ export const rapService = {
                 // Preserve existing costs
                 committed_cost: existing?.committed_cost || 0,
                 actual_cost: existing?.actual_cost || 0,
-                status: (rab as any).status || 'not_started'
+                status: (rab as Record<string, unknown>).status as string || 'not_started'
             }
         })
 

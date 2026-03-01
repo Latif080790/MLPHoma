@@ -11,8 +11,9 @@ import type { AuditLogEntry, CreateAuditInput } from '../types/audit'
 // ------------------------------------------------------------------
 // Row ↔ Domain Mappers
 // ------------------------------------------------------------------
+type AuditDbRow = { id: string; user_id?: string; user_name?: string; action: string; entity?: string; entity_type?: string; entity_id?: string; details?: Record<string, unknown>; ip_address?: string; created_at: string; updated_at?: string }
 
-function rowToAuditEntry(row: any): AuditLogEntry {
+function rowToAuditEntry(row: AuditDbRow): AuditLogEntry {
     return {
         id: row.id,
         userId: row.user_id,

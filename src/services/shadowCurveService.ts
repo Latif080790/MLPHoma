@@ -11,7 +11,6 @@
 
 import { useCurvaSStore } from '../store/curvaSStore'
 import { useChangeOrderStore } from '../store/changeOrderStore'
-import type { CurvaSDataPoint } from '../types/curvaS'
 import type { ChangeOrder } from '../types/change-order'
 
 // ─── Types ───
@@ -90,9 +89,6 @@ export const shadowCurveService = {
         const lastPoint = dataPoints[dataPoints.length - 1]
         const totalPlannedCost = lastPoint.plannedCost || 1
 
-        // Cost adjustment ratio
-        const costAdjustmentRatio = totalCostDelta / totalPlannedCost
-
         // Schedule adjustment: extend the planned progress targets
         // If schedule extends by N days over M total months, slow progress proportionally
         const totalDays = dataPoints.length > 1
@@ -103,7 +99,7 @@ export const shadowCurveService = {
             : 1
 
         // Generate shadow points
-        const points: ShadowCurvePoint[] = dataPoints.map((dp, idx) => {
+        const points: ShadowCurvePoint[] = dataPoints.map((dp) => {
             // Shadow cost: original planned + proportional delta
             const progressFraction = dp.plannedProgress / 100
             const shadowCost = dp.plannedCost + (totalCostDelta * progressFraction)
