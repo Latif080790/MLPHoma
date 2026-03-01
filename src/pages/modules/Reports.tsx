@@ -12,6 +12,9 @@ import { useProjectStore } from "../../store/projectStore"
 import { useRabStore } from "../../store/rabStore"
 import { useCurvaSStore } from "../../store/curvaSStore"
 import { useRapStore } from "../../store/rapStore"
+import type { PaymentTerms, Project } from "../../store/projectStore"
+import type { RABItem } from "../../types/rab"
+import type { CurvaSAnalysis } from "../../types/curvaS"
 import * as XLSX from "xlsx"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
@@ -19,15 +22,25 @@ import { calculateCashFlow } from "../../lib/cashflowCalculator"
 import HandoverWizard from "./v3/HandoverWizard"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const EMPTY_ARRAY: any[] = []
+type RapPlanPoint = { date: string; planned: number; actual: number }
+type RapPlannedItem = {
+  rabId?: string
+  rab_id?: string
+  item_code?: string
+  plannedCost?: number
+}
+type RapPlanWithItems = RapPlanPoint & { items?: RapPlannedItem[] }
+
+const EMPTY_RAB_ITEMS: RABItem[] = []
+const EMPTY_RAP_PLAN: RapPlanPoint[] = []
 
 /**
  * Build RAB KPI summary from items
  */
 function useRabSummary(projectId: string) {
-  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? EMPTY_ARRAY)
+  const rabItems = useRabStore((s) => s.getItems?.(projectId) ?? EMPTY_RAB_ITEMS)
   const total = useMemo(
-    () => rabItems.reduce((sum: number, it: any) => sum + (it.finalTotal || it.final_total || it.finalPrice || 0), 0),
+    () => rabItems.reduce((sum: number, it: RABItem) => sum + (it.finalTotal || it.final_total || it.finalPrice || 0), 0),
     [rabItems]
   )
   const count = rabItems.length
@@ -45,7 +58,7 @@ function useCurvaSnapshot(projectId: string) {
 /**
  * Cash Flow Summary Hook
  */
-function useCashFlowSummary(projectId: string, budget: number, terms: any) {
+function useCashFlowSummary(projectId: string, budget: number, terms?: PaymentTerms) {
   const points = useCurvaSStore((s) => (projectId ? s.getDataPoints(projectId) : []))
   const summary = useMemo(() => {
     const rows = calculateCashFlow(points, terms || {}, budget || 0)
@@ -64,17 +77,22 @@ function useCashFlowSummary(projectId: string, budget: number, terms: any) {
  * Resource Summary Hook (Top 3 High Cost Items)
  */
 function useResourceSummary(projectId: string) {
-  const rap = useRapStore((s: any) => s.getPlan?.(projectId) ?? EMPTY_ARRAY)
-  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? EMPTY_ARRAY)
+  const rap = useRapStore((s) => s.getPlan?.(projectId) ?? EMPTY_RAP_PLAN)
+  const rabItems = useRabStore((s) => s.getItems?.(projectId) ?? EMPTY_RAB_ITEMS)
 
   const topItems = useMemo(() => {
     const map: Record<string, { name: string; total: number }> = {}
     const byId: Record<string, string> = {}
-    rabItems.forEach((ri: any) => (byId[ri.id ?? ri.rab_id ?? ri.item_code] = ri.item_name ?? ri.name))
+    rabItems.forEach((ri: RABItem) => {
+      const key = ri.id ?? ri.rab_id ?? ri.item_code
+      if (!key) return
+      byId[key] = ri.item_name ?? ri.name ?? key
+    })
 
-    rap.forEach((p: any) =>
-      (p.items || []).forEach((it: any) => {
+    ;(rap as RapPlanWithItems[]).forEach((p) =>
+      (p.items || []).forEach((it: RapPlannedItem) => {
         const key = it.rabId ?? it.rab_id ?? it.item_code
+        if (!key) return
         const name = byId[key] ?? key
         map[key] = map[key]
           ? { ...map[key], total: map[key].total + (it.plannedCost || 0) }
@@ -90,10 +108,10 @@ function useResourceSummary(projectId: string) {
 /**
  * Export helpers - CSV (existing)
  */
-function exportRabCSV(items: any[]) {
+function exportRabCSV(items: RABItem[]) {
   const headers = ["Item Code", "Name", "Unit", "Volume", "Unit Price", "Final Total"]
   const lines = [headers.join(",")]
-  items.forEach((it: any) => {
+  items.forEach((it: RABItem) => {
     const row = [
       it.item_code ?? it.code ?? "",
       (it.item_name ?? it.name ?? "").toString().replace(/"/g, '""'),
@@ -113,7 +131,7 @@ function exportRabCSV(items: any[]) {
   URL.revokeObjectURL(url)
 }
 
-function exportCurvaCSV(analysis: any | null) {
+function exportCurvaCSV(analysis: CurvaSAnalysis | null) {
   if (!analysis) return
   const headers = ["ProjectId", "CurrentProgress", "SPI", "CPI", "Status", "ForecastCompletion", "ForecastTotalCost", "AnalysisDate"]
   const values = [
@@ -139,13 +157,13 @@ function exportCurvaCSV(analysis: any | null) {
 /**
  * Export helpers - Excel
  */
-function exportExcel(rabItems: any[], curva: any | null) {
+function exportExcel(rabItems: RABItem[], curva: CurvaSAnalysis | null) {
   const rabSheet = [
     ["RAB Summary"],
     ["GeneratedAt", new Date().toISOString()],
     [],
     ["Item Code", "Name", "Unit", "Volume", "Unit Price", "Final Total"],
-    ...rabItems.map((it: any) => [
+    ...rabItems.map((it: RABItem) => [
       it.item_code ?? it.code ?? "",
       it.item_name ?? it.name ?? "",
       it.unit ?? "",
@@ -199,7 +217,7 @@ async function exportPDF(element: HTMLElement | null, filename = "Reports.pdf") 
  * Reports module
  */
 export default function Reports() {
-  const project = useProjectStore((s: any) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
+  const project = useProjectStore((s): Project | null => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = project?.id ?? "demo"
 
   const rab = useRabSummary(projectId)
@@ -214,7 +232,7 @@ export default function Reports() {
   const totalRap = useMemo(
     () =>
       rap_plan.reduce(
-        (sum: number, p: any) => sum + (p.planned || 0),
+        (sum: number, p: RapPlanPoint) => sum + (p.planned || 0),
         0
       ),
     [rap_plan]
