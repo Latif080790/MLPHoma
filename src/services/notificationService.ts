@@ -11,8 +11,9 @@ import type { AppNotification, CreateNotificationInput } from '../types/notifica
 // ------------------------------------------------------------------
 // Row ↔ Domain Mappers
 // ------------------------------------------------------------------
+type NotifDbRow = { id: string; project_id?: string; user_id?: string; type: string; severity: string; title: string; message: string; metadata?: Record<string, unknown>; entity_type?: string; entity_id?: string; is_read?: boolean; read_at?: string; created_at: string }
 
-function rowToNotification(row: any): AppNotification {
+function rowToNotification(row: NotifDbRow): AppNotification {
     return {
         id: row.id,
         projectId: row.project_id,
@@ -121,7 +122,7 @@ export const notificationService = {
         if (profileError) throw profileError
 
         // Create notification for each matching user
-        const notifications = (profiles || []).map((p: any) => ({
+        const notifications = (profiles || []).map((p: { id: string }) => ({
             id: generateId('notif'),
             project_id: projectId,
             user_id: p.id,

@@ -14,7 +14,10 @@
 import { assertSupabase } from '../lib/supabaseClient'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
-import type { ChangeOrder, ChangeOrderItem } from '../types/change-order'
+import type { ChangeOrderItem } from '../types/change-order'
+
+// ─── Local row types ──────────────────────────────────────────────────────────
+type CoItemRow = { target_wbs_id?: string | null; total_delta?: number | null }
 
 // ---------- Types ----------
 
@@ -100,8 +103,8 @@ export const changeOrderCascade = {
                     // No matching RAB item — log warning but don't fail
                     result.errors.push(`No RAB item found for WBS ${item.target_wbs_id}, skipping`)
                 }
-            } catch (e: any) {
-                result.errors.push(`RAB cascade error: ${e.message}`)
+            } catch (e: unknown) {
+                result.errors.push(`RAB cascade error: ${(e as Error).message}`)
             }
         }
 
@@ -144,8 +147,8 @@ export const changeOrderCascade = {
                         }
                     }
                 }
-            } catch (e: any) {
-                result.errors.push(`Timeline cascade error: ${e.message}`)
+            } catch (e: unknown) {
+                result.errors.push(`Timeline cascade error: ${(e as Error).message}`)
             }
         }
 
@@ -165,8 +168,8 @@ export const changeOrderCascade = {
                         .update({ total_budget: newBudget })
                         .eq('id', order.project_id)
                 }
-            } catch (e: any) {
-                result.errors.push(`Budget update failed: ${e.message}`)
+            } catch (e: unknown) {
+                result.errors.push(`Budget update failed: ${(e as Error).message}`)
             }
         }
 
@@ -232,8 +235,8 @@ export const changeOrderCascade = {
             .select('*')
             .eq('change_order_id', changeOrderId)
 
-        const affectedWbsIds = (items || []).map((i: any) => i.target_wbs_id).filter(Boolean)
-        const estimatedBudgetDelta = (items || []).reduce((sum: number, i: any) => sum + Number(i.total_delta || 0), 0)
+        const affectedWbsIds = (items || []).map((i: CoItemRow) => i.target_wbs_id).filter(Boolean)
+        const estimatedBudgetDelta = (items || []).reduce((sum: number, i: CoItemRow) => sum + Number(i.total_delta || 0), 0)
 
         let affectedTasks = 0
         if (affectedWbsIds.length > 0) {

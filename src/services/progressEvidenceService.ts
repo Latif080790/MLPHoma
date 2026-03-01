@@ -337,7 +337,8 @@ export const progressEvidenceService = {
 
         if (error || !data) return []
 
-        return data.map((row: any) => ({
+        type EvidenceDbRow = { id: string; progress_update_id?: string; task_id?: string; evidence_type?: string; file_url?: string; file_name?: string; file_size?: number; mime_type?: string; captured_at?: string; captured_by?: string; captured_by_name?: string; latitude?: number; longitude?: number; location_accuracy?: number; location_name?: string; device_info?: string; app_version?: string; is_verified?: boolean; verified_by?: string; verified_at?: string; description?: string; tags?: string[]; created_at?: string }
+        return data.map((row: EvidenceDbRow) => ({
             id: row.id,
             progressUpdateId: row.progress_update_id,
             taskId: row.task_id,

@@ -12,7 +12,9 @@ import type { WorkOrder, CreateWorkOrderInput, OpnameInput } from '../types/work
 // Row ↔ Domain Mappers
 // ------------------------------------------------------------------
 
-function rowToWorkOrder(row: any): WorkOrder {
+type WorkOrderDbRow = { id: string; project_id?: string; spk_number?: string; wbs_id?: string; wbs_name?: string; mandor_name?: string; mandor_contact?: string; scope_description?: string; unit?: string; unit_price?: number; max_volume?: number; max_amount?: number; actual_volume?: number; actual_amount?: number; paid_amount?: number; remaining_payment?: number; status?: string; start_date?: string; end_date?: string; notes?: string; created_at?: string; updated_at?: string }
+
+function rowToWorkOrder(row: WorkOrderDbRow): WorkOrder {
     return {
         id: row.id,
         projectId: row.project_id,

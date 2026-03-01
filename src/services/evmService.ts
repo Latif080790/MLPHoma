@@ -94,7 +94,7 @@ export interface ForecastResult {
  * Compute project forecasts based on EVM metrics.
  */
 export function computeForecasts(input: ForecastInput): ForecastResult {
-    const { metrics, startDate, endDate, progressPercent, daysElapsed } = input
+    const { metrics, progressPercent, daysElapsed } = input
 
     const eac = metrics.eac ?? 0
     const etc = metrics.etc ?? 0

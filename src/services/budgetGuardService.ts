@@ -123,7 +123,7 @@ export async function checkBudgetAvailability(
   }
 
   // Build map for quick lookup
-  const rapMap = new Map<string, any>()
+  const rapMap = new Map<string, typeof dbRapItems[number]>()
   dbRapItems.forEach(r => rapMap.set(r.id, r))
 
   // Process each item

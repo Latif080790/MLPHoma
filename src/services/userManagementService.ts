@@ -234,7 +234,7 @@ export const userManagementService = {
             }))
         }
 
-        return data.map((row: any) => ({
+        return data.map((row: UserMemberRow) => ({
             userId: row.user_id,
             profileName: row.profiles?.full_name || 'Unknown',
             profileEmail: row.profiles?.email || '',
@@ -304,15 +304,18 @@ export const userManagementService = {
             if (error) throw error
 
             return { success: true, message: `Invitation created for ${email} with role ${role}` }
-        } catch (e: any) {
-            return { success: false, message: e.message }
+        } catch (e: unknown) {
+            return { success: false, message: (e as Error).message }
         }
     },
 }
 
 // ---------- Helper ----------
 
-function rowToProfile(row: any): UserProfile {
+type UserMemberRow = { user_id?: string; profiles?: { full_name?: string; email?: string } | null; project_role?: string; assigned_at?: string }
+type ProfileRow = { id: string; email?: string; full_name?: string; name?: string; role?: string; is_active?: boolean; created_at?: string; updated_at?: string; avatar_url?: string; phone?: string; department?: string }
+
+function rowToProfile(row: ProfileRow): UserProfile {
     return {
         id: row.id,
         email: row.email || '',

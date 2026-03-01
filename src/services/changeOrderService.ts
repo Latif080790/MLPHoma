@@ -31,7 +31,7 @@ export const changeOrderService = {
 
             fullOrders.push({
                 ...order,
-                items: items?.map((i: any) => ({
+                items: items?.map((i: { wbs_items?: { name?: string }; [key: string]: unknown }) => ({
                     ...i,
                     wbs_name: i.wbs_items?.name
                 })) || []

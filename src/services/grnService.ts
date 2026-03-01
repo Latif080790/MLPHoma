@@ -11,11 +11,22 @@ import { auditService } from './auditService'
 import { supplyChainService } from './supplyChainService'
 import type { GoodsReceipt, CreateGrnInput, GrnStatus, GrnItem } from '../types/grn'
 
+// ─── Local row types ──────────────────────────────────────────────────────────
+type GrnDbRow = {
+    id: string; project_id: string; po_id: string; grn_number: string;
+    received_by: string; receiver_name: string; received_date: string;
+    items: GrnItem[]; photo_url: string | null; delivery_note_url: string | null;
+    notes: string | null; status: GrnStatus; verified_by: string | null; verified_at: string | null;
+    created_at: string; updated_at: string;
+}
+type PoItemLike = { item_name: string; quantity: number; unit_price: number; rap_item_id?: string | null }
+type GrnItemExt = GrnItem & { rapItemId?: string; unitPrice?: number }
+
 // ------------------------------------------------------------------
 // Row ↔ Domain Mappers
 // ------------------------------------------------------------------
 
-function rowToGrn(row: any): GoodsReceipt {
+function rowToGrn(row: GrnDbRow): GoodsReceipt {
     return {
         id: row.id,
         projectId: row.project_id,
@@ -172,7 +183,7 @@ export const grnService = {
         const client = assertSupabase()
 
         // Fetch the GRN
-        const { data: grnRow, error: grnError } = await client
+        const { error: grnError } = await client
             .from('goods_receipts')
             .select('*')
             .eq('id', grnId)
@@ -224,17 +235,17 @@ export const grnService = {
                     let grnTotal = 0
                     for (const gi of grnItems) {
                         // Find matching PO item by name
-                        const matchedPo = poItems.find((pi: any) =>
-                            pi.item_name === gi.itemName || pi.rap_item_id === (gi as any).rapItemId
+                        const matchedPo = poItems.find((pi: PoItemLike) =>
+                            pi.item_name === gi.itemName || pi.rap_item_id === (gi as GrnItemExt).rapItemId
                         )
-                        const unitPrice = matchedPo ? Number(matchedPo.unit_price) : (gi as any).unitPrice || 0
+                        const unitPrice = matchedPo ? Number(matchedPo.unit_price) : (gi as GrnItemExt).unitPrice || 0
                         grnTotal += gi.qtyReceived * unitPrice
                     }
 
                     // Fallback: if no match found, use PO total (backward compat)
                     if (grnTotal === 0) {
                         grnTotal = poItems.reduce(
-                            (sum: number, item: any) => sum + (item.quantity * item.unit_price), 0
+                            (sum: number, item: PoItemLike) => sum + (item.quantity * item.unit_price), 0
                         )
                     }
 
@@ -273,7 +284,7 @@ export const grnService = {
 
                 // Compare with PO ordered quantities
                 const poItemsList = po.po_items || []
-                const isFullyReceived = poItemsList.length > 0 && poItemsList.every((pi: any) => {
+                const isFullyReceived = poItemsList.length > 0 && poItemsList.every((pi: PoItemLike) => {
                     const received = receivedMap.get(pi.item_name) || 0
                     return received >= Number(pi.quantity)
                 })

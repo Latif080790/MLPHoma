@@ -10,9 +10,8 @@
  * the new project end date dynamically.
  */
 
-import { addDays, differenceInDays, parseISO, max, min, format } from 'date-fns'
+import { addDays, differenceInDays, parseISO, format } from 'date-fns'
 import type { TimelineTask } from '../store/timelineStore'
-import { progressCaptureService } from './progressCaptureService'
 import { useTimelineStore } from '../store/timelineStore'
 
 export interface CPMNode extends TimelineTask {
@@ -133,7 +132,6 @@ export const criticalPathService = {
             currNode.isCritical = currNode.totalFloat <= 0
 
             // Resolve predicted dates mapped to real calendar
-            const predStart = addDays(projectStartDate, currNode.earlyStart)
             const predEnd = addDays(projectStartDate, currNode.earlyFinish - 1) // -1 because day 1 is 0 days diff
             currNode.predictedEndDate = format(predEnd, 'yyyy-MM-dd')
         }
@@ -162,9 +160,6 @@ export const criticalPathService = {
             if (sd < earliestDate) earliestDate = sd
             if (ed > latestDatePlanned) latestDatePlanned = ed
         })
-
-        // Base network
-        const baseNodes = this.calculateCPM(tasks, earliestDate, false)
 
         // Predictive network
         const predictedNodes = this.calculateCPM(tasks, earliestDate, true)

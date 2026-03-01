@@ -10,12 +10,22 @@ import type { TKDNItem, TKDNSummary, TKDNCategoryBreakdown, TKDNCategory, TKDNCr
 import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
 
+// ─── Local row types ──────────────────────────────────────────────────────────
+type TkdnDbRow = {
+  id: string; project_id: string; name: string; category: TKDNCategory; origin: string;
+  unit: string; quantity: number; unit_price: number; total_value: number;
+  supplier: string | null; country_of_origin: string | null; hs_code: string | null;
+  rab_item_id: string | null; notes: string | null; created_at: string; updated_at: string;
+}
+type RapItemForTkdn = { id: string; description: string | null; quantity: number | null; unit: string | null; price: number | null; category: string | null; total_price: number | null }
+type TkdnDoc = jsPDF & { autoTable: (opts: Record<string, unknown>) => void }
+
 const CATEGORIES: TKDNCategory[] = ['material', 'labor', 'equipment', 'service']
 
 /**
  * Map a DB row to our TKDNItem type.
  */
-function mapRow(row: any): TKDNItem {
+function mapRow(row: TkdnDbRow): TKDNItem {
   return {
     id: row.id,
     project_id: row.project_id,
@@ -96,7 +106,7 @@ export const tkdnService = {
     const client = assertSupabase()
 
     // Recalculate total_value if quantity or unit_price changed
-    const payload: any = {
+    const payload: TKDNUpdateInput & { updated_at: string; total_value?: number } = {
       ...updates,
       updated_at: new Date().toISOString(),
     }
@@ -186,7 +196,7 @@ export const tkdnService = {
     if (!rapItems || rapItems.length === 0) return 0
 
     // 2. Map distinct RAP items to TKDN inputs
-    const newItems: any[] = rapItems.map((r: any) => {
+    const newItems: TKDNItem[] = rapItems.map((r: RapItemForTkdn) => {
       let tkdnCategory: TKDNCategory = 'material' // default
       const desc = (r.description || '').toLowerCase()
 
@@ -233,6 +243,7 @@ export const tkdnService = {
    */
   async generatePDF(summary: TKDNSummary, items: TKDNItem[]): Promise<void> {
     const doc = new jsPDF()
+    const h = doc as TkdnDoc
     const now = new Date().toLocaleDateString('id-ID', { dateStyle: 'long' })
 
     // Header
@@ -268,7 +279,7 @@ export const tkdnService = {
       `${c.tkdn_percentage.toFixed(2)}%`
     ])
 
-      ; (doc as any).autoTable({
+      ; h.autoTable({
         startY: 90,
         head: [['Kategori', 'KDN (Rp)', 'KLN (Rp)', 'Total (Rp)', '% TKDN']],
         body: breakdownData,
@@ -294,7 +305,7 @@ export const tkdnService = {
       `Rp ${i.total_value.toLocaleString('id-ID')}`
     ])
 
-      ; (doc as any).autoTable({
+      ; h.autoTable({
         startY: 25,
         head: [['Nama Item', 'Kategori', 'Asal', 'Nilai Total']],
         body: itemData,

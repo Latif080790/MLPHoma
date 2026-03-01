@@ -66,7 +66,8 @@ export const livingPriceService = {
             return []
         }
 
-        return (data || []).map((row: any) => ({
+        type PoItemWithPo = { unit_price?: number; quantity?: number; purchase_orders?: { id?: string; po_number?: string; vendor_name?: string; created_at?: string } | null }
+        return (data || []).map((row: PoItemWithPo) => ({
             poId: row.purchase_orders?.id,
             poNumber: row.purchase_orders?.po_number,
             vendorName: row.purchase_orders?.vendor_name,
@@ -101,8 +102,8 @@ export const livingPriceService = {
             const history = await this.getProcurementHistory(projectId, item.item_code, item.name)
             const livingPrice = history.length > 0 ? history[0].unitPrice : null
 
-            const snapshot = item.snapshot_price as any
-            const baseline = typeof snapshot === 'object' ? Number(snapshot?.total || 0) : Number(snapshot || item.unit_price || 0)
+            const snapshot = item.snapshot_price as { total?: number } | number | null
+            const baseline = typeof snapshot === 'object' && snapshot !== null ? Number((snapshot as { total?: number })?.total || 0) : Number(snapshot || item.unit_price || 0)
 
             analysis.push({
                 rabId: item.id,

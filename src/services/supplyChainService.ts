@@ -8,9 +8,6 @@ import {
     upsertPoItem,
     upsertInventoryTransaction,
     fetchInventoryTransactions,
-    fetchRabItems,
-    fetchProjects,
-    supabase,
     assertSupabase,
     MaterialRequestRow,
     PurchaseOrderRow,
@@ -20,6 +17,10 @@ import {
 import { MaterialRequest, PurchaseOrder, InventoryTransaction, MrStatus, PoStatus, PoItem } from '../types/supply-chain'
 import { generateId } from '../lib/idGenerator'
 import { checkBudgetAvailability, commitBudget, CheckableItem } from './budgetGuardService'
+
+// Local augmented row types for Supabase join results
+type MrRowWithJoin = MaterialRequestRow & { wbs_items?: { name?: string; code?: string } | null }
+type PoItemRowWithJoin = PoItemRow & { rap_items?: { rab_items?: { name?: string } | null } | null }
 
 export const supplyChainService = {
 
@@ -40,7 +41,7 @@ export const supplyChainService = {
             return []
         }
 
-        return (data || []).map((row: any) => ({
+        return (data || []).map((row: MrRowWithJoin) => ({
             id: row.id,
             projectId: row.project_id,
             wbsId: row.wbs_id,
@@ -90,7 +91,7 @@ export const supplyChainService = {
         const poId = generateId()
 
         // 2. Create Header
-        const { data: po, error: poError } = await upsertPurchaseOrder({
+        const { error: poError } = await upsertPurchaseOrder({
             id: poId,
             ...data,
             status: 'DRAFT'
@@ -131,10 +132,7 @@ export const supplyChainService = {
             return []
         }
 
-        return (data || []).map((row: any) => ({
-            id: row.id,
-            projectId: row.project_id,
-            poNumber: row.po_number,
+        return (data || []).map((row: PurchaseOrderRow) => ({
             vendorName: row.vendor_name,
             status: row.status as PoStatus,
             totalAmount: row.total_amount,
@@ -152,9 +150,7 @@ export const supplyChainService = {
             return []
         }
 
-        return (data || []).map((row: any) => ({
-            id: row.id,
-            poId: row.po_id,
+        return (data || []).map((row: PoItemRowWithJoin) => ({
             rapItemId: row.rap_item_id,
             rapItemName: row.rap_items?.rab_items?.name || 'Unknown Item',
             itemName: row.item_name,
@@ -271,7 +267,7 @@ export const supplyChainService = {
             return []
         }
 
-        return (data || []).map((row: any) => ({
+        return (data || []).map((row: InventoryTransactionRow) => ({
             id: row.id,
             projectId: row.project_id,
             wbsId: row.wbs_id,

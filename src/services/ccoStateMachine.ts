@@ -173,9 +173,10 @@ export const ccoStateMachine = {
             })
 
             return { success: true }
-        } catch (err: any) {
-            toast.error('Transition failed', { description: err.message })
-            return { success: false, error: err.message }
+        } catch (err: unknown) {
+            const e = err as Error
+            toast.error('Transition failed', { description: e.message })
+            return { success: false, error: e.message }
         }
     },
 

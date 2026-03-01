@@ -122,7 +122,6 @@ export const timelineScenarioService = {
                 task.durationDays = Number(mod.newValue)
                 task.endDate = addDays(task.startDate, task.durationDays)
             } else if (mod.field === 'start_date') {
-                const shiftDays = daysBetween(task.startDate, String(mod.newValue))
                 task.startDate = String(mod.newValue)
                 task.endDate = addDays(task.startDate, task.durationDays)
             }
@@ -218,13 +217,13 @@ export const timelineScenarioService = {
 
         // Store in a generic JSON column or dedicated table
         // For now, store in project metadata or a scenarios array
-        const { data, error } = await client
+        const { data } = await client
             .from('projects')
             .select('metadata')
             .eq('id', projectId)
             .single()
 
-        const metadata = (data?.metadata || {}) as any
+        const metadata = ((data?.metadata || {}) as Record<string, unknown>)
         const scenarios = metadata.timeline_scenarios || []
 
         scenarios.push({

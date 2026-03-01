@@ -152,7 +152,7 @@ export const rapProfitService = {
             return { total: 0, breakdown: [] }
         }
 
-        const breakdown: EquipmentCostEntry[] = data.map((d: any) => ({
+        const breakdown: EquipmentCostEntry[] = data.map((d: Record<string, unknown>) => ({
             resourceId: d.resource_id || '',
             logDate: d.log_date || '',
             status: d.status || 'UNKNOWN',
@@ -220,9 +220,10 @@ export const rapProfitService = {
         let warningCount = 0
         let criticalCount = 0
 
+        type RapWithJoin = (typeof rapItems)[number] & { wbs_items?: { name?: string; code?: string } | null; rab_items?: { total_price?: number; final_total?: number } | null }
         for (const rap of (rapItems || [])) {
-            const wbs = (rap as any).wbs_items
-            const rab = (rap as any).rab_items
+            const wbs = (rap as RapWithJoin).wbs_items
+            const rab = (rap as RapWithJoin).rab_items
             const rabTotal = Number(rab?.total_price || rab?.final_total || 0)
             const rapBudget = Number(rap.total_budget || 0)
             const actualCost = Number(rap.actual_cost || 0)
