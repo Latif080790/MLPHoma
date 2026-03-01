@@ -15,7 +15,6 @@ import type {
   ApprovalHistoryEntry,
   ApprovalTemplate,
   ApprovalChain,
-  ApprovalStep,
 } from '../types/rabApproval'
 
 /**
@@ -471,7 +470,7 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
             if (error) throw error
 
             const approvals: Record<string, RABApproval> = {}
-            data?.forEach((row: any) => {
+            data?.forEach((row: Record<string, unknown>) => {
               approvals[row.id] = {
                 id: row.id,
                 projectId: row.project_id,

@@ -47,8 +47,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
             const data = await notificationService.getNotifications(userId)
             const unreadCount = data.filter(n => !n.isRead).length
             set({ notifications: data, unreadCount, loading: false })
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, loading: false })
         }
     },
 
@@ -56,7 +56,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         try {
             const count = await notificationService.getUnreadCount(userId)
             set({ unreadCount: count })
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.warn('Failed to fetch unread count:', err)
         }
     },
@@ -70,7 +70,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                 ),
                 unreadCount: Math.max(0, state.unreadCount - 1),
             }))
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.warn('Failed to mark as read:', err)
         }
     },
@@ -86,7 +86,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                 })),
                 unreadCount: 0,
             }))
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.warn('Failed to mark all as read:', err)
         }
     },
@@ -101,7 +101,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                     ? Math.max(0, state.unreadCount - 1)
                     : state.unreadCount,
             }))
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.warn('Failed to delete notification:', err)
         }
     },
@@ -109,7 +109,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     createNotification: async (input: CreateNotificationInput) => {
         try {
             await notificationService.createNotification(input)
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.warn('Failed to create notification:', err)
         }
     },

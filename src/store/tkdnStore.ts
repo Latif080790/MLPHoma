@@ -48,9 +48,9 @@ export const useTKDNStore = create<TKDNState>((set, get) => ({
         ? tkdnService.calculateSummary(items, get().targetPercentage)
         : null
       set({ items, summary, _loadedProjectId: projectId, loading: false })
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to fetch TKDN items:', err)
-      toast.error('Gagal memuat data TKDN', { description: err.message })
+      toast.error('Gagal memuat data TKDN', { description: (err as Error).message })
       set({ loading: false })
     }
   },
@@ -67,8 +67,8 @@ export const useTKDNStore = create<TKDNState>((set, get) => ({
       })
       toast.success('Item TKDN berhasil ditambahkan')
       return item
-    } catch (err: any) {
-      toast.error('Gagal menambah item TKDN', { description: err.message })
+    } catch (err: unknown) {
+      toast.error('Gagal menambah item TKDN', { description: (err as Error).message })
       return null
     }
   },
@@ -84,8 +84,8 @@ export const useTKDNStore = create<TKDNState>((set, get) => ({
         }
       })
       toast.success('Item TKDN berhasil diperbarui')
-    } catch (err: any) {
-      toast.error('Gagal memperbarui item TKDN', { description: err.message })
+    } catch (err: unknown) {
+      toast.error('Gagal memperbarui item TKDN', { description: (err as Error).message })
     }
   },
 
@@ -105,13 +105,13 @@ export const useTKDNStore = create<TKDNState>((set, get) => ({
     try {
       await tkdnService.deleteItem(id)
       toast.success('Item TKDN berhasil dihapus')
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Revert on failure
       set((state) => ({
         items: prev,
         summary: tkdnService.calculateSummary(prev, state.targetPercentage),
       }))
-      toast.error('Gagal menghapus item TKDN', { description: err.message })
+      toast.error('Gagal menghapus item TKDN', { description: (err as Error).message })
     }
   },
 
@@ -125,8 +125,8 @@ export const useTKDNStore = create<TKDNState>((set, get) => ({
         toast.info('Tidak ada item RAP baru untuk diimpor')
       }
       return count
-    } catch (err: any) {
-      toast.error('Gagal mengimpor dari RAP', { description: err.message })
+    } catch (err: unknown) {
+      toast.error('Gagal mengimpor dari RAP', { description: (err as Error).message })
       return 0
     }
   },
@@ -140,8 +140,8 @@ export const useTKDNStore = create<TKDNState>((set, get) => ({
     try {
       await tkdnService.generatePDF(summary, items)
       toast.success('Laporan TKDN berhasil diunduh')
-    } catch (err: any) {
-      toast.error('Gagal membuat PDF', { description: err.message })
+    } catch (err: unknown) {
+      toast.error('Gagal membuat PDF', { description: (err as Error).message })
     }
   },
 

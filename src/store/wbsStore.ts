@@ -14,26 +14,6 @@ import { syncWBSItem, syncDelete, syncWBSItems } from '../lib/supabaseSyncServic
 import { generateId } from '../lib/idGenerator'
 
 /**
- * Generate WBS code based on hierarchy
- */
-function generateWBSCode(items: WBSItem[], parentId: string | null, index: number): string {
-  if (!parentId) {
-    // Root level: use numeric (1, 2, 3...)
-    const siblings = items.filter(item => !item.parentId)
-    const siblingIndex = siblings.findIndex(item => item.sortOrder === index)
-    return (siblingIndex + 1).toString()
-  } else {
-    // Child level: extend parent code (1.1, 1.2, ...)
-    const parent = items.find(item => item.id === parentId)
-    if (!parent) return (index + 1).toString()
-
-    const siblings = items.filter(item => item.parentId === parentId)
-    const siblingIndex = siblings.findIndex(item => item.sortOrder === index)
-    return `${parent.code}.${siblingIndex + 1}`
-  }
-}
-
-/**
  * Sort items by hierarchy and order
  */
 function sortHierarchy(items: WBSItem[]): WBSItem[] {
@@ -238,7 +218,7 @@ export const useWBSStore = create<WBSStore>()(
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
           // Deep copy to avoid mutation issues
-          let updatedItems = currentItems.map(item => ({ ...item }))
+          const updatedItems = currentItems.map(item => ({ ...item }))
 
           // Find the item to move
           const itemIndex = updatedItems.findIndex(i => i.id === itemId)
@@ -369,7 +349,7 @@ export const useWBSStore = create<WBSStore>()(
         const now = new Date().toISOString()
         const newItems: WBSItem[] = items.map((item, index) => ({
           ...item,
-          id: (item as any).id || generateId('wbs'),
+          id: (item as WBSItem & { id?: string }).id || generateId('wbs'),
           projectId,
           createdAt: now,
           updatedAt: now,

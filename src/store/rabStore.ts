@@ -14,9 +14,9 @@
 
 import { create } from 'zustand'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
-import { syncRABItem, syncDelete, syncRABItems } from '../lib/supabaseSyncService'
+import { syncDelete, syncRABItems } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
-import { rabItemInputSchema, rabItemUpdateSchema, rabItemSchema } from '../lib/validationSchemas'
+import { rabItemInputSchema, rabItemUpdateSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
 import { generateId } from '../lib/idGenerator'
 import type { RABItem } from '../types/rab'
@@ -55,7 +55,7 @@ export interface AuditEntry {
   id: string
   projectId: string
   action: string
-  payload?: any
+  payload?: Record<string, unknown>
   timestamp: string
 }
 
@@ -71,7 +71,7 @@ interface RabState {
   autoSaveTimers: Record<string, NodeJS.Timeout> // auto-save timers per project
   priceDrift: Record<string, {
     totalDrift: number
-    details: any[]
+    details: unknown[]
     lastChecked: string
   }>
   addItem: (projectId: string, item: Partial<RABItem>) => string
@@ -177,23 +177,25 @@ export const useRabStore = create<RabState>((set, get) => {
       snapshotForHistory(projectId)
       const id = generateId('rab')
       const now = new Date().toISOString()
+      type RabInput = Partial<RABItem> & { itemCode?: string; itemName?: string; unitPrice?: number; finalPrice?: number; final_total?: number; taskId?: string }
+      const r = item as RabInput
       const newItem: RABItem = {
         id,
         projectId,
-        item_code: (item as any).item_code ?? (item as any).itemCode,
-        item_name: (item as any).item_name ?? (item as any).itemName ?? (item as any).name,
-        name: (item as any).name ?? (item as any).item_name ?? (item as any).itemName,
-        unit: (item as any).unit,
-        volume: Number((item as any).volume || 0),
-        unit_price: Number((item as any).unit_price ?? (item as any).unitPrice ?? 0),
-        finalTotal: (item as any).finalTotal ?? (item as any).final_total ?? (item as any).finalPrice ?? 0,
-        final_total: (item as any).final_total ?? (item as any).finalTotal,
-        finalPrice: (item as any).finalPrice ?? (item as any).finalTotal,
-        taskId: (item as any).taskId,
-        tkdn_percent: (item as any).tkdn_percent ?? 0,
+        item_code: r.item_code ?? r.itemCode,
+        item_name: r.item_name ?? r.itemName ?? r.name,
+        name: r.name ?? r.item_name ?? r.itemName,
+        unit: r.unit,
+        volume: Number(r.volume || 0),
+        unit_price: Number(r.unit_price ?? r.unitPrice ?? 0),
+        finalTotal: r.finalTotal ?? r.final_total ?? r.finalPrice ?? 0,
+        final_total: r.final_total ?? r.finalTotal,
+        finalPrice: r.finalPrice ?? r.finalTotal,
+        taskId: r.taskId,
+        tkdn_percent: r.tkdn_percent ?? 0,
         isDraft: true, // new items start as draft
-        is_overhead: (item as any).is_overhead ?? false,
-        boq_id: (item as any).boq_id,
+        is_overhead: r.is_overhead ?? false,
+        boq_id: r.boq_id,
         createdAt: now,
         updatedAt: now,
         ...item,
@@ -393,7 +395,7 @@ export const useRabStore = create<RabState>((set, get) => {
 
     publishDrafts: (projectId: string) => {
       const items = get().itemsByProject[projectId] || []
-      const draftItems = items.filter(item => (item as any).isDraft)
+      const draftItems = items.filter(item => item.isDraft)
 
       if (draftItems.length === 0) {
         toast.info('No draft items to publish')
@@ -404,7 +406,7 @@ export const useRabStore = create<RabState>((set, get) => {
       set((s) => {
         const arr = s.itemsByProject[projectId] || []
         const updated = arr.map(item => {
-          if ((item as any).isDraft) {
+          if (item.isDraft) {
             return { ...item, isDraft: false, updatedAt: new Date().toISOString() }
           }
           return item
@@ -431,7 +433,7 @@ export const useRabStore = create<RabState>((set, get) => {
 
     getDraftCount: (projectId: string) => {
       const items = get().itemsByProject[projectId] || []
-      return items.filter(item => (item as any).isDraft).length
+      return items.filter(item => item.isDraft).length
     },
 
     hasUnsaved: (projectId: string) => {

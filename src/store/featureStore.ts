@@ -53,7 +53,7 @@ interface FeatureStoreState {
   /** Replace full config for project */
   setConfig: (projectId: string, cfg: FeatureConfig) => void
   /** Update a nested module config with a partial patch */
-  updateModuleConfig: (projectId: string, moduleKey: keyof FeatureConfig | string, patch: any) => void
+  updateModuleConfig: (projectId: string, moduleKey: keyof FeatureConfig | string, patch: Record<string, unknown>) => void
   /** Reset config to defaults (generator) */
   resetToDefault: (projectId: string) => FeatureConfig
   /** Export config (returning deep clone) */
@@ -235,7 +235,7 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     syncFeatureConfig(next)
   },
 
-  updateModuleConfig: (projectId: string, moduleKey: keyof FeatureConfig | string, patch: any) => {
+  updateModuleConfig: (projectId: string, moduleKey: keyof FeatureConfig | string, patch: Record<string, unknown>) => {
     if (!projectId) return
     
     // Validate module config update
@@ -247,7 +247,7 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     
     set((s) => {
       const prev = s.configs[projectId] ?? generateDefaultFeatureConfig(projectId)
-      const modulePrev = (prev as any)[moduleKey] ?? {}
+      const modulePrev = (prev as Record<string, unknown>)[moduleKey as string] ?? {}
       const moduleNext = { ...modulePrev, ...patch }
       const nextConfig = { ...prev, [moduleKey]: moduleNext }
       // persist

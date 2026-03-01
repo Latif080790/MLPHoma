@@ -36,7 +36,7 @@ export interface PaymentTerms {
   /** Tax Rate (fraction of billing, e.g. 0.11 for PPN or 0.03 for PPH) */
   taxRate?: number
   /** Optional additional fields */
-  [key: string]: any
+  [key: string]: unknown
 }
 
 /**
@@ -61,7 +61,7 @@ export interface Project {
   /** Optional AHSP Pricing Zone ID */
   zoneId?: string
   /** Misc free-form metadata */
-  meta?: Record<string, any>
+  meta?: Record<string, unknown>
 }
 
 /**
@@ -141,7 +141,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       }
 
       // Validate input (skip id field)
-      const { id, ...projectData } = project
+      const { id: _id, ...projectData } = project
       const validation = validate(projectInputSchema, projectData)
       if (!validation.success) {
         const errors = validation.errors || []
@@ -310,10 +310,10 @@ export const useProjectStore = create<ProjectState>((set, get) => {
           toast.success('Project Activated', {
             description: 'Baseline snapshots for RAB and RAP have been frozen successfully.'
           })
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error('[Project Activation] Freeze failed:', err)
           toast.error('Baseline Freeze Failed', {
-            description: err.message || 'Could not freeze baseline data.'
+            description: (err as Error).message || 'Could not freeze baseline data.'
           })
         }
       }
@@ -405,7 +405,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         if (error) throw error
         if (data) {
           const projects: Record<string, Project> = {}
-          data.forEach((row: any) => {
+          data.forEach((row: Record<string, unknown>) => {
             projects[row.id] = {
               id: row.id,
               name: row.name,
