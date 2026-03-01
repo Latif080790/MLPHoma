@@ -25,6 +25,7 @@
 - ✅ **non-v3 warning quick-wins phase-1 COMPLETE** - warnings reduced from 87 to 65 (`no-unused-vars` cleanup)
 - ✅ **non-v3 warning quick-wins phase-2 COMPLETE** - warnings reduced from 65 to 55 (typed cleanup on CashFlow + CurvaS)
 - ✅ **non-v3 warning quick-wins phase-3a COMPLETE** - warnings reduced from 55 to 49 (FeatureSettings + RAB + RAP)
+- ✅ **non-v3 warning quick-wins phase-3b COMPLETE** - warnings reduced from 49 to 29 (Timeline + Resource typed cleanup)
 
 ---
 
