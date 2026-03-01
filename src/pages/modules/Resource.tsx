@@ -24,13 +24,31 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 
 import { calculateUnifiedSchedule } from "../../lib/unifiedSchedule"
 import { useTimelineStore } from "../../store/timelineStore"
+import type { Project } from "../../store/projectStore"
+import type { RABItem } from "../../types/rab"
 
-const EMPTY_ARRAY: any[] = []
+interface HistogramRow {
+  period: string
+  startDate: string
+  cost: number
+  material: number
+  labor: number
+  equipment: number
+  other: number
+}
+
+interface TopItem {
+  key: string
+  name: string
+  total: number
+}
+
+const EMPTY_ARRAY: RABItem[] = []
 
 /**
  * Export histogram rows to CSV
  */
-function exportHistogramCSV(rows: any[]) {
+function exportHistogramCSV(rows: HistogramRow[]) {
   const headers = ["Period", "TotalCost", "Material", "Labor", "Equipment", "Other"]
   const lines = [headers.join(",")]
   rows.forEach((r) => lines.push([
@@ -53,7 +71,7 @@ function exportHistogramCSV(rows: any[]) {
 /**
  * Export histogram + top items to Excel
  */
-function exportResourceExcel(histogram: any[], top: { key: string; name: string; total: number }[]) {
+function exportResourceExcel(histogram: HistogramRow[], top: TopItem[]) {
   const ws1 = XLSX.utils.aoa_to_sheet([
     ["Resource Histogram (Cost Breakdown)"],
     ["GeneratedAt", new Date().toISOString()],
@@ -92,12 +110,12 @@ async function exportPDF(element: HTMLElement | null, filename = "Resource.pdf")
  * Resource Planning page
  */
 export default function Resource() {
-  const project = useProjectStore((s: any) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
+  const project = useProjectStore((s): Project | null => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = project?.id ?? "demo"
 
   // Stable selectors
-  const rabItemsSelector = useCallback((s: any) => s.getItems?.(projectId) ?? EMPTY_ARRAY, [projectId])
-  const tasksSelector = useCallback((s: any) => s.getTasks(projectId), [projectId])
+  const rabItemsSelector = useCallback((s) => s.getItems?.(projectId) ?? EMPTY_ARRAY, [projectId])
+  const tasksSelector = useCallback((s) => s.getTasks(projectId), [projectId])
 
   const rabItems = useRabStore(rabItemsSelector)
   const tasks = useTimelineStore(tasksSelector)
@@ -111,7 +129,7 @@ export default function Resource() {
     // Index AHSP items by code
     const ahspMap = new Map(ahspItems.map((i) => [i.code, i]))
 
-    rabItems.forEach((item: any) => {
+    rabItems.forEach((item: RABItem) => {
       const rabVolume = item.volume || 0
       if (rabVolume <= 0) return
 
@@ -196,22 +214,22 @@ export default function Resource() {
       labor: cs.laborCost,
       equipment: cs.equipmentCost,
       other: cs.otherCost
-    }))
+    })) as HistogramRow[]
   }, [tasks, rabItems, ahspItems, componentsByAHSP])
 
   // Calculate Top Items
   const topItems = useMemo(() => {
     // Filter items that have a taskId (are scheduled)
-    const scheduledItems = rabItems.filter((i: any) => i.taskId)
+    const scheduledItems = rabItems.filter((i: RABItem) => i.taskId)
 
     // Sort by total cost
     return scheduledItems
-      .map((i: any) => ({
+      .map((i: RABItem) => ({
         key: i.id as string,
         name: (i.item_name || i.name || "Unknown") as string,
         total: (i.finalTotal || (i.volume * (i.unit_price || 0)) || 0) as number
       }))
-      .sort((a: { total: number }, b: { total: number }) => b.total - a.total)
+      .sort((a: TopItem, b: TopItem) => b.total - a.total)
       .slice(0, 6)
   }, [rabItems])
 
@@ -330,8 +348,12 @@ export default function Resource() {
                           tickFormatter={(v) => v.toLocaleString("id-ID", { notation: "compact" })}
                         />
                         <Tooltip
-                          formatter={(v: any) => v.toLocaleString("id-ID")}
-                          labelFormatter={(l: any) => `Period: ${l}`}
+                          formatter={(v: unknown) => {
+                            if (typeof v === 'number') return v.toLocaleString('id-ID')
+                            if (typeof v === 'string') return v
+                            return ''
+                          }}
+                          labelFormatter={(l: unknown) => `Period: ${String(l)}`}
                         />
                         <Legend />
                         <Bar dataKey="material" name="Material" stackId="a" fill="#3b82f6" />

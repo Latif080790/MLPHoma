@@ -20,10 +20,11 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
 import { Plus, Trash2, AlertTriangle, Filter, Search, Settings2, Download, Flag, FileText, GanttChartSquare } from 'lucide-react'
 import GanttChart from '../../components/timeline/GanttChart'
 import TaskEditor from '../../components/timeline/TaskEditor'
+import type { TaskEditorProps } from '../../components/timeline/TaskEditor'
 import { WBSImportDialog } from '../../components/timeline/WBSImportDialog'
 import { useTimelineStore } from '../../store/timelineStore'
 import { useProjectStore } from '../../store/projectStore'
-import type { TimelineTask } from '../../store/timelineStore'
+import type { TimelineState, TimelineTask } from '../../store/timelineStore'
 import { calculateTimelineAlerts } from '../../lib/timelineAlerts'
 import { toast } from 'sonner'
 import html2canvas from 'html2canvas'
@@ -69,6 +70,22 @@ function addDays(base: Date, days: number): Date {
   return d
 }
 
+type ViewMode = 'day' | 'week' | 'month'
+
+type TimelineStoreApi = Pick<TimelineState, 'addTask' | 'updateTask' | 'updateTaskDates' | 'setBaseline'>
+
+function isViewMode(value: string): value is ViewMode {
+  return value === 'day' || value === 'week' || value === 'month'
+}
+
+function toEditorTask(task: TimelineTask | null): TaskEditorProps['task'] {
+  if (!task) return null
+  return {
+    ...task,
+    dependencies: task.dependencies ?? [],
+  }
+}
+
 /**
  * seedDemoTasks
  * Create a simple FS network for CPM demo.
@@ -76,13 +93,16 @@ function addDays(base: Date, days: number): Date {
  */
 function seedDemoTasks(projectId: string): boolean {
   try {
-    const api: any = (useTimelineStore as any).getState?.()
-    if (!api || typeof api.addTask !== 'function' || typeof api.updateTask !== 'function') return false
+    const api: Partial<TimelineStoreApi> = useTimelineStore.getState()
+    if (typeof api.addTask !== 'function' || typeof api.updateTask !== 'function') return false
+
+    const addTask = api.addTask
+    const updateTask = api.updateTask
 
     const today = new Date()
     const start0 = addDays(today, 0)
 
-    const t1 = api.addTask(projectId, {
+    const t1 = addTask(projectId, {
       name: 'Project Initiation',
       description: 'Kickoff, approvals, mobilization',
       startDate: toISODate(start0),
@@ -93,7 +113,7 @@ function seedDemoTasks(projectId: string): boolean {
     })
 
     const start1 = addDays(start0, 4)
-    const t2 = api.addTask(projectId, {
+    const t2 = addTask(projectId, {
       name: 'Foundation',
       description: 'Excavation, rebar, concrete',
       startDate: toISODate(start1),
@@ -102,12 +122,12 @@ function seedDemoTasks(projectId: string): boolean {
       status: 'not_started',
       priority: 'high',
     })
-    api.updateTask(projectId, t2, {
+    updateTask(projectId, t2, {
       dependencies: [{ id: 'dep-1', predecessorId: t1, successorId: t2, type: 'FS', lag: 0 }],
     })
 
     const start2 = addDays(start1, 6)
-    const t3 = api.addTask(projectId, {
+    const t3 = addTask(projectId, {
       name: 'Structural Frame',
       description: 'Columns, beams, slab',
       startDate: toISODate(start2),
@@ -116,12 +136,12 @@ function seedDemoTasks(projectId: string): boolean {
       status: 'not_started',
       priority: 'medium',
     })
-    api.updateTask(projectId, t3, {
+    updateTask(projectId, t3, {
       dependencies: [{ id: 'dep-2', predecessorId: t2, successorId: t3, type: 'FS', lag: 0 }],
     })
 
     const start3 = addDays(start2, 8)
-    const t4 = api.addTask(projectId, {
+    const t4 = addTask(projectId, {
       name: 'MEP Rough-in',
       description: 'MEP first fix',
       startDate: toISODate(start3),
@@ -130,12 +150,12 @@ function seedDemoTasks(projectId: string): boolean {
       status: 'not_started',
       priority: 'medium',
     })
-    api.updateTask(projectId, t4, {
+    updateTask(projectId, t4, {
       dependencies: [{ id: 'dep-3', predecessorId: t3, successorId: t4, type: 'FS', lag: 0 }],
     })
 
     const start4 = addDays(start3, 5)
-    const t5 = api.addTask(projectId, {
+    const t5 = addTask(projectId, {
       name: 'Finishes',
       description: 'Walls, floor, painting',
       startDate: toISODate(start4),
@@ -144,13 +164,13 @@ function seedDemoTasks(projectId: string): boolean {
       status: 'not_started',
       priority: 'medium',
     })
-    api.updateTask(projectId, t5, {
+    updateTask(projectId, t5, {
       dependencies: [{ id: 'dep-4', predecessorId: t4, successorId: t5, type: 'FS', lag: 0 }],
     })
 
     // Non-critical parallel path
     const startP = addDays(start0, 6)
-    const tp = api.addTask(projectId, {
+    const tp = addTask(projectId, {
       name: 'Landscaping',
       description: 'Hardscape & softscape',
       startDate: toISODate(startP),
@@ -159,7 +179,7 @@ function seedDemoTasks(projectId: string): boolean {
       status: 'not_started',
       priority: 'low',
     })
-    api.updateTask(projectId, tp, {
+    updateTask(projectId, tp, {
       dependencies: [{ id: 'dep-5', predecessorId: t1, successorId: tp, type: 'FS', lag: 2 }],
     })
 
@@ -177,7 +197,7 @@ export default function Timeline() {
   const { getTasks, removeTask } = useTimelineStore()
   const [editorOpen, setEditorOpen] = useState(false)
   const [importWBSOpen, setImportWBSOpen] = useState(false)
-  const [editingTask, setEditingTask] = useState<TimelineTask | null>(null)
+  const [editingTask, setEditingTask] = useState<TaskEditorProps['task']>(null)
   const [selectedId, setSelectedId] = useState<string>('')
   const [pendingDeleteTaskId, setPendingDeleteTaskId] = useState<string | null>(null)
 
@@ -185,7 +205,7 @@ export default function Timeline() {
   const [criticalOnly, setCriticalOnly] = useState<boolean>(false)
   const [showTooltip] = useState<boolean>(true)
   const [pxPerDay, setPxPerDay] = useState<number>(24)
-  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week')
+  const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [showDeps, setShowDeps] = useState(true)
   const [showBaseline, setShowBaseline] = useState(true)
   const [showTodayLine] = useState(true)
@@ -228,7 +248,7 @@ export default function Timeline() {
   const handleTaskMove = (taskId: string, newStartDate: string) => {
     try {
       const tasks = getTasks(projectId) || []
-      const task = tasks.find((x: any) => String(x.id ?? x.taskId) === String(taskId))
+      const task = tasks.find((x: TimelineTask) => String(x.id) === String(taskId))
       if (!task) {
         toast.error('Task not found')
         return
@@ -247,8 +267,8 @@ export default function Timeline() {
         endDate: toISODate(endNew),
       }
 
-      const api: any = (useTimelineStore as any).getState?.() || null
-      if (api && typeof api.updateTaskDates === 'function') {
+      const api = useTimelineStore.getState()
+      if (typeof api.updateTaskDates === 'function') {
         api.updateTaskDates(projectId, String(task.id), payload)
         toast.success('Task moved', { description: `${task.name} → ${payload.startDate} .. ${payload.endDate}` })
       } else {
@@ -364,7 +384,7 @@ export default function Timeline() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <div className="flex items-center gap-3">
             <Label className="text-xs text-neutral-500 font-medium uppercase tracking-wider">Scale</Label>
-            <Tabs value={viewMode} onValueChange={(v: any) => setViewMode(v)}>
+            <Tabs value={viewMode} onValueChange={(v: string) => { if (isViewMode(v)) setViewMode(v) }}>
               <TabsList className="h-8">
                 <TabsTrigger value="day" className="text-xs px-2 h-6">Day</TabsTrigger>
                 <TabsTrigger value="week" className="text-xs px-2 h-6">Week</TabsTrigger>
@@ -521,8 +541,9 @@ export default function Timeline() {
       )}
 
       {/* Chart */}
-      <Card ref={exportRef as any} className="border-0 shadow-md">
-        <CardHeader className="flex items-center justify-between bg-slate-50/50 border-b pb-4">
+      <div ref={exportRef}>
+        <Card className="border-0 shadow-md">
+          <CardHeader className="flex items-center justify-between bg-slate-50/50 border-b pb-4">
           <CardTitle className="flex items-center gap-2 text-base">
             <GanttChartSquare className="h-5 w-5 text-blue-600" />
             Project Schedule Visualization
@@ -548,7 +569,8 @@ export default function Timeline() {
               variant="outline"
               className="gap-2"
               onClick={() => {
-                (useTimelineStore as any).getState?.().setBaseline(projectId, true)
+                const api = useTimelineStore.getState()
+                api.setBaseline(projectId, true)
                 toast.success('Baseline captured')
               }}
             >
@@ -572,14 +594,14 @@ export default function Timeline() {
             tasksOverride={filteredTasks}
             onTaskClick={(id) => {
               const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
-              setEditingTask(t || null)
+              setEditingTask(toEditorTask(t))
               setEditorOpen(true)
               setSelectedId(id)
             }}
             onTaskMove={handleTaskMove}
             onTaskEdit={(id) => {
               const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
-              setEditingTask(t || null)
+              setEditingTask(toEditorTask(t))
               setEditorOpen(true)
               setSelectedId(id)
             }}
@@ -592,12 +614,13 @@ export default function Timeline() {
             adjust the timeline scale.
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
       {/* Editor modal */}
       <TaskEditor
         projectId={projectId}
-        task={editingTask as any}
+        task={editingTask}
         isOpen={editorOpen}
         onClose={() => setEditorOpen(false)}
         onSave={(saved) => {
