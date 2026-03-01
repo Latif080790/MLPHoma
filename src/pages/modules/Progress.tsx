@@ -17,6 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useProjectStore } from "../../store/projectStore"
 import { useCurvaSStore } from "../../store/curvaSStore"
 import { useWBSStore } from "../../store/wbsStore"
+import type { Project } from "../../store/projectStore"
+import type { CurvaSDataPoint } from "../../types/curvaS"
 import { EmptyState } from "../../components/common/EmptyState"
 import * as XLSX from "xlsx"
 import html2canvas from "html2canvas"
@@ -31,10 +33,26 @@ import { reportService } from "@/services/reportService"
 import { ResourceUsageDialog } from "@/components/progress/ResourceUsageDialog"
 import { RoleGuard } from "@/components/common/RoleGuard"
 
+type ProgressLogExtra = {
+  wbsId?: string
+  photoUrl?: string
+  qc_status?: 'pending' | 'approved' | 'rejected' | string
+  gpsCoords?: { latitude: number; longitude: number } | null
+}
+
+type RecentProgressRow = CurvaSDataPoint & ProgressLogExtra & {
+  wbsName?: string
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message) return error.message
+  return 'Unknown error'
+}
+
 /**
  * Export progress rows as CSV
  */
-function exportProgressCSV(rows: any[]) {
+function exportProgressCSV(rows: RecentProgressRow[]) {
   const headers = ["Date", "Planned%", "Actual%", "ActualCost", "Notes"]
   const lines = [headers.join(",")]
   rows.forEach((r) => {
@@ -62,7 +80,7 @@ function exportProgressCSV(rows: any[]) {
 /**
  * Export progress rows to Excel
  */
-function exportProgressExcel(rows: any[]) {
+function exportProgressExcel(rows: RecentProgressRow[]) {
   const sheetData = [
     ["Progress History"],
     ["GeneratedAt", new Date().toISOString()],
@@ -101,7 +119,7 @@ async function exportPDF(element: HTMLElement | null, filename = "Progress.pdf")
  * Progress module page
  */
 export default function Progress() {
-  const project = useProjectStore((s) => (s as any).getActiveProject?.() ?? null)
+  const project = useProjectStore((s): Project | null => s.getActiveProject?.() ?? null)
   const projectId = project?.id ?? "demo"
 
   const { addDataPoint, getDataPoints } = useCurvaSStore()
@@ -158,8 +176,8 @@ export default function Progress() {
       const url = await timelineService.uploadProgressPhoto(file, `progress/${projectId}`)
       setForm(prev => ({ ...prev, photoUrl: url }))
       toast.success("Photo uploaded successfully")
-    } catch (err: any) {
-      toast.error("Upload failed", { description: err.message })
+    } catch (err: unknown) {
+      toast.error("Upload failed", { description: getErrorMessage(err) })
     } finally {
       setUploading(false)
     }
@@ -173,13 +191,16 @@ export default function Progress() {
       all
         .filter((d) => d.actualProgress > 0 || d.actualCost > 0)
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .map(d => ({
-          ...d,
-          wbsName: wbsItems.find(w => w.id === (d as any).wbsId)?.name,
-          photoUrl: (d as any).photoUrl,
-          qc_status: (d as any).qc_status || 'pending',
-          gpsCoords: (d as any).gpsCoords
-        }))
+        .map((d): RecentProgressRow => {
+          const extra = d as CurvaSDataPoint & Partial<ProgressLogExtra>
+          return {
+            ...d,
+            wbsName: wbsItems.find(w => w.id === extra.wbsId)?.name,
+            photoUrl: extra.photoUrl,
+            qc_status: extra.qc_status || 'pending',
+            gpsCoords: extra.gpsCoords,
+          }
+        })
         .slice(0, 50),
     [all, wbsItems]
   )
@@ -205,15 +226,19 @@ export default function Progress() {
       }
     }
 
-    const payload: any = {
+    const existingPoint = all.find((point) => point.date === form.date)
+    const nowIso = new Date().toISOString()
+    const payload: CurvaSDataPoint = {
+      id: existingPoint?.id || `${projectId}-${form.date}`,
       projectId,
       date: form.date,
+      plannedProgress: existingPoint?.plannedProgress || 0,
       actualProgress: Number(form.progress) || 0,
+      plannedCost: existingPoint?.plannedCost || 0,
       actualCost: Number(form.cost) || 0,
-      wbsId: form.wbsId,
       notes: allowNoGps && !gpsCoords ? `[NO-GPS] ${form.notes}` : form.notes,
-      gpsCoords: gpsCoords,
-      updatedAt: new Date().toISOString(),
+      createdAt: existingPoint?.createdAt || nowIso,
+      updatedAt: nowIso,
     }
 
     // 1. Save detailed progress log with evidence (Phase 11)
@@ -486,8 +511,8 @@ export default function Progress() {
                           } else {
                             toast.error("GPS unavailable")
                           }
-                        } catch (err: any) {
-                          toast.error("GPS failed", { description: err.message })
+                        } catch (err: unknown) {
+                          toast.error("GPS failed", { description: getErrorMessage(err) })
                         }
                       }}>
                         <MapPin className={`h-4 w-4 ${gpsCoords ? 'text-green-600' : ''}`} />
@@ -502,11 +527,12 @@ export default function Progress() {
               </CardContent>
             </Card>
 
-            <Card ref={exportRef as any}>
-              <CardHeader>
-                <CardTitle>Riwayat Update Terbaru</CardTitle>
-              </CardHeader>
-              <CardContent>
+            <div ref={exportRef}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Riwayat Update Terbaru</CardTitle>
+                </CardHeader>
+                <CardContent>
                 <div className="rounded-md border">
                   <div className="grid grid-cols-6 border-b bg-neutral-50 p-2 text-sm font-medium dark:border-neutral-800 dark:bg-neutral-900">
                     <div>Date</div>
@@ -516,7 +542,7 @@ export default function Progress() {
                     <div>Notes</div>
                     <div className="text-right">Action</div>
                   </div>
-                  {recent.map((r: any) => (
+                  {recent.map((r) => (
                     <div key={r.id} className="grid grid-cols-6 items-center border-b p-2 text-sm last:border-b-0 dark:border-neutral-800">
                       <div>
                         {new Date(r.date).toLocaleDateString("id-ID")}
@@ -557,8 +583,9 @@ export default function Progress() {
                     <div className="p-3 text-sm text-neutral-500">Belum ada data progres.</div>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           <div className="space-y-6">
