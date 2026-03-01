@@ -52,7 +52,7 @@ export interface ActivityEntry {
   entityId?: string
   userName?: string
   createdAt: string
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 }
 
 // ─── Service ────────────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ export const projectOverviewService = {
       .select('final_total')
       .eq('project_id', projectId)
 
-    const rabTotal = (rabData || []).reduce((sum: number, r: any) => sum + (r.final_total || 0), 0)
+    const rabTotal = (rabData || []).reduce((sum: number, r: RabRow) => sum + (r.final_total || 0), 0)
 
     // RAP items (total_budget + actual_cost)
     const { data: rapData } = await client
@@ -79,9 +79,9 @@ export const projectOverviewService = {
       .select('total_budget, actual_cost, committed_cost')
       .eq('project_id', projectId)
 
-    const rapTotal = (rapData || []).reduce((sum: number, r: any) => sum + (r.total_budget || 0), 0)
-    const actualCost = (rapData || []).reduce((sum: number, r: any) => sum + (r.actual_cost || 0), 0)
-    const committedCost = (rapData || []).reduce((sum: number, r: any) => sum + (r.committed_cost || 0), 0)
+    const rapTotal = (rapData || []).reduce((sum: number, r: RapRow) => sum + (r.total_budget || 0), 0)
+    const actualCost = (rapData || []).reduce((sum: number, r: RapRow) => sum + (r.actual_cost || 0), 0)
+    const committedCost = (rapData || []).reduce((sum: number, r: RapRow) => sum + (r.committed_cost || 0), 0)
     const remainingBudget = rabTotal - actualCost
 
     // Overall progress from timeline_tasks
@@ -91,7 +91,7 @@ export const projectOverviewService = {
       .eq('project_id', projectId)
 
     const progressPercent = tasks && tasks.length > 0
-      ? Math.round(tasks.reduce((s: number, t: any) => s + (t.progress || 0), 0) / tasks.length)
+      ? Math.round(tasks.reduce((s: number, t: ProgressRow) => s + (t.progress || 0), 0) / tasks.length)
       : 0
 
     return { rabTotal, rapTotal, actualCost, committedCost, remainingBudget, progressPercent }
@@ -132,7 +132,7 @@ export const projectOverviewService = {
     }
 
     const now = new Date()
-    return (data || []).map((t: any) => {
+    return (data || []).map((t: TaskRow) => {
       const taskDate = new Date(t.end_date)
       const diffMs = taskDate.getTime() - now.getTime()
       const daysUntilDue = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
@@ -170,7 +170,7 @@ export const projectOverviewService = {
     }
 
     const now = new Date()
-    return (data || []).map((t: any) => {
+    return (data || []).map((t: TaskRow) => {
       const taskDate = new Date(t.end_date)
       const diffMs = taskDate.getTime() - now.getTime()
       const daysUntilDue = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
@@ -203,7 +203,7 @@ export const projectOverviewService = {
     }
 
     const userIds = (data || [])
-      .map((row: any) => row.user_id)
+      .map((row: MemberRow) => row.user_id)
       .filter((id: string | null | undefined): id is string => typeof id === 'string' && id.length > 0)
 
     const profileMap = new Map<string, { full_name?: string; email?: string }>()
@@ -226,7 +226,7 @@ export const projectOverviewService = {
       }
     }
 
-    return (data || []).map((row: any) => ({
+    return (data || []).map((row: MemberRow) => ({
       id: row.id,
       userId: row.user_id,
       role: row.project_role || 'user',
@@ -256,7 +256,7 @@ export const projectOverviewService = {
       return []
     }
 
-    const filtered = (data || []).filter((row: any) => {
+    const filtered = (data || []).filter((row: AuditRow) => {
       const detailsProjectId = row?.details?.project_id
       return row.entity_id === projectId || detailsProjectId === projectId
     })

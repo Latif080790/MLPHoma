@@ -4,6 +4,15 @@ import { scheduleAlertService } from './scheduleAlertService'
 import { phiService, PHIResult } from './phiService'
 import { anomalyService, Anomaly } from './anomalyService'
 
+// ─── Local row types ──────────────────────────────────────────────────────────
+type RapAhspItem = { qty_budget: number | null; unit_price_budget: number | null; committed_cost: number | null; actual_cost: number | null; ahsp_items: { name: string } | { name: string }[] | null }
+type DashRiskRow = { id: string; description: string; risk_score: number | null; status: string; created_at?: string }
+type DashPoRow = { id: string; po_number: string; total_amount: number; created_at: string; status: string }
+type DashProgressRow = { progress: number | null }
+type DashTaskRow = { id: string; name: string; end_date: string; progress: number | null }
+type GlobalRiskRow = { id: string; description: string; risk_score: number | null; projects?: { name: string } | null }
+type WasteAlert = { material: string; waste: number; limit: number; message?: string }
+
 export interface DashboardStats {
     totalBudget: number
     utilizedBudget: number
@@ -66,10 +75,10 @@ export const dashboardService = {
         let totalBudget = 0
         let utilizedBudget = 0
         let actualCostTotal = 0
-        const wasteAlerts: any[] = []
+        const wasteAlerts: WasteAlert[] = []
 
         if (rapItems) {
-            rapItems.forEach((item: any) => {
+            rapItems.forEach((item: RapAhspItem) => {
                 const budget = (item.qty_budget || 0) * (item.unit_price_budget || 0)
                 const utilized = item.committed_cost || 0 // Use committed as "Utilized" for visibility
                 const actual = item.actual_cost || 0
@@ -121,7 +130,7 @@ export const dashboardService = {
             .order('risk_score', { ascending: false })
             .limit(5)
 
-        const topRisks = activeRisks?.map((r: any) => ({
+        const topRisks = activeRisks?.map((r: DashRiskRow) => ({
             id: r.id,
             description: r.description,
             score: r.risk_score
@@ -144,7 +153,7 @@ export const dashboardService = {
             .order('end_date', { ascending: true })
             .limit(5)
 
-        const upcomingTasks = upcomingTasksData?.map((t: any) => ({
+        const upcomingTasks = upcomingTasksData?.map((t: DashTaskRow) => ({
             id: t.id,
             name: t.name,
             date: t.end_date,
@@ -167,11 +176,11 @@ export const dashboardService = {
             { week: 'W4', inflow: 0, outflow: 0, balance: 0 },
         ]
 
-        const activityFeed: any[] = []
+        const activityFeed: DashboardStats['activityFeed'] = []
 
         if (recentPOs && recentPOs.length > 0) {
             // Add POs to Activity Feed and check for Price Anomalies
-            recentPOs.slice(0, 5).forEach((po: any) => {
+            recentPOs.slice(0, 5).forEach((po: DashPoRow) => {
                 activityFeed.push({
                     id: po.id,
                     type: 'PO',
@@ -195,7 +204,7 @@ export const dashboardService = {
             })
 
             // Distribute last 4 POs into the chart just to show movement
-            recentPOs.slice(0, 4).forEach((po: any, idx: number) => {
+            recentPOs.slice(0, 4).forEach((po: DashPoRow, idx: number) => {
                 if (cashflow[idx]) {
                     cashflow[idx].outflow = po.total_amount / 1000000
                     cashflow[idx].inflow = (po.total_amount * 1.2) / 1000000
@@ -218,7 +227,7 @@ export const dashboardService = {
 
         if (allTasks && allTasks.length > 0) {
             overallProgress = Math.round(
-                allTasks.reduce((sum: number, t: any) => sum + (t.progress || 0), 0) / allTasks.length
+                allTasks.reduce((sum: number, t: DashProgressRow) => sum + (t.progress || 0), 0) / allTasks.length
             )
         }
 
@@ -283,7 +292,7 @@ export const dashboardService = {
         })
 
         if (activeRisks) {
-            activeRisks.slice(0, 2).forEach((risk: any) => {
+            activeRisks.slice(0, 2).forEach((risk: DashRiskRow) => {
                 activityFeed.push({
                     id: risk.id,
                     type: 'RISK',
@@ -404,7 +413,7 @@ export const dashboardService = {
             .order('risk_score', { ascending: false })
             .limit(5)
 
-        const topGlobalRisks = topRisks?.map((r: any) => ({
+        const topGlobalRisks = topRisks?.map((r: GlobalRiskRow) => ({
             id: r.id,
             description: r.description,
             score: r.risk_score,
