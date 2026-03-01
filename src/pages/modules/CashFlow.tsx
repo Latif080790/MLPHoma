@@ -14,7 +14,6 @@ import { PlusSquare, Download, RefreshCw } from 'lucide-react'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Button } from '../../components/ui/button'
 import { useProjectStore } from '../../store/projectStore'
-import { useProjectStore } from '../../store/projectStore'
 import { useRapStore } from '../../store/rapStore'
 import { useCurvaSStore } from '../../store/curvaSStore'
 import { useFinanceStore } from '../../store/financeStore'
@@ -26,8 +25,10 @@ import WhatIfPanel from '../../components/cashflow/WhatIfPanel'
 import CashChart from '../../components/cashflow/CashChart'
 import PeriodTable from '../../components/cashflow/PeriodTable'
 import { calculateCashFlow } from '../../lib/cashflowCalculator'
+import type { CurvaSDataPoint } from '../../types/curvaS'
+import type { PaymentTerms } from '../../store/projectStore'
 
-const EMPTY_ARRAY: any[] = []
+const EMPTY_ARRAY: never[] = []
 
 /**
  * CashFlow
@@ -47,7 +48,10 @@ export default function CashFlow(): JSX.Element {
   const activeProject = useProjectStore((s) => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = activeProject?.id ?? ''
   const projectBudget = activeProject?.budget ?? 0
-  const paymentTerms = activeProject?.paymentTerms || {}
+  const paymentTerms = useMemo<PaymentTerms>(
+    () => activeProject?.paymentTerms || {},
+    [activeProject?.paymentTerms]
+  )
 
   /**
    * Selector/store helpers yang hanya mengambil referensi fungsi (tidak subscribe data besar).
@@ -132,8 +136,14 @@ export default function CashFlow(): JSX.Element {
         return
       }
 
-      const fallbackBudget = Array.isArray(rapPlan) ? (rapPlan as any[]).reduce((s, p) => s + (p.planned || 0), 0) : 0
-      setPlannedFromRap(projectId, rapPlan as any, projectBudget || fallbackBudget)
+      const curvaPlan = rapPlan.map((entry) => ({
+        period: entry.date,
+        planned: entry.planned || 0,
+        actual: entry.actual || 0,
+      }))
+
+      const fallbackBudget = curvaPlan.reduce((sum, point) => sum + point.planned, 0)
+      setPlannedFromRap(projectId, curvaPlan, projectBudget || fallbackBudget)
 
       // Jalankan analisis pada tick berikutnya agar state settle dulu
       setTimeout(() => {
@@ -193,7 +203,7 @@ export default function CashFlow(): JSX.Element {
     const points = useCurvaSStore.getState().getDataPoints(projectId) || []
     if (!points || points.length === 0) return
 
-    const rows = points.map((p: any) => ({
+    const rows = points.map((p: CurvaSDataPoint) => ({
       date: p.date,
       plannedCost: p.plannedCost ?? 0,
       actualCost: p.actualCost ?? 0,
