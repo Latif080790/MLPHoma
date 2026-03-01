@@ -3,6 +3,15 @@ import { supplyChainService } from './supplyChainService';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
+// ─── Local row types ──────────────────────────────────────────────────────────
+type RapItemRow = { total_price: number | null }
+type WbsItemRow = { progress: number | null; weight: number | null; start_date: string | null; end_date: string | null }
+type RiskRow = { id?: string; description?: string; status?: string; risk_score?: number | null }
+type WbsIssueRow = { id: string; name: string; status: string; progress: number | null }
+type PoRow = { id: string; po_number: string; status: string; total_amount: number }
+type InventoryItem = { materialName: string; unit: string; current: number }
+type HandoverDoc = jsPDF & { autoTable: (opts: Record<string, unknown>) => void; lastAutoTable: { finalY: number } }
+
 export interface HandoverSummary {
     budget: {
         planned: number;
@@ -47,11 +56,11 @@ export const handoverService = {
             .select('total_price')
             .eq('project_id', projectId);
 
-        const planned = rapData?.reduce((sum: number, item: any) => sum + (item.total_price || 0), 0) || 0;
+        const planned = rapData?.reduce((sum: number, item: RapItemRow) => sum + (item.total_price || 0), 0) || 0;
 
         // 2. Fetch Schedule Progress (WBS weighted average)
         // Columns progress/weight/start_date/end_date may not exist yet (added in migration 034)
-        let wbsData: any[] | null = null;
+        let wbsData: WbsItemRow[] | null = null;
         try {
             const { data, error } = await supabase
                 .from('wbs_items')
@@ -62,8 +71,8 @@ export const handoverService = {
             // Columns may not exist yet — use defaults
         }
 
-        const totalWeight = wbsData?.reduce((sum: number, item: any) => sum + (item.weight || 0), 0) || 0;
-        const weightedProgress = wbsData?.reduce((sum: number, item: any) => sum + ((item.progress || 0) * (item.weight || 0)), 0) || 0;
+        const totalWeight = wbsData?.reduce((sum: number, item: WbsItemRow) => sum + (item.weight || 0), 0) || 0;
+        const weightedProgress = wbsData?.reduce((sum: number, item: WbsItemRow) => sum + ((item.progress || 0) * (item.weight || 0)), 0) || 0;
         const projectProgress = totalWeight > 0 ? weightedProgress / totalWeight : 0;
 
         // 3. Fetch Risks
@@ -74,7 +83,7 @@ export const handoverService = {
             .eq('status', 'OPEN');
 
         // 4. Fetch Inventory Stock
-        let stock: any[] = [];
+        let stock: InventoryItem[] = [];
         try {
             stock = await supplyChainService.getInventoryStock(projectId);
         } catch {
@@ -93,16 +102,16 @@ export const handoverService = {
                 progress: Math.round(projectProgress),
                 status: projectProgress >= 100 ? 'Completed' : 'In Progress',
                 actualFinish: (wbsData || [])
-                    .filter((w: any) => w.progress === 100)
-                    .sort((a: any, b: any) => new Date(b.end_date).getTime() - new Date(a.end_date).getTime())[0]?.end_date || '-',
+                    .filter((w: WbsItemRow) => w.progress === 100)
+                    .sort((a: WbsItemRow, b: WbsItemRow) => new Date(b.end_date ?? '').getTime() - new Date(a.end_date ?? '').getTime())[0]?.end_date || '-',
             },
             safety: {
                 total: risksData?.length || 0,
-                highSeverity: (risksData || []).filter((r: any) => (r.risk_score || 0) >= 15).length || 0,
+                highSeverity: (risksData || []).filter((r: RiskRow) => (r.risk_score || 0) >= 15).length || 0,
                 incidents: 0,
                 manhours: 0,
             },
-            inventory: stock.map((s: any) => ({
+            inventory: stock.map((s: InventoryItem) => ({
                 materialName: s.materialName,
                 unit: s.unit,
                 current: s.current,
@@ -124,7 +133,7 @@ export const handoverService = {
             .eq('status', 'OPEN');
 
         if (risks) {
-            risks.forEach((r: any) => issues.push({
+            risks.forEach((r: RiskRow) => issues.push({
                 id: r.id,
                 type: 'RISK',
                 desc: r.description,
@@ -143,7 +152,7 @@ export const handoverService = {
                 .lt('progress', 100);
 
             if (!wbsErr && wbs) {
-                wbs.forEach((w: any) => issues.push({
+                wbs.forEach((w: WbsIssueRow) => issues.push({
                     id: w.id,
                     type: 'WBS',
                     desc: w.name,
@@ -163,7 +172,7 @@ export const handoverService = {
             .not('status', 'in', '("COMPLETED", "CANCELLED")');
 
         if (pos) {
-            pos.forEach((p: any) => issues.push({
+            pos.forEach((p: PoRow) => issues.push({
                 id: p.id,
                 type: 'PO',
                 desc: `PO #${p.po_number}`,
@@ -177,6 +186,7 @@ export const handoverService = {
 
     async generateHandoverReport(projectId: string, summary: HandoverSummary, issues: OutstandingIssue[]) {
         const doc = new jsPDF();
+        const h = doc as HandoverDoc;
         const now = new Date().toLocaleDateString('id-ID', { dateStyle: 'full' });
 
         // --- Page 1: Executive Summary ---
@@ -193,7 +203,7 @@ export const handoverService = {
         doc.setFontSize(14);
         doc.text('1. Ringkasan Anggaran', 20, 50);
         doc.setFontSize(10);
-        (doc as any).autoTable({
+        h.autoTable({
             startY: 55,
             head: [['Keterangan', 'Nilai (Rp)']],
             body: [
@@ -206,10 +216,10 @@ export const handoverService = {
 
         // Schedule Section
         doc.setFontSize(14);
-        doc.text('2. Jadwal & Progres', 20, (doc as any).lastAutoTable.finalY + 15);
+        doc.text('2. Jadwal & Progres', 20, h.lastAutoTable.finalY + 15);
         doc.setFontSize(10);
-        (doc as any).autoTable({
-            startY: (doc as any).lastAutoTable.finalY + 20,
+        h.autoTable({
+            startY: h.lastAutoTable.finalY + 20,
             head: [['Parameter', 'Status']],
             body: [
                 ['Tanggal Mulai', summary.schedule.startDate],
@@ -223,10 +233,10 @@ export const handoverService = {
 
         // Safety Section
         doc.setFontSize(14);
-        doc.text('3. K3L (Safety)', 20, (doc as any).lastAutoTable.finalY + 15);
+        doc.text('3. K3L (Safety)', 20, h.lastAutoTable.finalY + 15);
         doc.setFontSize(10);
-        (doc as any).autoTable({
-            startY: (doc as any).lastAutoTable.finalY + 20,
+        h.autoTable({
+            startY: h.lastAutoTable.finalY + 20,
             head: [['Parameter', 'Jumlah']],
             body: [
                 ['Total Resiko Teridentifikasi', summary.safety.total],
@@ -246,7 +256,7 @@ export const handoverService = {
             doc.setFontSize(12);
             doc.text('Tidak ada masalah tertunda (Clean Handover).', 20, 30);
         } else {
-            (doc as any).autoTable({
+            h.autoTable({
                 startY: 25,
                 head: [['Tipe', 'Deskripsi', 'Prioritas', 'Status']],
                 body: issues.map(i => [i.type, i.desc, i.priority, i.status]),
@@ -264,7 +274,7 @@ export const handoverService = {
             doc.setFontSize(12);
             doc.text('Tidak ada sisa material tercatat.', 20, 30);
         } else {
-            (doc as any).autoTable({
+            h.autoTable({
                 startY: 25,
                 head: [['Material', 'Satuan', 'Sisa Stok']],
                 body: summary.inventory.map(i => [i.materialName, i.unit, i.current]),
