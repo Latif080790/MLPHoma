@@ -31,7 +31,7 @@ export interface ApprovalRequest {
     title: string
     description?: string
 
-    impactSummary: Record<string, any>
+    impactSummary: Record<string, unknown>
     // Example: { budgetImpact: -500000, sourceWbs: "Kolom", targetWbs: "Dinding", warning: "3rd transfer this week" }
 
     status: ApprovalStatus
@@ -55,7 +55,7 @@ export interface CreateApprovalInput {
     approverRole?: ApproverRole
     title: string
     description?: string
-    impactSummary?: Record<string, any>
+    impactSummary?: Record<string, unknown>
 }
 
 /**

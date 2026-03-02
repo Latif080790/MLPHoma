@@ -14,8 +14,8 @@ import { useRef, useEffect, useCallback, useState } from 'react'
 type CalcType = 'calculateAHSPPrice' | 'calculatePareto' | 'recalculateAll' | 'calculateRABTotals'
 
 interface PendingRequest {
-    resolve: (value: any) => void
-    reject: (reason: any) => void
+    resolve: (value: unknown) => void
+    reject: (reason: unknown) => void
 }
 
 let _sharedWorker: Worker | null = null
@@ -79,7 +79,7 @@ export function useCalculationWorker() {
     }, [])
 
     const postCalculation = useCallback(
-        <T = any>(type: CalcType, payload: any): Promise<T> => {
+        <T = unknown>(type: CalcType, payload: unknown): Promise<T> => {
             return new Promise<T>((resolve, reject) => {
                 if (!workerRef.current) {
                     reject(new Error('Worker not ready'))
@@ -101,7 +101,7 @@ export function useCalculationWorker() {
  * Standalone function for non-hook contexts (e.g., inside Zustand stores).
  * Creates a temporary worker, runs the calculation, and terminates.
  */
-export async function runCalculation<T = any>(type: CalcType, payload: any): Promise<T> {
+export async function runCalculation<T = unknown>(type: CalcType, payload: unknown): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         const worker = new Worker(
             new URL('../workers/calculationWorker.ts', import.meta.url),

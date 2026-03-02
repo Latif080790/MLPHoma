@@ -26,7 +26,7 @@ function defaultShouldRetry(error: Error): boolean {
   }
 
   // Check for status code in error
-  const status = (error as any).status
+  const status = (error as Error & { status?: number }).status
   if (status) {
     // Retry on 5xx server errors and 429 (rate limit)
     return status >= 500 || status === 429
@@ -99,6 +99,7 @@ export async function retryAsync<T>(
 /**
  * Create a retry wrapper for a function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withRetry<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   options: RetryOptions = {}
@@ -121,9 +122,10 @@ export async function retryFetch(
     
     // Throw error for non-ok responses
     if (!response.ok) {
-      const error: any = new Error(`HTTP ${response.status}: ${response.statusText}`)
-      error.status = response.status
-      error.response = response
+      const error = Object.assign(
+        new Error(`HTTP ${response.status}: ${response.statusText}`),
+        { status: response.status, response }
+      )
       throw error
     }
 
@@ -241,7 +243,7 @@ export class CircuitBreaker<T> {
   ) {}
 
   async execute(): Promise<T> {
-    const { failureThreshold = 5, resetTimeout = 60000, monitoringPeriod = 10000 } = this.options
+    const { failureThreshold = 5, resetTimeout = 60000, monitoringPeriod: _monitoringPeriod = 10000 } = this.options
 
     // Check if circuit is open
     if (this.state === 'open') {

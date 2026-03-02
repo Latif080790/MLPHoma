@@ -20,7 +20,6 @@ import { TimelineTask } from '../store/timelineStore'
 import { AHSPItem, AHSPComponent } from '../types/ahsp'
 
 const DEFAULT_TEAM_SIZE = 3 // Assumed number of workers per task
-const DEFAULT_WORK_HOURS = 7 // Effective hours per day
 
 /**
  * Calculate rational duration based on AHSP analysis
@@ -42,7 +41,7 @@ function calculateDuration(
   // Coefficient is usually OH (Orang Hari) per Unit Volume
   // Total Man Days = Volume * Sum(Coefficients)
   const totalManDays = laborComps.reduce((sum, comp) => {
-    let coef = comp.coefficient
+    const coef = comp.coefficient
     // Normalize units if necessary (assuming standard OH for now)
     return sum + coef
   }, 0) * volume
@@ -92,10 +91,8 @@ export function generateScheduleFromRAB(
   })
 
   // 2. Process each Category
-  Object.entries(byCategory).forEach(([category, items]) => {
-    // Create Summary Task for Category
-    const categoryDuration = 0 // Will be updated based on children
-    const categoryStart = currentStartDate
+  Object.entries(byCategory).forEach(([_category, items]) => {
+    // Skip summary task creation - items are processed directly
     let maxCategoryEnd = currentStartDate
 
     // We don't add Summary Task to "tasks" array directly if the store doesn't support hierarchy yet,

@@ -7,7 +7,7 @@
  */
 
 import { useAuthStore } from '@/store/authStore'
-import { rbacService, type Action, type Role, ACTIONS } from '@/services/rbacService'
+import { rbacService, type Action, type Role } from '@/services/rbacService'
 
 export { ACTIONS } from '@/services/rbacService'
 export type { Action, Role } from '@/services/rbacService'

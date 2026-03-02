@@ -9,12 +9,12 @@
 
 import { useState, useCallback, useMemo } from 'react'
 
-export type ValidationRule<T = any> = {
-  validate: (value: T, allValues?: Record<string, any>) => boolean | Promise<boolean>
+export type ValidationRule<T = unknown> = {
+  validate: (value: T, allValues?: Record<string, unknown>) => boolean | Promise<boolean>
   message: string
 }
 
-export type FieldRules<T = any> = {
+export type FieldRules<T = unknown> = {
   required?: boolean | string
   min?: { value: number; message?: string }
   max?: { value: number; message?: string }
@@ -25,7 +25,7 @@ export type FieldRules<T = any> = {
   custom?: ValidationRule<T>[]
 }
 
-export interface FormConfig<T extends Record<string, any>> {
+export interface FormConfig<T extends Record<string, unknown>> {
   initialValues: T
   validationRules?: Partial<Record<keyof T, FieldRules>>
   validateOnChange?: boolean
@@ -36,7 +36,7 @@ export interface FormConfig<T extends Record<string, any>> {
 /**
  * Hook for form validation
  */
-export function useFormValidation<T extends Record<string, any>>(config: FormConfig<T>) {
+export function useFormValidation<T extends Record<string, unknown>>(config: FormConfig<T>) {
   const [values, setValues] = useState<T>(config.initialValues)
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({})
   const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({})
@@ -47,7 +47,7 @@ export function useFormValidation<T extends Record<string, any>>(config: FormCon
    * Validate single field
    */
   const validateField = useCallback(
-    async (name: keyof T, value: any): Promise<string | null> => {
+    async (name: keyof T, value: unknown): Promise<string | null> => {
       const rules = config.validationRules?.[name]
       if (!rules) return null
 
@@ -62,14 +62,14 @@ export function useFormValidation<T extends Record<string, any>>(config: FormCon
       // Email validation
       if (rules.email && value) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(value)) {
+        if (!emailRegex.test(String(value))) {
           return typeof rules.email === 'string' ? rules.email : 'Format email tidak valid'
         }
       }
 
       // Pattern validation
       if (rules.pattern && value) {
-        if (!rules.pattern.value.test(value)) {
+        if (!rules.pattern.value.test(String(value))) {
           return rules.pattern.message || 'Format tidak sesuai'
         }
       }
@@ -133,7 +133,7 @@ export function useFormValidation<T extends Record<string, any>>(config: FormCon
    * Handle field change
    */
   const handleChange = useCallback(
-    async (name: keyof T, value: any) => {
+    async (name: keyof T, value: unknown) => {
       setValues((prev) => ({ ...prev, [name]: value }))
 
       if (config.validateOnChange) {
@@ -201,7 +201,7 @@ export function useFormValidation<T extends Record<string, any>>(config: FormCon
   /**
    * Set field value
    */
-  const setFieldValue = useCallback((name: keyof T, value: any) => {
+  const setFieldValue = useCallback((name: keyof T, value: unknown) => {
     setValues((prev) => ({ ...prev, [name]: value }))
   }, [])
 

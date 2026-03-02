@@ -27,7 +27,7 @@ export interface SyncTask {
   correlationId: string
   operation: SyncOperation
   table: string
-  data: any
+  data: Record<string, unknown> | Array<Record<string, unknown>>
   timestamp: number
   retryCount: number
   maxRetries: number
@@ -40,7 +40,7 @@ export interface SyncTask {
 export interface SyncResult {
   success: boolean
   error?: string
-  data?: any
+  data?: unknown
 }
 
 /**
@@ -137,7 +137,7 @@ class SyncQueueManager {
     }
 
     try {
-      let result: any
+      let result: { error?: { message: string } | null; data?: unknown } | null = null
 
       switch (task.operation) {
         case 'insert':
@@ -422,6 +422,7 @@ if (typeof window !== 'undefined') {
   syncQueue.loadQueue()
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ===========================
  * HIGH-LEVEL SYNC FUNCTIONS
@@ -1119,6 +1120,7 @@ export function syncTKDNItem(item: any): string {
   })
 }
 
+/* eslint-enable @typescript-eslint/no-explicit-any */
 /**
  * ===========================
  * EXPORTS

@@ -192,14 +192,14 @@ function recalculateAll(payload: {
 type WorkerRequest = {
     id: string
     type: 'calculateAHSPPrice' | 'calculatePareto' | 'recalculateAll' | 'calculateRABTotals'
-    payload: any
+    payload: unknown
 }
 
 self.onmessage = (ev: MessageEvent<WorkerRequest>) => {
     const { id, type, payload } = ev.data
 
     try {
-        let result: any
+        let result: unknown
 
         switch (type) {
             case 'calculateAHSPPrice':
@@ -219,7 +219,7 @@ self.onmessage = (ev: MessageEvent<WorkerRequest>) => {
         }
 
         self.postMessage({ id, type, result })
-    } catch (error: any) {
-        self.postMessage({ id, type, result: null, error: error.message || 'Worker error' })
+    } catch (error: unknown) {
+        self.postMessage({ id, type, result: null, error: (error as Error).message || 'Worker error' })
     }
 }

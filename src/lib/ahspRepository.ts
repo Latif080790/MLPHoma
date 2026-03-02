@@ -8,8 +8,8 @@
  */
 
 import { assertSupabase, fetchResources as sbFetchResources, fetchAhspItems as sbFetchAhspItems, bulkImportAHSPDirect } from './supabaseClient'
-import type { AhspItemRow, ResourceRow, AhspComponentRow, AhspPriceHistoryRow } from './supabaseClient'
-import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncAHSPComponents, syncDelete, syncAHSPItems, syncAHSPItemsWithComponents } from './supabaseSyncService'
+import type { AhspItemRow, ResourceRow, AhspComponentRow } from './supabaseClient'
+import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from './supabaseSyncService'
 import type {
     Resource,
     AHSPItem,
@@ -105,8 +105,8 @@ export const ahspRepository = {
             }
 
             return { data: allResources, error: null }
-        } catch (err: any) {
-            return { data: [], error: err.message || 'Failed to fetch resources' }
+        } catch (err: unknown) {
+            return { data: [], error: (err as Error).message || 'Failed to fetch resources' }
         }
     },
 
@@ -144,8 +144,8 @@ export const ahspRepository = {
             }
 
             return { data: allItems, error: null }
-        } catch (err: any) {
-            return { data: [], error: err.message || 'Failed to fetch AHSP items' }
+        } catch (err: unknown) {
+            return { data: [], error: (err as Error).message || 'Failed to fetch AHSP items' }
         }
     },
 
@@ -167,7 +167,7 @@ export const ahspRepository = {
                     .order('created_at', { ascending: false })
 
                 if (error) continue
-                    ; (logs || []).forEach((log: any) => {
+                    ; (logs || []).forEach((log: { ahsp_id: string; creation_mode: string; source_reference?: string | null }) => {
                         if (!logMap.has(log.ahsp_id)) {
                             logMap.set(log.ahsp_id, {
                                 creation_mode: log.creation_mode,
@@ -244,8 +244,8 @@ export const ahspRepository = {
             }
 
             return { data: componentsByAHSP, error: null }
-        } catch (err: any) {
-            return { data: {}, error: err.message || 'Failed to fetch components' }
+        } catch (err: unknown) {
+            return { data: {}, error: (err as Error).message || 'Failed to fetch components' }
         }
     },
 
@@ -265,7 +265,7 @@ export const ahspRepository = {
             const { data, error } = await client.from('zones').select('*').order('created_at')
             if (error) throw error
 
-            const zones: Zone[] = (data || []).map((z: any) => ({
+            const zones: Zone[] = (data || []).map((z: { id: string; name: string; description?: string; is_active?: boolean; created_at?: string; updated_at?: string }) => ({
                 id: z.id,
                 name: z.name,
                 description: z.description,
@@ -275,8 +275,8 @@ export const ahspRepository = {
             }))
 
             return { data: zones, error: null }
-        } catch (err: any) {
-            return { data: [], error: err.message || 'Failed to fetch zones' }
+        } catch (err: unknown) {
+            return { data: [], error: (err as Error).message || 'Failed to fetch zones' }
         }
     },
 
@@ -318,7 +318,7 @@ export const ahspRepository = {
 
             if (error) throw error
 
-            const prices: AhspZonePrice[] = (data || []).map((p: any) => ({
+            const prices: AhspZonePrice[] = (data || []).map((p: { id: string; ahsp_id: string; zone_id: string; price_material?: number; price_labor?: number; price_equipment?: number; price_subcon?: number; overhead_percentage?: number; profit_percentage?: number; final_price?: number; created_at?: string; updated_at?: string }) => ({
                 id: p.id,
                 ahspId: p.ahsp_id,
                 zoneId: p.zone_id,
@@ -334,8 +334,8 @@ export const ahspRepository = {
             }))
 
             return { data: prices, error: null }
-        } catch (err: any) {
-            return { data: [], error: err.message || 'Failed to fetch zone prices' }
+        } catch (err: unknown) {
+            return { data: [], error: (err as Error).message || 'Failed to fetch zone prices' }
         }
     },
 
@@ -374,7 +374,7 @@ export const ahspRepository = {
             const { data, error } = await query
             if (error) throw error
 
-            const history: PriceHistory[] = (data || []).map((h: any) => ({
+            const history: PriceHistory[] = (data || []).map((h: { id: string; ahsp_id: string; old_price?: number | null; new_price?: number; change_type?: string; change_reason?: string; created_at?: string }) => ({
                 id: h.id,
                 ahspId: h.ahsp_id,
                 oldPrice: h.old_price ?? null,
@@ -385,8 +385,8 @@ export const ahspRepository = {
             }))
 
             return { data: history, error: null }
-        } catch (err: any) {
-            return { data: [], error: err.message || 'Failed to fetch price history' }
+        } catch (err: unknown) {
+            return { data: [], error: (err as Error).message || 'Failed to fetch price history' }
         }
     },
 
@@ -404,8 +404,8 @@ export const ahspRepository = {
             await client.from('resources').delete().gt('created_at', filterValue)
 
             return { success: true, error: null }
-        } catch (err: any) {
-            return { success: false, error: err.message || 'Failed to clear data' }
+        } catch (err: unknown) {
+            return { success: false, error: (err as Error).message || 'Failed to clear data' }
         }
     },
 }

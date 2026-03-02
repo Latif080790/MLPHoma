@@ -245,7 +245,7 @@ export async function fetchProjects() {
   return client.from('projects').select('*')
 }
 
-export async function upsertProject(project: any) {
+export async function upsertProject(project: Record<string, unknown>) {
   const client = assertSupabase()
   // Map camelCase to snake_case if needed, or assume table uses snake_case
   // For now, let's assume the table columns match the object keys or we map them here.
@@ -420,7 +420,7 @@ export async function saveCreationLog(log: {
   creation_mode: 'sni' | 'custom' | 'historical'
   source_reference?: string
   created_by?: string
-  metadata?: any
+  metadata?: unknown
 }) {
   const client = assertSupabase()
   const id = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`

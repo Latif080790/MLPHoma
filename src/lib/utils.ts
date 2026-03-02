@@ -79,18 +79,18 @@ export function isDefined<T>(v: T | null | undefined): v is T {
  * - Menerima array of objects (header otomatis) atau array of arrays.
  * - Nilai diproteksi dari koma/quote lewat escaping.
  */
-export function toCSV(rows: Array<Record<string, any>> | Array<Array<any>>): string {
+export function toCSV(rows: Array<Record<string, unknown>> | Array<Array<unknown>>): string {
   if (!rows || rows.length === 0) return ''
   // Array of objects → gunakan header
   if (!Array.isArray(rows[0])) {
-    const objs = rows as Array<Record<string, any>>
+    const objs = rows as Array<Record<string, unknown>>
     const headers = Array.from(
       objs.reduce<Set<string>>((set, obj) => {
         Object.keys(obj).forEach((k) => set.add(k))
         return set
       }, new Set())
     )
-    const escape = (v: any) => {
+    const escape = (v: unknown) => {
       if (v === null || v === undefined) return ''
       const s = String(v)
       if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
@@ -104,8 +104,8 @@ export function toCSV(rows: Array<Record<string, any>> | Array<Array<any>>): str
   }
 
   // Array of arrays
-  const arr = rows as Array<Array<any>>
-  const escape = (v: any) => {
+  const arr = rows as Array<Array<unknown>>
+  const escape = (v: unknown) => {
     if (v === null || v === undefined) return ''
     const s = String(v)
     if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
@@ -121,15 +121,15 @@ export function toCSV(rows: Array<Record<string, any>> | Array<Array<any>>): str
  * - downloadCSV(fileName, rows)
  */
 export function downloadCSV(
-  a: string | Array<Record<string, any>> | Array<Array<any>>,
-  b?: string | Array<Record<string, any>> | Array<Array<any>>
+  a: string | Array<Record<string, unknown>> | Array<Array<unknown>>,
+  b?: string | Array<Record<string, unknown>> | Array<Array<unknown>>
 ): void {
   let fileName = 'data.csv'
-  let rows: Array<Record<string, any>> | Array<Array<any>>
+  let rows: Array<Record<string, unknown>> | Array<Array<unknown>>
 
   if (typeof a === 'string') {
     fileName = a || fileName
-    rows = (b as any) || []
+    rows = (b as Array<Record<string, unknown>> | Array<Array<unknown>>) || []
   } else {
     rows = a
     if (typeof b === 'string' && b) fileName = b

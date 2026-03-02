@@ -19,7 +19,7 @@ import React from 'react'
  * @param obj - Record<string, T> | undefined
  * @returns T[] - memoized array of values
  */
-export function useObjectValues<T = any>(obj?: Record<string, T> | null): T[] {
+export function useObjectValues<T = unknown>(obj?: Record<string, T> | null): T[] {
   return React.useMemo(() => {
     if (!obj) return []
     return Object.values(obj)

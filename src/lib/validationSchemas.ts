@@ -30,7 +30,7 @@ export const projectStatusEnum = z.enum([
 export const commonValidations = {
   code: z.string()
     .min(1, 'Code is required')
-    .regex(/^[A-Za-z0-9\.\-]+$/, 'Code must contain only letters, numbers, dots, and dashes'),
+    .regex(/^[A-Za-z0-9.-]+$/, 'Code must contain only letters, numbers, dots, and dashes'),
 
   name: z.string()
     .min(1, 'Name is required')
