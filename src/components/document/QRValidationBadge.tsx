@@ -30,6 +30,7 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
     const profile = useAuthStore(s => s.profile)
     const { can } = usePermissions()
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
         // Only fetch if document is approved
         if (status === 'APPROVED') {

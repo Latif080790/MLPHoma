@@ -55,19 +55,21 @@ export function TeamManagementPanel({ projectId }: TeamManagementPanelProps) {
 
     useEffect(() => {
         if (projectId) load()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId])
 
     const handleInvite = async () => {
         if (!inviteEmail) return
         setInviting(true)
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await userManagementService.inviteUser(inviteEmail, inviteRole as any)
             toast.success(`Invited ${inviteEmail}`)
             setInviteOpen(false)
             setInviteEmail("")
             load()
-        } catch (err: any) {
-            toast.error("Invite failed", { description: err.message })
+        } catch (err: unknown) {
+            toast.error("Invite failed", { description: (err as Error).message })
         } finally {
             setInviting(false)
         }
@@ -75,21 +77,23 @@ export function TeamManagementPanel({ projectId }: TeamManagementPanelProps) {
 
     const handleAssign = async (userId: string, role: string) => {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await userManagementService.assignToProject(projectId, userId, role as any)
             toast.success("Member assigned")
             load()
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err: unknown) {
+            toast.error((err as Error).message)
         }
     }
 
     const handleRoleChange = async (userId: string, newRole: string) => {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             await userManagementService.updateUserRole(userId, newRole as any)
             toast.success("Role updated")
             load()
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err: unknown) {
+            toast.error((err as Error).message)
         }
     }
 

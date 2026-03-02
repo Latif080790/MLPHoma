@@ -25,7 +25,6 @@ import {
     XCircle,
     Loader2,
     ArrowDown,
-    FileText,
 } from 'lucide-react'
 import { assertSupabase } from '@/lib/supabaseClient'
 import { format } from 'date-fns'
@@ -47,7 +46,7 @@ interface ProcurementTracePanelProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     po: PurchaseOrder | null
-    projectId: string
+    projectId: _projectId
 }
 
 const statusIcon = (status: string) => {
@@ -87,7 +86,7 @@ export function ProcurementTracePanel({
     open,
     onOpenChange,
     po,
-    projectId,
+    projectId: _projectId,
 }: ProcurementTracePanelProps) {
     const [grns, setGrns] = useState<GoodsReceipt[]>([])
     const [invoices, setInvoices] = useState<InvoiceTrace[]>([])
@@ -97,6 +96,7 @@ export function ProcurementTracePanel({
         if (open && po) {
             fetchTraceData(po.id)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, po])
 
     async function fetchTraceData(poId: string) {
@@ -111,7 +111,7 @@ export function ProcurementTracePanel({
                 .eq('po_id', poId)
                 .order('created_at', { ascending: true })
 
-            setGrns((grnRows || []).map((r: any) => ({
+            setGrns((grnRows || []).map((r: Record<string, unknown>) => ({
                 id: r.id,
                 projectId: r.project_id,
                 poId: r.po_id,
@@ -137,7 +137,7 @@ export function ProcurementTracePanel({
                 .eq('po_id', poId)
                 .order('created_at', { ascending: true })
 
-            setInvoices((invRows || []).map((r: any) => ({
+            setInvoices((invRows || []).map((r: Record<string, unknown>) => ({
                 id: r.id,
                 invoiceNumber: r.invoice_number,
                 vendorName: r.vendor_name,

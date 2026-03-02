@@ -7,7 +7,7 @@ import { Search } from 'lucide-react'
 import { Input } from '../ui/input'
 import { useWBSStore } from '../../store/wbsStore'
 import { useTimelineStore } from '../../store/timelineStore'
-import type { WBSItem } from '../../types/wbs'
+// WBSItem type used in store, not directly here
 
 interface WBSImportDialogProps {
   projectId: string
@@ -17,16 +17,16 @@ interface WBSImportDialogProps {
 
 export function WBSImportDialog({ projectId, open, onOpenChange }: WBSImportDialogProps) {
   const { itemsByProject } = useWBSStore()
-  const { addTask, getTasks } = useTimelineStore()
+  const { getTasks } = useTimelineStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-  const wbsItems = itemsByProject[projectId] || []
-  const existingTasks = getTasks(projectId) || []
+  const wbsItems = useMemo(() => itemsByProject[projectId] || [], [itemsByProject, projectId])
+  const existingTasks = useMemo(() => getTasks(projectId) || [], [getTasks, projectId])
 
   // Filter out WBS items that already have linked tasks
   // This is a heuristic: check if any task has this wbsId
-  const linkedWbsIds = new Set(existingTasks.map(t => t.wbsId).filter(Boolean))
+  const linkedWbsIds = useMemo(() => new Set(existingTasks.map(t => t.wbsId).filter(Boolean)), [existingTasks])
 
   const availableItems = useMemo(() => {
     return wbsItems.filter(item => !linkedWbsIds.has(item.id))
@@ -74,7 +74,8 @@ export function WBSImportDialog({ projectId, open, onOpenChange }: WBSImportDial
       wbsId: item.id,
     }))
 
-    const { importTasks } = (useTimelineStore.getState() as any)
+    const state = useTimelineStore.getState()
+    const { importTasks } = state
     if (importTasks) {
       importTasks(projectId, tasks)
     } else {

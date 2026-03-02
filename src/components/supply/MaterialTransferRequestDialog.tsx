@@ -74,8 +74,8 @@ export function MaterialTransferRequestDialog({ open, onOpenChange, projectId, o
       onOpenChange(false)
       onCreated?.()
       resetForm()
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to submit transfer request')
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || 'Failed to submit transfer request')
     }
   }
 

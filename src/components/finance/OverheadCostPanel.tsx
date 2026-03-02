@@ -5,8 +5,8 @@
  * Displays summary ratios, category breakdown, and list of items.
  */
 
-import React, { useState, useMemo, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import React, { useState, useMemo } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -23,8 +23,7 @@ import {
     type OverheadCategory,
     type CalculationMethod
 } from '@/services/overheadCostService'
-import { useCurvaSStore } from '@/store/curvaSStore' // Assuming to get total direct cost (RAB total)
-import { Plus, Trash2, Edit2, Wallet, PieChart, RefreshCw, Calculator, CopyPlus } from 'lucide-react'
+import { Plus, Trash2, Edit2, Wallet, PieChart, CopyPlus } from 'lucide-react'
 import { Building2 } from 'lucide-react' // Using standard lucide icons
 
 export function OverheadCostPanel() {

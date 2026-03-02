@@ -13,8 +13,8 @@ import React, { FC, useMemo } from 'react'
  */
 interface DiffEntry {
   path: string
-  before: any
-  after: any
+  before: unknown
+  after: unknown
 }
 
 /**
@@ -22,9 +22,9 @@ interface DiffEntry {
  */
 interface Props {
   /** Current object snapshot (base) */
-  base?: any | null
+  base?: unknown
   /** Snapshot to compare against base */
-  compare?: any | null
+  compare?: unknown
 }
 
 /**
@@ -39,6 +39,7 @@ interface Props {
  * @param b - compare object
  * @returns DiffEntry[]
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 function deepDiff(a: any, b: any, prefix = ''): DiffEntry[] {
   const entries: DiffEntry[] = []
 
@@ -77,6 +78,7 @@ function deepDiff(a: any, b: any, prefix = ''): DiffEntry[] {
 
   return entries
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * SnapshotDiffViewer

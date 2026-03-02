@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,14 +16,14 @@ import { Label } from '@/components/ui/label'
 import { useProjectStore } from '@/store/projectStore'
 import { subcontractorService, type Opname, type SPK } from '@/services/subcontractorService'
 import { useAuthStore } from '@/store/authStore'
-import { FileDown, Calculator, Check, Wallet, Search, Play, Send } from 'lucide-react'
+import { FileDown, Calculator, Wallet, Play } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 
 export function OpnameBoard() {
     const { activeProjectId } = useProjectStore()
     const profile = useAuthStore(s => s.profile)
-    const [refreshKey, setRefreshKey] = useState(0)
+    const [_refreshKey, setRefreshKey] = useState(0)
 
     // Only get ACTIVE SPKs for drafting new opnames
     const spks = activeProjectId ? subcontractorService.getSPKs(activeProjectId) : []
@@ -59,8 +59,8 @@ export function OpnameBoard() {
             const draft = subcontractorService.draftOpname(spk.id, prev + 10, 0)
             setDraftOpname(draft)
             setCreateOpen(true)
-        } catch (e: any) {
-            toast.error(e.message)
+        } catch (e: unknown) {
+            toast.error((e as Error).message)
         }
     }
 
@@ -70,7 +70,7 @@ export function OpnameBoard() {
         try {
             const draft = subcontractorService.draftOpname(selectedSpk.id, val, otherDed)
             setDraftOpname(draft)
-        } catch (e: any) {
+        } catch {
             // Just catch visual errors during typing
         }
     }
@@ -81,7 +81,7 @@ export function OpnameBoard() {
         try {
             const draft = subcontractorService.draftOpname(selectedSpk.id, reqProgress, val)
             setDraftOpname(draft)
-        } catch (e: any) { /* Intentionally empty - draft calculation is optional */ }
+        } catch { /* Intentionally empty - draft calculation is optional */ }
     }
 
     const handleSaveDraft = () => {
@@ -113,8 +113,8 @@ export function OpnameBoard() {
         try {
             subcontractorService.postToFinance(id, userName)
             refresh()
-        } catch (e: any) {
-            toast.error(e.message)
+        } catch (e: unknown) {
+            toast.error((e as Error).message)
         }
     }
 

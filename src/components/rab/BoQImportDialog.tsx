@@ -56,10 +56,10 @@ function parseCSV(text: string): string[][] {
 }
 
 /* ── XLSX loader (guarded) ── */
-let XLSX: any = null
+let XLSX: Record<string, unknown> | null = null
 try { 
   // Dynamic import for optional xlsx dependency - will be loaded when needed
-  void import('xlsx').then(m => { XLSX = m.default || m }).catch(() => { XLSX = null })
+  void import('xlsx').then(m => { XLSX = (m.default || m) as Record<string, unknown> }).catch(() => { XLSX = null })
 } catch { 
   XLSX = null 
 }
@@ -79,7 +79,7 @@ interface BoQImportDialogProps {
 }
 
 export default function BoQImportDialog({ open, onOpenChange, projectId }: BoQImportDialogProps) {
-    const addItem = useRabStore((s: any) => s.addItem)
+    const addItem = useRabStore((s: { addItem: unknown }) => s.addItem as (projectId: string, item: Record<string, unknown>) => void)
 
     // Wizard steps
     const [step, setStep] = useState<'upload' | 'map' | 'classify' | 'preview'>('upload')
@@ -118,8 +118,8 @@ export default function BoQImportDialog({ open, onOpenChange, projectId }: BoQIm
                     const data = new Uint8Array(result as ArrayBuffer)
                     const workbook = XLSX.read(data, { type: 'array' })
                     const sheet = workbook.Sheets[workbook.SheetNames[0]]
-                    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][]
-                    processRows(json.map(r => r.map((c: any) => c == null ? '' : String(c))))
+                    const json = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][]
+                    processRows(json.map(r => (r as unknown[]).map((c: unknown) => c == null ? '' : String(c))))
                 } catch {
                     notify.error('Gagal membaca file XLSX')
                 }
@@ -213,7 +213,7 @@ export default function BoQImportDialog({ open, onOpenChange, projectId }: BoQIm
                     category: m.category?.trim() || (row.is_overhead ? 'Overhead' : 'Direct Cost'),
                     is_overhead: row.is_overhead,
                     boq_id: `boq-import-${Date.now()}-${imported}`,
-                } as any)
+                } as Record<string, unknown>)
                 imported++
             }
             notify.success(`Berhasil import ${imported} item RAB (${parsedRows.filter(r => r.is_overhead).length} overhead, ${parsedRows.filter(r => !r.is_overhead).length} biaya langsung)`)

@@ -114,7 +114,7 @@ export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProp
         return analyzeMaterialShortages(activeProjectId)
     }, [activeProjectId])
 
-    const { alerts, criticalCount, warningCount, infoCount } = summary
+    const { alerts, criticalCount, warningCount, infoCount: _infoCount } = summary
     const totalAlerts = alerts.length
     const displayAlerts = compact ? alerts.slice(0, 3) : alerts
 

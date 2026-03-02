@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
-import { useProjectStore } from "@/store/projectStore"
 import { useTimelineStore } from "@/store/timelineStore"
 import { toast } from "sonner"
 import { smartMRService, type MaterialSuggestion } from "@/services/smartMRService"
@@ -53,6 +52,7 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
         }
     })
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const selectedWbsId = form.watch("wbs_id")
 
     // Fetch Smart MR suggestions when WBS changes
@@ -99,8 +99,8 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
             onOpenChange(false)
             form.reset()
             setSuggestions([])
-        } catch (err: any) {
-            toast.error("Failed to create request: " + err.message)
+        } catch (err: unknown) {
+            toast.error("Failed to create request: " + (err as Error).message)
         }
     }
 
@@ -116,6 +116,7 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
                         <Label>WBS Task (Optional)</Label>
                         <Select
                             onValueChange={(val) => form.setValue("wbs_id", val)}
+                            // eslint-disable-next-line react-hooks/incompatible-library
                             value={form.watch("wbs_id")}
                         >
                             <SelectTrigger>

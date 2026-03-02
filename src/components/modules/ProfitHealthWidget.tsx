@@ -8,9 +8,8 @@ import React, { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, TrendingDown, Target, RefreshCw, Loader2, ShieldCheck, AlertTriangle, ExternalLink } from "lucide-react"
+import { Target, RefreshCw, Loader2, ShieldCheck, AlertTriangle, ExternalLink } from "lucide-react"
 import { rapProfitService, ProjectProfitSummary } from "@/services/rapProfitService"
-import { toast } from "sonner"
 import {
     Dialog,
     DialogContent,
@@ -50,6 +49,7 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
 
     useEffect(() => {
         if (projectId) load()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId])
 
     if (loading && !data) {

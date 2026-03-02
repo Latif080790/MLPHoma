@@ -52,8 +52,8 @@ export const CashChart: React.FC<CashChartProps> = ({ rows, bufferAmount = 0, co
       <LineChart data={rows}>
         <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
         <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-        <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: any) => (typeof v === 'number' ? v.toLocaleString('id-ID') : v)} />
-        <Tooltip formatter={(v: any) => (typeof v === 'number' ? v.toLocaleString('id-ID') : String(v))} labelFormatter={(l: any) => `Period: ${l}`} />
+        <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: unknown) => (typeof v === 'number' ? v.toLocaleString('id-ID') : String(v))} />
+        <Tooltip formatter={(v: unknown) => (typeof v === 'number' ? v.toLocaleString('id-ID') : String(v))} labelFormatter={(l: unknown) => `Period: ${l}`} />
         <Legend />
         <ReferenceLine y={0} stroke="#9ca3af" strokeDasharray="3 3" />
         {bufferAmount > 0 && <ReferenceLine y={bufferAmount} stroke="#f59e0b" strokeDasharray="6 4" />}

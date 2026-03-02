@@ -33,9 +33,9 @@ interface SnapshotModalProps {
   /** Project identifier for which snapshots belong */
   projectId: string
   /** Current live config to pass into SnapshotManager for diffs */
-  currentConfig?: any | null
+  currentConfig?: unknown
   /** Callback invoked after a snapshot is restored */
-  onRestore?: (cfg: any) => void
+  onRestore?: (cfg: unknown) => void
 }
 
 /**

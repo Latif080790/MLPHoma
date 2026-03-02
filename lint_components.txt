@@ -1,0 +1,691 @@
+﻿D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 8, col 86, Warning - 'Info' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 8, col 106, Warning - 'FileText' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 8, col 116, Warning - 'Wrench' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 26, col 10, Warning - 'Tooltip' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 26, col 19, Warning - 'TooltipContent' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 26, col 52, Warning - 'TooltipTrigger' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 27, col 40, Warning - 'validateAHSP' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 35, col 25, Warning - 'Zone' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 84, col 5, Warning - 'searchAHSPItems' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 85, col 5, Warning - 'filterByCategory' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 117, col 6, Warning - React Hook useMemo has unnecessary dependencies: 'ahspItems' and 'resources'. Either exclude them or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 604, col 47, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 605, col 47, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 606, col 47, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 607, col 47, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPCatalog.tsx: line 613, col 84, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 8, col 10, Warning - 'X' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 8, col 13, Warning - 'Save' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 8, col 77, Warning - 'Info' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 14, col 10, Warning - 'Card' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 14, col 16, Warning - 'CardContent' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 14, col 29, Warning - 'CardHeader' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 14, col 41, Warning - 'CardTitle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 36, col 25, Warning - 'AHSPComponent' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 65, col 3, Warning - 'sourceReference' is defined but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 104, col 10, Warning - 'showSNIHelp' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 120, col 5, Warning - 'calculateAHSPPrice' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 131, col 9, Warning - The 'components' logical expression could make the dependencies of useMemo Hook (at line 212) change on every render. To fix this, wrap the initialization of 'components' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 144, col 40, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 330, col 47, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 356, col 78, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 365, col 9, Warning - 'handleSaveManualComponent' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 388, col 9, Warning - 'handleAddComponent' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 405, col 77, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 465, col 9, Warning - 'resourcesByType' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 626, col 76, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPItemEditor.tsx: line 943, col 84, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPSettings.tsx: line 31, col 9, Error - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\AHSPSettings.tsx:31:9
+  29 |     // Sync with store on load
+  30 |     useEffect(() => {
+> 31 |         setFormData({
+     |         ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  32 |             overhead: settings.defaultOverhead,
+  33 |             profit: settings.defaultProfit,
+  34 |             tax: settings.taxRate || 0 (react-hooks/set-state-in-effect)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\PriceHistoryDialog.tsx: line 48, col 13, Error - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\PriceHistoryDialog.tsx:48:13
+  46 |     useEffect(() => {
+  47 |         if (open && ahspId) {
+> 48 |             loadHistory()
+     |             ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  49 |         }
+  50 |     }, [open, ahspId, zoneId])
+  51 | (react-hooks/set-state-in-effect)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\PriceHistoryDialog.tsx: line 50, col 8, Warning - React Hook useEffect has a missing dependency: 'loadHistory'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\PriceHistoryDialog.tsx: line 95, col 69, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 8, col 37, Warning - 'X' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 8, col 69, Warning - 'Filter' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 33, col 10, Warning - 'Tabs' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 33, col 16, Warning - 'TabsContent' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 33, col 29, Warning - 'TabsList' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 33, col 39, Warning - 'TabsTrigger' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 131, col 9, Warning - 'isSomeSelected' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 215, col 14, Warning - 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 246, col 16, Warning - 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ResourceManager.tsx: line 414, col 61, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ZoneManager.tsx: line 3, col 75, Warning - 'DialogFooter' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ZoneManager.tsx: line 9, col 10, Warning - 'Badge' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ZoneManager.tsx: line 13, col 65, Warning - 'loading' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ZoneManager.tsx: line 21, col 8, Warning - React Hook useEffect has a missing dependency: 'fetchZones'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ZonePriceEditor.tsx: line 35, col 17, Error - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\ZonePriceEditor.tsx:35:17
+  33 |         if (open && item) {
+  34 |             if (currentPrice) {
+> 35 |                 setFormData({
+     |                 ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  36 |                     price_material: currentPrice.price_material,
+  37 |                     price_labor: currentPrice.price_labor,
+  38 |                     price_equipment: currentPrice.price_equipment, (react-hooks/set-state-in-effect)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\analytics\index.tsx: line 14, col 29, Error - Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `state`, but the source dependencies were [state.ahspItems, state.resources]. Inferred less specific property than source.
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\analytics\index.tsx:14:29
+  12 | export function BenchmarkingDashboard() {
+  13 |     const state = useAHSPStore()
+> 14 |     const summary = useMemo(() => getAHSPSummary(state), [state.ahspItems, state.resources])
+     |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^ Could not preserve existing manual memoization
+  15 |
+  16 |     const categoryData = useMemo(() => {
+  17 |         return Object.entries(summary.priceByCategory).map(([name, data]) => ({ (react-hooks/preserve-manual-memoization)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ahsp\analytics\index.tsx: line 14, col 58, Warning - React Hook useMemo has a missing dependency: 'state'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\audit\AuditLogViewer.tsx: line 11, col 38, Warning - 'useMemo' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\audit\AuditLogViewer.tsx: line 22, col 10, Warning - 'format' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\audit\AuditLogViewer.tsx: line 75, col 60, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\audit\AuditLogViewer.tsx: line 244, col 8, Warning - React Hook useEffect has a missing dependency: 'loadLogs'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\CashChart.tsx: line 55, col 59, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\CashChart.tsx: line 56, col 33, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\CashChart.tsx: line 56, col 126, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\CompareControls.tsx: line 34, col 57, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\CompareControls.tsx: line 61, col 9, Warning - 'selectedA' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\CompareControls.tsx: line 62, col 9, Warning - 'selectedB' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\WhatIfPanel.tsx: line 129, col 35, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\__tests__\CashFlow.test.tsx: line 26, col 12, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\__tests__\CashFlow.test.tsx: line 36, col 12, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\__tests__\CashFlow.test.tsx: line 43, col 57, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\__tests__\WhatIfPanel.actions.test.tsx: line 38, col 73, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\cashflow\__tests__\WhatIfPanel.actions.test.tsx: line 44, col 12, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change-order\ChangeOrderDialog.tsx: line 11, col 10, Warning - 'Select' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change-order\ChangeOrderDialog.tsx: line 11, col 18, Warning - 'SelectContent' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change-order\ChangeOrderDialog.tsx: line 11, col 33, Warning - 'SelectItem' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change-order\ChangeOrderDialog.tsx: line 11, col 45, Warning - 'SelectTrigger' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change-order\ChangeOrderDialog.tsx: line 11, col 60, Warning - 'SelectValue' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change-order\ChangeOrderDialog.tsx: line 92, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change\ImpactAnalysisPanel.tsx: line 17, col 5, Warning - 'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change\ImpactAnalysisPanel.tsx: line 116, col 13, Error - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\change\ImpactAnalysisPanel.tsx:116:13
+  114 |     useEffect(() => {
+  115 |         if (['REVIEWED', 'PENDING_APPROVAL'].includes(changeOrder.status)) {
+> 116 |             setLoading(true)
+      |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  117 |             ccoStateMachine.previewImpact(changeOrder.id)
+  118 |                 .then(setPreview)
+  119 |                 .catch(err => console.warn('[ImpactAnalysis] Preview failed:', err)) (react-hooks/set-state-in-effect)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CriticalPathGantt.tsx: line 10, col 16, Warning - 'CardContent' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CriticalPathGantt.tsx: line 13, col 10, Warning - 'AlertCircle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CriticalPathGantt.tsx: line 13, col 49, Warning - 'ShieldAlert' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CriticalPathGantt.tsx: line 16, col 36, Warning - 'CPMNode' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CriticalPathGantt.tsx: line 36, col 34, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CriticalPathGantt.tsx: line 102, col 50, Warning - 'idx' is defined but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CriticalPathGantt.tsx: line 153, col 43, Warning - 'endX' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CurvaSChart.tsx: line 11, col 3, Warning - 'AreaChart' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CurvaSChart.tsx: line 13, col 16, Warning - 'ReLineChart' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CurvaSChart.tsx: line 64, col 58, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CurvaSChart.tsx: line 69, col 30, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CurvaSChart.tsx: line 117, col 25, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CurvaSChartSimple.tsx: line 29, col 29, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\charts\CurvaSChartSimple.tsx: line 46, col 35, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\ApprovalDialog.tsx: line 51, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\ApprovalDialog.tsx: line 70, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\ApprovalQueueWidget.tsx: line 9, col 10, Warning - 'Button' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\ApprovalQueueWidget.tsx: line 11, col 28, Warning - 'X' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\ApprovalQueueWidget.tsx: line 22, col 13, Warning - 'user' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\ApprovalQueueWidget.tsx: line 31, col 8, Warning - React Hook useEffect has a missing dependency: 'fetchPendingApprovals'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\EmptyState.tsx: line 9, col 10, Warning - 'FileQuestion' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\LoadingSkeleton.tsx: line 127, col 48, Error - Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\LoadingSkeleton.tsx:127:48
+  125 |   // Generate random bar heights once on mount for consistent rendering
+  126 |   const barHeights = React.useMemo(
+> 127 |     () => Array.from({ length: 12 }).map(() => Math.random() * 60 + 40),
+      |                                                ^^^^^^^^^^^^^ Cannot call impure function
+  128 |     []
+  129 |   )
+  130 | (react-hooks/purity)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\NotificationCenter.tsx: line 67, col 8, Warning - React Hook useEffect has missing dependencies: 'fetchNotifications', 'subscribe', and 'unsubscribe'. Either include them or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\common\Notifications.tsx: line 9, col 58, Warning - 'X' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\ApprovalInbox.tsx: line 44, col 5, Warning - 'Filter' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\ApprovalInbox.tsx: line 81, col 61, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\ApprovalInbox.tsx: line 84, col 44, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\ApprovalInbox.tsx: line 112, col 22, Error - Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\ApprovalInbox.tsx:112:22
+  110 |     // Memoize time calculation to avoid impure function call during render
+  111 |     const timeAgo = React.useMemo(() => {
+> 112 |         const diff = Date.now() - new Date(date).getTime()
+      |                      ^^^^^^^^^^ Cannot call impure function
+  113 |         const mins = Math.floor(diff / 60000)
+  114 |         if (mins < 1) return 'baru saja'
+  115 |         if (mins < 60) return `${mins}m ago` (react-hooks/purity)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\ApprovalQueueWidget.tsx: line 104, col 38, Error - Γ¥î WCAG Violation: Use text-xs (12px) minimum. Sub-12px text fails accessibility standards. Replace with: text-xs, text-sm, or text-base. (no-restricted-syntax)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\ApprovalQueueWidget.tsx: line 104, col 38, Error - Γ¥î WCAG Critical: text-[11px] is below minimum readable size. Use text-xs (12px) instead. (no-restricted-syntax)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\CriticalPathWarningPanel.tsx: line 12, col 57, Warning - 'AlertSeverity' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\CriticalPathWarningPanel.tsx: line 50, col 5, Warning - 'compact' is assigned a value but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\CriticalPathWarningPanel.tsx: line 60, col 8, Warning - React Hook useEffect has a missing dependency: 'loadAlerts'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dashboard\GenerateReportDialog.tsx: line 46, col 25, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dkh\DKHManager.tsx: line 217, col 22, Warning - 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\dkh\DKHManager.tsx: line 375, col 69, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\document\QRValidationBadge.tsx: line 37, col 13, Error - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\document\QRValidationBadge.tsx:37:13
+  35 |         if (status === 'APPROVED') {
+  36 |             const activeQR = qrValidationService.getActiveQR(documentId)
+> 37 |             setRecord(activeQR)
+     |             ^^^^^^^^^ Avoid calling setState() directly within an effect
+  38 |         }
+  39 |     }, [documentId, status])
+  40 | (react-hooks/set-state-in-effect)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\FeatureEditor.tsx: line 36, col 9, Warning - 'projectName' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\FeatureEditor.tsx: line 43, col 45, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\FeatureEditor.tsx: line 44, col 10, Warning - 'loadingRemote' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\FeatureEditor.tsx: line 120, col 57, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ImpactAnalysis.tsx: line 63, col 37, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 41, col 38, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 44, col 36, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 48, col 67, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 54, col 141, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 77, col 46, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 82, col 55, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 87, col 84, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 93, col 58, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModuleConfigForm.tsx: line 94, col 45, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModulePreview.tsx: line 20, col 11, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModulePreview.tsx: line 22, col 16, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModulePreview.tsx: line 48, col 69, Warning - 'fullConfig' is defined but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModulePreview.tsx: line 54, col 24, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\ModulePreview.tsx: line 55, col 25, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotDiffViewer.tsx: line 16, col 11, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotDiffViewer.tsx: line 17, col 10, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotDiffViewer.tsx: line 25, col 10, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotDiffViewer.tsx: line 27, col 13, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotDiffViewer.tsx: line 42, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotDiffViewer.tsx: line 42, col 30, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotDiffViewer.tsx: line 46, col 24, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotManager.tsx: line 21, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotManager.tsx: line 23, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotModal.tsx: line 36, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\SnapshotModal.tsx: line 38, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\AHSPEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\AHSPEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\AHSPEditor.tsx: line 62, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\AHSPEditor.tsx: line 70, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\AHSPEditor.tsx: line 71, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CashFlowEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CashFlowEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CashFlowEditor.tsx: line 55, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CashFlowEditor.tsx: line 63, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CashFlowEditor.tsx: line 64, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CurvaSEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CurvaSEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CurvaSEditor.tsx: line 57, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CurvaSEditor.tsx: line 65, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\CurvaSEditor.tsx: line 66, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProgressEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProgressEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProgressEditor.tsx: line 54, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProgressEditor.tsx: line 62, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProgressEditor.tsx: line 63, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProjectManagementEditor.tsx: line 22, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProjectManagementEditor.tsx: line 24, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProjectManagementEditor.tsx: line 73, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProjectManagementEditor.tsx: line 91, col 75, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProjectManagementEditor.tsx: line 104, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ProjectManagementEditor.tsx: line 105, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RABEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RABEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RABEditor.tsx: line 64, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RABEditor.tsx: line 72, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RABEditor.tsx: line 73, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RAPEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RAPEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RAPEditor.tsx: line 56, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RAPEditor.tsx: line 64, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\RAPEditor.tsx: line 65, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ReportingEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ReportingEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ReportingEditor.tsx: line 55, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ReportingEditor.tsx: line 63, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ReportingEditor.tsx: line 64, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ResourcePlanningEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ResourcePlanningEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ResourcePlanningEditor.tsx: line 55, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ResourcePlanningEditor.tsx: line 63, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\ResourcePlanningEditor.tsx: line 64, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\TimelineEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\TimelineEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\TimelineEditor.tsx: line 56, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\TimelineEditor.tsx: line 64, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\TimelineEditor.tsx: line 65, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\WBSEditor.tsx: line 21, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\WBSEditor.tsx: line 22, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\WBSEditor.tsx: line 66, col 27, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\WBSEditor.tsx: line 74, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\feature\modules\WBSEditor.tsx: line 75, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\CashflowForecastWidget.tsx: line 11, col 63, Warning - 'Calendar' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\CashflowForecastWidget.tsx: line 12, col 84, Warning - 'Cell' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\CashflowForecastWidget.tsx: line 67, col 5, Warning - 'compact' is assigned a value but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\CashflowForecastWidget.tsx: line 78, col 8, Warning - React Hook useEffect has a missing dependency: 'loadForecast'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\InvoiceDialog.tsx: line 86, col 23, Warning - Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\InvoiceDialog.tsx:86:23
+  84 |   }
+  85 |
+> 86 |   const watchAmount = form.watch("amount") || 0
+     |                       ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  87 |   const watchTax = form.watch("tax_amount") || 0
+  88 |
+  89 |   return ( (react-hooks/incompatible-library)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\InvoiceMatchDialog.tsx: line 22, col 10, Warning - 'useFinanceStore' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 9, col 52, Warning - 'CardDescription' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 19, col 32, Warning - 'Check' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 19, col 47, Warning - 'Search' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 19, col 61, Warning - 'Send' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 26, col 12, Warning - 'refreshKey' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 62, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 73, col 18, Warning - 'e' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 73, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 84, col 18, Warning - 'e' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 84, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OpnameBoard.tsx: line 116, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OverheadCostPanel.tsx: line 8, col 36, Warning - 'useEffect' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OverheadCostPanel.tsx: line 9, col 52, Warning - 'CardDescription' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OverheadCostPanel.tsx: line 26, col 10, Warning - 'useCurvaSStore' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OverheadCostPanel.tsx: line 27, col 49, Warning - 'RefreshCw' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\OverheadCostPanel.tsx: line 27, col 60, Warning - 'Calculator' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\ThreeWayMatch.tsx: line 41, col 6, Warning - React Hook useEffect has a missing dependency: 'loadMatchData'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\ThreeWayMatch.tsx: line 111, col 14, Warning - 'err' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\finance\ThreeWayMatch.tsx: line 111, col 19, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\layout\AppHeader.tsx: line 3, col 24, Warning - 'Bell' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\layout\AppHeader.tsx: line 3, col 38, Warning - 'Menu' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\layout\AppSidebar.tsx: line 153, col 49, Error - Γ¥î WCAG Violation: Use text-xs (12px) minimum. Sub-12px text fails accessibility standards. Replace with: text-xs, text-sm, or text-base. (no-restricted-syntax)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\layout\AppSidebar.tsx: line 153, col 49, Error - Γ¥î WCAG Critical: text-[10px] is below minimum readable size. Use text-xs (12px) instead. (no-restricted-syntax)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\DocumentVersionHistory.tsx: line 39, col 5, Warning - 'projectId' is defined but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\DocumentVersionHistory.tsx: line 50, col 8, Warning - React Hook useEffect has a missing dependency: 'loadHistory'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\DocumentVersionHistory.tsx: line 71, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitControlDashboard.tsx: line 16, col 10, Warning - 'Progress' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitControlDashboard.tsx: line 28, col 5, Warning - 'ArrowUpRight' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitControlDashboard.tsx: line 29, col 5, Warning - 'ArrowDownRight' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitControlDashboard.tsx: line 30, col 5, Warning - 'Minus' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitControlDashboard.tsx: line 32, col 50, Warning - 'ProfitHealthItem' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitHealthWidget.tsx: line 11, col 10, Warning - 'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitHealthWidget.tsx: line 11, col 22, Warning - 'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitHealthWidget.tsx: line 13, col 10, Warning - 'toast' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\ProfitHealthWidget.tsx: line 53, col 8, Warning - React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TeamManagementPanel.tsx: line 58, col 8, Warning - React Hook useEffect has a missing dependency: 'load'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TeamManagementPanel.tsx: line 64, col 79, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TeamManagementPanel.tsx: line 69, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TeamManagementPanel.tsx: line 78, col 84, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TeamManagementPanel.tsx: line 81, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TeamManagementPanel.tsx: line 88, col 75, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TeamManagementPanel.tsx: line 91, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TimelineScenarioPanel.tsx: line 46, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\TimelineScenarioPanel.tsx: line 59, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 13, col 29, Warning - 'CardHeader' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 13, col 41, Warning - 'CardTitle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 75, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 176, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 254, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 306, col 12, Warning - 'loading' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 318, col 18, Warning - 'err' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 318, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 334, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\modules\WorkOrderPanel.tsx: line 344, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\DailyProgressBoard.tsx: line 68, col 18, Warning - 'err' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\DailyProgressBoard.tsx: line 68, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\DailyProgressBoard.tsx: line 101, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\DailyProgressBoard.tsx: line 279, col 8, Warning - React Hook useMemo has an unnecessary dependency: 'refreshKey'. Either exclude it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\DailyProgressBoard.tsx: line 284, col 8, Warning - React Hook useMemo has an unnecessary dependency: 'refreshKey'. Either exclude it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\DailyProgressBoard.tsx: line 289, col 8, Warning - React Hook useMemo has an unnecessary dependency: 'refreshKey'. Either exclude it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\DailyProgressBoard.tsx: line 294, col 8, Warning - React Hook useMemo has an unnecessary dependency: 'refreshKey'. Either exclude it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\DailyProgressBoard.tsx: line 300, col 11, Warning - 'totalTasks' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\EvidenceUploadDialog.tsx: line 14, col 52, Warning - 'Clock' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\EvidenceUploadDialog.tsx: line 93, col 18, Warning - 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\EvidenceUploadDialog.tsx: line 201, col 11, Warning - 'hasErrors' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\progress\ResourceUsageDialog.tsx: line 51, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\project\ProjectDialog.tsx: line 42, col 6, Warning - React Hook useEffect has a missing dependency: 'fetchZones'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\project\ProjectDialog.tsx: line 96, col 24, Warning - Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\project\ProjectDialog.tsx:96:24
+  94 |               <Label htmlFor="status">Status</Label>
+  95 |               <Select
+> 96 |                 value={watch('status')}
+     |                        ^^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  97 |                 onValueChange={(val) => setValue('status', val)}
+  98 |               >
+  99 |                 <SelectTrigger> (react-hooks/incompatible-library)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\project\ProjectSettingsDialog.tsx: line 50, col 18, Warning - 'error' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BaselineComparePanel.tsx: line 18, col 19, Warning - 'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BaselineComparePanel.tsx: line 18, col 31, Warning - 'TrendingDown' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BaselineComparePanel.tsx: line 18, col 45, Warning - 'Minus' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BaselineComparePanel.tsx: line 18, col 52, Warning - 'Plus' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BaselineComparePanel.tsx: line 18, col 58, Warning - 'AlertTriangle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BaselineComparePanel.tsx: line 48, col 8, Warning - React Hook useMemo has an unnecessary dependency: 'refreshKey'. Either exclude it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BoQImportDialog.tsx: line 59, col 11, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BoQImportDialog.tsx: line 82, col 37, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BoQImportDialog.tsx: line 121, col 84, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BoQImportDialog.tsx: line 122, col 57, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\BoQImportDialog.tsx: line 216, col 22, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\ImportWizard.tsx: line 52, col 11, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\ImportWizard.tsx: line 56, col 10, Warning - 'e' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\ImportWizard.tsx: line 117, col 9, Error - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\ImportWizard.tsx:117:9
+  115 |       const raw = localStorage.getItem(presetsKey(projectId))
+  116 |       if (raw) {
+> 117 |         setPresets(JSON.parse(raw))
+      |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  118 |       } else {
+  119 |         setPresets({})
+  120 |       } (react-hooks/set-state-in-effect)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\ImportWizard.tsx: line 149, col 74, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\ImportWizard.tsx: line 194, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\ImportWizard.tsx: line 224, col 36, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABApprovalPanel.tsx: line 35, col 3, Warning - 'User' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABApprovalPanel.tsx: line 36, col 3, Warning - 'MessageSquare' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABApprovalPanel.tsx: line 37, col 3, Warning - 'Calendar' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABApprovalPanel.tsx: line 154, col 5, Warning - 'approvals' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABApprovalPanel.tsx: line 160, col 5, Warning - 'cancelApproval' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABExport.tsx: line 18, col 37, Warning - 'projectId' is defined but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABExport.tsx: line 18, col 48, Warning - 'tableRef' is defined but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABPriceDriftDashboard.tsx: line 7, col 36, Warning - 'AlertCircle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABPriceDriftDashboard.tsx: line 7, col 60, Warning - 'Lock' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABPriceDriftDashboard.tsx: line 11, col 10, Warning - 'Progress' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABPriceDriftDashboard.tsx: line 39, col 8, Warning - React Hook useEffect has missing dependencies: 'driftData' and 'handleRefresh'. Either include them or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 10, col 55, Warning - 'ShoppingCart' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 33, col 3, Warning - 'DialogDescription' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 36, col 3, Warning - 'DialogFooter' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 39, col 10, Warning - 'Label' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 40, col 10, Warning - 'SAMPLE_AHSP_ITEMS' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 40, col 29, Warning - 'SAMPLE_RESOURCES' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 112, col 5, Warning - 'importAHSPItems' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 113, col 5, Warning - 'importResources' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 114, col 5, Warning - 'resources' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 158, col 10, Warning - 'showSaveScenario' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 175, col 9, Warning - 'handleSaveScenario' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 259, col 9, Warning - 'showDetails' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 274, col 6, Warning - React Hook useEffect has a missing dependency: 'fetchZonePrices'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 310, col 9, Warning - 'isSomeSelected' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 353, col 53, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 428, col 20, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 447, col 40, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 483, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 563, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 1259, col 68, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 1280, col 65, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 1347, col 113, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABTable.tsx: line 1362, col 41, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABVersionHistory.tsx: line 29, col 10, Warning - 'toast' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABVersionHistory.tsx: line 41, col 5, Warning - 'getVersion' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABVersionHistory.tsx: line 60, col 7, Error - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rab\RABVersionHistory.tsx:60:7
+  58 |       fetchVersionsFromSupabase(projectId)
+  59 |       const history = getVersionHistory(projectId)
+> 60 |       setVersions(history)
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |     }
+  62 |   }, [open, projectId, getVersionHistory, fetchVersionsFromSupabase])
+  63 | (react-hooks/set-state-in-effect)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RAPGenerator.tsx: line 29, col 15, Warning - 'TimelineTask' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RAPGenerator.tsx: line 120, col 51, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RAPGenerator.tsx: line 150, col 36, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RAPGenerator.tsx: line 163, col 35, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RAPGenerator.tsx: line 532, col 31, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RAPGeneratorSimple.tsx: line 55, col 67, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RAPGeneratorSimple.tsx: line 114, col 41, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RAPGeneratorSimple.tsx: line 128, col 50, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RapDistributionChart.tsx: line 54, col 30, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RapDistributionChart.tsx: line 55, col 35, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RapMonthTable.tsx: line 33, col 9, Error - Error: Cannot reassign variable after render completes
+
+Reassigning `cum` after render has completed can cause inconsistent behavior on subsequent renders. Consider using state instead.
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\rap\RapMonthTable.tsx:33:9
+  31 |       .map((p) => {
+  32 |         const planned = Number(p.planned || 0)
+> 33 |         cum += planned
+     |         ^^^ Cannot reassign `cum` after render completes
+  34 |         const base = baseMap.get(String(p.period)) || 0
+  35 |         const delta = planned - base
+  36 |         return { (react-hooks/immutability)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskDialog.tsx: line 2, col 28, Warning - 'useState' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskDialog.tsx: line 34, col 18, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskDialog.tsx: line 99, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskDialog.tsx: line 105, col 18, Warning - Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskDialog.tsx:105:18
+  103 |
+  104 |     // Helper for slider/select display
+> 105 |     const prob = form.watch("probability")
+      |                  ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  106 |     const imp = form.watch("impact")
+  107 |     const score = (prob || 0) * (imp || 0)
+  108 | (react-hooks/incompatible-library)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 4, col 29, Warning - 'CardHeader' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 4, col 41, Warning - 'CardTitle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 4, col 52, Warning - 'CardDescription' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 19, col 10, Warning - 'format' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 27, col 44, Warning - 'loading' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 29, col 52, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 30, col 64, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 38, col 31, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\risk\RiskRegister.tsx: line 48, col 33, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\GRNDialog.tsx: line 18, col 10, Warning - 'Textarea' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\GRNDialog.tsx: line 19, col 10, Warning - 'Badge' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\GRNDialog.tsx: line 21, col 24, Warning - 'Camera' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\GRNDialog.tsx: line 123, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\InventoryTransactionDialog.tsx: line 10, col 10, Warning - 'Textarea' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\InventoryTransactionDialog.tsx: line 68, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\InventoryTransactionDialog.tsx: line 84, col 94, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\InventoryTransactionDialog.tsx: line 85, col 36, Warning - Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\InventoryTransactionDialog.tsx:85:36
+  83 |                         <Select
+  84 |                             onValueChange={(val) => form.setValue("transaction_type", val as any)}
+> 85 |                             value={form.watch("transaction_type")}
+     |                                    ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  86 |                         >
+  87 |                             <SelectTrigger>
+  88 |                                 <SelectValue /> (react-hooks/incompatible-library)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\MaterialRequestDialog.tsx: line 13, col 10, Warning - 'useProjectStore' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\MaterialRequestDialog.tsx: line 56, col 27, Warning - Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\MaterialRequestDialog.tsx:56:27
+  54 |     })
+  55 |
+> 56 |     const selectedWbsId = form.watch("wbs_id")
+     |                           ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  57 |
+  58 |     // Fetch Smart MR suggestions when WBS changes
+  59 |     useEffect(() => { (react-hooks/incompatible-library)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\MaterialRequestDialog.tsx: line 102, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\MaterialTransferDialog.tsx: line 41, col 7, Warning - 'transferSchema' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\MaterialTransferDialog.tsx: line 134, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\MaterialTransferPanel.tsx: line 42, col 5, Warning - 'Filter' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\ProcurementTracePanel.tsx: line 28, col 5, Warning - 'FileText' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\ProcurementTracePanel.tsx: line 90, col 5, Warning - 'projectId' is defined but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\ProcurementTracePanel.tsx: line 114, col 45, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\ProcurementTracePanel.tsx: line 140, col 49, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\PurchaseOrderDialog.tsx: line 122, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\PurchaseOrderDialog.tsx: line 188, col 29, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\PurchaseOrderDialog.tsx: line 210, col 11, Warning - 'isOverBudget' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\PurchaseOrderDialog.tsx: line 291, col 83, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply-chain\PurchaseOrderDialog.tsx: line 303, col 73, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\BudgetGuardDialog.tsx: line 134, col 23, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\MRPAlertPanel.tsx: line 117, col 50, Warning - 'infoCount' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\MTRPanel.tsx: line 10, col 29, Warning - 'CardHeader' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\MTRPanel.tsx: line 10, col 41, Warning - 'CardTitle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\MaterialTransferApprovalPanel.tsx: line 38, col 6, Warning - React Hook useEffect has a missing dependency: 'loadPending'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\MaterialTransferApprovalPanel.tsx: line 57, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\MaterialTransferApprovalPanel.tsx: line 73, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\MaterialTransferRequestDialog.tsx: line 77, col 21, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\SubcontractorPanel.tsx: line 9, col 29, Warning - 'CardHeader' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\SubcontractorPanel.tsx: line 9, col 41, Warning - 'CardTitle' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\SubcontractorPanel.tsx: line 9, col 52, Warning - 'CardDescription' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\SubcontractorPanel.tsx: line 20, col 68, Warning - 'CreditCard' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\SubcontractorPanel.tsx: line 40, col 22, Warning - 'setSpkWbsId' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\supply\SubcontractorPanel.tsx: line 220, col 78, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 16, col 15, Warning - 'TimelineTask' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 16, col 29, Warning - 'TaskDependency' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 122, col 7, Error - 'cur' is never reassigned. Use 'const' instead. (prefer-const)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 212, col 9, Warning - The 'tasks' logical expression could make the dependencies of useMemo Hook (at line 243) change on every render. To fix this, wrap the initialization of 'tasks' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 212, col 9, Warning - The 'tasks' logical expression could make the dependencies of useEffect Hook (at line 300) change on every render. To fix this, wrap the initialization of 'tasks' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 212, col 9, Warning - The 'tasks' logical expression could make the dependencies of useMemo Hook (at line 405) change on every render. To fix this, wrap the initialization of 'tasks' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 212, col 9, Warning - The 'tasks' logical expression could make the dependencies of useMemo Hook (at line 509) change on every render. To fix this, wrap the initialization of 'tasks' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 212, col 9, Warning - The 'tasks' logical expression could make the dependencies of useEffect Hook (at line 735) change on every render. To fix this, wrap the initialization of 'tasks' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 246, col 9, Warning - 'fullChartWidth' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 251, col 63, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 290, col 14, Warning - 'err' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 292, col 45, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 457, col 9, Warning - 'visibleDaysOffsetPx' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 562, col 52, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 695, col 37, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 814, col 16, Warning - 'err' is defined but never used. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 1125, col 21, Warning - 'globalIdx' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\GanttChart.tsx: line 1377, col 25, Warning - 'res' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskEditor.tsx: line 97, col 7, Error - Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskEditor.tsx:97:7
+   95 |     if (!isOpen) return
+   96 |     if (task) {
+>  97 |       setForm({
+      |       ^^^^^^^ Avoid calling setState() directly within an effect
+   98 |         name: task.name,
+   99 |         description: task.description || '',
+  100 |         duration: task.duration, (react-hooks/set-state-in-effect)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskEditor.tsx: line 321, col 70, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskEditor.tsx: line 421, col 68, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskEditor.tsx: line 502, col 39, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskEditor.tsx: line 542, col 65, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskListWithCPM.tsx: line 28, col 9, Warning - The 'tasks' logical expression could make the dependencies of useMemo Hook (at line 40) change on every render. To fix this, wrap the initialization of 'tasks' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskListWithCPM.tsx: line 34, col 33, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskListWithCPM.tsx: line 37, col 52, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskListWithCPM.tsx: line 44, col 60, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\TaskListWithCPM.tsx: line 75, col 35, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\WBSImportDialog.tsx: line 10, col 15, Warning - 'WBSItem' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\WBSImportDialog.tsx: line 20, col 11, Warning - 'addTask' is assigned a value but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\WBSImportDialog.tsx: line 24, col 9, Warning - The 'wbsItems' logical expression could make the dependencies of useMemo Hook (at line 33) change on every render. To fix this, wrap the initialization of 'wbsItems' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\WBSImportDialog.tsx: line 29, col 9, Warning - The 'linkedWbsIds' object construction makes the dependencies of useMemo Hook (at line 33) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'linkedWbsIds' in its own useMemo() Hook. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\timeline\WBSImportDialog.tsx: line 77, col 61, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNItemDialog.tsx: line 105, col 6, Warning - React Hook useEffect has a missing dependency: 'form'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNItemDialog.tsx: line 107, col 20, Warning - Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNItemDialog.tsx:107:20
+  105 |   }, [editItem, open])
+  106 |
+> 107 |   const watchQty = form.watch('quantity')
+      |                    ^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  108 |   const watchPrice = form.watch('unit_price')
+  109 |   const totalValue = (watchQty || 0) * (watchPrice || 0)
+  110 | (react-hooks/incompatible-library)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNItemDialog.tsx: line 138, col 70, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNItemDialog.tsx: line 153, col 68, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNResourceManager.tsx: line 115, col 6, Warning - React Hook useEffect has a missing dependency: 'fetchItems'. Either include it or remove the dependency array. (react-hooks/exhaustive-deps)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNResourceManager.tsx: line 151, col 37, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNResourceManager.tsx: line 338, col 89, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\tkdn\TKDNResourceManager.tsx: line 347, col 85, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ui\sidebar.tsx: line 665, col 26, Error - Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\ui\sidebar.tsx:665:26
+  663 |   // Random width between 50 to 90%.
+  664 |   const width = React.useMemo(() => {
+> 665 |     return `${Math.floor(Math.random() * 40) + 50}%`
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  666 |   }, [])
+  667 |
+  668 |   return ( (react-hooks/purity)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSEditor.tsx: line 8, col 10, Warning - 'X' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSEditor.tsx: line 8, col 19, Warning - 'Plus' is defined but never used. Allowed unused vars must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSEditor.tsx: line 119, col 33, Error - Unnecessary escape character: \.. (no-useless-escape)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSEditor.tsx: line 161, col 47, Warning - Unexpected any. Specify a different type. (@typescript-eslint/no-explicit-any)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSTree.tsx: line 286, col 3, Warning - 'onReorderItems' is defined but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSTree.tsx: line 288, col 3, Warning - 'expandAll' is assigned a value but never used. Allowed unused args must match /^_/u. (@typescript-eslint/no-unused-vars)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSTree.tsx: line 355, col 11, Error - Unexpected lexical declaration in case block. (no-case-declarations)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSTree.tsx: line 357, col 11, Error - Unexpected lexical declaration in case block. (no-case-declarations)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSTree.tsx: line 362, col 11, Error - Unexpected lexical declaration in case block. (no-case-declarations)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSTree.tsx: line 364, col 11, Error - Unexpected lexical declaration in case block. (no-case-declarations)
+D:\2. NATA_PROJECTAPP\PM_LABHA\MLPHoma\src\components\wbs\WBSTree.tsx: line 365, col 11, Error - Unexpected lexical declaration in case block. (no-case-declarations)
+
+448 problems

@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -72,8 +72,8 @@ function CreateSpkDialog({ open, onOpenChange, projectId, onCreated }: CreateSpk
             onOpenChange(false)
             onCreated()
             setForm({ mandorName: '', mandorContact: '', scopeDescription: '', unit: '', unitPrice: 0, maxVolume: 0, wbsName: '', notes: '' })
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err: unknown) {
+            toast.error((err as Error).message)
         } finally {
             setLoading(false)
         }
@@ -173,8 +173,8 @@ function OpnameDialog({ open, onOpenChange, workOrder, onDone }: OpnameDialogPro
             onDone()
             setVolume(0)
             setNotes('')
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err: unknown) {
+            toast.error((err as Error).message)
         } finally {
             setLoading(false)
         }
@@ -251,8 +251,8 @@ function PaymentDialog({ open, onOpenChange, workOrder, onDone }: PaymentDialogP
             onOpenChange(false)
             onDone()
             setAmount(0)
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err: unknown) {
+            toast.error((err as Error).message)
         } finally {
             setLoading(false)
         }
@@ -303,7 +303,7 @@ interface WorkOrderPanelProps {
 
 export function WorkOrderPanel({ projectId }: WorkOrderPanelProps) {
     const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
-    const [loading, setLoading] = useState(false)
+    const [_loading, setLoading] = useState(false)
 
     const [createOpen, setCreateOpen] = useState(false)
     const [opnameOpen, setOpnameOpen] = useState(false)
@@ -315,8 +315,8 @@ export function WorkOrderPanel({ projectId }: WorkOrderPanelProps) {
         try {
             const data = await workOrderService.getWorkOrders(projectId)
             setWorkOrders(data)
-        } catch (err: any) {
-            toast.error('Failed to load work orders')
+        } catch (err: unknown) {
+            toast.error((err as Error).message)
         } finally {
             setLoading(false)
         }
@@ -331,8 +331,8 @@ export function WorkOrderPanel({ projectId }: WorkOrderPanelProps) {
             await workOrderService.activateWorkOrder(wo.id)
             toast.success(`${wo.spkNumber} activated`)
             loadData()
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Failed to activate')
         }
     }
 
@@ -341,8 +341,8 @@ export function WorkOrderPanel({ projectId }: WorkOrderPanelProps) {
             await workOrderService.completeWorkOrder(wo.id)
             toast.success(`${wo.spkNumber} completed`)
             loadData()
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Failed to complete')
         }
     }
 

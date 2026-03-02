@@ -23,16 +23,19 @@ describe('CashFlow page', () => {
         dataPoints: {},
         analyses: {},
         configs: {},
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
     })
 
     // Ensure project store reports an active project
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       useProjectStore.setState({
         projects: {
           [projectId]: { id: projectId, name: 'Test Project', budget: 1000000 }
         },
         activeProjectId: projectId
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
     })
   })
@@ -40,6 +43,7 @@ describe('CashFlow page', () => {
   afterEach(() => {
     // clear modifications
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       useCurvaSStore.setState({ savedScenarios: {} } as any)
     })
   })

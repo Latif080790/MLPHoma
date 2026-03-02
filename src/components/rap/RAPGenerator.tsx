@@ -26,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Download, LineChart, RefreshCcw, Equal, Calculator, FileSpreadsheet, FileText } from 'lucide-react'
 import { useTimelineStore } from '../../store/timelineStore'
 import { useRabStore } from '../../store/rabStore'
-import type { TimelineTask } from '../../store/timelineStore'
+import type { RABItem } from '../../types/rab'
 import { toast } from 'sonner'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
@@ -117,7 +117,8 @@ function fmtIDR(n: number, compact = false): string {
 }
 
 /** Tooltip formatter for Recharts */
-function ChartTooltip({ active, payload, label }: any) {
+interface ChartTooltipProps { active?: boolean; payload?: Array<{ value: number }>; label?: string }
+function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   const v = payload[0].value as number
   return (
@@ -147,7 +148,7 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
   // Chart/export ref
   const exportRef = useRef<HTMLDivElement | null>(null)
 
-  const rabItems = useRabStore((s: any) => s.getItems?.(projectId) ?? [])
+  const rabItems = useRabStore((s: { getItems?: (id: string) => RABItem[] }) => s.getItems?.(projectId) ?? [])
 
   /** Import amounts from RAB items linked to tasks */
   const importFromRAB = () => {
@@ -160,7 +161,7 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
     const taskCosts = new Map<string, number>()
     const activeRabItems = Array.isArray(rabItems) ? rabItems : []
 
-    activeRabItems.forEach((item: any) => {
+    activeRabItems.forEach((item: RABItem) => {
       // Normalize taskId link
       const tid = item.taskId || item.task_id || item.wbsId || item.wbs_id
       if (tid) {
@@ -529,7 +530,7 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
       </Card>
 
       {/* Chart + export */}
-      <Card ref={exportRef as any}>
+      <Card ref={exportRef as React.RefObject<HTMLDivElement>}>
         <CardHeader className="flex items-center justify-between pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
             <LineChart className="h-4 w-4 text-blue-600" />

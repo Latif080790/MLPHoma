@@ -26,7 +26,6 @@ import {
 } from '../ui/select'
 import { useRABVersionStore } from '../../store/rabVersionStore'
 import { formatIDR } from '../../lib/utils'
-import { toast } from 'sonner'
 import type { RABVersion, RABVersionComparison } from '../../types/rabVersion'
 
 interface RABVersionHistoryProps {
@@ -38,7 +37,6 @@ interface RABVersionHistoryProps {
 export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistoryProps) {
   const {
     getVersionHistory,
-    getVersion,
     compareVersions,
     restoreVersion,
     deleteVersion,

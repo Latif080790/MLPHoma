@@ -60,7 +60,7 @@ const ImpactAnalysis: FC<ImpactAnalysisProps> = ({ config }) => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip formatter={(v: any) => (typeof v === 'number' ? v.toLocaleString() : v)} />
+            <Tooltip formatter={(v: unknown) => (typeof v === 'number' ? v.toLocaleString() : String(v))} />
             <Bar dataKey="value" fill="#60a5fa" />
           </BarChart>
         </ResponsiveContainer>

@@ -7,13 +7,13 @@
  */
 
 import React, { useMemo, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { AlertCircle, AlertTriangle, GitBranch, ShieldAlert, Zap } from 'lucide-react'
+import { AlertTriangle, GitBranch, Zap } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { useTimelineStore } from '@/store/timelineStore'
-import { criticalPathService, type CPMNode } from '@/services/criticalPathService'
+import { criticalPathService } from '@/services/criticalPathService'
 import { EmptyState } from '@/components/common/EmptyState'
 import { differenceInDays, parseISO, format, addDays } from 'date-fns'
 
@@ -33,7 +33,7 @@ export function CriticalPathGantt() {
         if (!activeProjectId || projectTasks.length === 0) return []
         // We find the earliest date again to base our forward pass
         let earliestDate = new Date('2099-01-01')
-        projectTasks.forEach((t: any) => {
+        projectTasks.forEach((t: { startDate: string }) => {
             const sd = parseISO(t.startDate)
             if (sd < earliestDate) earliestDate = sd
         })
@@ -99,7 +99,7 @@ export function CriticalPathGantt() {
                         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">WBS Task</span>
                     </div>
                     <div className="flex-1 overflow-y-auto overflow-x-hidden p-2" id="cpm-left-col">
-                        {displayNodes.map((node, idx) => (
+                        {displayNodes.map((node, _idx) => (
                             <div key={node.id} className="h-[40px] flex flex-col justify-center px-2 relative group">
                                 <span className={`text-sm truncate w-full ${node.isCritical ? 'font-bold text-red-700 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
                                     {node.name}
@@ -150,7 +150,7 @@ export function CriticalPathGantt() {
                                 {/* 1. Render Dependency Lines First (so they are under bars) */}
                                 {displayNodes.map((node, i) => {
                                     const startX = differenceInDays(parseISO(node.startDate), minDate) * 20
-                                    const endX = startX + (predictiveMode ? node.predictedDurationDays : Math.max(1, differenceInDays(parseISO(node.endDate), parseISO(node.startDate)) + 1)) * 20
+                                    const _endX = startX + (predictiveMode ? node.predictedDurationDays : Math.max(1, differenceInDays(parseISO(node.endDate), parseISO(node.startDate)) + 1)) * 20
                                     const y = i * rowHeight + (rowHeight / 2)
 
                                     return node.dependencies?.map(dep => {

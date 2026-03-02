@@ -18,9 +18,9 @@ import SnapshotDiffViewer from './SnapshotDiffViewer'
 interface Props {
   projectId: string
   /** Current live config to compare diff against */
-  currentConfig?: any | null
+  currentConfig?: unknown
   /** Optional callback invoked after restore (receives restored config) */
-  onRestore?: (cfg: any) => void
+  onRestore?: (cfg: unknown) => void
 }
 
 /**

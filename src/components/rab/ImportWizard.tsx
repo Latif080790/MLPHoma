@@ -49,11 +49,11 @@ function presetsKey(projectId: string) {
 /**
  * Try load xlsx library (guarded)
  */
-let XLSX: any = null
+let XLSX: Record<string, unknown> | null = null
 try {
   // Dynamic import for optional xlsx dependency - will be loaded when needed
-  void import('xlsx').then(m => { XLSX = m.default || m }).catch(() => { XLSX = null })
-} catch (e) {
+  void import('xlsx').then(m => { XLSX = (m.default || m) as Record<string, unknown> }).catch(() => { XLSX = null })
+} catch {
   XLSX = null
 }
 
@@ -146,8 +146,8 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
           const workbook = XLSX.read(data, { type: 'array' })
           const sheetName = workbook.SheetNames[0]
           const sheet = workbook.Sheets[sheetName]
-          const json = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][]
-          processParsedRows(json.map((r) => r.map((c) => (c == null ? '' : String(c)))))
+          const json = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][]
+          processParsedRows(json.map((r) => (r as unknown[]).map((c) => (c == null ? '' : String(c)))))
         } catch (err) {
           console.error(err)
           notify.error('Failed to parse XLSX. Falling back to CSV requirement.')
@@ -191,7 +191,7 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
       return
     }
     const mapped = rows.map((r) => {
-      const obj: any = {}
+      const obj: Record<string, string> = {}
       TARGET_FIELDS.forEach((t) => {
         const header = mapping[t.key]
         if (!header) return
@@ -221,7 +221,7 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
     }
 
     // Import AHSP items (now async - direct to Supabase for large imports >100 items)
-    await importAHSPItems(toAdd as any)
+    await importAHSPItems(toAdd as Parameters<typeof importAHSPItems>[0])
     notify.success(`Imported ${toAdd.length} AHSP items`)
     // clear preview
     setFileName(null)

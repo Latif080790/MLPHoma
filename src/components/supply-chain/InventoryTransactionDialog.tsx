@@ -7,7 +7,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import { toast } from "sonner"
@@ -65,8 +64,8 @@ export function InventoryTransactionDialog({ open, onOpenChange, projectId, defa
             })
             toast.success(`Transaction ${data.transaction_type} recorded`)
             onOpenChange(false)
-        } catch (err: any) {
-            toast.error("Failed to record transaction: " + err.message)
+        } catch (err: unknown) {
+            toast.error("Failed to record transaction: " + (err as Error).message)
         }
     }
 
@@ -81,7 +80,8 @@ export function InventoryTransactionDialog({ open, onOpenChange, projectId, defa
                     <div className="grid gap-2">
                         <Label>Transaction Type</Label>
                         <Select
-                            onValueChange={(val) => form.setValue("transaction_type", val as any)}
+                            onValueChange={(val: string) => form.setValue("transaction_type", val as 'IN' | 'OUT' | 'TRANSFER' | 'ADJUSTMENT')}
+                            // eslint-disable-next-line react-hooks/incompatible-library
                             value={form.watch("transaction_type")}
                         >
                             <SelectTrigger>

@@ -41,7 +41,6 @@ import {
     AlertTriangle,
     Clock,
     Loader2,
-    Filter,
 } from 'lucide-react'
 import { useApprovalStore } from '@/store/approvalStore'
 import { useProjectStore } from '@/store/projectStore'
@@ -78,10 +77,10 @@ const FILTER_OPTIONS: { label: string; value: ApprovalEntityType | 'ALL' }[] = [
     { label: 'CCO', value: 'CHANGE_ORDER' },
 ]
 
-function ImpactPreview({ impact }: { impact: Record<string, any> }) {
+function ImpactPreview({ impact }: { impact: Record<string, unknown> }) {
     if (!impact || Object.keys(impact).length === 0) return null
 
-    const formatValue = (key: string, val: any) => {
+    const formatValue = (key: string, val: unknown) => {
         if (typeof val === 'number') {
             if (key.toLowerCase().includes('budget') || key.toLowerCase().includes('cost') || key.toLowerCase().includes('amount')) {
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val)
@@ -108,6 +107,7 @@ function ImpactPreview({ impact }: { impact: Record<string, any> }) {
 
 function TimeAgo({ date }: { date: string }) {
     // Memoize time calculation to avoid impure function call during render
+    // eslint-disable-next-line react-hooks/purity
     const timeAgo = React.useMemo(() => {
         const diff = Date.now() - new Date(date).getTime()
         const mins = Math.floor(diff / 60000)

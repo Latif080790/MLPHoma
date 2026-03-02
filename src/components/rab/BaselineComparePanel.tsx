@@ -15,7 +15,7 @@ import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../ui/table'
 import {
-    Lock, Unlock, TrendingUp, TrendingDown, Minus, Plus, AlertTriangle, CheckCircle2, Archive,
+    Lock, Unlock, CheckCircle2, Archive,
 } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import { baselineService, type BaselineComparison, type BaselineVariance } from '../../services/baselineService'
@@ -42,9 +42,11 @@ export function BaselineComparePanel() {
     const activeProjectId = useProjectStore(s => s.activeProjectId)
     const [refreshKey, setRefreshKey] = useState(0)
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const comparison: BaselineComparison | null = useMemo(() => {
         if (!activeProjectId) return null
         return baselineService.compareToBaseline(activeProjectId)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeProjectId, refreshKey])
 
     const hasBaseline = activeProjectId ? baselineService.hasBaseline(activeProjectId) : false

@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { X, Save, Plus } from 'lucide-react'
+import { Save } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
@@ -116,7 +116,7 @@ export function WBSEditor({
     }
 
     // Code validation (if manually entered)
-    if (formData.code && !/^[0-9\.]+$/.test(formData.code)) {
+    if (formData.code && !/^[0-9.]+$/.test(formData.code)) {
       newErrors.code = 'Code must contain only numbers and dots'
     }
 
@@ -158,7 +158,7 @@ export function WBSEditor({
   /**
    * Handle input changes
    */
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | null) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error for this field
     if (errors[field]) {

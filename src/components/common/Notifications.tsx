@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { Toaster, toast as sonnerToast } from 'sonner'
-import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
+import { CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
 /**
  * AppToaster - Enhanced global notification renderer

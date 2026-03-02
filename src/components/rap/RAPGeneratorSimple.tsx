@@ -52,7 +52,7 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
     ]
   })
 
-  const [distribution, setDistribution] = useState<Record<string, any> | null>(null)
+  const [distribution, setDistribution] = useState<Record<string, number[]> | null>(null)
 
   const addTask = () => {
     const id = `t-${Math.random().toString(36).slice(2, 6)}`
@@ -111,7 +111,7 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip formatter={(v: any) => (typeof v === 'number' ? v.toLocaleString() : v)} />
+                <Tooltip formatter={(v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)} />
                 <Bar dataKey="value" fill="#60a5fa" />
               </BarChart>
             </ResponsiveContainer>
@@ -125,7 +125,7 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
         <div className="mt-3 text-sm">
           <div className="font-medium">Details</div>
           <div className="space-y-2 mt-2">
-            {Object.values(distribution).map((d: any) => (
+            {Object.values(distribution).map((d: { task: { id: string; title: string; startDate: string; endDate: string }; totalValue: number }) => (
               <div key={d.task.id} className="flex justify-between">
                 <div>{d.task.title} ({d.task.startDate} → {d.task.endDate})</div>
                 <div className="font-mono">{Math.round(d.totalValue).toLocaleString()}</div>

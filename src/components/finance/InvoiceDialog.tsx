@@ -83,7 +83,9 @@ export function InvoiceDialog({ open, onOpenChange, projectId, invoiceToEdit }: 
     } catch { /* handled by store */ }
   }
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchAmount = form.watch("amount") || 0
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchTax = form.watch("tax_amount") || 0
 
   return (

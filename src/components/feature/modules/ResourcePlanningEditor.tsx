@@ -18,8 +18,8 @@ import { RefreshCw, Save } from 'lucide-react'
  * Props for ResourcePlanningEditor
  */
 interface Props {
-  initialValue?: any
-  onSave: (patch: any) => void
+  initialValue?: Record<string, unknown>
+  onSave: (patch: Record<string, unknown>) => void
 }
 
 /**
@@ -52,6 +52,7 @@ const schema = z.object({
  * Editor component for resource planning settings.
  */
 export default function ResourcePlanningEditor({ initialValue = {}, onSave }: Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const methods = useForm<any>({ resolver: zodResolver(schema), defaultValues: initialValue })
   const { register, handleSubmit, reset } = methods
 
@@ -60,8 +61,9 @@ export default function ResourcePlanningEditor({ initialValue = {}, onSave }: Pr
     return v.split(',').map((s) => s.trim()).filter(Boolean)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function submit(d: any) {
-    const patch: any = {}
+    const patch: Record<string, unknown> = {}
     if (d.histogram) patch.histogram = {
       bucketSizeDays: d.histogram.bucketSizeDays ? Number(d.histogram.bucketSizeDays) : undefined,
       normalizeByWorkingDays: !!d.histogram.normalizeByWorkingDays,

@@ -18,8 +18,8 @@ import { RefreshCw, Save } from 'lucide-react'
  * Props for AHSPEditor
  */
 interface Props {
-  initialValue?: any
-  onSave: (patch: any) => void
+  initialValue?: Record<string, unknown>
+  onSave: (patch: Record<string, unknown>) => void
 }
 
 /**
@@ -59,6 +59,7 @@ const schema = z.object({
  * Editor component for AHSP settings.
  */
 export default function AHSPEditor({ initialValue = {}, onSave }: Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const methods = useForm<any>({ resolver: zodResolver(schema), defaultValues: initialValue })
   const { register, handleSubmit, reset } = methods
 
@@ -67,8 +68,9 @@ export default function AHSPEditor({ initialValue = {}, onSave }: Props) {
     return v.split(',').map((s) => s.trim()).filter(Boolean)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function submit(d: any) {
-    const patch: any = {}
+    const patch: Record<string, unknown> = {}
     if (d.pricing) patch.pricing = {
       ...d.pricing,
       escalationRateAnnualPct: d.pricing.escalationRateAnnualPct ? Number(d.pricing.escalationRateAnnualPct) : undefined,

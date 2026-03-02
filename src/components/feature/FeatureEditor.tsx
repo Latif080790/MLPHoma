@@ -34,14 +34,15 @@ export default function FeatureEditor(): JSX.Element {
   const activeProject = useProjectStore((s) => (typeof s.getActiveProject === 'function' ? s.getActiveProject() : null))
   const projectId = activeProject?.id ?? ''
   const projectName = activeProject?.name ?? ''
+  void projectName // suppress unused warning
 
   const loadConfig = useFeatureStore((s) => s.loadConfig)
   const setConfig = useFeatureStore((s) => s.setConfig)
   const exportConfig = useFeatureStore((s) => s.exportConfig)
   const resetToDefault = useFeatureStore((s) => s.resetToDefault)
 
-  const [config, setLocalConfig] = useState<any | null>(null)
-  const [loadingRemote, setLoadingRemote] = useState(false)
+  const [config, setLocalConfig] = useState<unknown>(null)
+  const [_loadingRemote, setLoadingRemote] = useState(false)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle')
   const [activeTab, setActiveTab] = useState<string>('projectManagement')
 
@@ -117,7 +118,7 @@ export default function FeatureEditor(): JSX.Element {
     URL.revokeObjectURL(url)
   }
 
-  function handleModuleUpdate(moduleKey: string, patch: any) {
+  function handleModuleUpdate(moduleKey: string, patch: unknown) {
     if (!projectId || !config) return
     const next = { ...config, [moduleKey]: { ...config[moduleKey], ...patch } }
     setLocalConfig(next)

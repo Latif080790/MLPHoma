@@ -31,9 +31,9 @@ const CompareControls: React.FC<CompareControlsProps> = ({ projectId }) => {
    * Read saved scenarios using stable getter getSavedScenarios(projectId).
    * The getter always returns an array (defensive implementation in store).
    */
-  const scenarios: SavedScenario[] = useCurvaSStore((s: any) => {
+  const scenarios: SavedScenario[] = useCurvaSStore((s: unknown) => {
     try {
-      return typeof s.getSavedScenarios === 'function' ? s.getSavedScenarios(projectId) : []
+      return typeof (s as Record<string, unknown>).getSavedScenarios === 'function' ? (s as { getSavedScenarios: (id: string) => SavedScenario[] }).getSavedScenarios(projectId) : []
     } catch (e) {
       // eslint-disable-next-line no-console
       console.warn('CompareControls: failed to read scenarios', e)
@@ -58,8 +58,8 @@ const CompareControls: React.FC<CompareControlsProps> = ({ projectId }) => {
     return scenarios.map((sc) => ({ id: sc.id, name: sc.name }))
   }, [hasScenarios, scenarios])
 
-  const selectedA = scenarios.find((s) => s.id === compareAId) || null
-  const selectedB = scenarios.find((s) => s.id === compareBId) || null
+  const _selectedA = scenarios.find((s) => s.id === compareAId) || null
+  const _selectedB = scenarios.find((s) => s.id === compareBId) || null
 
   return (
     <div className="flex flex-wrap items-center gap-3 text-xs">

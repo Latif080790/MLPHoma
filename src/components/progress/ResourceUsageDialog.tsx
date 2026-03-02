@@ -48,8 +48,8 @@ export function ResourceUsageDialog({ open, onOpenChange, projectId }: ResourceU
                 log_date: new Date().toISOString().split('T')[0],
                 status: 'ACTIVE'
             })
-        } catch (err: any) {
-            toast.error("Failed to log resource", { description: err.message })
+        } catch (err: unknown) {
+            toast.error("Failed to log resource", { description: (err as Error).message })
         } finally {
             setLoading(false)
         }

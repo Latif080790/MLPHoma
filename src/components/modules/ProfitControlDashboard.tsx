@@ -13,7 +13,6 @@ import React, { useEffect, useState, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import {
     Target,
     RefreshCw,
@@ -25,11 +24,8 @@ import {
     Wrench,
     DollarSign,
     BarChart3,
-    ArrowUpRight,
-    ArrowDownRight,
-    Minus,
 } from "lucide-react"
-import { rapProfitService, ProjectProfitSummary, ProfitHealthItem } from "@/services/rapProfitService"
+import { rapProfitService, ProjectProfitSummary } from "@/services/rapProfitService"
 import { toast } from "sonner"
 
 interface ProfitControlDashboardProps {

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react"
 import { useRiskStore } from "@/store/riskStore"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Plus, Edit, Trash2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { RiskDialog } from "./RiskDialog"
-import { format } from "date-fns"
+import type { Risk } from '@/types/risk'
 import { EmptyState } from "@/components/common/EmptyState"
 
 interface RiskRegisterProps {
@@ -24,10 +24,10 @@ interface RiskRegisterProps {
 }
 
 export default function RiskRegister({ projectId }: RiskRegisterProps) {
-    const { risks, fetchRisks, deleteRisk, loading } = useRiskStore()
+    const { risks, fetchRisks, deleteRisk } = useRiskStore()
     const [dialogOpen, setDialogOpen] = useState(false)
-    const [editingRisk, setEditingRisk] = useState<any>(null)
-    const [pendingDeleteRisk, setPendingDeleteRisk] = useState<any>(null)
+    const [editingRisk, setEditingRisk] = useState<Risk | null>(null)
+    const [pendingDeleteRisk, setPendingDeleteRisk] = useState<Risk | null>(null)
 
     useEffect(() => {
         if (projectId) {
@@ -35,7 +35,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
         }
     }, [projectId, fetchRisks])
 
-    const handleEdit = (risk: any) => {
+    const handleEdit = (risk: Risk) => {
         setEditingRisk(risk)
         setDialogOpen(true)
     }
@@ -45,7 +45,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
         setDialogOpen(true)
     }
 
-    const handleDelete = (risk: any) => {
+    const handleDelete = (risk: Risk) => {
         setPendingDeleteRisk(risk)
     }
 

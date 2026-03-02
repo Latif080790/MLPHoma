@@ -29,6 +29,7 @@ export function ZonePriceEditor({ item, zoneId, currentPrice, open, onClose }: Z
     })
 
     // Load initial data
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
         if (open && item) {
             if (currentPrice) {

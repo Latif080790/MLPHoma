@@ -8,9 +8,7 @@
 import React, { useMemo } from 'react'
 import {
   Area,
-  AreaChart,
   Line,
-  LineChart as ReLineChart,
   ComposedChart,
   ResponsiveContainer,
   XAxis,
@@ -61,6 +59,7 @@ export interface CurvaSChartProps {
 /**
  * Tooltip kustom untuk S-Curve chart
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const CustomTooltip = ({ active, payload, label, type }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -78,6 +77,7 @@ const CustomTooltip = ({ active, payload, label, type }: any) => {
   }
   return null
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * Komponen indikator performa (SPI/CPI dll)
@@ -114,8 +114,8 @@ const PerformanceIndicator = ({
 /**
  * Helper to check if a date is valid
  */
-const isValidDate = (d: any) => {
-  const date = new Date(d)
+const isValidDate = (d: unknown) => {
+  const date = new Date(d as string)
   return date instanceof Date && !isNaN(date.getTime())
 }
 

@@ -43,8 +43,8 @@ export function TimelineScenarioPanel({ projectId }: TimelineScenarioPanelProps)
             }]
             const r = await timelineScenarioService.runScenario(projectId, scenarioName, modifications)
             setResult(r)
-        } catch (err: any) {
-            toast.error("Scenario failed", { description: err.message })
+        } catch (err: unknown) {
+            toast.error("Scenario failed", { description: (err as Error).message })
         } finally {
             setLoading(false)
         }
@@ -56,8 +56,8 @@ export function TimelineScenarioPanel({ projectId }: TimelineScenarioPanelProps)
         try {
             await timelineScenarioService.saveScenario(projectId, result)
             toast.success("Scenario saved to project metadata")
-        } catch (err: any) {
-            toast.error("Save failed", { description: err.message })
+        } catch (err: unknown) {
+            toast.error("Save failed", { description: (err as Error).message })
         } finally {
             setSaving(false)
         }

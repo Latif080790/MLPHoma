@@ -51,8 +51,8 @@ export const RapDistributionChart: React.FC<RapDistributionChartProps> = ({ plan
             <XAxis dataKey="period" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={(v) => Number(v).toLocaleString('id-ID')} />
             <Tooltip
-              formatter={(v: any) => (typeof v === 'number' ? v.toLocaleString('id-ID') : String(v))}
-              labelFormatter={(l: any) => `Period: ${l}`}
+              formatter={(v: unknown) => (typeof v === 'number' ? v.toLocaleString('id-ID') : String(v))}
+              labelFormatter={(l: unknown) => `Period: ${l}`}
             />
             <Legend />
             <Bar dataKey="planned" name="Planned" fill="#3b82f6" />

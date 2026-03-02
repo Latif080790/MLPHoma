@@ -39,7 +39,6 @@ import {
     XCircle,
     Package,
     Loader2,
-    Filter,
 } from 'lucide-react'
 import { useSupplyChainStore } from '@/store/supplyChainStore'
 import { useProjectStore } from '@/store/projectStore'
