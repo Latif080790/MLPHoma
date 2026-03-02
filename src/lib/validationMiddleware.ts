@@ -55,7 +55,7 @@ export interface ValidationOptions {
 export function formatZodErrors(error: ZodError): ValidationError[] {
   return error.errors.map((err) => ({
     field: err.path.join('.'),
-    message: err.message,
+    message: (err as Error).message,
   }))
 }
 
@@ -169,7 +169,7 @@ export function validateAndExecute<TInput, TOutput>(
       }
       
       if (throwOnError) {
-        throw new Error(`Validation failed: ${errors.map(e => e.message).join(', ')}`)
+        throw new Error(`Validation failed: ${errors.map(e => (e as Error).message).join(', ')}`)
       }
       
       return {
@@ -269,7 +269,7 @@ export function validateAndExecuteAsync<TInput, TOutput>(
       }
       
       if (throwOnError) {
-        throw new Error(`Validation failed: ${errors.map(e => e.message).join(', ')}`)
+        throw new Error(`Validation failed: ${errors.map(e => (e as Error).message).join(', ')}`)
       }
       
       return {
@@ -366,7 +366,7 @@ export const commonValidations = {
    */
   code: z.string()
     .min(1, 'Code is required')
-    .regex(/^[A-Za-z0-9\.\-]+$/, 'Invalid code format'),
+    .regex(/^[A-Za-z0-9.-]+$/, 'Invalid code format'),
   
   /**
    * ISO date validation
@@ -394,12 +394,14 @@ export const commonValidations = {
  * // All fields now optional for partial updates
  * ```
  */
-export function createPartialSchema<T extends z.ZodObject<any>>(
+export function createPartialSchema<T extends z.ZodObject<z.ZodRawShape>>(
   schema: T
 ): z.ZodObject<{
   [K in keyof T['shape']]: z.ZodOptional<T['shape'][K]>
 }> {
-  return schema.partial() as any
+  return schema.partial() as unknown as z.ZodObject<{
+    [K in keyof T['shape']]: z.ZodOptional<T['shape'][K]>
+  }>
 }
 
 /**
@@ -407,7 +409,7 @@ export function createPartialSchema<T extends z.ZodObject<any>>(
  */
 export function mergeErrorMessages(errors: ValidationError[] | undefined): string {
   if (!errors || errors.length === 0) return 'Validation failed'
-  return errors.map(e => `${e.field}: ${e.message}`).join('; ')
+  return errors.map(e => `${e.field}: ${(e as Error).message}`).join('; ')
 }
 
 /**
@@ -420,7 +422,7 @@ export function getFieldErrors(
   if (!errors) return []
   return errors
     .filter(e => e.field === field)
-    .map(e => e.message)
+    .map(e => (e as Error).message)
 }
 
 export default {

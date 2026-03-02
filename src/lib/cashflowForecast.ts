@@ -56,38 +56,6 @@ const RUNWAY_CRITICAL_DAYS = 14 // < 14 days runway = critical
 // ---------- Helpers ----------
 
 /**
- * Weeks between two dates
- */
-function getWeeksDiff(date1: Date, date2: Date): number {
-    const diff = date2.getTime() - date1.getTime()
-    return Math.ceil(diff / (1000 * 60 * 60 * 24 * 7))
-}
-
-/**
- * Get week label for a date
- */
-function getWeekLabel(date: Date, format: 'short' | 'iso' = 'short'): string {
-    if (format === 'iso') {
-        const year = date.getFullYear()
-        const week = getWeekNumber(date)
-        return `${year}-W${String(week).padStart(2, '0')}`
-    }
-    const weekNum = getWeekNumber(date)
-    return `Week ${weekNum}`
-}
-
-/**
- * Get ISO week number
- */
-function getWeekNumber(date: Date): number {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-    const dayNum = d.getUTCDay() || 7
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum)
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
-}
-
-/**
  * Add weeks to a date
  */
 function addWeeks(date: Date, weeks: number): Date {

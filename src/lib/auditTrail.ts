@@ -18,7 +18,7 @@ async function logAction(
         userName?: string
         entityType?: string
         entityId?: string
-        details?: Record<string, any>
+        details?: Record<string, unknown>
     } = {}
 ): Promise<void> {
     const input: CreateAuditInput = {

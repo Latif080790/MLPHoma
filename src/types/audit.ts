@@ -58,7 +58,7 @@ export interface AuditLogEntry {
     entityType?: string  // e.g., 'PO', 'RAP', 'MR'
     entityId?: string
 
-    details: Record<string, any>
+    details: Record<string, unknown>
     // Example: { oldValue: {...}, newValue: {...}, reason: "Budget override" }
 
     ipAddress?: string
@@ -72,5 +72,5 @@ export interface CreateAuditInput {
     entity: string
     entityType?: string
     entityId?: string
-    details?: Record<string, any>
+    details?: Record<string, unknown>
 }

@@ -23,13 +23,13 @@ export interface RABChangeLog {
   itemCode: string
   itemName: string
   field: string
-  oldValue: any
-  newValue: any
+  oldValue: unknown
+  newValue: unknown
   changeDescription: string
 }
 
 export interface RABVersionSnapshot {
-  items: any[] // Full RAB items at this version
+  items: unknown[] // Full RAB items at this version
   totalItems: number
   totalCost: number
   metadata: {
@@ -40,14 +40,14 @@ export interface RABVersionSnapshot {
 }
 
 export interface RABVersionComparison {
-  added: any[]
-  removed: any[]
+  added: unknown[]
+  removed: unknown[]
   modified: Array<{
-    item: any
+    item: unknown
     changes: {
       field: string
-      oldValue: any
-      newValue: any
+      oldValue: unknown
+      newValue: unknown
     }[]
   }>
   summary: {

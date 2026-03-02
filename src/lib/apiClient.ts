@@ -24,8 +24,8 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 export interface RequestOptions {
   method?: HttpMethod
   headers?: Record<string, string>
-  params?: Record<string, any>
-  body?: any
+  params?: Record<string, unknown>
+  body?: unknown
   signal?: AbortSignal
   timeoutMs?: number
 }
@@ -52,7 +52,7 @@ export function setApiConfig(partial: ApiClientConfig) {
 /**
  * Build URL dengan query string dari params.
  */
-function buildURL(path: string, params?: Record<string, any>): string {
+function buildURL(path: string, params?: Record<string, unknown>): string {
   const base = cfg.baseURL.replace(/\/$/, '')
   let url = `${base}/${String(path).replace(/^\//, '')}`
   if (params && Object.keys(params).length) {
@@ -73,7 +73,7 @@ function buildURL(path: string, params?: Record<string, any>): string {
 /**
  * Core request dengan timeout dan JSON handling otomatis.
  */
-export async function request<T = any>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function request<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   const method: HttpMethod = options.method ?? 'GET'
   const headers: Record<string, string> = {
     Accept: 'application/json',
@@ -85,7 +85,7 @@ export async function request<T = any>(path: string, options: RequestOptions = {
   let body: BodyInit | undefined
   if (options.body != null && method !== 'GET') {
     if (options.body instanceof FormData || options.body instanceof Blob) {
-      body = options.body as any
+      body = options.body as BodyInit
     } else if (typeof options.body === 'string') {
       headers['Content-Type'] = headers['Content-Type'] || 'application/json'
       body = options.body
@@ -119,42 +119,41 @@ export async function request<T = any>(path: string, options: RequestOptions = {
   const contentType = res.headers.get('content-type') || ''
 
   if (!res.ok) {
-    let data: any = null
+    let data: unknown = null
     try {
       data = contentType.includes('application/json') ? await res.json() : await res.text()
     } catch {
       // ignore
     }
+    const dataObj = data as Record<string, unknown> | null
     const message =
-      (data && (data.message || data.error || data.msg)) || res.statusText || 'Request failed'
-    const err: any = new Error(message)
-    err.status = res.status
-    err.data = data
+      (dataObj && (dataObj['message'] || dataObj['error'] || dataObj['msg'])) || res.statusText || 'Request failed'
+    const err = Object.assign(new Error(String(message)), { status: res.status, data })
     throw err
   }
 
   if (contentType.includes('application/json')) return (await res.json()) as T
-  if (contentType.startsWith('text/')) return (await res.text()) as any as T
-  return (await res.blob()) as any as T
+  if (contentType.startsWith('text/')) return (await res.text()) as unknown as T
+  return (await res.blob()) as unknown as T
 }
 
 /**
  * API helpers per method.
  */
 const api = {
-  get<T = any>(path: string, params?: RequestOptions['params'], opts?: Omit<RequestOptions, 'method' | 'params'>) {
+  get<T = unknown>(path: string, params?: RequestOptions['params'], opts?: Omit<RequestOptions, 'method' | 'params'>) {
     return request<T>(path, { ...opts, params, method: 'GET' })
   },
-  post<T = any>(path: string, body?: any, opts?: Omit<RequestOptions, 'method' | 'body'>) {
+  post<T = unknown>(path: string, body?: unknown, opts?: Omit<RequestOptions, 'method' | 'body'>) {
     return request<T>(path, { ...opts, body, method: 'POST' })
   },
-  put<T = any>(path: string, body?: any, opts?: Omit<RequestOptions, 'method' | 'body'>) {
+  put<T = unknown>(path: string, body?: unknown, opts?: Omit<RequestOptions, 'method' | 'body'>) {
     return request<T>(path, { ...opts, body, method: 'PUT' })
   },
-  patch<T = any>(path: string, body?: any, opts?: Omit<RequestOptions, 'method' | 'body'>) {
+  patch<T = unknown>(path: string, body?: unknown, opts?: Omit<RequestOptions, 'method' | 'body'>) {
     return request<T>(path, { ...opts, body, method: 'PATCH' })
   },
-  delete<T = any>(path: string, params?: RequestOptions['params'], opts?: Omit<RequestOptions, 'method' | 'params'>) {
+  delete<T = unknown>(path: string, params?: RequestOptions['params'], opts?: Omit<RequestOptions, 'method' | 'params'>) {
     return request<T>(path, { ...opts, params, method: 'DELETE' })
   },
 }

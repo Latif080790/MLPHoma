@@ -45,7 +45,7 @@ export interface RABItem {
   /** Optional Timeline Task link */
   taskId?: string
   /** Snapshot price data (for locked baseline) */
-  snapshot_price?: any
+  snapshot_price?: unknown
   /** Optional metadata */
   createdAt?: string
   updatedAt?: string
@@ -55,5 +55,5 @@ export interface RABItem {
    * This will be removed in a future version to enforce type safety.
    * If you need additional fields, add them explicitly to this interface.
    */
-  [key: string]: any
+  [key: string]: unknown
 }

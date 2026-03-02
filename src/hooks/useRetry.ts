@@ -32,8 +32,8 @@ export function useRetry<T>(
   const {
     maxRetries = 3,
     initialDelay = 1000,
-    showRetryButton = true,
-    retryMessage = 'Mencoba ulang...',
+    showRetryButton: _showRetryButton = true,
+    retryMessage: _retryMessage = 'Mencoba ulang...',
     ...retryOptions
   } = options
 
@@ -215,8 +215,7 @@ export function useApiRetry<T>(
 
     const response = await fetch(url)
     if (!response.ok) {
-      const error: any = new Error(`HTTP ${response.status}`)
-      error.status = response.status
+    const error = Object.assign(new Error(`HTTP ${response.status}`), { status: response.status })
       throw error
     }
 

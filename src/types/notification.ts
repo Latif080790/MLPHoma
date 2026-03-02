@@ -31,7 +31,7 @@ export interface AppNotification {
     title: string
     message: string
 
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
 
     entityType?: string  // 'PO', 'MR', 'TRANSFER', 'VO', 'TASK', etc.
     entityId?: string
@@ -52,7 +52,7 @@ export interface CreateNotificationInput {
     severity: NotificationSeverity
     title: string
     message: string
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
     entityType?: string
     entityId?: string
 }
