@@ -1,6 +1,6 @@
 import React from "react"
 import { ThemeToggle } from "@/components/shared/ThemeToggle"
-import { LogOut, User, Bell, Search, Menu } from "lucide-react"
+import { LogOut, User, Search } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { useNavigate } from "react-router"
 import { NotificationCenter } from "@/components/common/NotificationCenter"

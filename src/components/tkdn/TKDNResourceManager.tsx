@@ -40,7 +40,7 @@ import {
 import { useProjectStore } from '@/store/projectStore'
 import { useTKDNStore } from '@/store/tkdnStore'
 import { TKDNItemDialog } from './TKDNItemDialog'
-import type { TKDNItem, TKDNCategory, ResourceOrigin } from '@/types/tkdn'
+import type { TKDNItem, TKDNCategory, ResourceOrigin, TKDNCreateInput, TKDNUpdateInput } from '@/types/tkdn'
 
 const CATEGORY_LABELS: Record<TKDNCategory, string> = {
   material: 'Material',
@@ -112,6 +112,7 @@ export function TKDNResourceManager() {
 
   useEffect(() => {
     if (activeProjectId) fetchItems(activeProjectId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProjectId])
 
   // Filtered items
@@ -148,13 +149,13 @@ export function TKDNResourceManager() {
     setDialogOpen(true)
   }
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: TKDNUpdateInput & Partial<TKDNCreateInput>) => {
     setSaving(true)
     try {
       if (editItem) {
-        await updateItem(editItem.id, data)
+        await updateItem(editItem.id, data as TKDNUpdateInput)
       } else {
-        await addItem({ ...data, project_id: activeProjectId })
+        await addItem({ ...data, project_id: activeProjectId } as TKDNCreateInput)
       }
       setDialogOpen(false)
       setEditItem(null)
@@ -335,7 +336,7 @@ export function TKDNResourceManager() {
                 className="control-compact pl-9"
               />
             </div>
-            <Select value={filterCategory} onValueChange={(v) => setFilterCategory(v as any)}>
+            <Select value={filterCategory} onValueChange={(v) => setFilterCategory(v as TKDNCategory | 'all')}>
               <SelectTrigger className="control-compact w-[150px]"><Filter size={14} className="mr-1" /><SelectValue placeholder="Kategori" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Kategori</SelectItem>
@@ -344,7 +345,7 @@ export function TKDNResourceManager() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={filterOrigin} onValueChange={(v) => setFilterOrigin(v as any)}>
+            <Select value={filterOrigin} onValueChange={(v) => setFilterOrigin(v as ResourceOrigin | 'all')}>
               <SelectTrigger className="control-compact w-[150px]"><SelectValue placeholder="Asal" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Asal</SelectItem>

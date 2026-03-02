@@ -19,7 +19,7 @@ import {
 import { CheckCircle2, AlertTriangle, XCircle, FileText, Package, Truck, AlertCircle } from 'lucide-react'
 import { formatIDR } from '../../lib/utils'
 import { useSupplyChainStore } from '../../store/supplyChainStore'
-import { useFinanceStore } from '../../store/financeStore'
+
 import {
     matchInvoice,
     getMatchStatusColor,

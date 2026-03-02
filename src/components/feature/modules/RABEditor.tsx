@@ -18,8 +18,8 @@ import { RefreshCw, Save } from 'lucide-react'
  * Props for RABEditor
  */
 interface Props {
-  initialValue?: any
-  onSave: (patch: any) => void
+  initialValue?: Record<string, unknown>
+  onSave: (patch: Record<string, unknown>) => void
 }
 
 /**
@@ -61,6 +61,7 @@ const schema = z.object({
  * Editor component for RAB settings and policies.
  */
 export default function RABEditor({ initialValue = {}, onSave }: Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const methods = useForm<any>({ resolver: zodResolver(schema), defaultValues: initialValue })
   const { register, handleSubmit, reset } = methods
 
@@ -69,8 +70,9 @@ export default function RABEditor({ initialValue = {}, onSave }: Props) {
     return v.split(',').map((s) => s.trim()).filter(Boolean)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function submit(d: any) {
-    const patch: any = {}
+    const patch: Record<string, unknown> = {}
     if (d.calculation) {
       patch.calculation = {
         ...d.calculation,

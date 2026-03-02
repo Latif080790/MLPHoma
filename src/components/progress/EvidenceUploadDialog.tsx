@@ -11,7 +11,7 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Textarea } from '../ui/textarea'
 import { Badge } from '../ui/badge'
-import { Camera, Video, FileText, PenTool, MapPin, Clock, Upload, X, AlertCircle, CheckCircle } from 'lucide-react'
+import { Camera, Video, FileText, PenTool, MapPin, Upload, X, AlertCircle, CheckCircle } from 'lucide-react'
 import { progressEvidenceService } from '../../services/progressEvidenceService'
 import type { EvidenceType, EvidenceRequirement } from '../../types/progressEvidence'
 import { cn } from '../../lib/utils'
@@ -77,6 +77,7 @@ export function EvidenceUploadDialog({
                 captureLocation()
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, requirement])
     
     const captureLocation = async () => {
@@ -90,7 +91,7 @@ export function EvidenceUploadDialog({
             } else {
                 setLocationError('Location access denied or unavailable')
             }
-        } catch (error) {
+        } catch {
             setLocationError('Failed to capture location')
         } finally {
             setLocationLoading(false)
@@ -198,7 +199,7 @@ export function EvidenceUploadDialog({
     const Icon = config.icon
     
     const allUploaded = files.length > 0 && files.every(f => f.uploaded)
-    const hasErrors = files.some(f => f.error)
+    const _hasErrors = files.some(f => f.error)
     
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

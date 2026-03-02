@@ -4,11 +4,10 @@
  */
 
 import React, { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, AlertCircle, RefreshCw, Lock, ArrowRight, ShoppingCart, Zap } from 'lucide-react'
+import { TrendingUp, TrendingDown, RefreshCw, ArrowRight, ShoppingCart, Zap } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
-import { Progress } from '../ui/progress'
 import { ScrollArea } from '../ui/scroll-area'
 import { formatIDR } from '../../lib/utils'
 import { useRabStore } from '../../store/rabStore'
@@ -36,6 +35,7 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
         if (!driftData) {
             handleRefresh()
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId])
 
     if (!driftData && loading) {

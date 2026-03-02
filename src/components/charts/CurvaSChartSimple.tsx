@@ -26,7 +26,7 @@ export interface CurvaSChartProps {
  */
 export default function CurvaSChartSimple({ planned, actual = [] }: CurvaSChartProps) {
   // Merge series by period
-  const map: Record<string, any> = {}
+  const map: Record<string, Record<string, unknown>> = {}
   ;(planned || []).forEach((p) => {
     map[p.period] = { period: p.period, planned: p.cumulative }
   })
@@ -43,7 +43,7 @@ export default function CurvaSChartSimple({ planned, actual = [] }: CurvaSChartP
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="period" />
           <YAxis tickFormatter={(v) => `${Math.round(v).toLocaleString('id-ID')}`} />
-          <Tooltip formatter={(v: any) => (typeof v === 'number' ? v.toLocaleString('id-ID') : v)} />
+          <Tooltip formatter={(v: unknown) => (typeof v === 'number' ? v.toLocaleString('id-ID') : String(v))} />
           <Legend />
           <Line type="monotone" dataKey="planned" stroke="#2563EB" strokeWidth={2} dot />
           <Line type="monotone" dataKey="actual" stroke="#F97316" strokeWidth={2} dot />

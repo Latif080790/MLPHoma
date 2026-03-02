@@ -38,6 +38,7 @@ export function ThreeWayMatch({ projectId, invoices }: ThreeWayMatchProps) {
 
   useEffect(() => {
     if (projectId) loadMatchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   async function loadMatchData() {
@@ -108,7 +109,7 @@ export function ThreeWayMatch({ projectId, invoices }: ThreeWayMatchProps) {
       })
 
       setRecords(matchRecords)
-    } catch (err: any) {
+    } catch {
       toast.error('Failed to load 3-way match data')
     } finally {
       setLoading(false)

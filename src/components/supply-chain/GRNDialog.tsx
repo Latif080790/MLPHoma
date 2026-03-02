@@ -15,10 +15,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { PackageCheck, Camera, AlertTriangle, Loader2, CheckCircle2 } from "lucide-react"
+import { PackageCheck, AlertTriangle, Loader2, CheckCircle2 } from "lucide-react"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import { grnService } from "@/services/grnService"
 import { toast } from "sonner"
@@ -120,8 +118,8 @@ export function GRNDialog({ open, onOpenChange, projectId }: GRNDialogProps) {
             })
             onOpenChange(false)
             form.reset()
-        } catch (err: any) {
-            toast.error("Failed to create GRN", { description: err.message })
+        } catch (err: unknown) {
+            toast.error("Failed to create GRN", { description: (err as Error).message })
         } finally {
             setSubmitting(false)
         }

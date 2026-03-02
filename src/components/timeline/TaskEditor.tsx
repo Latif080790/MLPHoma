@@ -318,7 +318,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
 
                   <div>
                     <Label htmlFor="priority">Priority</Label>
-                    <Select value={form.priority} onValueChange={(v: any) => setForm({ ...form, priority: v as 'low' | 'medium' | 'high' })}>
+                    <Select value={form.priority} onValueChange={(v: 'low' | 'medium' | 'high') => setForm({ ...form, priority: v })}>
                       <SelectTrigger><SelectValue placeholder="Priority" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="low">Low</SelectItem>
@@ -418,7 +418,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="status">Status</Label>
-                    <Select value={form.status} onValueChange={(v: any) => setForm({ ...form, status: v as TaskStatus })}>
+                    <Select value={form.status} onValueChange={(v: TaskStatus) => setForm({ ...form, status: v })}>
                       <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="not_started">Not started</SelectItem>
@@ -499,7 +499,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
                 <Select value={form.rabId} onValueChange={(v: string) => setForm({ ...form, rabId: v })}>
                   <SelectTrigger><SelectValue placeholder="Select RAB..." /></SelectTrigger>
                   <SelectContent>
-                    {rabItems.map((r: any) => (
+                    {rabItems.map((r) => (
                       <SelectItem key={r.id} value={r.id}>{r.item_code ?? r.code ?? r.itemCode ?? r.id} — {r.item_name ?? r.name ?? ''}</SelectItem>
                     ))}
                   </SelectContent>
@@ -539,7 +539,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
                   </div>
                   <div>
                     <Label>Type</Label>
-                    <Select value={dep.type} onValueChange={(v: any) => setDep(idx, { type: v })}>
+                    <Select value={dep.type} onValueChange={(v: DependencyType) => setDep(idx, { type: v })}>
                       <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="FS">Finish to Start (FS)</SelectItem>

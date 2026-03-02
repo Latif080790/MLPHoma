@@ -119,8 +119,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
             onOpenChange(false)
             form.reset()
             setPendingSubmission(null)
-        } catch (err: any) {
-            toast.error('Failed to create PO: ' + err.message)
+        } catch (err: unknown) {
+            toast.error('Failed to create PO: ' + (err instanceof Error ? err.message : String(err)))
         }
     }
 
@@ -185,7 +185,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
 
                 const result = await checkBudgetAvailability(projectId, checkableItems)
                 setBudgetCheck(result)
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Budget check failed:', error)
                 setBudgetCheck(null)
             } finally {
@@ -207,7 +207,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
         ? ((totalCommitted + totalEstimated) / totalProjectBudget) * 100
         : 0
 
-    const isOverBudget = utilizationPercent > 100
+    const _isOverBudget = utilizationPercent > 100
 
     return (
         <>
@@ -288,7 +288,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                                                 if (selected) {
                                                     const currentName = form.getValues(`items.${index}.item_name`)
                                                     if (!currentName) {
-                                                        const name = (selected as any).name || selected.ahsp_items?.name || selected.rab_items?.name || ''
+                                                        const name = (selected as Record<string, unknown>).name as string || selected.ahsp_items?.name || selected.rab_items?.name || ''
                                                         form.setValue(`items.${index}.item_name`, name)
                                                     }
                                                     form.setValue(`items.${index}.unit_price`, selected.unit_price_budget || 0)
@@ -300,7 +300,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {rapItems.map(ri => {
-                                                    const name = (ri as any).name || ri.ahsp_items?.name || ri.rab_items?.name || 'Item'
+                                                    const name = (ri as Record<string, unknown>).name as string || ri.ahsp_items?.name || ri.rab_items?.name || 'Item'
                                                     const rem = (ri.total_budget || 0) - (ri.committed_cost || 0) - (ri.actual_cost || 0)
                                                     return (
                                                         <SelectItem key={ri.id} value={ri.id} className="text-xs">

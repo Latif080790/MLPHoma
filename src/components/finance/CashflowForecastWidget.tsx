@@ -8,8 +8,8 @@ import { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
-import { TrendingUp, TrendingDown, AlertTriangle, DollarSign, Calendar, Info } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts'
+import { TrendingUp, TrendingDown, AlertTriangle, DollarSign, Info } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import {
     calculateCashflowForecast,
     buildHistoricalTransactionsFromFinance,
@@ -64,7 +64,7 @@ export function CashflowForecastWidget({
     projectId,
     forecastWeeks = 4,
     currentBalance = 500000000, // Default 500M IDR
-    compact = false,
+    _compact = false,
     invoices = [],
     claims = [],
     transactions = [],
@@ -75,6 +75,7 @@ export function CashflowForecastWidget({
     
     useEffect(() => {
         loadForecast()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId, showWeeks, currentBalance, invoices, claims, transactions])
     
     const loadForecast = async () => {

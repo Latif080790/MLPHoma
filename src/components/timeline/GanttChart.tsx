@@ -13,7 +13,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTimelineStore } from '../../store/timelineStore'
-import type { TimelineTask, TaskDependency } from '../../store/timelineStore'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import {
   ContextMenu,
@@ -122,7 +121,9 @@ function buildDates(minISO: string, maxISO: string): string[] {
   let cur = start
   while (cur.getTime() <= end.getTime()) {
     out.push(toISODate(cur))
-    cur.setUTCDate(cur.getUTCDate() + 1)
+    const next = new Date(cur)
+    next.setUTCDate(next.getUTCDate() + 1)
+    cur = next
   }
   return out
 }
@@ -209,7 +210,8 @@ export default function GanttChart({
 }: GanttChartProps) {
   const { width } = useWindowSize()
   const { getTasks } = useTimelineStore()
-  const tasks = tasksOverride ?? getTasks(projectId) ?? []
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const tasks = useMemo(() => tasksOverride ?? getTasks(projectId) ?? [], [tasksOverride, projectId])
 
   /**
    * Visual palette & responsive layout
@@ -243,12 +245,12 @@ export default function GanttChart({
   }, [tasks])
 
   const days = useMemo(() => buildDates(minISO, maxISO), [minISO, maxISO])
-  const fullChartWidth = Math.max(800, days.length * pxPerDay)
+  const _fullChartWidth = Math.max(800, days.length * pxPerDay)
 
   /**
    * CPM (moved to worker)
    */
-  const [cpmMetrics, setCpmMetrics] = useState<Record<string, any>>({})
+  const [cpmMetrics, setCpmMetrics] = useState<Record<string, { ES: number; EF: number; LS: number; LF: number; TF: number }>>({})
   const [criticalIds, setCriticalIds] = useState<Set<string>>(new Set())
   const cpmWorkerRef = useRef<Worker | null>(null)
 
@@ -287,9 +289,9 @@ export default function GanttChart({
           dependencies: t.dependencies || [],
         })),
       })
-    } catch (err) {
+    } catch {
       // graceful fallback: compute minimal metrics inline
-      const fallbackMetrics: Record<string, any> = {}
+      const fallbackMetrics: Record<string, { ES: number; EF: number; LS: number; LF: number; TF: number }> = {}
       tasks.forEach((t) => {
         const dur = Math.max(1, t.duration || inclusiveDays(t.startDate, t.endDate))
         fallbackMetrics[t.id] = { ES: 0, EF: dur, LS: 0, LF: dur, TF: 0 }
@@ -454,7 +456,7 @@ export default function GanttChart({
   const startDay = Math.max(0, firstVisibleDay - overscanDays)
   const endDay = Math.min(days.length, firstVisibleDay + visibleDayCount + overscanDays)
   const visibleDays = days.slice(startDay, endDay)
-  const visibleDaysOffsetPx = startDay * pxPerDay
+  const _visibleDaysOffsetPx = startDay * pxPerDay
 
   const firstVisibleTile = Math.floor(startDay / tileSizeDays)
   const lastVisibleTile = Math.floor((endDay - 1) / tileSizeDays)
@@ -559,7 +561,7 @@ export default function GanttChart({
   const captureIntervalRef = useRef<number | null>(null)
   const captureTimerRef = useRef<number | null>(null)
   const [lastMetrics, setLastMetrics] = useState<ProfileSample | null>(null)
-  const [lastAnalysis, setLastAnalysis] = useState<any | null>(null)
+  const [lastAnalysis, setLastAnalysis] = useState<Record<string, unknown> | null>(null)
 
   /**
    * startCapture
@@ -692,7 +694,7 @@ export default function GanttChart({
     function onUp(e: MouseEvent) {
       const drag = dragRef.current
       if (!drag) return
-      const dx = (e && typeof (e as any).clientX === 'number' && drag.startX != null) ? (e.clientX - drag.startX) : 0
+      const dx = (e && typeof (e as MouseEvent).clientX === 'number' && drag.startX != null) ? (e.clientX - drag.startX) : 0
       const deltaDays = Math.round(dx / pxPerDay)
       const newStart = addDaysISO(drag.origStartISO, deltaDays)
       const id = drag.id
@@ -811,7 +813,7 @@ export default function GanttChart({
           img.style.display = 'block'
           cloneCanvas.parentElement.replaceChild(img, cloneCanvas)
         }
-      } catch (err) {
+      } catch {
         // ignore if canvas cannot be serialized
       }
     }
@@ -1121,8 +1123,8 @@ export default function GanttChart({
               )
             })}
 
-            {visibleDays.map((d, i) => {
-              const globalIdx = startDay + i
+            {visibleDays.map((d, _i) => {
+              const _globalIdx = startDay + _i
               const dow = parseISODate(d).getUTCDay()
               if (dow === 0 || dow === 6) {
                 return <div key={`wk-${d}`} className="absolute top-0 h-full pointer-events-none" style={{ left: leftColWidth + i * pxPerDay, width: pxPerDay, background: 'linear-gradient(90deg, rgba(148,163,184,0.03), rgba(148,163,184,0.01))' }} />
@@ -1374,7 +1376,7 @@ export default function GanttChart({
               onClick={async () => {
                 try {
                   // start 10s analysis
-                  const res = await runPerfAnalyze(10000, sampleMs)
+                  await runPerfAnalyze(10000, sampleMs)
                   // open JSON already handled inside runPerfAnalyze
                 } catch (err) {
                   // eslint-disable-next-line no-console

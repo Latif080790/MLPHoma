@@ -214,7 +214,7 @@ export function DKHManager() {
 
                 importResources(validResources)
                 toast.success(`Imported ${validResources.length} resources`)
-            } catch (error) {
+            } catch {
                 toast.error('Failed to import resources. Please check the file format.')
             }
         }
@@ -372,7 +372,7 @@ export function DKHManager() {
                         className="pl-10"
                     />
                 </div>
-                <Select value={selectedType} onValueChange={(value: any) => setSelectedType(value)}>
+                <Select value={selectedType} onValueChange={(value: ResourceType | 'all') => setSelectedType(value)}>
                     <SelectTrigger className="w-48">
                         <SelectValue />
                     </SelectTrigger>

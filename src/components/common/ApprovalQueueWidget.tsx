@@ -6,9 +6,8 @@
 
 import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { FileCheck, Check, X, Clock, AlertTriangle, ChevronRight } from 'lucide-react'
+import { FileCheck, Check, Clock, AlertTriangle, ChevronRight } from 'lucide-react'
 import { useApprovalStore } from '@/store/approvalStore'
 import { useAuthStore } from '@/store/authStore'
 import { useProjectStore } from '@/store/projectStore'
@@ -19,7 +18,7 @@ import type { ApprovalRequest } from '@/types/approval'
 import { ApprovalDialog } from './ApprovalDialog'
 
 export function ApprovalQueueWidget() {
-    const { user, profile } = useAuthStore()
+    const { profile } = useAuthStore()
     const { activeProjectId } = useProjectStore()
     const { pendingApprovals, pendingCount, fetchPendingApprovals } = useApprovalStore()
     const [selectedApproval, setSelectedApproval] = useState<ApprovalRequest | null>(null)
@@ -28,6 +27,7 @@ export function ApprovalQueueWidget() {
 
     useEffect(() => {
         fetchPendingApprovals(activeProjectId || undefined)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeProjectId])
 
     if (!canApprove && pendingCount === 0) return null

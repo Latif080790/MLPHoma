@@ -10,8 +10,9 @@ import { formatIDR } from '@/lib/utils'
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 
 export function BenchmarkingDashboard() {
-    const state = useAHSPStore()
-    const summary = useMemo(() => getAHSPSummary(state), [state.ahspItems, state.resources])
+    const { ahspItems, resources } = useAHSPStore()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const summary = useMemo(() => getAHSPSummary({ ahspItems, resources } as ReturnType<typeof useAHSPStore>), [ahspItems, resources])
 
     const categoryData = useMemo(() => {
         return Object.entries(summary.priceByCategory).map(([name, data]) => ({

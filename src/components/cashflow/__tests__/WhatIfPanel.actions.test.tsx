@@ -35,12 +35,15 @@ describe('WhatIfPanel actions', () => {
   beforeEach(() => {
     // Reset stores to known state
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       useCurvaSStore.setState({ savedScenarios: {}, curvaSData: {} } as any)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       useProjectStore.setState({
         projects: {
           [projectId]: { id: projectId, name: 'Test Project', budget: 1000000, status: 'Active' },
         },
         activeProjectId: projectId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
     })
     // reset mock

@@ -35,6 +35,7 @@ export function MaterialTransferApprovalPanel({ projectId }: MaterialTransferApp
 
   useEffect(() => {
     void loadPending()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
   const pendingTransfers = useMemo(() => {
@@ -54,8 +55,8 @@ export function MaterialTransferApprovalPanel({ projectId }: MaterialTransferApp
       )
       toast.success('Transfer request approved')
       await loadPending()
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to approve transfer')
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || 'Failed to approve transfer')
     }
   }
 
@@ -70,8 +71,8 @@ export function MaterialTransferApprovalPanel({ projectId }: MaterialTransferApp
       )
       toast.success('Transfer request rejected')
       await loadPending()
-    } catch (error: any) {
-      toast.error(error?.message || 'Failed to reject transfer')
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || 'Failed to reject transfer')
     }
   }
 

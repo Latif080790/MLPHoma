@@ -43,9 +43,9 @@ export function GenerateReportDialog({ projectId, projectName, stats, children }
             })
             toast.success(`${format} report generated successfully!`)
             setOpen(false)
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Report generation failed:', error)
-            toast.error('Failed to generate report: ' + error.message)
+            toast.error('Failed to generate report: ' + (error as Error).message)
         } finally {
             setLoading(false)
         }

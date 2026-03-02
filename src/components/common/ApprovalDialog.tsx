@@ -48,8 +48,8 @@ export function ApprovalDialog({ approval, open, onClose, onApproved, onRejected
             toast.success('Request approved successfully')
             onApproved?.(approval)
             onClose()
-        } catch (err: any) {
-            toast.error('Failed to approve: ' + (err.message || 'Unknown error'))
+        } catch (err: unknown) {
+            toast.error('Failed to approve: ' + ((err as Error).message || 'Unknown error'))
         } finally {
             setProcessing(false)
         }
@@ -67,8 +67,8 @@ export function ApprovalDialog({ approval, open, onClose, onApproved, onRejected
             toast.success('Request rejected')
             onRejected?.(approval)
             onClose()
-        } catch (err: any) {
-            toast.error('Failed to reject: ' + (err.message || 'Unknown error'))
+        } catch (err: unknown) {
+            toast.error('Failed to reject: ' + ((err as Error).message || 'Unknown error'))
         } finally {
             setProcessing(false)
         }

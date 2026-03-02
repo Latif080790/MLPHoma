@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label'
 import { useProjectStore } from '@/store/projectStore'
 import { subcontractorService, type SubcontractorInfo, type SPK } from '@/services/subcontractorService'
 import { useAuthStore } from '@/store/authStore'
-import { Plus, Users, HardHat, FileSignature, Search, ShieldCheck, CreditCard, Play } from 'lucide-react'
+import { Plus, Users, HardHat, FileSignature, Search, ShieldCheck, Play } from 'lucide-react'
 
 export function SubcontractorPanel() {
     const { activeProjectId } = useProjectStore()
@@ -37,7 +37,7 @@ export function SubcontractorPanel() {
     // SPK Dialog
     const [spkOpen, setSpkOpen] = useState(false)
     const [spkSubconId, setSpkSubconId] = useState('')
-    const [spkWbsId, setSpkWbsId] = useState('') // Mocked for now
+    const [spkWbsId, _setSpkWbsId] = useState('') // Mocked for now
     const [spkDesc, setSpkDesc] = useState('')
     const [spkContractVal, setSpkContractVal] = useState(0)
     const [spkDp, setSpkDp] = useState(20)
@@ -217,7 +217,7 @@ export function SubcontractorPanel() {
                     <div className="space-y-4 py-2">
                         <div className="space-y-1.5">
                             <Label>Type</Label>
-                            <Select value={newSubconType} onValueChange={(v: any) => setNewSubconType(v)}>
+                            <Select value={newSubconType} onValueChange={(v: 'MANDOR' | 'SUBCON') => setNewSubconType(v)}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="MANDOR">Mandor (Individual)</SelectItem>

@@ -14,7 +14,7 @@ import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
 import {
     FileText, DollarSign, CalendarClock, Layers, CheckCircle2, XCircle,
-    AlertTriangle, Loader2, ArrowRight, Send, Eye, ShieldCheck,
+    AlertTriangle as _AlertTriangle, Loader2, ArrowRight, Send, Eye, ShieldCheck,
 } from 'lucide-react'
 import {
     ccoStateMachine,
@@ -111,6 +111,7 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
     const nextStatuses = ccoStateMachine.getNextStatuses(changeOrder.status)
 
     // Load impact preview when in REVIEWED or PENDING_APPROVAL
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
         if (['REVIEWED', 'PENDING_APPROVAL'].includes(changeOrder.status)) {
             setLoading(true)

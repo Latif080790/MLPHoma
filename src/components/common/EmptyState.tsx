@@ -6,7 +6,7 @@
 
 import React from 'react'
 import { cn } from '@/lib/utils'
-import { FileQuestion, Search, Inbox, AlertCircle, Plus } from 'lucide-react'
+import { Search, Inbox, AlertCircle, Plus } from 'lucide-react'
 
 /**
  * EmptyStateProps

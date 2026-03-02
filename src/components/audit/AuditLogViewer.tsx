@@ -8,7 +8,7 @@
  * Used in: CommandCenter (compact), dedicated Audit page, scoped views
  */
 
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { auditService } from '../../services/auditService'
 import type { AuditLogEntry, AuditAction } from '../../types/audit'
-import { format, formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 
 // ─── Action Config (icon, color, label) ───
 
@@ -72,7 +72,7 @@ function getActionConfig(action: AuditAction): ActionConfig {
 
 // ─── Detail Diff Row ───
 
-function DetailDiff({ details }: { details: Record<string, any> }) {
+function DetailDiff({ details }: { details: Record<string, unknown> }) {
     if (!details || Object.keys(details).length === 0) {
         return <p className="text-xs text-slate-400 italic">No additional details</p>
     }
@@ -241,6 +241,7 @@ export function AuditLogViewer({
 
     useEffect(() => {
         loadLogs()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filterType, entityId])
 
     const displayLogs = compact ? logs.slice(0, 5) : logs

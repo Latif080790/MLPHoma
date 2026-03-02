@@ -38,19 +38,21 @@ interface ModuleConfigFormProps<T> {
  * a full dynamic form per-module. For now it exposes common fields such as toggles,
  * numeric thresholds and names.
  */
-export function ModuleConfigForm<T = any>({ title, initialValue, schema, onSubmit, compact = false }: ModuleConfigFormProps<T>) {
+export function ModuleConfigForm<T = unknown>({ title, initialValue, schema, onSubmit, compact = false }: ModuleConfigFormProps<T>) {
   const methods = useForm({
     resolver: zodResolver(schema),
-    defaultValues: initialValue as any,
+    defaultValues: initialValue as Record<string, unknown>,
     mode: 'onSubmit',
   })
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return <ModuleConfigFormInner title={title} methods={methods as any} onSubmit={onSubmit} compact={compact} />
 }
 
 /**
  * Inner component separated to satisfy smaller reusable pieces.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ModuleConfigFormInner<T>({ title, methods, onSubmit, compact }: { title: string; methods: UseFormReturn<Partial<T>>; onSubmit: (d: any) => void; compact?: boolean }) {
   const { register, handleSubmit, formState } = methods
 
@@ -74,24 +76,27 @@ function ModuleConfigFormInner<T>({ title, methods, onSubmit, compact }: { title
       <div className="grid grid-cols-1 gap-2">
         <div>
           <Label>Name</Label>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <Input {...register('meta.name' as any)} placeholder="Display name" />
         </div>
 
         <div>
           <Label>Schema Version</Label>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <Input {...register('meta.schemaVersion' as any)} placeholder="1.0.0" />
         </div>
 
         <div>
           <Label>Priority Threshold (example numeric)</Label>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <Input type="number" {...register('notifications.thresholds.priority' as any)} placeholder="e.g. 10" />
         </div>
       </div>
 
       {formState.errors && Object.keys(formState.errors).length > 0 ? (
         <div className="text-sm text-red-600">
-          {Object.entries(formState.errors).map(([k, v]: any) => (
-            <div key={k}>{k}: {String((v as any).message)}</div>
+          {Object.entries(formState.errors).map(([k, v]) => (
+            <div key={k}>{k}: {String((v as { message?: string }).message)}</div>
           ))}
         </div>
       ) : null}

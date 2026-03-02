@@ -131,8 +131,8 @@ export function BudgetGuardDialog({
 
             toast.success('Approval request sent', { description: 'Sent to PM\'s Command Center for review.' })
             onOpenChange(false)
-        } catch (err: any) {
-            toast.error('Failed to submit approval', { description: err.message })
+        } catch (err: unknown) {
+            toast.error('Failed to submit approval', { description: (err as Error).message })
         } finally {
             setSubmittingApproval(false)
         }

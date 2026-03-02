@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -31,7 +31,7 @@ interface RiskDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     projectId: string
-    riskToEdit?: any
+    riskToEdit?: Record<string, unknown>
 }
 
 export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDialogProps) {
@@ -96,14 +96,22 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
                 toast.success("Risk created")
             }
             onOpenChange(false)
-        } catch (err: any) {
-            toast.error("Failed to save risk: " + err.message)
+        } catch (err: unknown) {
+            toast.error("Failed to save risk: " + (err as Error).message)
         }
     }
 
     // Helper for slider/select display
+    // eslint-disable-next-line react-hooks/incompatible-library
     const prob = form.watch("probability")
+    // eslint-disable-next-line react-hooks/incompatible-library
     const imp = form.watch("impact")
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const watchCategory = form.watch("category")
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const watchWbsId = form.watch("wbs_id")
+    // eslint-disable-next-line react-hooks/incompatible-library
+    const watchStatus = form.watch("status")
     const score = (prob || 0) * (imp || 0)
 
     let scoreColor = "bg-green-100 text-green-800"
@@ -128,7 +136,7 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label>Category</Label>
-                            <Select onValueChange={(val) => form.setValue("category", val as RiskCategory)} value={form.watch("category")}>
+                            <Select onValueChange={(val) => form.setValue("category", val as RiskCategory)} value={watchCategory}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>
@@ -139,7 +147,7 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
                         </div>
                         <div className="grid gap-2">
                             <Label>Related Task (Optional)</Label>
-                            <Select onValueChange={(val) => form.setValue("wbs_id", val === "none" ? undefined : val)} value={form.watch("wbs_id") || "none"}>
+                            <Select onValueChange={(val) => form.setValue("wbs_id", val === "none" ? undefined : val)} value={watchWbsId || "none"}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Project Wide" />
                                 </SelectTrigger>
@@ -180,7 +188,7 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
                         </div>
                         <div className="grid gap-2">
                             <Label>Status</Label>
-                            <Select onValueChange={(val) => form.setValue("status", val as RiskStatus)} value={form.watch("status")}>
+                            <Select onValueChange={(val) => form.setValue("status", val as RiskStatus)} value={watchStatus}>
                                 <SelectTrigger>
                                     <SelectValue />
                                 </SelectTrigger>

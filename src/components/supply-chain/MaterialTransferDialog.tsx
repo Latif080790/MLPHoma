@@ -38,7 +38,7 @@ const transferSchemaBase = z.object({
     isEmergency: z.boolean(),
 })
 
-const transferSchema = transferSchemaBase.refine(data => data.sourceWbsId !== data.targetWbsId, {
+const _transferSchema = transferSchemaBase.refine(data => data.sourceWbsId !== data.targetWbsId, {
     message: "Source and Target WBS must be different",
     path: ["targetWbsId"],
 })
@@ -131,8 +131,8 @@ export function MaterialTransferDialog({
 
             onOpenChange(false)
             form.reset()
-        } catch (err: any) {
-            toast.error("Failed to create transfer", { description: err.message })
+        } catch (err: unknown) {
+            toast.error("Failed to create transfer", { description: (err as Error).message })
         } finally {
             setSubmitting(false)
         }

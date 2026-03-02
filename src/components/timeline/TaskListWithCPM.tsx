@@ -25,23 +25,24 @@ interface Props {
  */
 export default function TaskListWithCPM({ projectId, onTaskClick }: Props) {
   const { getTasks } = useTimelineStore()
-  const tasks = getTasks(projectId) || []
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const tasks = useMemo(() => getTasks(projectId) || [], [projectId])
 
   const [showOnlyCritical, setShowOnlyCritical] = useState(false)
 
   // compute CPM metrics
   const cpm = useMemo(() => {
-    const input = tasks.map((t: any) => ({
+    const input = tasks.map((t) => ({
       id: t.id,
       duration: Math.max(1, t.duration || Math.max(1, Math.ceil((new Date(t.endDate).getTime() - new Date(t.startDate).getTime()) / (1000 * 60 * 60 * 24)))),
-      dependencies: (t.dependencies || []).map((d: any) => ({ predecessorId: d.predecessorId, type: d.type, lag: d.lag })),
+      dependencies: (t.dependencies || []).map((d) => ({ predecessorId: d.predecessorId, type: d.type, lag: d.lag })),
     }))
     return computeCPM(input)
   }, [tasks])
 
   const criticalSet = cpm.criticalIds || new Set<string>()
 
-  const visibleTasks = showOnlyCritical ? tasks.filter((t: any) => criticalSet.has(t.id)) : tasks
+  const visibleTasks = showOnlyCritical ? tasks.filter((t) => criticalSet.has(t.id)) : tasks
 
   return (
     <div className="rounded-md border p-3 bg-white shadow-sm">
@@ -72,7 +73,7 @@ export default function TaskListWithCPM({ projectId, onTaskClick }: Props) {
           <div className="text-sm text-neutral-500">No tasks</div>
         ) : (
           <ul className="space-y-2">
-            {visibleTasks.map((t: any) => {
+            {visibleTasks.map((t) => {
               const isCritical = criticalSet.has(t.id)
               return (
                 <li

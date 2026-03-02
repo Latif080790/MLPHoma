@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, Info, X, RotateCcw, FileText, Wrench } from 'lucide-react'
+import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, X, RotateCcw } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -23,8 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
-import { useAHSPStore, getAHSPSummary, validateAHSP } from '../../store/ahspStore'
+import { TooltipProvider } from '../ui/tooltip'
+import { useAHSPStore, getAHSPSummary } from '../../store/ahspStore'
 import { AHSPItemEditor } from './AHSPItemEditor'
 import { ZoneManager } from './ZoneManager'
 import { ZonePriceEditor } from './ZonePriceEditor'
@@ -32,8 +32,17 @@ import { PriceHistoryDialog } from './PriceHistoryDialog'
 import { AHSPCreationModeDialog, type AHSPCreationMode } from './AHSPCreationModeDialog'
 import { saveCreationLog } from '../../lib/supabaseClient'
 import { formatIDR } from '../../lib/utils'
-import type { AHSPItem, Zone } from '../../types/ahsp'
+import type { AHSPItem } from '../../types/ahsp'
 import { toast } from 'sonner'
+
+/** Extended AHSPItem with zone price breakdown fields */
+interface AHSPItemWithPrices extends AHSPItem {
+  price_material?: number
+  price_labor?: number
+  price_equipment?: number
+  price_subcon?: number
+  originalFinalPrice?: number
+}
 
 /** Props for AHSPCatalog component */
 export interface AHSPCatalogProps {
@@ -81,8 +90,6 @@ export function AHSPCatalog({
     addAHSPItem,
     updateAHSPItem,
     deleteAHSPItem,
-    searchAHSPItems,
-    filterByCategory,
     exportAHSPItems,
     importAHSPItems,
     fetchZones,
@@ -111,9 +118,11 @@ export function AHSPCatalog({
   }, [searchQuery, selectedCategory, selectedZone])
 
   // Calculate summary
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const summary = useMemo(() => {
     const state = useAHSPStore.getState()
     return getAHSPSummary(state)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ahspItems, resources])
 
   // Get unique categories
@@ -600,17 +609,17 @@ export function AHSPCatalog({
                       )
                     }
 
-                    const item = row.item
-                    const matPrice = (item as any).price_material || 0
-                    const labPrice = (item as any).price_labor || 0
-                    const eqpPrice = (item as any).price_equipment || 0
-                    const subPrice = (item as any).price_subcon || 0
+                    const item = row.item as AHSPItemWithPrices
+                    const matPrice = item.price_material || 0
+                    const labPrice = item.price_labor || 0
+                    const eqpPrice = item.price_equipment || 0
+                    const subPrice = item.price_subcon || 0
 
                     const breakSum = (matPrice + labPrice + eqpPrice + subPrice)
                     const isUnallocated = breakSum === 0 && (item.finalPrice || 0) > 0
 
                     const totalPrice = isUnallocated ? item.finalPrice : breakSum
-                    const hasZoneOverride = selectedZone !== 'default' && (item as any).originalFinalPrice !== undefined
+                    const hasZoneOverride = selectedZone !== 'default' && (item as AHSPItemWithPrices).originalFinalPrice !== undefined
 
                     return (
                       <TableRow

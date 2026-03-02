@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { AlertTriangle, AlertCircle, Info, Clock, TrendingDown, ChevronDown, ChevronUp } from 'lucide-react'
-import { scheduleAlertService, type ScheduleAlert, type AlertSeverity } from '../../services/scheduleAlertService'
+import { scheduleAlertService, type ScheduleAlert } from '../../services/scheduleAlertService'
 import { cn } from '../../lib/utils'
 
 interface CriticalPathWarningPanelProps {
@@ -47,7 +47,7 @@ const SEVERITY_CONFIG = {
 
 export function CriticalPathWarningPanel({ 
     projectId, 
-    compact = false,
+    _compact = false,
     maxAlerts = 5 
 }: CriticalPathWarningPanelProps) {
     const [alerts, setAlerts] = useState<ScheduleAlert[]>([])
@@ -57,6 +57,7 @@ export function CriticalPathWarningPanel({
     
     useEffect(() => {
         loadAlerts()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId])
     
     const loadAlerts = async () => {
@@ -64,8 +65,8 @@ export function CriticalPathWarningPanel({
         try {
             const data = await scheduleAlertService.getProjectAlerts(projectId)
             setAlerts(data)
-        } catch (error) {
-            console.error('Failed to load schedule alerts:', error)
+        } catch {
+            console.error('Failed to load schedule alerts')
         } finally {
             setLoading(false)
         }

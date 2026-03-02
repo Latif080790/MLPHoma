@@ -124,6 +124,7 @@ export function ListSkeleton({ items = 5 }: { items?: number }) {
 export function ChartSkeleton() {
   // Generate random bar heights once on mount for consistent rendering
   const barHeights = React.useMemo(
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     () => Array.from({ length: 12 }).map(() => Math.random() * 60 + 40),
     []
   )

@@ -283,9 +283,9 @@ export function WBSTree({
   onEditItem,
   onDeleteItem,
   onMoveItem,
-  onReorderItems,
+  onReorderItems: _onReorderItems,
   maxNestingLevel = 5,
-  expandAll = false,
+  expandAll: _expandAll = false,
 }: WBSTreeProps) {
   const [draggedItem, setDraggedItem] = React.useState<string | null>(null)
   const [dropTarget, setDropTarget] = React.useState<{ id: string; position: 'before' | 'after' | 'inside' } | null>(null)
@@ -350,14 +350,15 @@ export function WBSTree({
 
     if (dropTarget) {
       switch (dropTarget.position) {
-        case 'before':
+        case 'before': {
           // Find parent and insert before target
           const targetItem = items.find(item => item.id === targetId)
           newParentId = targetItem?.parentId || null
           const siblings = items.filter(item => item.parentId === newParentId)
           newIndex = siblings.findIndex(item => item.id === targetId)
           break
-        case 'after':
+        }
+        case 'after': {
           // Find parent and insert after target
           const targetItem2 = items.find(item => item.id === targetId)
           newParentId = targetItem2?.parentId || null
@@ -365,11 +366,13 @@ export function WBSTree({
           const targetIndex = siblings2.findIndex(item => item.id === targetId)
           newIndex = targetIndex + 1
           break
-        case 'inside':
+        }
+        case 'inside': {
           // Insert as child
           newParentId = targetId
           newIndex = 0
           break
+        }
       }
     }
 

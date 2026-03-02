@@ -27,7 +27,7 @@ interface DocumentVersionHistoryProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     documentGroupId: string
-    projectId: string
+    _projectId?: string
     documentTitle: string
     onReverted?: () => void
 }
@@ -36,7 +36,7 @@ export function DocumentVersionHistory({
     open,
     onOpenChange,
     documentGroupId,
-    projectId,
+    _projectId,
     documentTitle,
     onReverted,
 }: DocumentVersionHistoryProps) {
@@ -47,6 +47,7 @@ export function DocumentVersionHistory({
 
     useEffect(() => {
         if (open && documentGroupId) loadHistory()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, documentGroupId])
 
     const loadHistory = async () => {
@@ -68,8 +69,8 @@ export function DocumentVersionHistory({
             toast.success("Reverted successfully")
             loadHistory()
             onReverted?.()
-        } catch (err: any) {
-            toast.error("Revert failed", { description: err.message })
+        } catch (err: unknown) {
+            toast.error("Revert failed", { description: (err as Error).message })
         } finally {
             setReverting(null)
         }

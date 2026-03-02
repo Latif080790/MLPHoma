@@ -150,7 +150,7 @@ export function AppSidebar({ collapsed, setCollapsed }: AppSidebarProps) {
                             </span>
 
                             {!collapsed && item.href === '/' && pendingApprovals > 0 && (
-                                <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                                <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
                                     {pendingApprovals}
                                 </span>
                             )}

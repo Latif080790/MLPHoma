@@ -32,9 +32,6 @@ import {
   ChevronRight,
   Zap,
   Shield,
-  User,
-  MessageSquare,
-  Calendar
 } from 'lucide-react'
 import { useRABApprovalStore } from '../../store/rabApprovalStore'
 import type { RABApproval, ApprovalStatus, ApprovalStep } from '../../types/rabApproval'
@@ -151,13 +148,11 @@ export function RABApprovalPanel({
   mode = 'view'
 }: RABApprovalPanelProps) {
   const {
-    approvals,
     templates,
     loading,
     submitForApproval,
     approve,
     reject,
-    cancelApproval,
     getApprovalsByProject,
     getApprovalHistory,
     fetchApprovals,

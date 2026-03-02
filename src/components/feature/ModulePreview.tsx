@@ -17,9 +17,9 @@ interface ModulePreviewProps {
   /** Module key (e.g. 'rab', 'rap', 'curvas') */
   moduleKey: string
   /** The module-specific configuration object */
-  config: any
+  config: unknown
   /** Full feature config (optional) */
-  fullConfig?: any
+  fullConfig?: unknown
 }
 
 /**
@@ -45,13 +45,15 @@ function makeMockSeries(seed = 5) {
  *
  * Presents a small, fast visualization & stats for the given module config.
  */
-const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig }) => {
+const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: _fullConfig }) => {
   if (!config) {
     return <div className="text-sm text-neutral-500">No configuration available for this module.</div>
   }
 
   // Helpers
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const numberOr = (v: any, fallback = 0) => (typeof v === 'number' ? v : fallback)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const percentOr = (v: any, fallback = 0) => (typeof v === 'number' ? `${v}%` : `${fallback}%`)
 
   switch (moduleKey) {

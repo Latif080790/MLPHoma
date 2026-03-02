@@ -64,6 +64,7 @@ export function NotificationCenter() {
         return () => {
             unsubscribe()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id])
 
     // Close on outside click

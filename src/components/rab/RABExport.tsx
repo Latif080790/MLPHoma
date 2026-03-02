@@ -15,7 +15,7 @@ interface RABExportProps {
   tableRef?: React.RefObject<HTMLDivElement | null>
 }
 
-export default function RABExport({ projectId, tableRef }: RABExportProps) {
+export default function RABExport({ projectId: _projectId, tableRef: _tableRef }: RABExportProps) {
   const handleExport = () => {
     // Placeholder export logic
     toast.info('RAB export not yet implemented')

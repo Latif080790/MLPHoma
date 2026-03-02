@@ -102,6 +102,7 @@ export function TKDNItemDialog({ open, onClose, onSubmit, editItem, loading }: P
         notes: '',
       })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editItem, open])
 
   const watchQty = form.watch('quantity')
@@ -135,7 +136,7 @@ export function TKDNItemDialog({ open, onClose, onSubmit, editItem, loading }: P
               <Label>Kategori *</Label>
               <Select
                 value={form.watch('category')}
-                onValueChange={(v) => form.setValue('category', v as any)}
+                onValueChange={(v) => form.setValue('category', v as 'material' | 'labor' | 'equipment' | 'service')}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -150,7 +151,7 @@ export function TKDNItemDialog({ open, onClose, onSubmit, editItem, loading }: P
               <Label>Asal *</Label>
               <Select
                 value={form.watch('origin')}
-                onValueChange={(v) => form.setValue('origin', v as any)}
+                onValueChange={(v) => form.setValue('origin', v as 'domestic' | 'imported')}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>

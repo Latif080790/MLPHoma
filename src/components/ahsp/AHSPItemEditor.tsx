@@ -5,13 +5,12 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { X, Save, Plus, Trash2, Calculator, Edit2, Check, Database, Search, Info } from 'lucide-react'
+import { Plus, Trash2, Calculator, Edit2, Check, Database, Search } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
 import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Badge } from '../ui/badge'
 import {
@@ -33,7 +32,7 @@ import {
 import { useAHSPStore } from '../../store/ahspStore'
 import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
-import type { AHSPItem, AHSPComponent, ResourceType, ResourceUnit } from '../../types/ahsp'
+import type { AHSPItem, ResourceType, ResourceUnit } from '../../types/ahsp'
 import type { AHSPCreationMode } from './AHSPCreationModeDialog'
 import { getMainCategories, getSubcategories, getCategoryPath } from '../../lib/workCategories'
 
@@ -62,7 +61,7 @@ export function AHSPItemEditor({
   onClose,
   onSave,
   mode,
-  sourceReference,
+  sourceReference: _sourceReference,
 }: AHSPItemEditorProps) {
   const [formData, setFormData] = useState<{
     code: string
@@ -101,7 +100,7 @@ export function AHSPItemEditor({
   const [pendingDeleteComponentId, setPendingDeleteComponentId] = useState<string | null>(null)
   const [resourceSearch, setResourceSearch] = useState('')
   const [selectedSNIPreset, setSelectedSNIPreset] = useState<string | null>(null)
-  const [showSNIHelp, setShowSNIHelp] = useState(false)
+  const [_showSNIHelp, setShowSNIHelp] = useState(false)
 
   // Update SNI help visibility when mode changes
   useEffect(() => {
@@ -117,7 +116,6 @@ export function AHSPItemEditor({
     addComponent,
     updateComponent,
     deleteComponent,
-    calculateAHSPPrice,
     addResource,
     fetchComponents,
   } = useAHSPStore()
@@ -128,7 +126,10 @@ export function AHSPItemEditor({
   }, [ahspItems])
 
   const currentAHSPId = item?.id || 'temp'
-  const components = componentsByAHSP[currentAHSPId] || []
+  const components = React.useMemo(
+    () => componentsByAHSP[currentAHSPId] || [],
+    [componentsByAHSP, currentAHSPId]
+  )
 
   // Filtered resources for the library search
   const filteredResources = React.useMemo(() => {
@@ -141,6 +142,7 @@ export function AHSPItemEditor({
   }, [resources, selectedComponentType, resourceSearch])
 
   // Handle adding a resource from the library
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleAddResource = (resource: any) => {
     addComponent(currentAHSPId, {
       resourceId: resource.id,
@@ -327,6 +329,7 @@ export function AHSPItemEditor({
   /**
    * Handle input changes
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error for this field
@@ -353,6 +356,7 @@ export function AHSPItemEditor({
   /**
    * Handle updating manual component
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateManualComponent = (tempId: string, field: string, value: any) => {
     setManualComponents(prev =>
       prev.map(c => c.tempId === tempId ? { ...c, [field]: value } : c)
@@ -362,7 +366,7 @@ export function AHSPItemEditor({
   /**
    * Handle saving manual component
    */
-  const handleSaveManualComponent = (tempId: string) => {
+  const _handleSaveManualComponent = (tempId: string) => {
     const component = manualComponents.find(c => c.tempId === tempId)
     if (!component || !component.resourceName) {
       toast.error('Resource name is required')
@@ -385,7 +389,7 @@ export function AHSPItemEditor({
   /**
    * Handle adding component
    */
-  const handleAddComponent = (resourceId: string) => {
+  const _handleAddComponent = (resourceId: string) => {
     const resource = resources.find(r => r.id === resourceId)
     if (!resource || !item) return
 
@@ -402,6 +406,7 @@ export function AHSPItemEditor({
   /**
    * Handle updating component
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateComponent = (componentId: string, field: string, value: any) => {
     updateComponent(componentId, { [field]: value })
   }
@@ -462,7 +467,7 @@ export function AHSPItemEditor({
   }
 
   // Filter resources by type
-  const resourcesByType = React.useMemo(() => {
+  const _resourcesByType = React.useMemo(() => {
     const grouped: Record<ResourceType, typeof resources> = {
       material: [],
       labor: [],
@@ -623,7 +628,7 @@ export function AHSPItemEditor({
 
                     <div className="space-y-2">
                       <Label htmlFor="unit" className="text-xs font-black uppercase tracking-widest text-slate-400 pl-1">Satuan</Label>
-                      <Select value={formData.unit} onValueChange={(value: any) => handleChange('unit', value)}>
+                      <Select value={formData.unit} onValueChange={(value: string) => handleChange('unit', value)}>
                         <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white font-bold transition-all focus:ring-4 focus:ring-blue-100">
                           <SelectValue />
                         </SelectTrigger>
@@ -940,7 +945,7 @@ export function AHSPItemEditor({
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <Select value={selectedComponentType} onValueChange={(value: any) => setSelectedComponentType(value)}>
+                      <Select value={selectedComponentType} onValueChange={(value: string) => setSelectedComponentType(value as ResourceType)}>
                         <SelectTrigger className="w-full sm:w-40 h-12 rounded-2xl border-slate-200 bg-slate-50 font-bold text-xs uppercase tracking-wider">
                           <SelectValue />
                         </SelectTrigger>

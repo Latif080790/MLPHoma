@@ -7,7 +7,7 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import {
   Calculator, CheckCircle2, ChevronDown, ChevronRight, History, Info, Layers, Lock,
-  LockKeyhole, MapPin, Plus, Save, Search, Settings2, ShoppingCart, Trash2, TrendingUp, X, Zap
+  LockKeyhole, MapPin, Plus, Save, Search, Settings2, Trash2, TrendingUp, X, Zap
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Checkbox } from '../ui/checkbox'
@@ -30,14 +30,11 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogTrigger,
 } from '../ui/dialog'
-import { Label } from '../ui/label'
-import { SAMPLE_AHSP_ITEMS, SAMPLE_RESOURCES } from '../../lib/sampleData/ahspSample'
+import { SAMPLE_AHSP_ITEMS as _SAMPLE_AHSP_ITEMS, SAMPLE_RESOURCES as _SAMPLE_RESOURCES } from '../../lib/sampleData/ahspSample'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -66,6 +63,10 @@ import {
 } from '../ui/select'
 
 import { useWBSStore } from '../../store/wbsStore'
+import type { WBSItem } from '../../types/wbs'
+type WBSImportItem = Omit<WBSItem, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>
+import type { AHSPItem } from '../../types/ahsp'
+import type { AHSPComponent } from '../../types/ahsp'
 
 interface RABTableProps {
   projectId: string
@@ -109,9 +110,9 @@ export function RABTable({ projectId }: RABTableProps) {
   const {
     ahspItems,
     searchAHSPItems,
-    importAHSPItems,
-    importResources,
-    resources,
+    importAHSPItems: _importAHSPItems,
+    importResources: _importResources,
+    resources: _resources,
     componentsByAHSP,
     fetchComponents,
     zonePricesByZone,
@@ -155,7 +156,7 @@ export function RABTable({ projectId }: RABTableProps) {
   const [showLockConfirm, setShowLockConfirm] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [showDriftAnalysis, setShowDriftAnalysis] = useState(false)
-  const [showSaveScenario, setShowSaveScenario] = useState(false)
+  const [_showSaveScenario, setShowSaveScenario] = useState(false)
   const [scenarioName, setScenarioName] = useState('')
   const [selectedScenarioVersion, setSelectedScenarioVersion] = useState<number | null>(null)
 
@@ -172,7 +173,7 @@ export function RABTable({ projectId }: RABTableProps) {
     fetchVersions(projectId)
   }, [projectId, fetchVersions])
 
-  const handleSaveScenario = async () => {
+  const _handleSaveScenario = async () => {
     if (!scenarioName.trim()) {
       toast.error('Please enter a scenario name')
       return
@@ -256,7 +257,7 @@ export function RABTable({ projectId }: RABTableProps) {
   }
 
   // showDetails derived from visible columns (backward compat)
-  const showDetails = isColVisible('cost_material') || isColVisible('cost_labor') || isColVisible('cost_equipment') || isColVisible('cost_subcon')
+  const _showDetails = isColVisible('cost_material') || isColVisible('cost_labor') || isColVisible('cost_equipment') || isColVisible('cost_subcon')
 
   // Seed AHSP store with sample data if empty (DISABLED - User requested clean start)
   // useEffect(() => {
@@ -271,6 +272,7 @@ export function RABTable({ projectId }: RABTableProps) {
     if (project?.zoneId) {
       fetchZonePrices(project.zoneId)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project?.zoneId])
 
   useEffect(() => {
@@ -307,7 +309,7 @@ export function RABTable({ projectId }: RABTableProps) {
   }
 
   const isAllSelected = items.length > 0 && selectedItems.size === items.length
-  const isSomeSelected = selectedItems.size > 0 && selectedItems.size < items.length
+  const _isSomeSelected = selectedItems.size > 0 && selectedItems.size < items.length
 
   const filteredAHSP = useMemo(() => {
     let baseItems = searchQuery ? searchAHSPItems(searchQuery) : ahspItems
@@ -350,7 +352,7 @@ export function RABTable({ projectId }: RABTableProps) {
 
   // Flatten items for virtualization with expansion rows
   const virtualRows = useMemo(() => {
-    const rows: { type: 'item' | 'expansion'; item: any; index: number }[] = []
+    const rows: { type: 'item' | 'expansion'; item: RABItem; index: number }[] = []
     items.forEach((item, idx) => {
       rows.push({ type: 'item', item, index: idx })
       if (expandedRows.has(item.id)) {
@@ -425,7 +427,7 @@ export function RABTable({ projectId }: RABTableProps) {
     const item = items.find(i => i.id === id)
     if (!item) return
 
-    const updates: any = { [field]: num }
+    const updates: Partial<RABItem> = { [field]: num }
 
     // Recalculate unit_price
     const mat = field === 'cost_material' ? num : (item.cost_material || 0)
@@ -444,7 +446,7 @@ export function RABTable({ projectId }: RABTableProps) {
     updateItem(projectId, id, updates)
   }
 
-  const handleAddFromAhsp = (ahspItem: any) => {
+  const handleAddFromAhsp = (ahspItem: AHSPItem) => {
     // Determine split costs from AHSP if available (requires mapping or store support)
     // For now, mapping from typical AHSP naming if present
     const price = ahspItem.finalPrice || ahspItem.basePrice || 0
@@ -480,7 +482,7 @@ export function RABTable({ projectId }: RABTableProps) {
     const ahspMap = new Map(ahspItems.map(i => [i.code, i]))
 
     // 1. Generate WBS Structure
-    const wbsItems: any[] = []
+    const wbsItems: WBSImportItem[] = []
     const categories = Array.from(new Set(items.map(i => {
       const ahsp = ahspMap.get(i.item_code || i.code || '')
       return ahsp?.category || 'Uncategorized'
@@ -560,7 +562,7 @@ export function RABTable({ projectId }: RABTableProps) {
       return
     }
 
-    const wbsItems: any[] = []
+    const wbsItems: WBSImportItem[] = []
 
     // Group by category, then by name for a simple 2-level WBS if needed, 
     // but the task says: convert imported RAB to WBS directly.
@@ -1256,7 +1258,7 @@ export function RABTable({ projectId }: RABTableProps) {
                                   {(() => {
                                     const grouped: Record<string, typeof analysis.components> = {}
                                     analysis.components.forEach(c => {
-                                      const type = c.type || (c as any).resource?.type || 'other'
+                                      const type = c.type || (c as AHSPComponent & { resource?: { type?: string } }).resource?.type || 'other'
                                       if (!grouped[type]) grouped[type] = []
                                       grouped[type].push(c)
                                     })
@@ -1277,7 +1279,7 @@ export function RABTable({ projectId }: RABTableProps) {
                                               <div className={`px-4 py-1.5 ${cfg.bg} border-b border-slate-100 dark:border-slate-800`}>
                                                 <span className={`text-xs font-black uppercase tracking-widest ${cfg.color}`}>{cfg.label}</span>
                                               </div>
-                                              {comps.map((comp: any, ci: number) => {
+                                              {comps.map((comp: AHSPComponent & { resource?: { name?: string; unit?: string; unitPrice?: number }; resourceName?: string; unitPrice?: number }, ci: number) => {
                                                 const name = comp.resource?.name || comp.resourceName || comp.name || '-'
                                                 const unit = comp.unit || comp.resource?.unit || '-'
                                                 const coeff = comp.coefficient || 0
@@ -1344,7 +1346,7 @@ export function RABTable({ projectId }: RABTableProps) {
                           <Checkbox checked={selectedItems.has(item.id)} onCheckedChange={(checked) => handleSelectOne(item.id, checked as boolean)} className="border-slate-300" />
                         </TableCell>}
                         {isColVisible('no') && <TableCell className="w-[56px] text-center py-2.5">
-                          <button type="button" onClick={() => toggleExpand(item.id, item.item_code || (item as any).code)} className="inline-flex items-center gap-0.5 text-center font-mono text-xs text-slate-400 hover:text-blue-600 transition-colors w-full justify-center">
+                          <button type="button" onClick={() => toggleExpand(item.id, item.item_code || (item as RABItem & { code?: string }).code)} className="inline-flex items-center gap-0.5 text-center font-mono text-xs text-slate-400 hover:text-blue-600 transition-colors w-full justify-center">
                             {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                             {idx + 1}
                           </button>
@@ -1359,7 +1361,7 @@ export function RABTable({ projectId }: RABTableProps) {
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
                               <Input value={item.name || ''} onChange={e => updateItem(projectId, item.id, { name: e.target.value })} className="h-7 text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 font-bold px-2 shadow-none transition-all truncate" placeholder="Item Name" />
-                              {(item as any).isDraft && <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0 font-bold uppercase tracking-tight">Draft</Badge>}
+                              {(item as RABItem & { isDraft?: boolean }).isDraft && <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0 font-bold uppercase tracking-tight">Draft</Badge>}
                             </div>
                             <Input value={item.notes || ''} onChange={e => updateItem(projectId, item.id, { notes: e.target.value })} className="h-5 text-xs text-slate-500 border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 px-2 shadow-none transition-all font-medium italic" placeholder="Brand / Spec..." />
                           </div>

@@ -19,9 +19,9 @@ import { RefreshCw, Save } from 'lucide-react'
  */
 interface Props {
   /** Initial module configuration (partial) */
-  initialValue?: any
+  initialValue?: Record<string, unknown>
   /** Callback to persist partial updates (patch) */
-  onSave: (patch: any) => void
+  onSave: (patch: Record<string, unknown>) => void
 }
 
 /**
@@ -70,6 +70,7 @@ const schema = z.object({
  * Renders a more detailed editor for project management config.
  */
 export default function ProjectManagementEditor({ initialValue = {}, onSave }: Props) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const methods = useForm<any>({ resolver: zodResolver(schema), defaultValues: initialValue })
   const { register, handleSubmit, reset } = methods
 
@@ -88,7 +89,7 @@ export default function ProjectManagementEditor({ initialValue = {}, onSave }: P
    */
   function parseThresholds(v?: string) {
     if (!v || typeof v !== 'string') return {}
-    return v.split(',').map((s) => s.trim()).filter(Boolean).reduce((acc: any, pair) => {
+    return v.split(',').map((s) => s.trim()).filter(Boolean).reduce((acc: Record<string, unknown>, pair) => {
       const [k, val] = pair.split(':').map((x: string) => x?.trim())
       if (!k) return acc
       const num = Number(val)
@@ -101,8 +102,9 @@ export default function ProjectManagementEditor({ initialValue = {}, onSave }: P
    * submit
    * Compose nested patch object and call onSave
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function submit(d: any) {
-    const patch: any = {}
+    const patch: Record<string, unknown> = {}
     if (d.meta) patch.meta = d.meta
     if (d.workflow) {
       patch.workflow = {

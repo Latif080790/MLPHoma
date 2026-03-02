@@ -27,6 +27,7 @@ export function AHSPSettings() {
     })
 
     // Sync with store on load
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
         setFormData({
             overhead: settings.defaultOverhead,

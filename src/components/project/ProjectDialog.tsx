@@ -39,6 +39,7 @@ export function ProjectDialog({ open, onOpenChange, project, onSave }: ProjectDi
     if (open) {
       fetchZones()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   useEffect(() => {

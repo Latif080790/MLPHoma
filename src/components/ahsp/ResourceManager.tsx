@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo } from 'react'
-import { Plus, Edit2, Trash2, Save, X, Upload, CloudUpload, Search, Filter, FileText, RotateCcw } from 'lucide-react'
+import { Plus, Edit2, Trash2, Save, Upload, CloudUpload, Search, FileText, RotateCcw } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
 import { Input } from '../ui/input'
@@ -30,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
+
 import { useAHSPStore } from '../../store/ahspStore'
 import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
@@ -128,7 +128,7 @@ export function ResourceManager() {
   }
 
   const isAllSelected = visibleResources.length > 0 && selectedResources.size === visibleResources.length
-  const isSomeSelected = selectedResources.size > 0 && selectedResources.size < visibleResources.length
+  const _isSomeSelected = selectedResources.size > 0 && selectedResources.size < visibleResources.length
 
   // Group by type for summary
   const summary = useMemo(() => {
@@ -212,7 +212,7 @@ export function ResourceManager() {
     try {
       // Trigger sync for all resources
       toast.success('Resources synced to Supabase successfully')
-    } catch (error) {
+    } catch {
       toast.error('Failed to sync resources')
     } finally {
       setSyncing(false)
@@ -243,7 +243,7 @@ export function ResourceManager() {
 
         importResources(validResources)
         toast.success(`Imported ${validResources.length} resources`)
-      } catch (error) {
+      } catch {
         toast.error('Failed to import resources. Please check the file format.')
       }
     }
@@ -265,7 +265,7 @@ export function ResourceManager() {
       }
       setPendingImportResources(parsedResources)
       setConfirmImportOpen(true)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('DKH import error:', error)
       toast.error('Failed to import DKH file. Please check the file format.')
     }
@@ -411,7 +411,7 @@ export function ResourceManager() {
             className="pl-10"
           />
         </div>
-        <Select value={selectedType} onValueChange={(value: any) => setSelectedType(value)}>
+        <Select value={selectedType} onValueChange={(value: ResourceType | 'all') => setSelectedType(value)}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>

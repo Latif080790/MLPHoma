@@ -1,16 +1,15 @@
 
 import React, { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '../ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { useAHSPStore } from '../../store/ahspStore'
 import { Trash2, Edit2, Plus, MapPin } from 'lucide-react'
-import { Badge } from '../ui/badge'
 import { Label } from '../ui/label'
 
 export function ZoneManager() {
-    const { zones, fetchZones, addZone, updateZone, deleteZone, loading } = useAHSPStore()
+    const { zones, fetchZones, addZone, updateZone, deleteZone, loading: _loading } = useAHSPStore()
     const [isOpen, setIsOpen] = useState(false)
     const [editingZone, setEditingZone] = useState<{ id?: string, name: string, description: string } | null>(null)
 
@@ -18,6 +17,7 @@ export function ZoneManager() {
         if (isOpen) {
             fetchZones()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen])
 
     const handleSave = () => {

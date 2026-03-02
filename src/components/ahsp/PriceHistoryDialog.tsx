@@ -43,10 +43,12 @@ export function PriceHistoryDialog({
         setHistory(data)
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     useEffect(() => {
         if (open && ahspId) {
             loadHistory()
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, ahspId, zoneId])
 
     const getZoneName = (zoneId?: string) => {
@@ -92,7 +94,7 @@ export function PriceHistoryDialog({
                                     const diff = record.newPrice - (record.oldPrice || 0)
                                     const isPositive = diff > 0
                                     // Check if zoneId exists in record (we added it in store but maybe not in type yet, let's cast if needed)
-                                    const recordZoneId = (record as any).zoneId
+                                    const recordZoneId = (record as Record<string, unknown>).zoneId as string | undefined
 
                                     return (
                                         <TableRow key={record.id}>
