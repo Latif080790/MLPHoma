@@ -235,11 +235,11 @@ export const userManagementService = {
         }
 
         return data.map((row: UserMemberRow) => ({
-            userId: row.user_id,
-            profileName: row.profiles?.full_name || 'Unknown',
-            profileEmail: row.profiles?.email || '',
-            projectRole: row.project_role || 'user',
-            assignedAt: row.assigned_at,
+            userId: row.user_id || '',
+            profileName: (Array.isArray(row.profiles) ? row.profiles[0]?.full_name : row.profiles?.full_name) || 'Unknown',
+            profileEmail: (Array.isArray(row.profiles) ? row.profiles[0]?.email : row.profiles?.email) || '',
+            projectRole: (row.project_role || 'user') as UserRole,
+            assignedAt: row.assigned_at || '',
         }))
     },
 
@@ -312,20 +312,20 @@ export const userManagementService = {
 
 // ---------- Helper ----------
 
-type UserMemberRow = { user_id?: string; profiles?: { full_name?: string; email?: string } | null; project_role?: string; assigned_at?: string }
-type ProfileRow = { id: string; email?: string; full_name?: string; name?: string; role?: string; is_active?: boolean; created_at?: string; updated_at?: string; avatar_url?: string; phone?: string; department?: string }
+type UserMemberRow = { user_id?: string; profiles?: { full_name?: string; email?: string } | Array<{ full_name?: string; email?: string }> | null; project_role?: string; assigned_at?: string }
+type ProfileRow = { id: string; email?: string; full_name?: string; name?: string; role?: string; is_active?: boolean; created_at?: string; updated_at?: string; avatar_url?: string; phone?: string; department?: string; company?: string; last_active_at?: string }
 
 function rowToProfile(row: ProfileRow): UserProfile {
     return {
         id: row.id,
         email: row.email || '',
         fullName: row.full_name || row.name || '',
-        role: row.role || 'user',
+        role: (row.role || 'user') as UserRole,
         avatarUrl: row.avatar_url,
         phone: row.phone,
         company: row.company,
         isActive: row.is_active !== false,
         lastActiveAt: row.last_active_at,
-        createdAt: row.created_at,
+        createdAt: row.created_at || '',
     }
 }

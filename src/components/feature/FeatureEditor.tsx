@@ -11,6 +11,7 @@ import { Download, RefreshCw, Save } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import useFeatureStore from '../../store/featureStore'
 import { getFeatureConfig, saveFeatureConfig } from '../../lib/api/featureApi'
+import type { FeatureConfig, FeatureModuleKey } from '../../config/features'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import ProjectManagementEditor from './modules/ProjectManagementEditor'
 import WbsEditor from './modules/WBSEditor'
@@ -41,7 +42,7 @@ export default function FeatureEditor(): JSX.Element {
   const exportConfig = useFeatureStore((s) => s.exportConfig)
   const resetToDefault = useFeatureStore((s) => s.resetToDefault)
 
-  const [config, setLocalConfig] = useState<unknown>(null)
+  const [config, setLocalConfig] = useState<FeatureConfig | null>(null)
   const [_loadingRemote, setLoadingRemote] = useState(false)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle')
   const [activeTab, setActiveTab] = useState<string>('projectManagement')
@@ -118,9 +119,12 @@ export default function FeatureEditor(): JSX.Element {
     URL.revokeObjectURL(url)
   }
 
-  function handleModuleUpdate(moduleKey: string, patch: unknown) {
+  function handleModuleUpdate(moduleKey: FeatureModuleKey, patch: unknown) {
     if (!projectId || !config) return
-    const next = { ...config, [moduleKey]: { ...config[moduleKey], ...patch } }
+    const key = moduleKey as FeatureModuleKey
+    const existing = config[key] as unknown as Record<string, unknown>
+    const update = patch as unknown as Record<string, unknown>
+    const next = { ...config, [key]: { ...existing, ...update } } as unknown as FeatureConfig
     setLocalConfig(next)
   }
 
@@ -196,18 +200,18 @@ export default function FeatureEditor(): JSX.Element {
           {config ? (
             <>
               {activeTab === 'projectManagement' && (
-                <ProjectManagementEditor initialValue={config.projectManagement} onSave={(p) => handleModuleUpdate('projectManagement', p)} />
+                <ProjectManagementEditor initialValue={config.projectManagement as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('projectManagement', p)} />
               )}
-              {activeTab === 'wbs' && <WbsEditor initialValue={config.wbs} onSave={(p) => handleModuleUpdate('wbs', p)} />}
-              {activeTab === 'ahsp' && <AHSPEditor initialValue={config.ahsp} onSave={(p) => handleModuleUpdate('ahsp', p)} />}
-              {activeTab === 'rab' && <RABEditor initialValue={config.rab} onSave={(p) => handleModuleUpdate('rab', p)} />}
-              {activeTab === 'timeline' && <TimelineEditor initialValue={config.timeline} onSave={(p) => handleModuleUpdate('timeline', p)} />}
-              {activeTab === 'rap' && <RAPEditor initialValue={config.rap} onSave={(p) => handleModuleUpdate('rap', p)} />}
-              {activeTab === 'curvas' && <CurvaSEditor initialValue={config.curvas} onSave={(p) => handleModuleUpdate('curvas', p)} />}
-              {activeTab === 'resources' && <ResourcePlanningEditor initialValue={config.resources} onSave={(p) => handleModuleUpdate('resources', p)} />}
-              {activeTab === 'cashflow' && <CashFlowEditor initialValue={config.cashflow} onSave={(p) => handleModuleUpdate('cashflow', p)} />}
-              {activeTab === 'progress' && <ProgressEditor initialValue={config.progress} onSave={(p) => handleModuleUpdate('progress', p)} />}
-              {activeTab === 'reporting' && <ReportingEditor initialValue={config.reporting} onSave={(p) => handleModuleUpdate('reporting', p)} />}
+              {activeTab === 'wbs' && <WbsEditor initialValue={config.wbs as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('wbs', p)} />}
+              {activeTab === 'ahsp' && <AHSPEditor initialValue={config.ahsp as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('ahsp', p)} />}
+              {activeTab === 'rab' && <RABEditor initialValue={config.rab as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('rab', p)} />}
+              {activeTab === 'timeline' && <TimelineEditor initialValue={config.timeline as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('timeline', p)} />}
+              {activeTab === 'rap' && <RAPEditor initialValue={config.rap as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('rap', p)} />}
+              {activeTab === 'curvas' && <CurvaSEditor initialValue={config.curvas as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('curvas', p)} />}
+              {activeTab === 'resources' && <ResourcePlanningEditor initialValue={config.resources as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('resources', p)} />}
+              {activeTab === 'cashflow' && <CashFlowEditor initialValue={config.cashflow as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('cashflow', p)} />}
+              {activeTab === 'progress' && <ProgressEditor initialValue={config.progress as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('progress', p)} />}
+              {activeTab === 'reporting' && <ReportingEditor initialValue={config.reporting as unknown as Record<string, unknown>} onSave={(p) => handleModuleUpdate('reporting', p)} />}
             </>
           ) : (
             <div className="rounded-xl border p-6 text-center dark:border-neutral-800">

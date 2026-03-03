@@ -247,7 +247,7 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     
     set((s) => {
       const prev = s.configs[projectId] ?? generateDefaultFeatureConfig(projectId)
-      const modulePrev = (prev as Record<string, unknown>)[moduleKey as string] ?? {}
+      const modulePrev = (prev as unknown as Record<string, unknown>)[moduleKey as string] ?? {}
       const moduleNext = { ...modulePrev, ...patch }
       const nextConfig = { ...prev, [moduleKey]: moduleNext }
       // persist

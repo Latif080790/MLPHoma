@@ -203,16 +203,16 @@ self.onmessage = (ev: MessageEvent<WorkerRequest>) => {
 
         switch (type) {
             case 'calculateAHSPPrice':
-                result = calculateAHSPPrice(payload)
+                result = calculateAHSPPrice(payload as Parameters<typeof calculateAHSPPrice>[0])
                 break
             case 'calculatePareto':
-                result = calculatePareto(payload.items)
+                result = calculatePareto((payload as { items: Parameters<typeof calculatePareto>[0] }).items)
                 break
             case 'recalculateAll':
-                result = recalculateAll(payload)
+                result = recalculateAll(payload as Parameters<typeof recalculateAll>[0])
                 break
             case 'calculateRABTotals':
-                result = calculateRABTotals(payload)
+                result = calculateRABTotals(payload as Parameters<typeof calculateRABTotals>[0])
                 break
             default:
                 throw new Error(`Unknown calculation type: ${type}`)

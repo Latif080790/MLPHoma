@@ -29,14 +29,14 @@ export const calculatePareto = (items: RABItem[]): (RABItem & { paretoClass: 'A'
   if (!items.length) return []
 
   // 1. Sort by Total Price Descending
-  const sorted = [...items].sort((a, b) => (b.finalTotal || b.total_price || 0) - (a.finalTotal || a.total_price || 0))
+  const sorted = [...items].sort((a, b) => (b.finalTotal || Number(b.total_price) || 0) - (a.finalTotal || Number(a.total_price) || 0))
 
   // 2. Calculate Cumulative %
-  const totalCost = sorted.reduce((sum, item) => sum + (item.finalTotal || item.total_price || 0), 0)
+  const totalCost = sorted.reduce((sum, item) => sum + (item.finalTotal || Number(item.total_price) || 0), 0)
   let runningTotal = 0
 
   return sorted.map(item => {
-    const cost = (item.finalTotal || item.total_price || 0)
+    const cost = (item.finalTotal || Number(item.total_price) || 0)
     runningTotal += cost
     const cumPercent = totalCost > 0 ? (runningTotal / totalCost) * 100 : 0
 

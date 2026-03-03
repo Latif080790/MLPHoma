@@ -1127,7 +1127,7 @@ export default function GanttChart({
               const _globalIdx = startDay + _i
               const dow = parseISODate(d).getUTCDay()
               if (dow === 0 || dow === 6) {
-                return <div key={`wk-${d}`} className="absolute top-0 h-full pointer-events-none" style={{ left: leftColWidth + i * pxPerDay, width: pxPerDay, background: 'linear-gradient(90deg, rgba(148,163,184,0.03), rgba(148,163,184,0.01))' }} />
+                return <div key={`wk-${d}`} className="absolute top-0 h-full pointer-events-none" style={{ left: leftColWidth + _i * pxPerDay, width: pxPerDay, background: 'linear-gradient(90deg, rgba(148,163,184,0.03), rgba(148,163,184,0.01))' }} />
               }
               return null
             })}
@@ -1431,7 +1431,7 @@ export default function GanttChart({
             <div className="mt-3">
               <div className="text-xs text-neutral-500">Analysis suggestions:</div>
               <ul className="list-disc list-inside text-sm mt-1">
-                {lastAnalysis.suggestions?.map((s: string, i: number) => (
+                {(lastAnalysis.suggestions as string[] | undefined)?.map((s: string, i: number) => (
                   <li key={i}>{s}</li>
                 ))}
               </ul>

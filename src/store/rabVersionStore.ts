@@ -129,12 +129,12 @@ export const useRABVersionStore = create<RABVersionState>()(
             }
           }
 
-          const items1 = new Map(v1.snapshot.items.map(item => [item.id, item]))
-          const items2 = new Map(v2.snapshot.items.map(item => [item.id, item]))
+          const items1 = new Map((v1.snapshot.items as Record<string, unknown>[]).map(item => [item.id as string, item]))
+          const items2 = new Map((v2.snapshot.items as Record<string, unknown>[]).map(item => [item.id as string, item]))
 
-          const added: RABItem[] = []
-          const removed: RABItem[] = []
-          const modified: Array<{ item1: RABItem; item2: RABItem; changes: Array<{ field: string; from: unknown; to: unknown }> }> = []
+          const added: unknown[] = []
+          const removed: unknown[] = []
+          const modified: Array<{ item: unknown; changes: Array<{ field: string; oldValue: unknown; newValue: unknown }> }> = []
 
           // Find added items
           items2.forEach((item, id) => {
@@ -154,7 +154,7 @@ export const useRABVersionStore = create<RABVersionState>()(
           items1.forEach((item1, id) => {
             const item2 = items2.get(id)
             if (item2) {
-              const changes: Array<{ field: string; from: unknown; to: unknown }> = []
+              const changes: Array<{ field: string; oldValue: unknown; newValue: unknown }> = []
 
               // Check key fields for changes
               const fieldsToCheck = ['name', 'volume', 'unit_price', 'cost_material', 'cost_labor', 'cost_equipment', 'cost_subcon']

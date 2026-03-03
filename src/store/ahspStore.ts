@@ -276,7 +276,7 @@ export const useAHSPStore = create<AHSPStore>()(
             return ''
           }
 
-          const newItem = initializeAHSPItem(validation.data, {
+          const newItem = initializeAHSPItem(validation.data || {}, {
             overhead: get().settings.defaultOverhead,
             profit: get().settings.defaultProfit
           })
@@ -392,7 +392,7 @@ export const useAHSPStore = create<AHSPStore>()(
             return
           }
 
-          const newComp = initializeAHSPComponent(ahspId, validation.data, get().resources)
+          const newComp = initializeAHSPComponent(ahspId, validation.data || {}, get().resources)
 
           set((s) => {
             const current = s.componentsByAHSP[ahspId] || []
@@ -440,8 +440,6 @@ export const useAHSPStore = create<AHSPStore>()(
                   updatedComponent,
                   ...components.slice(componentIndex + 1),
                 ]
-
-                updatedAHSPId = ahspId
               }
             })
 
@@ -471,7 +469,6 @@ export const useAHSPStore = create<AHSPStore>()(
 
               if (filteredComponents.length !== components.length) {
                 newComponentsByAHSP[ahspId] = filteredComponents
-                deletedAHSPId = ahspId
               }
             })
 
@@ -533,7 +530,7 @@ export const useAHSPStore = create<AHSPStore>()(
           if (!item) return
 
           try {
-            const results = await calculateAHSPPriceInWorker(item, components)
+            const results = await calculateAHSPPriceInWorker(item, components) as { componentBreakdown: { breakdown: { material: number; labor: number; equipment: number; subcontractor: number } }; priceBreakdown: { basePrice: number; finalPrice: number } }
             const { componentBreakdown, priceBreakdown } = results
 
             const updatedItem: AHSPItem = {
@@ -685,7 +682,7 @@ export const useAHSPStore = create<AHSPStore>()(
         updateZonePrice: async (priceData) => {
           const zoneId = priceData.zoneId
           const ahspId = priceData.ahspId
-          const id = priceData.id || generateId('zp')
+          const id = generateId('zp')
           const now = new Date().toISOString()
           const newPrice: AhspZonePrice = { ...priceData, id, createdAt: now, updatedAt: now }
 

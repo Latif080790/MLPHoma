@@ -126,7 +126,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
     try {
       const points = getDataPoints(projectId) || []
       if (!points || points.length === 0) return
-      const rows = points.map((p: Record<string, unknown>) => ({
+      const rows = points.map((p) => ({
         date: p.date,
         plannedCost: p.plannedCost ?? 0,
         actualCost: p.actualCost ?? 0,

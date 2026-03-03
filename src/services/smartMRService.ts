@@ -101,22 +101,22 @@ export const smartMRService = {
             }
         }
 
-type AhspCompRow = { type?: string; resource_id?: string; id?: string; coefficient?: number; resources?: { name?: string } | null }
+type AhspCompRow = { type?: string; resource_id?: string; id?: string; coefficient?: number; unit?: string; unit_price?: number; resources?: { name?: string; unit?: string; unit_price?: number } | Array<{ name?: string; unit?: string; unit_price?: number }> | null }
 
         // 4. Build suggestions
-        const suggestions: MaterialSuggestion[] = components
+        const suggestions: MaterialSuggestion[] = (components as AhspCompRow[])
             .filter((c: AhspCompRow) => c.type === 'material') // Only material components for MR
             .map((comp: AhspCompRow) => {
-                const resource = comp.resources || {}
+                const resource = (Array.isArray(comp.resources) ? comp.resources[0] : comp.resources) || {}
                 const resourceName = resource.name || `Resource-${comp.resource_id}`
                 const requiredQty = Number(comp.coefficient) * volume
                 const currentStock = stockMap.get(resourceName) || 0
                 const netDemand = Math.max(0, requiredQty - currentStock)
 
                 return {
-                    resourceId: comp.resource_id || comp.id,
+                    resourceId: comp.resource_id || comp.id || '',
                     resourceName,
-                    resourceType: comp.type,
+                    resourceType: (comp.type || 'material') as MaterialSuggestion['resourceType'],
                     unit: comp.unit || resource.unit || 'unit',
                     coefficient: Number(comp.coefficient),
                     requiredQty,

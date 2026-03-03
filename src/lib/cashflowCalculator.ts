@@ -91,14 +91,16 @@ export function calculateCashFlow(
 
     const finalBill = Math.max(0, netBill - dpRecovery)
 
-    let periodInflow = finalBill
+    periodInflow = finalBill
 
     // Add rigid AR Expectations (Unpaid Claims due in this period)
-    const claimsDueThisPeriod = claims.filter(c =>
-      c.status !== 'PAID' &&
-      c.dueDate && c.dueDate > periodStart &&
-      c.dueDate <= periodEnd
-    )
+    const claimsDueThisPeriod = claims.filter(c => {
+      const cc = c as unknown as { status?: string; dueDate?: string; period_end?: string }
+      const effectiveDueDate = cc.dueDate || c.period_end
+      return c.status !== 'PAID' &&
+        effectiveDueDate && effectiveDueDate > periodStart &&
+        effectiveDueDate <= periodEnd
+    })
     const arExpectations = claimsDueThisPeriod.reduce((sum, c) => sum + (c.amount || 0), 0)
 
     // Ensure inflow is at least the rigidly expected AR

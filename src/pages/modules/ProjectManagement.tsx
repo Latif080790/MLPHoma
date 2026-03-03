@@ -316,7 +316,7 @@ export default function ProjectManagement() {
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-                  {selectedProject.meta?.description || "No description provided for this project."}
+                  {(selectedProject.meta?.description as string) || "No description provided for this project."}
                 </p>
 
                 <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-4 text-sm">

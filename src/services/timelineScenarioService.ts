@@ -224,7 +224,7 @@ export const timelineScenarioService = {
             .single()
 
         const metadata = ((data?.metadata || {}) as Record<string, unknown>)
-        const scenarios = metadata.timeline_scenarios || []
+        const scenarios = (metadata.timeline_scenarios || []) as Array<Record<string, unknown>>
 
         scenarios.push({
             id: crypto.randomUUID(),
@@ -247,6 +247,6 @@ export const timelineScenarioService = {
 
         if (updateErr) throw updateErr
 
-        return scenarios[scenarios.length - 1].id
+        return scenarios[scenarios.length - 1].id as string
     },
 }

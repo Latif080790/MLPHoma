@@ -107,7 +107,7 @@ export const baselineService = {
             volume: item.volume || 0,
             unitPrice: item.unit_price || 0,
             totalPrice: (item.volume || 0) * (item.unit_price || 0),
-            category: item.category || '',
+            category: String(item.category || ''),
             code: item.code,
             isOverhead: item.is_overhead,
         }))

@@ -61,14 +61,14 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
     useEffect(() => {
         if (riskToEdit) {
             form.reset({
-                description: riskToEdit.description,
-                category: riskToEdit.category,
-                probability: riskToEdit.probability,
-                impact: riskToEdit.impact,
-                mitigation_plan: riskToEdit.mitigation_plan || "",
-                owner: riskToEdit.owner || "",
-                wbs_id: riskToEdit.wbs_id || undefined,
-                status: riskToEdit.status
+                description: riskToEdit.description as string || '',
+                category: riskToEdit.category as RiskCategory || 'Technical',
+                probability: riskToEdit.probability as number || 1,
+                impact: riskToEdit.impact as number || 1,
+                mitigation_plan: (riskToEdit.mitigation_plan as string) || "",
+                owner: (riskToEdit.owner as string) || "",
+                wbs_id: (riskToEdit.wbs_id as string) || undefined,
+                status: riskToEdit.status as RiskStatus || 'OPEN'
             })
         } else {
             form.reset({
@@ -86,7 +86,7 @@ export function RiskDialog({ open, onOpenChange, projectId, riskToEdit }: RiskDi
     async function onSubmit(data: RiskFormValues) {
         try {
             if (riskToEdit) {
-                await updateRisk(riskToEdit.id, data)
+                await updateRisk(riskToEdit.id as string, data)
                 toast.success("Risk updated")
             } else {
                 await createRisk({

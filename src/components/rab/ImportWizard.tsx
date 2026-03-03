@@ -143,10 +143,10 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
       if ((file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) && XLSX) {
         try {
           const data = new Uint8Array(result as ArrayBuffer)
-          const workbook = XLSX.read(data, { type: 'array' })
+          const workbook = (XLSX as unknown as { read: (data: Uint8Array, opts: { type: string }) => { SheetNames: string[]; Sheets: Record<string, unknown> } }).read(data, { type: 'array' })
           const sheetName = workbook.SheetNames[0]
           const sheet = workbook.Sheets[sheetName]
-          const json = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][]
+          const json = (XLSX as unknown as { utils: { sheet_to_json: (sheet: unknown, opts: object) => unknown[][] } }).utils.sheet_to_json(sheet, { header: 1 }) as unknown[][]
           processParsedRows(json.map((r) => (r as unknown[]).map((c) => (c == null ? '' : String(c)))))
         } catch (err) {
           console.error(err)

@@ -26,12 +26,21 @@ export const supplyChainService = {
 
     // --- Material Requests ---
 
-    async createMaterialRequest(data: Omit<MaterialRequestRow, 'id' | 'created_at'>) {
-        return upsertMaterialRequest({
+    async createMaterialRequest(data: Omit<MaterialRequestRow, 'id' | 'created_at'> | Partial<MaterialRequest>) {
+        // Support either snake_case (row) or camelCase (domain) input
+        const row = 'projectId' in data ? {
             id: generateId(),
-            ...data,
-            status: 'PENDING'
-        })
+            project_id: (data as Partial<MaterialRequest>).projectId || '',
+            wbs_id: (data as Partial<MaterialRequest>).wbsId,
+            item_name: (data as Partial<MaterialRequest>).itemName || '',
+            unit: (data as Partial<MaterialRequest>).unit,
+            quantity_requested: (data as Partial<MaterialRequest>).quantityRequested || 0,
+            date_required: (data as Partial<MaterialRequest>).dateRequired,
+            status: 'PENDING',
+            requested_by: (data as Partial<MaterialRequest>).requestedBy,
+            notes: (data as Partial<MaterialRequest>).notes,
+        } : { id: generateId(), ...data as Omit<MaterialRequestRow, 'id' | 'created_at'>, status: 'PENDING' }
+        return upsertMaterialRequest(row)
     },
 
     async getMaterialRequests(projectId: string): Promise<MaterialRequest[]> {
@@ -54,7 +63,7 @@ export const supplyChainService = {
             status: row.status as MrStatus,
             requestedBy: row.requested_by,
             notes: row.notes,
-            createdAt: row.created_at
+            createdAt: row.created_at || ''
         }))
     },
 
@@ -64,12 +73,31 @@ export const supplyChainService = {
 
     // --- Purchase Orders ---
 
-    async createPurchaseOrder(data: Omit<PurchaseOrderRow, 'id' | 'created_at'>, items: Omit<PoItemRow, 'id' | 'po_id'>[], bypassBudgetGuard = false) {
+    async createPurchaseOrder(data: Omit<PurchaseOrderRow, 'id' | 'created_at'> | Partial<PurchaseOrder>, items: Omit<PoItemRow, 'id' | 'po_id'>[] | Partial<PoItem>[], bypassBudgetGuard = false) {
+        // Support either snake_case (row) or camelCase (domain) input
+        const isSnakeCase = 'project_id' in data
+        const projectId = isSnakeCase ? (data as PurchaseOrderRow).project_id : (data as Partial<PurchaseOrder>).projectId || ''
+        const poNumber = isSnakeCase ? (data as PurchaseOrderRow).po_number : (data as Partial<PurchaseOrder>).poNumber || ''
+        const vendorName = isSnakeCase ? (data as PurchaseOrderRow).vendor_name : (data as Partial<PurchaseOrder>).vendorName
+        const totalAmount = isSnakeCase ? (data as PurchaseOrderRow).total_amount : (data as Partial<PurchaseOrder>).totalAmount || 0
+        const status = (data as { status?: string }).status || 'DRAFT'
+        const createdBy = isSnakeCase ? (data as PurchaseOrderRow).created_by : (data as Partial<PurchaseOrder>).createdBy
+        const approvedBy = isSnakeCase ? (data as PurchaseOrderRow).approved_by : (data as Partial<PurchaseOrder>).approvedBy
+        const approvedAt = isSnakeCase ? (data as PurchaseOrderRow).approved_at : (data as Partial<PurchaseOrder>).approvedAt
+        const rowData: Omit<PurchaseOrderRow, 'id' | 'created_at'> = { project_id: projectId, po_number: poNumber, vendor_name: vendorName, total_amount: totalAmount, status, created_by: createdBy, approved_by: approvedBy, approved_at: approvedAt }
+        // Map items to PoItemRow format
+        const mappedItems: Omit<PoItemRow, 'id' | 'po_id'>[] = items.map(item => {
+            if ('rap_item_id' in item || 'item_name' in item || 'unit_price' in item) {
+                return item as Omit<PoItemRow, 'id' | 'po_id'>
+            }
+            const di = item as Partial<PoItem>
+            return { rap_item_id: di.rapItemId, item_name: di.itemName, quantity: di.quantity || 0, unit_price: di.unitPrice || 0 }
+        })
         // 1. Validate Budget using Budget Guard Service
-        if (items.length === 0) throw new Error("PO must have at least one item")
+        if (mappedItems.length === 0) throw new Error("PO must have at least one item")
 
         // Map items to CheckableItem format
-        const checkableItems: CheckableItem[] = items.map(item => ({
+        const checkableItems: CheckableItem[] = mappedItems.map(item => ({
             rapItemId: item.rap_item_id,
             itemName: item.item_name || 'Unnamed Item',
             quantity: item.quantity,
@@ -78,7 +106,7 @@ export const supplyChainService = {
 
         // Run budget check unless bypassed (e.g. approved via workflow)
         if (!bypassBudgetGuard) {
-            const budgetCheck = await checkBudgetAvailability(data.project_id, checkableItems)
+            const budgetCheck = await checkBudgetAvailability(projectId, checkableItems)
 
             if (budgetCheck.hasExceeded) {
                 throw new Error(budgetCheck.message)
@@ -93,7 +121,7 @@ export const supplyChainService = {
         // 2. Create Header
         const { error: poError } = await upsertPurchaseOrder({
             id: poId,
-            ...data,
+            ...rowData,
             status: 'DRAFT'
         })
 
@@ -101,7 +129,7 @@ export const supplyChainService = {
 
         // 3. Create Items
         try {
-            await Promise.all(items.map(item =>
+            await Promise.all(mappedItems.map(item =>
                 upsertPoItem({
                     id: generateId(),
                     po_id: poId,
@@ -110,7 +138,7 @@ export const supplyChainService = {
             ))
 
             // 4. Commit Budget for each RAP-linked item
-            for (const item of items) {
+            for (const item of mappedItems) {
                 if (item.rap_item_id) {
                     const amount = item.quantity * item.unit_price
                     await commitBudget(item.rap_item_id, amount)
@@ -133,13 +161,16 @@ export const supplyChainService = {
         }
 
         return (data || []).map((row: PurchaseOrderRow) => ({
+            id: row.id,
+            projectId: row.project_id,
+            poNumber: row.po_number,
             vendorName: row.vendor_name,
             status: row.status as PoStatus,
             totalAmount: row.total_amount,
             createdBy: row.created_by,
             approvedBy: row.approved_by,
             approvedAt: row.approved_at,
-            createdAt: row.created_at
+            createdAt: row.created_at || ''
         }))
     },
 
@@ -151,13 +182,15 @@ export const supplyChainService = {
         }
 
         return (data || []).map((row: PoItemRowWithJoin) => ({
+            id: row.id,
+            poId: row.po_id,
             rapItemId: row.rap_item_id,
             rapItemName: row.rap_items?.rab_items?.name || 'Unknown Item',
             itemName: row.item_name,
             quantity: row.quantity,
             unitPrice: row.unit_price,
             totalPrice: row.quantity * row.unit_price, // recalc for safety
-            createdAt: row.created_at
+            createdAt: row.created_at || ''
         }))
     },
 
@@ -253,10 +286,20 @@ export const supplyChainService = {
 
     // --- Inventory ---
 
-    async recordTransaction(data: Omit<InventoryTransactionRow, 'id' | 'created_at'>) {
+    async recordTransaction(data: Omit<InventoryTransactionRow, 'id' | 'created_at'> | Partial<InventoryTransaction>) {
+        const isSnakeCase = 'project_id' in data || 'material_name' in data
+        const row: Omit<InventoryTransactionRow, 'id' | 'created_at'> = isSnakeCase ? data as Omit<InventoryTransactionRow, 'id' | 'created_at'> : {
+            project_id: (data as Partial<InventoryTransaction>).projectId || '',
+            wbs_id: (data as Partial<InventoryTransaction>).wbsId,
+            material_name: (data as Partial<InventoryTransaction>).materialName || '',
+            transaction_type: (data as Partial<InventoryTransaction>).transactionType || 'IN',
+            quantity: (data as Partial<InventoryTransaction>).quantity || 0,
+            unit: (data as Partial<InventoryTransaction>).unit,
+            reference_doc: (data as Partial<InventoryTransaction>).referenceDoc,
+        }
         return upsertInventoryTransaction({
             id: generateId(),
-            ...data
+            ...row
         })
     },
 
@@ -272,11 +315,11 @@ export const supplyChainService = {
             projectId: row.project_id,
             wbsId: row.wbs_id,
             materialName: row.material_name,
-            transactionType: row.transaction_type,
+            transactionType: row.transaction_type as import('../types/supply-chain').TransactionType,
             quantity: row.quantity,
             unit: row.unit,
             referenceDoc: row.reference_doc,
-            createdAt: row.created_at
+            createdAt: row.created_at || ''
         }))
     },
 

@@ -19,28 +19,28 @@ type TransferDbRow = { id: string; project_id?: string; requester_id?: string; r
 function rowToTransfer(row: TransferDbRow): MaterialTransferRequest {
     return {
         id: row.id,
-        projectId: row.project_id,
+        projectId: row.project_id || '',
         requesterId: row.requester_id,
         requesterName: row.requester_name,
-        sourceWbsId: row.source_wbs_id,
+        sourceWbsId: row.source_wbs_id || '',
         sourceWbsName: row.source_wbs_name,
-        targetWbsId: row.target_wbs_id,
+        targetWbsId: row.target_wbs_id || '',
         targetWbsName: row.target_wbs_name,
-        itemName: row.item_name,
+        itemName: row.item_name || '',
         itemId: row.item_id,
         unit: row.unit,
-        quantity: row.quantity,
+        quantity: row.quantity ?? 0,
         unitCost: row.unit_cost || 0,
         totalCost: row.total_cost || 0,
-        reason: row.reason,
+        reason: row.reason || '',
         isEmergency: row.is_emergency ?? false,
-        status: row.status,
+        status: row.status as import('../types/material-transfer').TransferStatus,
         approvalRequestId: row.approval_request_id,
         approvedBy: row.approved_by,
         approvedAt: row.approved_at,
         rejectionReason: row.rejection_reason,
         createdAt: row.created_at,
-        updatedAt: row.updated_at,
+        updatedAt: row.updated_at || '',
     }
 }
 
@@ -76,30 +76,32 @@ export const materialTransferService = {
      * - If emergency: marks as such with critical severity
      */
     async createTransfer(
-        input: CreateTransferInput,
+        input: CreateTransferInput | Partial<MaterialTransferRequest>,
         requesterId: string,
         requesterName: string
     ): Promise<MaterialTransferRequest> {
         const client = assertSupabase()
         const id = generateId('mtr')
+        const projectId = (input as CreateTransferInput).projectId || (input as Partial<MaterialTransferRequest>).projectId || ''
+        const inp = input as CreateTransferInput
 
         // Calculate transfer frequency (for impact warning)
         const { count: weeklyCount } = await client
             .from('material_transfer_requests')
             .select('*', { count: 'exact', head: true })
-            .eq('project_id', input.projectId)
+            .eq('project_id', projectId)
             .eq('requester_id', requesterId)
             .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
 
         // Build impact summary for PM
         const impactSummary: Record<string, unknown> = {
-            budgetImpact: -(input.quantity * (input.unitCost || 0)),
-            sourceWbs: input.sourceWbsName || input.sourceWbsId,
-            targetWbs: input.targetWbsName || input.targetWbsId,
-            quantity: input.quantity,
-            unit: input.unit,
-            unitCost: input.unitCost || 0,
-            totalCost: input.quantity * (input.unitCost || 0),
+            budgetImpact: -(inp.quantity * (inp.unitCost || 0)),
+            sourceWbs: inp.sourceWbsName || inp.sourceWbsId,
+            targetWbs: inp.targetWbsName || inp.targetWbsId,
+            quantity: inp.quantity,
+            unit: inp.unit,
+            unitCost: inp.unitCost || 0,
+            totalCost: inp.quantity * (inp.unitCost || 0),
         }
 
         if ((weeklyCount || 0) >= 2) {
@@ -111,20 +113,20 @@ export const materialTransferService = {
             .from('material_transfer_requests')
             .insert({
                 id,
-                project_id: input.projectId,
+                project_id: projectId,
                 requester_id: requesterId,
                 requester_name: requesterName,
-                source_wbs_id: input.sourceWbsId,
-                source_wbs_name: input.sourceWbsName || null,
-                target_wbs_id: input.targetWbsId,
-                target_wbs_name: input.targetWbsName || null,
-                item_name: input.itemName,
-                item_id: input.itemId || null,
-                unit: input.unit || null,
-                quantity: input.quantity,
-                unit_cost: input.unitCost || 0,
-                reason: input.reason,
-                is_emergency: input.isEmergency ?? false,
+                source_wbs_id: inp.sourceWbsId,
+                source_wbs_name: inp.sourceWbsName || null,
+                target_wbs_id: inp.targetWbsId,
+                target_wbs_name: inp.targetWbsName || null,
+                item_name: inp.itemName,
+                item_id: inp.itemId || null,
+                unit: inp.unit || null,
+                quantity: inp.quantity,
+                unit_cost: inp.unitCost || 0,
+                reason: inp.reason,
+                is_emergency: inp.isEmergency ?? false,
                 status: 'PENDING',
             })
             .select()
@@ -136,14 +138,14 @@ export const materialTransferService = {
         // Create approval request
         try {
             const approval = await approvalService.createApproval({
-                projectId: input.projectId,
+                projectId,
                 requesterId,
                 requesterName,
-                entityType: input.isEmergency ? 'EMERGENCY_TRANSFER' : 'MATERIAL_TRANSFER',
+                entityType: inp.isEmergency ? 'EMERGENCY_TRANSFER' : 'MATERIAL_TRANSFER',
                 entityId: id,
                 approverRole: 'manager',
-                title: `Transfer: ${input.itemName} (${input.quantity} ${input.unit || 'unit'})`,
-                description: `${input.sourceWbsName || 'Source'} → ${input.targetWbsName || 'Target'}. Reason: ${input.reason}`,
+                title: `Transfer: ${inp.itemName} (${inp.quantity} ${inp.unit || 'unit'})`,
+                description: `${inp.sourceWbsName || 'Source'} → ${inp.targetWbsName || 'Target'}. Reason: ${inp.reason}`,
                 impactSummary,
             })
 
@@ -156,14 +158,14 @@ export const materialTransferService = {
         }
 
         // If emergency, send critical notification
-        if (input.isEmergency) {
+        if (inp.isEmergency) {
             try {
-                await notificationService.notifyByRole(input.projectId, 'manager', {
-                    projectId: input.projectId,
+                await notificationService.notifyByRole(projectId, 'manager', {
+                    projectId,
                     type: 'TRANSFER_REQUEST',
                     severity: 'critical',
-                    title: `EMERGENCY Transfer: ${input.itemName}`,
-                    message: `Urgent unauthorized transfer by ${requesterName}. ${input.sourceWbsName} → ${input.targetWbsName}. Review immediately!`,
+                    title: `EMERGENCY Transfer: ${inp.itemName}`,
+                    message: `Urgent unauthorized transfer by ${requesterName}. ${inp.sourceWbsName} → ${inp.targetWbsName}. Review immediately!`,
                     entityType: 'TRANSFER',
                     entityId: id,
                     metadata: impactSummary,
@@ -182,7 +184,7 @@ export const materialTransferService = {
                 entity: 'material_transfer_requests',
                 entityType: 'TRANSFER',
                 entityId: id,
-                details: { ...input, impactSummary },
+                details: { ...inp, impactSummary },
             })
         } catch (e) {
             console.warn('Audit log failed:', e)

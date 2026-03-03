@@ -155,7 +155,9 @@ export async function checkBudgetAvailability(
     if (exceeds) hasExceeded = true
     if (needsApproval) requiresApproval = true
 
-    const itemName = rapItem.ahsp_items?.name || rapItem.rab_items?.name || item.itemName
+    const ahspItemsAny = rapItem.ahsp_items as unknown as Array<{ name?: string }> | { name?: string } | null
+    const rabItemsAny = rapItem.rab_items as unknown as Array<{ name?: string }> | { name?: string } | null
+    const itemName = (Array.isArray(ahspItemsAny) ? ahspItemsAny[0]?.name : ahspItemsAny?.name) || (Array.isArray(rabItemsAny) ? rabItemsAny[0]?.name : rabItemsAny?.name) || item.itemName
 
     results.push({
       rapItemId: item.rapItemId!,

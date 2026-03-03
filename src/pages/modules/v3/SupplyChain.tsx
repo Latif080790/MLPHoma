@@ -25,6 +25,7 @@ import { SubcontractorPanel } from "@/components/supply/SubcontractorPanel"
 import { MaterialTransferRequestDialog } from "@/components/supply/MaterialTransferRequestDialog"
 import { MaterialTransferApprovalPanel } from "@/components/supply/MaterialTransferApprovalPanel"
 import type { PurchaseOrder } from "@/types/supply-chain"
+import type { TraceableDocType } from "@/types/traceability"
 
 export default function SupplyChain() {
     const { activeProjectId } = useProjectStore()
@@ -218,8 +219,8 @@ export default function SupplyChain() {
                                     </TableHeader>
                                     <TableBody>
                                         {purchaseOrders.map((po) => {
-                                            const traceChain = [
-                                                { type: 'PO' as const, ref: po.poNumber }
+                                            const traceChain: { type: TraceableDocType; ref: string }[] = [
+                                                { type: 'PO', ref: po.poNumber }
                                             ]
                                             if (po.status === 'PARTIALLY_RECEIVED' || po.status === 'COMPLETED') {
                                                 traceChain.push({ type: 'GRN' as const, ref: `GRN-${po.poNumber.slice(-4)}` })

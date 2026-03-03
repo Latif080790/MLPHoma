@@ -29,23 +29,23 @@ export const riskService = {
 
         return (data || []).map((row: RiskDbRow) => ({
             id: row.id,
-            project_id: row.project_id,
+            project_id: row.project_id || '',
             wbs_id: row.wbs_id,
 
-            description: row.description,
-            category: row.category,
+            description: row.description || '',
+            category: (row.category as Risk['category']) || 'Technical',
 
-            probability: row.probability,
-            impact: row.impact,
-            risk_score: row.risk_score,
+            probability: row.probability || 1,
+            impact: row.impact || 1,
+            risk_score: row.risk_score || 1,
 
             mitigation_plan: row.mitigation_plan,
             owner: row.owner,
-            status: row.status,
+            status: (row.status as Risk['status']) || 'OPEN',
 
             created_by: row.created_by,
-            created_at: row.created_at,
-            updated_at: row.updated_at,
+            created_at: row.created_at || '',
+            updated_at: row.updated_at || '',
 
             wbs_name: row.wbs?.name
         }))

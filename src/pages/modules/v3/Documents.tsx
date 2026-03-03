@@ -416,7 +416,7 @@ export default function Documents() {
                     open={!!versionDoc}
                     onOpenChange={(open) => { if (!open) setVersionDoc(null) }}
                     documentGroupId={versionDoc.document_group_id || versionDoc.id}
-                    projectId={activeProjectId!}
+                    _projectId={activeProjectId!}
                     documentTitle={versionDoc.title}
                     onReverted={loadDocs}
                 />

@@ -471,20 +471,21 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
 
             const approvals: Record<string, RABApproval> = {}
             data?.forEach((row: Record<string, unknown>) => {
-              approvals[row.id] = {
-                id: row.id,
-                projectId: row.project_id,
-                rabVersionId: row.rab_version_id,
+              const rowId = row.id as string
+              approvals[rowId] = {
+                id: rowId,
+                projectId: row.project_id as string,
+                rabVersionId: row.rab_version_id as string,
                 versionNumber: 1, // TODO: Get from join
-                status: row.status,
-                submittedAt: new Date(row.submitted_at),
-                submittedBy: row.submitted_by,
-                submittedByName: row.submitted_by_name,
-                currentStep: row.current_step,
-                rejectionReason: row.rejection_reason,
-                approvalChain: row.approval_chain,
-                createdAt: new Date(row.created_at),
-                updatedAt: new Date(row.updated_at)
+                status: row.status as RABApproval['status'],
+                submittedAt: new Date(row.submitted_at as string),
+                submittedBy: row.submitted_by as string,
+                submittedByName: row.submitted_by_name as string,
+                currentStep: row.current_step as number,
+                rejectionReason: row.rejection_reason as string | undefined,
+                approvalChain: row.approval_chain as RABApproval['approvalChain'],
+                createdAt: new Date(row.created_at as string),
+                updatedAt: new Date(row.updated_at as string)
               }
             })
 

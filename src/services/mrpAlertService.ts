@@ -93,7 +93,7 @@ export function analyzeMaterialShortages(projectId: string): MRPSummary {
         if (item.taskId) {
             const linkedTask = timelineTasks.find(t => t.id === item.taskId)
             if (linkedTask) {
-                const taskStart = linkedTask.startDate || linkedTask.start_date
+                const taskStart = linkedTask.startDate
                 if (!existing.dueDate || (taskStart && taskStart < existing.dueDate)) {
                     existing.dueDate = taskStart || null
                     existing.taskName = linkedTask.name

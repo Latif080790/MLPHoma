@@ -17,14 +17,14 @@ type WorkOrderDbRow = { id: string; project_id?: string; spk_number?: string; wb
 function rowToWorkOrder(row: WorkOrderDbRow): WorkOrder {
     return {
         id: row.id,
-        projectId: row.project_id,
-        spkNumber: row.spk_number,
+        projectId: row.project_id || '',
+        spkNumber: row.spk_number || '',
         wbsId: row.wbs_id,
         wbsName: row.wbs_name,
-        mandorName: row.mandor_name,
+        mandorName: row.mandor_name || '',
         mandorContact: row.mandor_contact,
-        scopeDescription: row.scope_description,
-        unit: row.unit,
+        scopeDescription: row.scope_description || '',
+        unit: row.unit || '',
         unitPrice: Number(row.unit_price),
         maxVolume: Number(row.max_volume),
         maxAmount: Number(row.max_amount || 0),
@@ -32,12 +32,12 @@ function rowToWorkOrder(row: WorkOrderDbRow): WorkOrder {
         actualAmount: Number(row.actual_amount || 0),
         paidAmount: Number(row.paid_amount || 0),
         remainingPayment: Number(row.remaining_payment || 0),
-        status: row.status,
+        status: (row.status || 'DRAFT') as import('../types/work-order').WorkOrderStatus,
         startDate: row.start_date,
         endDate: row.end_date,
         notes: row.notes,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
+        createdAt: row.created_at || '',
+        updatedAt: row.updated_at || '',
     }
 }
 

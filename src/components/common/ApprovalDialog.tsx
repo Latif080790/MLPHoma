@@ -38,7 +38,14 @@ export function ApprovalDialog({ approval, open, onClose, onApproved, onRejected
     const [processing, setProcessing] = useState(false)
 
     const canApprove = profile?.role === 'admin' || profile?.role === 'manager'
-    const impact = approval.impactSummary || {}
+    const rawImpact = approval.impactSummary || {}
+    const impact = rawImpact as {
+        budgetImpact?: number | null
+        sourceWbs?: string
+        targetWbs?: string
+        remainingBudget?: number | null
+        warning?: string
+    }
 
     const handleApprove = async () => {
         if (!user?.id || !canApprove) return
@@ -121,9 +128,9 @@ export function ApprovalDialog({ approval, open, onClose, onApproved, onRejected
                                     <div className="flex items-center gap-2 text-xs">
                                         <DollarSign size={12} className="text-green-600" />
                                         <span>Budget Impact:</span>
-                                        <strong className={impact.budgetImpact < 0 ? 'text-red-600' : 'text-green-600'}>
-                                            {formatCurrency(Math.abs(impact.budgetImpact))}
-                                            {impact.budgetImpact < 0 ? ' (decrease)' : ' (increase)'}
+                                        <strong className={(impact.budgetImpact ?? 0) < 0 ? 'text-red-600' : 'text-green-600'}>
+                                            {formatCurrency(Math.abs(impact.budgetImpact ?? 0))}
+                                            {(impact.budgetImpact ?? 0) < 0 ? ' (decrease)' : ' (increase)'}
                                         </strong>
                                     </div>
                                 )}
@@ -131,9 +138,9 @@ export function ApprovalDialog({ approval, open, onClose, onApproved, onRejected
                                 {impact.sourceWbs && impact.targetWbs && (
                                     <div className="flex items-center gap-2 text-xs">
                                         <ArrowRightLeft size={12} className="text-indigo-500" />
-                                        <span>{impact.sourceWbs}</span>
+                                        <span>{String(impact.sourceWbs)}</span>
                                         <span className="text-muted-foreground">→</span>
-                                        <span>{impact.targetWbs}</span>
+                                        <span>{String(impact.targetWbs)}</span>
                                     </div>
                                 )}
 
@@ -141,14 +148,14 @@ export function ApprovalDialog({ approval, open, onClose, onApproved, onRejected
                                     <div className="flex items-center gap-2 text-xs">
                                         <Info size={12} className="text-blue-500" />
                                         <span>Remaining Budget:</span>
-                                        <strong>{formatCurrency(impact.remainingBudget)}</strong>
+                                        <strong>{formatCurrency(impact.remainingBudget ?? 0)}</strong>
                                     </div>
                                 )}
 
                                 {impact.warning && (
                                     <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded p-2">
                                         <AlertTriangle size={12} />
-                                        <span>{impact.warning}</span>
+                                        <span>{String(impact.warning)}</span>
                                     </div>
                                 )}
                             </CardContent>

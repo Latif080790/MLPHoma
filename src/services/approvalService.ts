@@ -9,7 +9,7 @@ import { generateId } from '../lib/idGenerator'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
 import { changeOrderCascade } from './changeOrderCascade'
-import type { ApprovalRequest, CreateApprovalInput } from '../types/approval'
+import type { ApprovalRequest, CreateApprovalInput, ApprovalEntityType, ApproverRole } from '../types/approval'
 
 // ------------------------------------------------------------------
 // Row ↔ Domain Mappers
@@ -42,9 +42,9 @@ function rowToApproval(row: ApprovalRow): ApprovalRequest {
         projectId: row.project_id,
         requesterId: row.requester_id,
         requesterName: row.requester_name,
-        entityType: row.entity_type,
+        entityType: row.entity_type as ApprovalEntityType,
         entityId: row.entity_id,
-        approverRole: row.approver_role,
+        approverRole: row.approver_role as ApproverRole,
         title: row.title,
         description: row.description,
         impactSummary: row.impact_summary ?? {},
@@ -276,13 +276,17 @@ export const approvalService = {
         if (approval.entityType === 'PURCHASE_ORDER' && approval.impactSummary?.poData) {
             try {
                 const { supplyChainService } = await import('./supplyChainService')
-                const poData = approval.impactSummary.poData
+                const poData = approval.impactSummary.poData as {
+                    po_number: string
+                    vendor_name: string
+                    items: Array<{ item_name?: string; quantity: number; unit_price: number; rap_item_id?: string }>
+                }
 
                 await supplyChainService.createPurchaseOrder({
                     project_id: approval.projectId,
                     po_number: poData.po_number,
                     vendor_name: poData.vendor_name,
-                    total_amount: approval.impactSummary.totalAmount,
+                    total_amount: Number(approval.impactSummary.totalAmount) || 0,
                     status: 'APPROVED',
                     created_by: approval.requesterId || 'system',
                     approved_by: approverId,
@@ -309,7 +313,7 @@ export const approvalService = {
         if (approval.entityType === 'PAYMENT' && approval.entityId) {
             try {
                 const { financeService } = await import('./financeService')
-                await financeService.payInvoice(approval.entityId, approval.projectId, approval.impactSummary?.amount || 0, approverId, approverName)
+                await financeService.payInvoice(approval.entityId, approval.projectId, Number(approval.impactSummary?.amount) || 0, approverId, approverName)
                 console.info('[Approval] Payment successfully executed:', approval.entityId)
             } catch (err) {
                 console.error('[Approval] Payment execution failed:', err)
