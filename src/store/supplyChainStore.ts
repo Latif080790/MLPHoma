@@ -92,8 +92,8 @@ export const useSupplyChainStore = create<SupplyChainState>((set) => ({
     createMaterialRequest: async (data: Partial<MaterialRequest>) => {
         set(state => ({ loading: { ...state.loading, mr: true }, error: null }))
 
-        // WBS Traceability: warn if no wbs_id linked
-        if (!data.wbs_id) {
+        // WBS Traceability: warn if no wbsId linked
+        if (!data.wbsId) {
             const { toast: sonnerToast } = await import('sonner')
             sonnerToast.warning('WBS Not Linked', {
                 description: 'Material Request created without WBS reference. Link to a WBS item for full traceability.',
@@ -105,7 +105,7 @@ export const useSupplyChainStore = create<SupplyChainState>((set) => ({
             await supplyChainService.createMaterialRequest(data)
             // Refresh list if logical, or just add to state
             // For now, let's assume we refresh or user navigates
-            const currentProjectId = data.project_id
+            const currentProjectId = data.projectId
             if (currentProjectId) {
                 const newData = await supplyChainService.getMaterialRequests(currentProjectId)
                 set(state => ({
@@ -157,8 +157,8 @@ export const useSupplyChainStore = create<SupplyChainState>((set) => ({
         set(state => ({ loading: { ...state.loading, po: true }, error: null }))
         try {
             await supplyChainService.createPurchaseOrder(data, items)
-            if (data.project_id) {
-                const newData = await supplyChainService.getPurchaseOrders(data.project_id)
+            if (data.projectId) {
+                const newData = await supplyChainService.getPurchaseOrders(data.projectId)
                 set(state => ({
                     purchaseOrders: newData,
                     loading: { ...state.loading, po: false }
@@ -223,10 +223,10 @@ export const useSupplyChainStore = create<SupplyChainState>((set) => ({
         set(state => ({ loading: { ...state.loading, inventory: true }, error: null }))
         try {
             await supplyChainService.recordTransaction(data)
-            if (data.project_id) {
+            if (data.projectId) {
                 // Refresh both
-                const stock = await supplyChainService.getInventoryStock(data.project_id)
-                const txs = await supplyChainService.getInventoryTransactions(data.project_id)
+                const stock = await supplyChainService.getInventoryStock(data.projectId)
+                const txs = await supplyChainService.getInventoryTransactions(data.projectId)
                 set(state => ({
                     inventoryTransactions: txs,
                     inventoryStock: stock,

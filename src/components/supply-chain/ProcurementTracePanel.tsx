@@ -46,7 +46,7 @@ interface ProcurementTracePanelProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     po: PurchaseOrder | null
-    projectId: _projectId
+    projectId: string
 }
 
 const statusIcon = (status: string) => {
@@ -112,22 +112,22 @@ export function ProcurementTracePanel({
                 .order('created_at', { ascending: true })
 
             setGrns((grnRows || []).map((r: Record<string, unknown>) => ({
-                id: r.id,
-                projectId: r.project_id,
-                poId: r.po_id,
-                grnNumber: r.grn_number,
-                receivedBy: r.received_by,
-                receiverName: r.receiver_name,
-                receivedDate: r.received_date,
-                items: r.items || [],
-                photoUrl: r.photo_url,
-                deliveryNoteUrl: r.delivery_note_url,
-                notes: r.notes,
-                status: r.status,
-                verifiedBy: r.verified_by,
-                verifiedAt: r.verified_at,
-                createdAt: r.created_at,
-                updatedAt: r.updated_at,
+                id: r.id as string,
+                projectId: r.project_id as string,
+                poId: r.po_id as string,
+                grnNumber: r.grn_number as string,
+                receivedBy: r.received_by as string,
+                receiverName: r.receiver_name as string | undefined,
+                receivedDate: r.received_date as string,
+                items: (r.items as GoodsReceipt['items']) || [],
+                photoUrl: r.photo_url as string | undefined,
+                deliveryNoteUrl: r.delivery_note_url as string | undefined,
+                notes: r.notes as string | undefined,
+                status: r.status as GoodsReceipt['status'],
+                verifiedBy: r.verified_by as string | undefined,
+                verifiedAt: r.verified_at as string | undefined,
+                createdAt: r.created_at as string,
+                updatedAt: (r.updated_at as string) || '',
             })))
 
             // Fetch Invoices linked to this PO
@@ -138,14 +138,14 @@ export function ProcurementTracePanel({
                 .order('created_at', { ascending: true })
 
             setInvoices((invRows || []).map((r: Record<string, unknown>) => ({
-                id: r.id,
-                invoiceNumber: r.invoice_number,
-                vendorName: r.vendor_name,
-                amount: r.amount || 0,
-                totalAmount: r.total_amount || 0,
-                status: r.status,
-                dueDate: r.due_date,
-                createdAt: r.created_at,
+                id: r.id as string,
+                invoiceNumber: r.invoice_number as string,
+                vendorName: r.vendor_name as string,
+                amount: (r.amount as number) || 0,
+                totalAmount: (r.total_amount as number) || 0,
+                status: r.status as string,
+                dueDate: r.due_date as string | undefined,
+                createdAt: r.created_at as string,
             })))
         } catch (err) {
             console.warn('[ProcurementTrace] fetch failed:', err)

@@ -269,9 +269,9 @@ export const ahspRepository = {
                 id: z.id,
                 name: z.name,
                 description: z.description,
-                isActive: z.is_active,
-                createdAt: z.created_at,
-                updatedAt: z.updated_at
+                isActive: z.is_active ?? true,
+                createdAt: z.created_at || '',
+                updatedAt: z.updated_at || ''
             }))
 
             return { data: zones, error: null }
@@ -329,8 +329,8 @@ export const ahspRepository = {
                 overheadPercentage: p.overhead_percentage || 0,
                 profitPercentage: p.profit_percentage || 0,
                 finalPrice: p.final_price || 0,
-                createdAt: p.created_at,
-                updatedAt: p.updated_at
+                createdAt: p.created_at || '',
+                updatedAt: p.updated_at || ''
             }))
 
             return { data: prices, error: null }

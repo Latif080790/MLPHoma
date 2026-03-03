@@ -107,7 +107,7 @@ export const handoverService = {
             },
             safety: {
                 total: risksData?.length || 0,
-                highSeverity: (risksData || []).filter((r: RiskRow) => (r.risk_score || 0) >= 15).length || 0,
+                highSeverity: ((risksData || []) as RiskRow[]).filter((r: RiskRow) => (r.risk_score || 0) >= 15).length || 0,
                 incidents: 0,
                 manhours: 0,
             },
@@ -134,10 +134,10 @@ export const handoverService = {
 
         if (risks) {
             risks.forEach((r: RiskRow) => issues.push({
-                id: r.id,
+                id: r.id || '',
                 type: 'RISK',
-                desc: r.description,
-                status: r.status,
+                desc: r.description || '',
+                status: r.status || 'OPEN',
                 priority: (r.risk_score || 0) >= 20 ? 'CRITICAL' : 'HIGH'
             }));
         }

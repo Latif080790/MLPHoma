@@ -34,7 +34,7 @@ export default function CurvaSChartSimple({ planned, actual = [] }: CurvaSChartP
     if (!map[a.period]) map[a.period] = { period: a.period }
     map[a.period].actual = a.cumulative
   })
-  const data = Object.values(map).sort((a, b) => a.period.localeCompare(b.period))
+  const data = Object.values(map).sort((a, b) => String(a.period).localeCompare(String(b.period)))
 
   return (
     <div className="rounded-md border p-2 bg-white">

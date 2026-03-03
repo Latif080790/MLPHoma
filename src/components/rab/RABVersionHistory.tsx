@@ -294,13 +294,16 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                           Added Items ({comparison.added.length})
                         </h4>
                         <div className="space-y-1 bg-green-50 p-4 rounded-lg">
-                          {comparison.added.map((item, idx) => (
+                          {comparison.added.map((item, idx) => {
+                            const it = item as { item_code?: string; name?: string }
+                            return (
                             <div key={idx} className="text-sm flex items-center gap-2 text-green-800">
                               <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
-                              <span className="font-mono text-xs">{item.item_code}</span>
-                              <span>{item.name}</span>
+                              <span className="font-mono text-xs">{it.item_code}</span>
+                              <span>{it.name}</span>
                             </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     )}
@@ -312,13 +315,16 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                           Removed Items ({comparison.removed.length})
                         </h4>
                         <div className="space-y-1 bg-red-50 p-4 rounded-lg">
-                          {comparison.removed.map((item, idx) => (
+                          {comparison.removed.map((item, idx) => {
+                            const it = item as { item_code?: string; name?: string }
+                            return (
                             <div key={idx} className="text-sm flex items-center gap-2 text-red-800">
                               <div className="h-1.5 w-1.5 rounded-full bg-red-600" />
-                              <span className="font-mono text-xs">{item.item_code}</span>
-                              <span>{item.name}</span>
+                              <span className="font-mono text-xs">{it.item_code}</span>
+                              <span>{it.name}</span>
                             </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     )}
@@ -330,10 +336,12 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                           Modified Items ({comparison.modified.length})
                         </h4>
                         <div className="space-y-3 bg-blue-50 p-4 rounded-lg">
-                          {comparison.modified.map((mod, idx) => (
+                          {comparison.modified.map((mod, idx) => {
+                            const modItem = mod.item as { item_code?: string; name?: string }
+                            return (
                             <div key={idx} className="bg-white p-3 rounded border">
                               <div className="text-sm font-medium text-blue-900 mb-2">
-                                {mod.item.item_code} - {mod.item.name}
+                                {modItem.item_code} - {modItem.name}
                               </div>
                               <div className="space-y-1 text-xs">
                                 {mod.changes.map((change, cidx) => (
@@ -342,17 +350,18 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                                       {change.field}
                                     </Badge>
                                     <span className="line-through text-red-600">
-                                      {typeof change.oldValue === 'number' ? formatIDR(change.oldValue) : change.oldValue}
+                                      {typeof change.oldValue === 'number' ? formatIDR(change.oldValue) : String(change.oldValue ?? '')}
                                     </span>
                                     <ArrowRight className="h-3 w-3" />
                                     <span className="font-semibold text-green-600">
-                                      {typeof change.newValue === 'number' ? formatIDR(change.newValue) : change.newValue}
+                                      {typeof change.newValue === 'number' ? formatIDR(change.newValue) : String(change.newValue ?? '')}
                                     </span>
                                   </div>
                                 ))}
                               </div>
                             </div>
-                          ))}
+                            )
+                          })}
                         </div>
                       </div>
                     )}
@@ -442,9 +451,9 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                                   <Badge variant="outline" className="text-xs">{change.field}</Badge>
                                   {change.oldValue !== undefined && (
                                     <>
-                                      <span className="line-through">{change.oldValue}</span>
+                                      <span className="line-through">{String(change.oldValue ?? '')}</span>
                                       <ArrowRight className="h-3 w-3" />
-                                      <span className="font-semibold">{change.newValue}</span>
+                                      <span className="font-semibold">{String(change.newValue ?? '')}</span>
                                     </>
                                   )}
                                 </div>

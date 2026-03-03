@@ -153,9 +153,9 @@ export const rapProfitService = {
         }
 
         const breakdown: EquipmentCostEntry[] = data.map((d: Record<string, unknown>) => ({
-            resourceId: d.resource_id || '',
-            logDate: d.log_date || '',
-            status: d.status || 'UNKNOWN',
+            resourceId: String(d.resource_id || ''),
+            logDate: String(d.log_date || ''),
+            status: String(d.status || 'UNKNOWN'),
             hoursUsed: Number(d.hours_used || 0),
             rentCost: Number(d.rent_cost || 0),
         }))

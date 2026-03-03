@@ -66,15 +66,18 @@ export const livingPriceService = {
             return []
         }
 
-        type PoItemWithPo = { unit_price?: number; quantity?: number; purchase_orders?: { id?: string; po_number?: string; vendor_name?: string; created_at?: string } | null }
-        return (data || []).map((row: PoItemWithPo) => ({
-            poId: row.purchase_orders?.id,
-            poNumber: row.purchase_orders?.po_number,
-            vendorName: row.purchase_orders?.vendor_name,
-            date: row.purchase_orders?.created_at,
-            unitPrice: Number(row.unit_price || 0),
-            quantity: Number(row.quantity || 0)
-        }))
+        type PoItemWithPo = { unit_price?: number; quantity?: number; purchase_orders?: { id?: string; po_number?: string; vendor_name?: string; created_at?: string }[] | null }
+        return (data || []).map((row: PoItemWithPo) => {
+            const po = Array.isArray(row.purchase_orders) ? row.purchase_orders[0] : row.purchase_orders
+            return {
+                poId: po?.id || '',
+                poNumber: po?.po_number || '',
+                vendorName: po?.vendor_name || '',
+                date: po?.created_at || '',
+                unitPrice: Number(row.unit_price || 0),
+                quantity: Number(row.quantity || 0)
+            }
+        })
     },
 
     /**

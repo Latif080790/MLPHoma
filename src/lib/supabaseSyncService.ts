@@ -144,17 +144,21 @@ class SyncQueueManager {
           result = await supabase.from(task.table).insert(task.data)
           break
 
-        case 'update':
+        case 'update': {
+          const updateData = Array.isArray(task.data) ? task.data[0] : task.data
           result = await supabase.from(task.table)
-            .update(task.data)
-            .eq('id', task.data.id)
+            .update(updateData)
+            .eq('id', updateData.id)
           break
+        }
 
-        case 'delete':
+        case 'delete': {
+          const deleteData = Array.isArray(task.data) ? task.data[0] : task.data
           result = await supabase.from(task.table)
             .delete()
-            .eq('id', task.data.id)
+            .eq('id', deleteData.id)
           break
+        }
 
         case 'upsert':
           result = await supabase.from(task.table)

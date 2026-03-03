@@ -61,12 +61,22 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
         )
     }
 
-    const { totalDrift, details, lastChecked } = driftData
+    type DriftDetail = {
+        potentialImpact: number
+        baselinePrice: number
+        currentAhspPrice: number
+        volume: number
+        unit: string
+        itemName: string
+        livingPrice?: number
+    }
+    const { totalDrift, details: rawDetails, lastChecked } = driftData
+    const details = (rawDetails || []) as DriftDetail[]
     const itemsWithDrift = details.filter(d => Math.abs(d.potentialImpact) > 1000)
-    const leakage = details.reduce((sum, d) => sum + (d.potentialImpact > 0 ? d.potentialImpact : 0), 0)
-    const savings = details.reduce((sum, d) => sum + (d.potentialImpact < 0 ? Math.abs(d.potentialImpact) : 0), 0)
+    const leakage: number = details.reduce((sum: number, d: DriftDetail) => sum + (d.potentialImpact > 0 ? d.potentialImpact : 0), 0)
+    const savings: number = details.reduce((sum: number, d: DriftDetail) => sum + (d.potentialImpact < 0 ? Math.abs(d.potentialImpact) : 0), 0)
 
-    const driftPercentage = (totalDrift / details.reduce((sum, d) => sum + (d.baselinePrice * d.volume), 0)) * 100
+    const driftPercentage = (totalDrift / details.reduce((sum: number, d: DriftDetail) => sum + (d.baselinePrice * d.volume), 0)) * 100
 
     return (
         <div className="space-y-4">

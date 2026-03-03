@@ -171,7 +171,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
                 projectId={projectId}
-                riskToEdit={editingRisk}
+                riskToEdit={editingRisk as unknown as Record<string, unknown> | undefined}
             />
 
             <AlertDialog open={!!pendingDeleteRisk} onOpenChange={(open) => { if (!open) setPendingDeleteRisk(null) }}>

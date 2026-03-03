@@ -47,7 +47,7 @@ const SEVERITY_CONFIG = {
 
 export function CriticalPathWarningPanel({ 
     projectId, 
-    _compact = false,
+    compact: _compact = false,
     maxAlerts = 5 
 }: CriticalPathWarningPanelProps) {
     const [alerts, setAlerts] = useState<ScheduleAlert[]>([])

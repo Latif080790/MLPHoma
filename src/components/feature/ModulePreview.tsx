@@ -50,6 +50,9 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
     return <div className="text-sm text-neutral-500">No configuration available for this module.</div>
   }
 
+  // Cast config to a record for safe property access
+  const cfg = config as Record<string, unknown>
+
   // Helpers
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const numberOr = (v: any, fallback = 0) => (typeof v === 'number' ? v : fallback)
@@ -62,9 +65,9 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
         <div>
           <div className="mb-2 text-xs text-neutral-600">Project Management</div>
           <div className="grid grid-cols-1 gap-2">
-            <div className="text-sm"><strong>Name:</strong> {config?.meta?.name ?? '—'}</div>
-            <div className="text-sm"><strong>Stages:</strong> {(config?.workflow?.stages || []).join(' › ') || '—'}</div>
-            <div className="text-sm"><strong>KPIs:</strong> Budget Var {numberOr(config?.kpis?.budgetVarianceTolerancePct, 5)}%</div>
+            <div className="text-sm"><strong>Name:</strong> {(cfg as any)?.meta?.name ?? '—'}</div>
+            <div className="text-sm"><strong>Stages:</strong> {((cfg as any)?.workflow?.stages || []).join(' › ') || '—'}</div>
+            <div className="text-sm"><strong>KPIs:</strong> Budget Var {numberOr((cfg as any)?.kpis?.budgetVarianceTolerancePct, 5)}%</div>
           </div>
         </div>
       )
@@ -73,9 +76,9 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
       return (
         <div>
           <div className="mb-2 text-xs text-neutral-600">WBS Settings</div>
-          <div className="text-sm"><strong>Max Levels:</strong> {config?.codeRules?.maxLevels ?? '—'}</div>
-          <div className="text-sm"><strong>Auto-number:</strong> {config?.codeRules?.autoNumbering ? 'Yes' : 'No'}</div>
-          <div className="text-sm"><strong>Show Est. Hours:</strong> {config?.tree?.showEstimatedHours ? 'Yes' : 'No'}</div>
+          <div className="text-sm"><strong>Max Levels:</strong> {(cfg as any)?.codeRules?.maxLevels ?? '—'}</div>
+          <div className="text-sm"><strong>Auto-number:</strong> {(cfg as any)?.codeRules?.autoNumbering ? 'Yes' : 'No'}</div>
+          <div className="text-sm"><strong>Show Est. Hours:</strong> {(cfg as any)?.tree?.showEstimatedHours ? 'Yes' : 'No'}</div>
         </div>
       )
 
@@ -83,9 +86,9 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
       return (
         <div>
           <div className="mb-2 text-xs text-neutral-600">AHSP (Unit Price)</div>
-          <div className="text-sm"><strong>Currency:</strong> {config?.pricing?.currency ?? 'IDR'}</div>
-          <div className="text-sm"><strong>Include equipment:</strong> {config?.pricing?.includeEquipmentCost ? 'Yes' : 'No'}</div>
-          <div className="text-sm"><strong>Rounding:</strong> {config?.pricing?.rounding?.enabled ? `to ${config?.pricing?.rounding?.toNearest}` : 'No'}</div>
+          <div className="text-sm"><strong>Currency:</strong> {(cfg as any)?.pricing?.currency ?? 'IDR'}</div>
+          <div className="text-sm"><strong>Include equipment:</strong> {(cfg as any)?.pricing?.includeEquipmentCost ? 'Yes' : 'No'}</div>
+          <div className="text-sm"><strong>Rounding:</strong> {(cfg as any)?.pricing?.rounding?.enabled ? `to ${(cfg as any)?.pricing?.rounding?.toNearest}` : 'No'}</div>
         </div>
       )
 
@@ -93,9 +96,9 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
       return (
         <div>
           <div className="mb-2 text-xs text-neutral-600">RAB (Estimation)</div>
-          <div className="text-sm"><strong>Overhead:</strong> {percentOr(config?.calculation?.includeOverheadPct, 10)}</div>
-          <div className="text-sm"><strong>Profit:</strong> {percentOr(config?.calculation?.includeProfitPct, 8)}</div>
-          <div className="text-sm"><strong>Tax:</strong> {percentOr(config?.calculation?.includeTaxPct, 11)}</div>
+          <div className="text-sm"><strong>Overhead:</strong> {percentOr((cfg as any)?.calculation?.includeOverheadPct, 10)}</div>
+          <div className="text-sm"><strong>Profit:</strong> {percentOr((cfg as any)?.calculation?.includeProfitPct, 8)}</div>
+          <div className="text-sm"><strong>Tax:</strong> {percentOr((cfg as any)?.calculation?.includeTaxPct, 11)}</div>
         </div>
       )
 
@@ -103,13 +106,13 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
       return (
         <div>
           <div className="mb-2 text-xs text-neutral-600">Timeline / Gantt</div>
-          <div className="text-sm"><strong>Calendar:</strong> {config?.scheduling?.workCalendar ?? '5day'}</div>
-          <div className="text-sm"><strong>Auto CPM:</strong> {config?.scheduling?.autoCalculateCriticalPath ? 'Yes' : 'No'}</div>
+          <div className="text-sm"><strong>Calendar:</strong> {(cfg as any)?.scheduling?.workCalendar ?? '5day'}</div>
+          <div className="text-sm"><strong>Auto CPM:</strong> {(cfg as any)?.scheduling?.autoCalculateCriticalPath ? 'Yes' : 'No'}</div>
         </div>
       )
 
     case 'rap': {
-      const pts = makeMockSeries(config?.distribution?.minPeriodAllocationPct ?? 5)
+      const pts = makeMockSeries((cfg as any)?.distribution?.minPeriodAllocationPct ?? 5)
       return (
         <div style={{ height: 160 }}>
           <div className="mb-2 text-xs text-neutral-600">RAP Distribution (preview)</div>
@@ -122,13 +125,13 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
               <Bar dataKey="value" fill="#60a5fa" />
             </BarChart>
           </ResponsiveContainer>
-          <div className="text-xs mt-2 text-neutral-600">Default: {config?.distribution?.defaultPeriod ?? 'monthly'}</div>
+          <div className="text-xs mt-2 text-neutral-600">Default: {(cfg as any)?.distribution?.defaultPeriod ?? 'monthly'}</div>
         </div>
       )
     }
 
     case 'curvas': {
-      const series = makeMockSeries(Math.round((config?.metrics?.performanceWindowDays ?? 30) / 10))
+      const series = makeMockSeries(Math.round(((cfg as any)?.metrics?.performanceWindowDays ?? 30) / 10))
       return (
         <div style={{ height: 160 }}>
           <div className="mb-2 text-xs text-neutral-600">Curva-S (sample)</div>
@@ -146,7 +149,7 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
               <Area type="monotone" dataKey="value" stroke="#10b981" fill="url(#grad)" />
             </AreaChart>
           </ResponsiveContainer>
-          <div className="text-xs mt-2 text-neutral-600">SPI tol: {config?.metrics?.spiTolerance ?? 0.95}</div>
+          <div className="text-xs mt-2 text-neutral-600">SPI tol: {(cfg as any)?.metrics?.spiTolerance ?? 0.95}</div>
         </div>
       )
     }
@@ -155,8 +158,8 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
       return (
         <div>
           <div className="mb-2 text-xs text-neutral-600">Resource Planning</div>
-          <div className="text-sm"><strong>Bucket days:</strong> {config?.histogram?.bucketSizeDays ?? 7}</div>
-          <div className="text-sm"><strong>Lead time:</strong> {config?.procurement?.leadTimeDaysDefault ?? 14} days</div>
+          <div className="text-sm"><strong>Bucket days:</strong> {(cfg as any)?.histogram?.bucketSizeDays ?? 7}</div>
+          <div className="text-sm"><strong>Lead time:</strong> {(cfg as any)?.procurement?.leadTimeDaysDefault ?? 14} days</div>
         </div>
       )
 
@@ -164,9 +167,9 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
       return (
         <div>
           <div className="mb-2 text-xs text-neutral-600">Cash Flow</div>
-          <div className="text-sm"><strong>Period:</strong> {config?.projection?.cashflowPeriod ?? 'monthly'}</div>
-          <div className="text-sm"><strong>Retention:</strong> {percentOr(config?.projection?.includeRetentionPct, 5)}</div>
-          <div className="text-sm"><strong>Payment terms:</strong> {config?.projection?.paymentTermsDays ?? 30} days</div>
+          <div className="text-sm"><strong>Period:</strong> {(cfg as any)?.projection?.cashflowPeriod ?? 'monthly'}</div>
+          <div className="text-sm"><strong>Retention:</strong> {percentOr((cfg as any)?.projection?.includeRetentionPct, 5)}</div>
+          <div className="text-sm"><strong>Payment terms:</strong> {(cfg as any)?.projection?.paymentTermsDays ?? 30} days</div>
         </div>
       )
 
@@ -174,8 +177,8 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
       return (
         <div>
           <div className="mb-2 text-xs text-neutral-600">Progress Tracking</div>
-          <div className="text-sm"><strong>Photo upload:</strong> {config?.capture?.allowPhotoUpload ? 'Enabled' : 'Disabled'}</div>
-          <div className="text-sm"><strong>Auto sync (mins):</strong> {config?.autoUpdate?.syncIntervalMinutes ?? 60}</div>
+          <div className="text-sm"><strong>Photo upload:</strong> {(cfg as any)?.capture?.allowPhotoUpload ? 'Enabled' : 'Disabled'}</div>
+          <div className="text-sm"><strong>Auto sync (mins):</strong> {(cfg as any)?.autoUpdate?.syncIntervalMinutes ?? 60}</div>
         </div>
       )
 
@@ -183,9 +186,9 @@ const ModulePreview: FC<ModulePreviewProps> = ({ moduleKey, config, fullConfig: 
       return (
         <div>
           <div className="mb-2 text-xs text-neutral-600">Reporting</div>
-          <div className="text-sm"><strong>Widgets:</strong> {(config?.dashboard?.widgets || []).length || 0}</div>
-          <div className="text-sm"><strong>Excel export:</strong> {config?.exports?.enableExcelExport ? 'Yes' : 'No'}</div>
-          <div className="text-sm"><strong>PDF export:</strong> {config?.exports?.enablePdfExport ? 'Yes' : 'No'}</div>
+          <div className="text-sm"><strong>Widgets:</strong> {((cfg as any)?.dashboard?.widgets || []).length || 0}</div>
+          <div className="text-sm"><strong>Excel export:</strong> {(cfg as any)?.exports?.enableExcelExport ? 'Yes' : 'No'}</div>
+          <div className="text-sm"><strong>PDF export:</strong> {(cfg as any)?.exports?.enablePdfExport ? 'Yes' : 'No'}</div>
         </div>
       )
 

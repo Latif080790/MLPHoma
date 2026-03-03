@@ -406,19 +406,20 @@ export const useProjectStore = create<ProjectState>((set, get) => {
         if (data) {
           const projects: Record<string, Project> = {}
           data.forEach((row: Record<string, unknown>) => {
-            projects[row.id] = {
-              id: row.id,
-              name: row.name,
-              code: row.code,
-              clientName: row.client_name,
-              location: row.location,
-              startDate: row.start_date,
-              endDate: row.end_date,
-              budget: row.budget,
-              status: row.status,
-              userId: row.user_id,
-              paymentTerms: row.payment_terms,
-              meta: row.meta,
+            const rowId = row.id as string
+            projects[rowId] = {
+              id: rowId,
+              name: row.name as string,
+              code: row.code as string | undefined,
+              clientName: row.client_name as string | undefined,
+              location: row.location as string | undefined,
+              startDate: row.start_date as string | undefined,
+              endDate: row.end_date as string | undefined,
+              budget: row.budget as number | undefined,
+              status: row.status as string | undefined,
+              userId: row.user_id as string | undefined,
+              paymentTerms: row.payment_terms as import('../store/projectStore').PaymentTerms | undefined,
+              meta: row.meta as Record<string, unknown> | undefined,
             }
           })
           // Validate persisted activeProjectId still exists in loaded projects

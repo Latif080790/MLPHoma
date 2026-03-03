@@ -55,7 +55,7 @@ export interface ValidationOptions {
 export function formatZodErrors(error: ZodError): ValidationError[] {
   return error.errors.map((err) => ({
     field: err.path.join('.'),
-    message: (err as Error).message,
+    message: err.message,
   }))
 }
 
@@ -169,7 +169,7 @@ export function validateAndExecute<TInput, TOutput>(
       }
       
       if (throwOnError) {
-        throw new Error(`Validation failed: ${errors.map(e => (e as Error).message).join(', ')}`)
+        throw new Error(`Validation failed: ${errors.map(e => e.message).join(', ')}`)
       }
       
       return {
@@ -269,7 +269,7 @@ export function validateAndExecuteAsync<TInput, TOutput>(
       }
       
       if (throwOnError) {
-        throw new Error(`Validation failed: ${errors.map(e => (e as Error).message).join(', ')}`)
+        throw new Error(`Validation failed: ${errors.map(e => e.message).join(', ')}`)
       }
       
       return {
@@ -409,7 +409,7 @@ export function createPartialSchema<T extends z.ZodObject<z.ZodRawShape>>(
  */
 export function mergeErrorMessages(errors: ValidationError[] | undefined): string {
   if (!errors || errors.length === 0) return 'Validation failed'
-  return errors.map(e => `${e.field}: ${(e as Error).message}`).join('; ')
+  return errors.map(e => `${e.field}: ${e.message}`).join('; ')
 }
 
 /**
@@ -422,7 +422,7 @@ export function getFieldErrors(
   if (!errors) return []
   return errors
     .filter(e => e.field === field)
-    .map(e => (e as Error).message)
+    .map(e => e.message)
 }
 
 export default {

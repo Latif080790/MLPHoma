@@ -59,8 +59,12 @@ export function InventoryTransactionDialog({ open, onOpenChange, projectId, defa
     async function onSubmit(data: TransactionFormValues) {
         try {
             await recordTransaction({
-                project_id: projectId,
-                ...data
+                projectId,
+                materialName: data.material_name,
+                transactionType: data.transaction_type,
+                quantity: data.quantity,
+                unit: data.unit,
+                referenceDoc: data.reference_doc,
             })
             toast.success(`Transaction ${data.transaction_type} recorded`)
             onOpenChange(false)
@@ -80,7 +84,7 @@ export function InventoryTransactionDialog({ open, onOpenChange, projectId, defa
                     <div className="grid gap-2">
                         <Label>Transaction Type</Label>
                         <Select
-                            onValueChange={(val: string) => form.setValue("transaction_type", val as 'IN' | 'OUT' | 'TRANSFER' | 'ADJUSTMENT')}
+                            onValueChange={(val: string) => form.setValue("transaction_type", val as 'IN' | 'OUT' | 'TRANSFER' | 'RETURN')}
                             // eslint-disable-next-line react-hooks/incompatible-library
                             value={form.watch("transaction_type")}
                         >

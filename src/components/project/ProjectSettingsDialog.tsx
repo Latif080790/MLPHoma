@@ -30,8 +30,8 @@ export function ProjectSettingsDialog({ projectId, open, onOpenChange }: Project
 
     useEffect(() => {
         if (project && open) {
-            setProfit(project.meta?.targetProfitPercentage ?? 10)
-            setOverhead(project.meta?.defaultOverheadPercentage ?? 10)
+            setProfit(Number(project.meta?.targetProfitPercentage ?? 10))
+            setOverhead(Number(project.meta?.defaultOverheadPercentage ?? 10))
         }
     }, [project, open])
 

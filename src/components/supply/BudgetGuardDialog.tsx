@@ -20,7 +20,7 @@ import {
 import {
     Shield, ShieldCheck, ShieldAlert, ShieldX, AlertTriangle, CheckCircle2, XCircle, Loader2,
 } from 'lucide-react'
-import { budgetGuardService, type BudgetCheckResult, type CheckableItem } from '../../services/budgetGuardService'
+import { checkBudgetAvailability, type BudgetCheckResult, type CheckableItem } from '../../services/budgetGuardService'
 import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
 import { approvalService } from '../../services/approvalService'
@@ -93,7 +93,7 @@ export function BudgetGuardDialog({
         }
 
         setChecking(true)
-        budgetGuardService.checkBudgetAvailability(projectId, items)
+        checkBudgetAvailability(projectId, items)
             .then(setResult)
             .catch(err => {
                 console.warn('[BudgetGuard] Check failed:', err)
@@ -115,7 +115,7 @@ export function BudgetGuardDialog({
 
             await approvalService.createApproval({
                 projectId,
-                entityType: 'PO',
+                entityType: 'PURCHASE_ORDER',
                 entityId: poReference || 'pending-po',
                 title: `Budget Guard: PO ${poReference || 'New'}`,
                 description: `PO requires approval — budget critically low. Total: Rp ${totalAmount.toLocaleString()}`,

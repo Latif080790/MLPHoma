@@ -17,9 +17,9 @@ function rowToNotification(row: NotifDbRow): AppNotification {
     return {
         id: row.id,
         projectId: row.project_id,
-        userId: row.user_id,
-        type: row.type,
-        severity: row.severity,
+        userId: row.user_id || '',
+        type: row.type as import('../types/notification').NotificationType,
+        severity: row.severity as import('../types/notification').NotificationSeverity,
         title: row.title,
         message: row.message,
         metadata: row.metadata ?? {},
@@ -203,7 +203,7 @@ export const notificationService = {
                     filter: `user_id=eq.${userId}`,
                 },
                 (payload) => {
-                    const notification = rowToNotification(payload.new)
+                    const notification = rowToNotification(payload.new as NotifDbRow)
                     onNewNotification(notification)
                 }
             )

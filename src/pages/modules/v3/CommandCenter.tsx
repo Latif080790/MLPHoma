@@ -198,7 +198,7 @@ export default function CommandCenter() {
                                     <span className="text-xs text-slate-500 uppercase">Rating</span>
                                     <Badge variant="outline" className={`text-xs uppercase ${(isPortfolioMode ? portfolioStats?.avgPhi || 0 : stats?.phi?.score || 0) >= 85 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : (isPortfolioMode ? portfolioStats?.avgPhi || 0 : stats?.phi?.score || 0) >= 70 ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'
                                         }`}>
-                                        {isPortfolioMode ? (portfolioStats?.avgPhi >= 85 ? 'OPTIMAL' : portfolioStats?.avgPhi >= 70 ? 'STABLE' : 'CRITICAL') : stats?.phi?.rating || 'UNKNOWN'}
+                                        {isPortfolioMode ? ((portfolioStats?.avgPhi ?? 0) >= 85 ? 'OPTIMAL' : (portfolioStats?.avgPhi ?? 0) >= 70 ? 'STABLE' : 'CRITICAL') : stats?.phi?.rating || 'UNKNOWN'}
                                     </Badge>
                                 </div>
                                 <div className="ml-auto">

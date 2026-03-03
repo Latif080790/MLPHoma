@@ -52,7 +52,8 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
     ]
   })
 
-  const [distribution, setDistribution] = useState<Record<string, number[]> | null>(null)
+  type DistributionMap = Record<string, { task: ScheduleTask; totalVolume: number; totalValue: number; items: { id: string; volume: number; value: number }[] }>
+  const [distribution, setDistribution] = useState<DistributionMap | null>(null)
 
   const addTask = () => {
     const id = `t-${Math.random().toString(36).slice(2, 6)}`
@@ -125,7 +126,7 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
         <div className="mt-3 text-sm">
           <div className="font-medium">Details</div>
           <div className="space-y-2 mt-2">
-            {Object.values(distribution).map((d: { task: { id: string; title: string; startDate: string; endDate: string }; totalValue: number }) => (
+            {Object.values(distribution).map((d) => (
               <div key={d.task.id} className="flex justify-between">
                 <div>{d.task.title} ({d.task.startDate} → {d.task.endDate})</div>
                 <div className="font-mono">{Math.round(d.totalValue).toLocaleString()}</div>

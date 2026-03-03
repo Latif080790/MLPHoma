@@ -80,10 +80,7 @@ function isViewMode(value: string): value is ViewMode {
 
 function toEditorTask(task: TimelineTask | null): TaskEditorProps['task'] {
   if (!task) return null
-  return {
-    ...task,
-    dependencies: task.dependencies ?? [],
-  }
+  return task as unknown as TaskEditorProps['task']
 }
 
 /**

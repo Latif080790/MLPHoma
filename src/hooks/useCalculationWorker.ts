@@ -87,7 +87,7 @@ export function useCalculationWorker() {
                 }
 
                 const id = `calc-${++_requestId}`
-                _pendingRequests.set(id, { resolve, reject })
+                _pendingRequests.set(id, { resolve: resolve as (value: unknown) => void, reject })
                 workerRef.current.postMessage({ id, type, payload })
             })
         },

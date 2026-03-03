@@ -90,10 +90,10 @@ export function MaterialRequestDialog({ open, onOpenChange, projectId }: Materia
     async function onSubmit(data: MrFormValues) {
         try {
             await createMaterialRequest({
-                project_id: projectId,
+                projectId,
                 ...data,
                 status: 'PENDING',
-                requested_by: 'current-user-id' // Replace with actual auth user
+                requestedBy: 'current-user-id' // Replace with actual auth user
             })
             toast.success("Material Request created")
             onOpenChange(false)

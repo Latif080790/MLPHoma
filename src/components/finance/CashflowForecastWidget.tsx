@@ -64,7 +64,7 @@ export function CashflowForecastWidget({
     projectId,
     forecastWeeks = 4,
     currentBalance = 500000000, // Default 500M IDR
-    _compact = false,
+    compact: _compact = false,
     invoices = [],
     claims = [],
     transactions = [],

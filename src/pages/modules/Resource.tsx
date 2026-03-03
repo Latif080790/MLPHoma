@@ -114,8 +114,8 @@ export default function Resource() {
   const projectId = project?.id ?? "demo"
 
   // Stable selectors
-  const rabItemsSelector = useCallback((s) => s.getItems?.(projectId) ?? EMPTY_ARRAY, [projectId])
-  const tasksSelector = useCallback((s) => s.getTasks(projectId), [projectId])
+  const rabItemsSelector = useCallback((s: Parameters<typeof useRabStore>[0] extends (state: infer S) => unknown ? S : { getItems?: (id: string) => RABItem[] }) => s.getItems?.(projectId) ?? EMPTY_ARRAY, [projectId])
+  const tasksSelector = useCallback((s: Parameters<typeof useTimelineStore>[0] extends (state: infer S) => unknown ? S : ReturnType<typeof useTimelineStore>) => s.getTasks(projectId), [projectId])
 
   const rabItems = useRabStore(rabItemsSelector)
   const tasks = useTimelineStore(tasksSelector)
@@ -134,7 +134,7 @@ export default function Resource() {
       if (rabVolume <= 0) return
 
       // Find linked AHSP
-      const ahspItem = ahspMap.get(item.item_code || item.code)
+      const ahspItem = ahspMap.get((item.item_code || item.code) ?? '')
 
       if (ahspItem) {
         // Case 1: Has AHSP - breakdown into components
@@ -227,7 +227,7 @@ export default function Resource() {
       .map((i: RABItem) => ({
         key: i.id as string,
         name: (i.item_name || i.name || "Unknown") as string,
-        total: (i.finalTotal || (i.volume * (i.unit_price || 0)) || 0) as number
+        total: (i.finalTotal || ((i.volume ?? 0) * (i.unit_price || 0)) || 0) as number
       }))
       .sort((a: TopItem, b: TopItem) => b.total - a.total)
       .slice(0, 6)

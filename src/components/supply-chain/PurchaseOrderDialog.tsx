@@ -94,12 +94,12 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
 
             // Direct creation (within budget)
             await createPurchaseOrder({
-                project_id: projectId,
-                po_number: data.po_number,
-                vendor_name: data.vendor_name,
-                total_amount: totalAmount,
+                projectId: projectId,
+                poNumber: data.po_number,
+                vendorName: data.vendor_name,
+                totalAmount: totalAmount,
                 status: 'DRAFT',
-                created_by: user?.id || 'current-user-id'
+                createdBy: user?.id || 'current-user-id'
             }, data.items)
 
             // Commit budget for each linked RAP item
@@ -288,7 +288,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                                                 if (selected) {
                                                     const currentName = form.getValues(`items.${index}.item_name`)
                                                     if (!currentName) {
-                                                        const name = (selected as Record<string, unknown>).name as string || selected.ahsp_items?.name || selected.rab_items?.name || ''
+                                                        const name = ((selected as unknown) as Record<string, unknown>).name as string || selected.ahsp_items?.name || selected.rab_items?.name || ''
                                                         form.setValue(`items.${index}.item_name`, name)
                                                     }
                                                     form.setValue(`items.${index}.unit_price`, selected.unit_price_budget || 0)
@@ -300,7 +300,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {rapItems.map(ri => {
-                                                    const name = (ri as Record<string, unknown>).name as string || ri.ahsp_items?.name || ri.rab_items?.name || 'Item'
+                                                    const name = ((ri as unknown) as Record<string, unknown>).name as string || ri.ahsp_items?.name || ri.rab_items?.name || 'Item'
                                                     const rem = (ri.total_budget || 0) - (ri.committed_cost || 0) - (ri.actual_cost || 0)
                                                     return (
                                                         <SelectItem key={ri.id} value={ri.id} className="text-xs">

@@ -81,13 +81,13 @@ function DetailDiff({ details }: { details: Record<string, unknown> }) {
 
     return (
         <div className="space-y-2 text-xs">
-            {reason && (
+            {!!reason && (
                 <div className="flex items-center gap-2">
                     <span className="text-slate-500 font-medium">Reason:</span>
-                    <span className="text-slate-700 dark:text-slate-300">{reason}</span>
+                    <span className="text-slate-700 dark:text-slate-300">{String(reason)}</span>
                 </div>
             )}
-            {oldValue && newValue && (
+            {!!oldValue && !!newValue && (
                 <div className="grid grid-cols-2 gap-2">
                     <div className="p-2 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
                         <span className="text-xs text-red-500 uppercase font-semibold">Before</span>

@@ -27,7 +27,7 @@ export function buildExternalErrorLog(
     source: 'ErrorBoundary',
     message: error.message,
     stack: error.stack,
-    componentStack: errorInfo.componentStack,
+    componentStack: errorInfo.componentStack ?? undefined,
     url: window.location.href,
     userAgent: navigator.userAgent,
     timestamp: new Date().toISOString(),

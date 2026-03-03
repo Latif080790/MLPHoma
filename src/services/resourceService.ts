@@ -25,7 +25,7 @@ export const resourceService = {
         // 1. Get Project Names for mapping
         const { data: projects } = await supabase.from('projects').select('id, name')
         const projectMap = (projects as ProjectRow[] | null)?.reduce<Record<string, string>>((acc, p) => {
-            acc[p.id] = p.name
+            acc[p.id] = p.name || ''
             return acc
         }, {}) || {}
 

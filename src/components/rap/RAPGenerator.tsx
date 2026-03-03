@@ -163,9 +163,10 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
 
     activeRabItems.forEach((item: RABItem) => {
       // Normalize taskId link
-      const tid = item.taskId || item.task_id || item.wbsId || item.wbs_id
+      const tid = item.taskId || item.wbsId
       if (tid) {
-        const cost = Number(item.finalTotal || item.finalPrice || item.final_total || (item.volume * (item.unit_price || item.unitPrice || 0)) || 0)
+        const vol = item.volume ?? 0
+        const cost = Number(item.finalTotal || item.finalPrice || (vol * (item.unit_price || item.unitPrice || 0)) || 0)
         taskCosts.set(tid, (taskCosts.get(tid) || 0) + cost)
       }
     })

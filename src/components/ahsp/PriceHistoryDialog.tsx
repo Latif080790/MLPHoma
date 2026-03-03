@@ -94,7 +94,7 @@ export function PriceHistoryDialog({
                                     const diff = record.newPrice - (record.oldPrice || 0)
                                     const isPositive = diff > 0
                                     // Check if zoneId exists in record (we added it in store but maybe not in type yet, let's cast if needed)
-                                    const recordZoneId = (record as Record<string, unknown>).zoneId as string | undefined
+                                    const recordZoneId = (record as unknown as Record<string, unknown>).zoneId as string | undefined
 
                                     return (
                                         <TableRow key={record.id}>

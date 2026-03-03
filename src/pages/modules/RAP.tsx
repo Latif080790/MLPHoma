@@ -62,7 +62,7 @@ export default function RAP(): JSX.Element {
   // Sync targetProfit with project settings
   useEffect(() => {
     if (project?.meta?.targetProfitPercentage) {
-      setTargetProfit(project.meta.targetProfitPercentage)
+      setTargetProfit(Number(project.meta.targetProfitPercentage))
     }
   }, [project?.meta?.targetProfitPercentage])
 

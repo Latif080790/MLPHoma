@@ -133,7 +133,7 @@ export const dashboardService = {
         const topRisks = activeRisks?.map((r: DashRiskRow) => ({
             id: r.id,
             description: r.description,
-            score: r.risk_score
+            score: r.risk_score || 0
         })) || []
 
         // 3. Schedule Stats (Overdue & Upcoming)
@@ -157,7 +157,7 @@ export const dashboardService = {
             id: t.id,
             name: t.name,
             date: t.end_date,
-            progress: t.progress
+            progress: t.progress || 0
         })) || []
 
         // 4. Cashflow (Simple Approximation from POs)
@@ -416,7 +416,7 @@ export const dashboardService = {
         const topGlobalRisks = topRisks?.map((r: GlobalRiskRow) => ({
             id: r.id,
             description: r.description,
-            score: r.risk_score,
+            score: r.risk_score || 0,
             projectName: r.projects?.name || 'Unknown'
         })) || []
 

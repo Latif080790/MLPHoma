@@ -56,10 +56,11 @@ function parseCSV(text: string): string[][] {
 }
 
 /* ── XLSX loader (guarded) ── */
-let XLSX: Record<string, unknown> | null = null
+type XLSXModule = { read: (data: unknown, opts?: unknown) => { Sheets: Record<string, unknown>; SheetNames: string[] }; utils: { sheet_to_json: (sheet: unknown, opts?: unknown) => unknown[][] } }
+let XLSX: XLSXModule | null = null
 try { 
   // Dynamic import for optional xlsx dependency - will be loaded when needed
-  void import('xlsx').then(m => { XLSX = (m.default || m) as Record<string, unknown> }).catch(() => { XLSX = null })
+  void import('xlsx').then(m => { XLSX = (m.default || m) as unknown as XLSXModule }).catch(() => { XLSX = null })
 } catch { 
   XLSX = null 
 }

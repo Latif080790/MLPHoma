@@ -55,7 +55,15 @@ export interface ActivityEntry {
   details?: Record<string, unknown>
 }
 
-// ─── Service ────────────────────────────────────────────────────────────────
+// ─── Internal row types ──────────────────────────────────────────────────────
+type RabRow = { final_total: number | null }
+type RapRow = { total_budget: number | null; actual_cost: number | null; committed_cost: number | null }
+type ProgressRow = { progress: number | null }
+type TaskRow = { id: string; name: string; end_date: string; progress: number | null; wbs_id?: string | null }
+type MemberRow = { id: string; user_id: string; project_role?: string | null; assigned_at: string }
+type AuditRow = { id: string; action: string; entity_type?: string | null; entity_id?: string | null; user_name?: string | null; created_at: string; details?: Record<string, unknown> | null }
+
+// ─── Service ─────────────────────────────────────────────────────────────────
 
 export const projectOverviewService = {
   /**

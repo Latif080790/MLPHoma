@@ -11,8 +11,9 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 
 export function BenchmarkingDashboard() {
     const { ahspItems, resources } = useAHSPStore()
+    const storeState = useAHSPStore() as unknown as Parameters<typeof getAHSPSummary>[0]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const summary = useMemo(() => getAHSPSummary({ ahspItems, resources } as ReturnType<typeof useAHSPStore>), [ahspItems, resources])
+    const summary = useMemo(() => getAHSPSummary(storeState), [ahspItems, resources])
 
     const categoryData = useMemo(() => {
         return Object.entries(summary.priceByCategory).map(([name, data]) => ({
@@ -29,7 +30,7 @@ export function BenchmarkingDashboard() {
         }))
     }, [summary])
 
-    if (state.ahspItems.length === 0) {
+    if (ahspItems.length === 0) {
         return (
             <div className="flex h-[400px] items-center justify-center rounded-lg border border-dashed text-muted-foreground">
                 No data available for analytics
