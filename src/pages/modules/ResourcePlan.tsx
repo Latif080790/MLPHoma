@@ -8,7 +8,7 @@
  * Task 44: Adds Jadwal Pendatangan bar chart
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Wrench, Download, AlertCircle, CalendarDays } from 'lucide-react'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
@@ -60,8 +60,22 @@ export default function ResourcePlan() {
 
   // Must select from itemsByProject (stable ref), NOT getItems() which may create new arrays
   const rabItems = useRabStore(s => s.itemsByProject[projectId] ?? EMPTY_RAB)
-  const { ahspItems: _ahspItems, componentsByAHSP, resources } = useAHSPStore()
+  const { ahspItems, componentsByAHSP, resources, fetchComponents } = useAHSPStore()
   const { getTasks } = useTimelineStore()
+
+  // ── Auto-load components for AHSP items matched by code from RAB ──
+  useEffect(() => {
+    if (!rabItems.length || !ahspItems.length) return
+    const codeMap = new Map(ahspItems.map(a => [a.code, a.id]))
+    const ahspIdsNeeded = new Set<string>()
+    rabItems.forEach(r => {
+      const id =
+        r.ahspItemId || r.ahsp_item_id ||
+        codeMap.get(r.item_code || r.itemCode || r.code || '')
+      if (id && !componentsByAHSP[id]) ahspIdsNeeded.add(id)
+    })
+    ahspIdsNeeded.forEach(id => { fetchComponents(id).catch(() => null) })
+  }, [rabItems, ahspItems, componentsByAHSP, fetchComponents])
 
   const [activeTypes, setActiveTypes] = useState<Set<ResourceType>>(
     new Set(['material', 'labor', 'equipment', 'subcontractor'])
@@ -69,14 +83,14 @@ export default function ResourcePlan() {
 
   // ── Compute resource needs using service (Task 43) ──────────
   const resourceNeeds = useMemo(
-    () => computeResourceNeeds(rabItems, componentsByAHSP, resources),
-    [rabItems, componentsByAHSP, resources]
+    () => computeResourceNeeds(rabItems, componentsByAHSP, resources, ahspItems),
+    [rabItems, componentsByAHSP, resources, ahspItems]
   )
 
   // ── Stats ──────────────────────────────────────────────────────
   const stats = useMemo(
-    () => computeResourceStats(resourceNeeds, rabItems),
-    [resourceNeeds, rabItems]
+    () => computeResourceStats(resourceNeeds, rabItems, ahspItems),
+    [resourceNeeds, rabItems, ahspItems]
   )
 
   // ── Filtered rows ──────────────────────────────────────────────
@@ -113,7 +127,10 @@ export default function ResourcePlan() {
       const task = taskByRabId.get(rabItem.id)
       if (!task) continue
 
-      const ahspItemId = rabItem.ahspItemId || rabItem.ahsp_item_id
+      const ahspItemId =
+          rabItem.ahspItemId ||
+          rabItem.ahsp_item_id ||
+          (ahspItems.find(a => a.code === (rabItem.item_code || rabItem.itemCode || rabItem.code))?.id)
       if (!ahspItemId) continue
 
       const components = componentsByAHSP[ahspItemId] || []
@@ -155,7 +172,7 @@ export default function ResourcePlan() {
         ...costs,
         total: costs.material + costs.labor + costs.equipment + costs.subcontractor,
       }))
-  }, [rabItems, componentsByAHSP, resources, projectId, getTasks, resourceNeeds.length])
+  }, [rabItems, componentsByAHSP, resources, ahspItems, projectId, getTasks, resourceNeeds.length])
 
   const toggleType = (t: ResourceType) => {
     setActiveTypes(prev => {

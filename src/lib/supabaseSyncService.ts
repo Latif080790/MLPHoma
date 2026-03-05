@@ -434,7 +434,7 @@ if (typeof window !== 'undefined') {
  */
 
 /**
- * Sync single AHSP item
+ * Sync single AHSP item (upsert — for new items)
  */
 export function syncAHSPItem(item: any): string {
   return syncQueue.enqueue({
@@ -456,6 +456,29 @@ export function syncAHSPItem(item: any): string {
       price_equipment: item.price_equipment || 0,
       price_subcon: item.price_subcon || 0,
       created_at: item.createdAt,
+      updated_at: new Date().toISOString(),
+    },
+    maxRetries: 3,
+  })
+}
+
+/**
+ * Update single AHSP item (UPDATE only — avoids RLS INSERT block for existing catalog items)
+ */
+export function syncAHSPItemUpdate(item: any): string {
+  return syncQueue.enqueue({
+    operation: 'update',
+    table: 'ahsp_items',
+    data: {
+      id: item.id,
+      base_price: item.basePrice,
+      final_price: item.finalPrice,
+      overhead_percentage: item.overheadPercentage,
+      profit_percentage: item.profitPercentage,
+      price_material: item.price_material || 0,
+      price_labor: item.price_labor || 0,
+      price_equipment: item.price_equipment || 0,
+      price_subcon: item.price_subcon || 0,
       updated_at: new Date().toISOString(),
     },
     maxRetries: 3,

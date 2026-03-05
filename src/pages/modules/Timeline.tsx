@@ -195,7 +195,8 @@ function seedDemoTasks(projectId: string): boolean {
 
 /** Timeline page component */
 export default function Timeline() {
-  const activeProject = useProjectStore((s) => s.getActiveProject())
+  const activeProjectId = useProjectStore(s => s.activeProjectId)
+  const activeProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
   const projectId = activeProject?.id || ''
 
   const { getTasks, removeTask } = useTimelineStore()
@@ -215,7 +216,7 @@ export default function Timeline() {
   const ZOOM_MIN = 10
   const ZOOM_MAX = 64
   const ZOOM_STEP = 4
-  const zoomIn  = () => setPxPerDay(v => Math.min(v + ZOOM_STEP, ZOOM_MAX))
+  const zoomIn = () => setPxPerDay(v => Math.min(v + ZOOM_STEP, ZOOM_MAX))
   const zoomOut = () => setPxPerDay(v => Math.max(v - ZOOM_STEP, ZOOM_MIN))
   const zoomReset = () => setPxPerDay(24)
 
@@ -696,76 +697,76 @@ export default function Timeline() {
       <div ref={exportRef}>
         <Card className="border-0 shadow-md">
           <CardHeader className="flex items-center justify-between bg-slate-50/50 border-b pb-4">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <GanttChartSquare className="h-5 w-5 text-blue-600" />
-            Project Schedule Visualization
-          </CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <GanttChartSquare className="h-5 w-5 text-blue-600" />
+              Project Schedule Visualization
+            </CardTitle>
 
-          {/* Export & Baseline actions */}
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Export Current View</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={exportPNG}>PNG</DropdownMenuItem>
-                <DropdownMenuItem onSelect={exportPDF}>PDF</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => {
-                const api = useTimelineStore.getState()
-                api.setBaseline(projectId, true)
-                toast.success('Baseline captured')
+            {/* Export & Baseline actions */}
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Export Current View</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={exportPNG}>PNG</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={exportPDF}>PDF</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={() => {
+                  const api = useTimelineStore.getState()
+                  api.setBaseline(projectId, true)
+                  toast.success('Baseline captured')
+                }}
+              >
+                <Flag className="h-4 w-4" />
+                Capture Baseline
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <GanttChart
+              projectId={projectId}
+              height={520}
+              highlightCriticalOnly={criticalOnly}
+              showCpmTooltip={showTooltip}
+              pxPerDay={pxPerDay}
+              viewMode={viewMode}
+              showDependencies={showDeps}
+              showTodayLine={showTodayLine}
+              selectedTaskId={selectedId}
+              showBaseline={showBaseline}
+              tasksOverride={filteredTasks}
+              onTaskClick={(id) => {
+                const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
+                setEditingTask(toEditorTask(t))
+                setEditorOpen(true)
+                setSelectedId(id)
               }}
-            >
-              <Flag className="h-4 w-4" />
-              Capture Baseline
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <GanttChart
-            projectId={projectId}
-            height={520}
-            highlightCriticalOnly={criticalOnly}
-            showCpmTooltip={showTooltip}
-            pxPerDay={pxPerDay}
-            viewMode={viewMode}
-            showDependencies={showDeps}
-            showTodayLine={showTodayLine}
-            selectedTaskId={selectedId}
-            showBaseline={showBaseline}
-            tasksOverride={filteredTasks}
-            onTaskClick={(id) => {
-              const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
-              setEditingTask(toEditorTask(t))
-              setEditorOpen(true)
-              setSelectedId(id)
-            }}
-            onTaskMove={handleTaskMove}
-            onTaskEdit={(id) => {
-              const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
-              setEditingTask(toEditorTask(t))
-              setEditorOpen(true)
-              setSelectedId(id)
-            }}
-            onTaskDelete={(id) => {
-              setPendingDeleteTaskId(id)
-            }}
-          />
-          <div className="mt-3 text-xs text-neutral-500">
-            Tip: drag and drop bars to reschedule. Turn on CPM tooltip to inspect ES/EF/LS/LF/TF. Use Day/Week/Month and Zoom to
-            adjust the timeline scale.
-          </div>
-        </CardContent>
+              onTaskMove={handleTaskMove}
+              onTaskEdit={(id) => {
+                const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
+                setEditingTask(toEditorTask(t))
+                setEditorOpen(true)
+                setSelectedId(id)
+              }}
+              onTaskDelete={(id) => {
+                setPendingDeleteTaskId(id)
+              }}
+            />
+            <div className="mt-3 text-xs text-neutral-500">
+              Tip: drag and drop bars to reschedule. Turn on CPM tooltip to inspect ES/EF/LS/LF/TF. Use Day/Week/Month and Zoom to
+              adjust the timeline scale.
+            </div>
+          </CardContent>
         </Card>
       </div>
 

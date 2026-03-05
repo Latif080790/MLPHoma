@@ -1,20 +1,20 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { LayoutList, CalendarClock, Search, Info, ChevronDown, ChevronUp, Download, Plus } from 'lucide-react'
-import { useProjectStore } from '../../store/projectStore'
-import { useRapStore } from '../../store/rapStore'
-import { useRabStore } from '../../store/rabStore'
-import { ModuleHeader } from '../../components/modules/ModuleHeader'
-import ModulePageState from '../../components/common/ModulePageState'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
-import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '../../components/ui/table'
-import { Input } from '../../components/ui/input'
+import { useProjectStore } from '@/store/projectStore'
+import { useRapStore } from '@/store/rapStore'
+import { useRabStore } from '@/store/rabStore'
+import { ModuleHeader } from '@/components/modules/ModuleHeader'
+import ModulePageState from '@/components/common/ModulePageState'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { TrendingUp, Percent, ShieldCheck } from 'lucide-react'
-import { rapProfitService } from '../../services/rapProfitService'
-import { ProfitHealthWidget } from '../../components/modules/ProfitHealthWidget'
+import { rapProfitService } from '@/services/rapProfitService'
+import { ProfitHealthWidget } from '@/components/modules/ProfitHealthWidget'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,13 +24,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '../../components/ui/alert-dialog'
+} from '@/components/ui/alert-dialog'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '../../components/ui/tooltip'
+} from '@/components/ui/tooltip'
 
 // Existing Scheduler Components (Keeping them for the "Scheduler" tab)
 import { RapToolbar } from '../../components/rap/RapToolbar'

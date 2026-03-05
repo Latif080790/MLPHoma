@@ -10,11 +10,11 @@ import { useRapStore } from '@/store/rapStore'
 import { useAHSPStore } from '@/store/ahspStore'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 
-const AHSP = React.lazy(() => import('../AHSP'))
-const WBS = React.lazy(() => import('../WBS'))
-const RAB = React.lazy(() => import('../RAB'))
-const RAP = React.lazy(() => import('../RAP'))
-const ResourcePlan = React.lazy(() => import('../ResourcePlan'))
+const AHSP = React.lazy(() => import('@/pages/modules/AHSP/index'))
+const WBS = React.lazy(() => import('@/pages/modules/WBS'))
+const RAB = React.lazy(() => import('@/pages/modules/RAB'))
+const RAP = React.lazy(() => import('@/pages/modules/RAP'))
+const ResourcePlan = React.lazy(() => import('@/pages/modules/ResourcePlan'))
 
 type CostingTab = 'ahsp' | 'wbs' | 'rab' | 'rap' | 'resource'
 
@@ -26,12 +26,12 @@ const TAB_CONFIG: Array<{
   icon: React.ReactNode
   description: string
 }> = [
-  { id: 'ahsp', label: 'AHSP', shortLabel: 'AHSP', icon: <BookOpen size={13} />, description: 'Katalog harga satuan' },
-  { id: 'wbs', label: 'WBS', shortLabel: 'WBS', icon: <GitBranch size={13} />, description: 'Struktur pekerjaan' },
-  { id: 'rab', label: 'RAB', shortLabel: 'RAB', icon: <DollarSign size={13} />, description: 'Rencana anggaran biaya' },
-  { id: 'rap', label: 'RAP', shortLabel: 'RAP', icon: <BarChart2 size={13} />, description: 'Anggaran pelaksanaan' },
-  { id: 'resource', label: 'Resource Plan', shortLabel: 'RES', icon: <Wrench size={13} />, description: 'Kebutuhan resource' },
-]
+    { id: 'ahsp', label: 'AHSP', shortLabel: 'AHSP', icon: <BookOpen size={13} />, description: 'Katalog harga satuan' },
+    { id: 'wbs', label: 'WBS', shortLabel: 'WBS', icon: <GitBranch size={13} />, description: 'Struktur pekerjaan' },
+    { id: 'rab', label: 'RAB', shortLabel: 'RAB', icon: <DollarSign size={13} />, description: 'Rencana anggaran biaya' },
+    { id: 'rap', label: 'RAP', shortLabel: 'RAP', icon: <BarChart2 size={13} />, description: 'Anggaran pelaksanaan' },
+    { id: 'resource', label: 'Resource Plan', shortLabel: 'RES', icon: <Wrench size={13} />, description: 'Kebutuhan resource' },
+  ]
 
 // ─── CostingFlowIndicator ────────────────────────────────────────────────────
 function CostingFlowIndicator({
@@ -45,9 +45,9 @@ function CostingFlowIndicator({
 }) {
   // All selectors return primitives (numbers) to avoid new-reference re-render loops
   const ahspCount = useAHSPStore(s => s.ahspItems.length)
-  const wbsCount  = useWBSStore(s => s.itemsByProject[projectId]?.length ?? 0)
-  const rabCount  = useRabStore(s => s.itemsByProject[projectId]?.length ?? 0)
-  const rapCount  = useRapStore(s => s.items.filter(i => i.project_id === projectId).length)
+  const wbsCount = useWBSStore(s => s.itemsByProject[projectId]?.length ?? 0)
+  const rabCount = useRabStore(s => s.itemsByProject[projectId]?.length ?? 0)
+  const rapCount = useRapStore(s => s.items.filter(i => i.project_id === projectId).length)
 
   const counts: Record<CostingTab, number | null> = {
     ahsp: ahspCount,
@@ -72,22 +72,20 @@ function CostingFlowIndicator({
             <button
               type="button"
               onClick={() => onTabChange(tab.id)}
-              className={`flex shrink-0 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                isActive
-                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
+              className={`flex shrink-0 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${isActive
+                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
             >
               {tab.icon}
               <span className="hidden sm:inline">{tab.label}</span>
               <span className="sm:hidden">{tab.shortLabel}</span>
               {count !== null && (
                 <span
-                  className={`ml-0.5 rounded-full px-1.5 py-0 text-xs font-bold ${
-                    hasIssue
-                      ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
-                      : 'bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-200'
-                  }`}
+                  className={`ml-0.5 rounded-full px-1.5 py-0 text-xs font-bold ${hasIssue
+                    ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
+                    : 'bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-200'
+                    }`}
                 >
                   {count}
                 </span>
@@ -115,7 +113,8 @@ function TabFallback() {
 }
 
 export default function ProjectCosting() {
-  const { activeProjectId, projects } = useProjectStore()
+  const activeProjectId = useProjectStore(s => s.activeProjectId)
+  const projects = useProjectStore(s => s.projects)
   const [activeTab, setActiveTab] = useState<CostingTab>('ahsp')
   const [srStatus, setSrStatus] = useState('AHSP tab opened.')
 

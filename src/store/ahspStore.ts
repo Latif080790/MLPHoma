@@ -15,7 +15,7 @@ import {
   initializeAHSPComponent,
   calculateAHSPPriceInWorker
 } from '../services/ahspService'
-import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncAHSPItemUpdate, syncResource, syncResources, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -587,7 +587,8 @@ export const useAHSPStore = create<AHSPStore>()(
             })
           }))
 
-          get().ahspItems.forEach(item => syncAHSPItem(item))
+          // Use UPDATE (not upsert) to avoid RLS INSERT policy blocking existing catalog items
+          get().ahspItems.forEach(item => syncAHSPItemUpdate(item))
         },
 
         bulkUpdatePrices: (type, percentage) => {
