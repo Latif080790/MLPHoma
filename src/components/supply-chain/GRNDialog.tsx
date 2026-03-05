@@ -31,11 +31,25 @@ const grnItemSchema = z.object({
     notes: z.string().optional(),
 })
 
+// G15 Fix: add superRefine to block receivedQty > orderedQty at form level
 const grnSchema = z.object({
     poId: z.string().min(1, "Please select a PO"),
     receivedDate: z.string().min(1, "Date required"),
     deliveryNote: z.string().optional(),
-    items: z.array(grnItemSchema).min(1, "At least one item required"),
+    items: z.array(grnItemSchema).min(1, "At least one item required").superRefine((items, ctx) => {
+        items.forEach((item, idx) => {
+            if (item.orderedQty > 0 && item.receivedQty > item.orderedQty) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.too_big,
+                    maximum: item.orderedQty,
+                    type: 'number',
+                    inclusive: true,
+                    message: `Qty diterima (${item.receivedQty}) melebihi qty dipesan (${item.orderedQty})`,
+                    path: [idx, 'receivedQty'],
+                })
+            }
+        })
+    }),
 })
 
 type GrnFormValues = z.infer<typeof grnSchema>
@@ -217,28 +231,34 @@ export function GRNDialog({ open, onOpenChange, projectId }: GRNDialogProps) {
                                     const ordered = watchedItems?.[idx]?.orderedQty ?? 0
                                     const received = watchedItems?.[idx]?.receivedQty ?? 0
                                     const match = received === ordered
+                                    // G15 Fix: flag over-receive validation error
+                                    const overReceived = ordered > 0 && received > ordered
+                                    const itemError = form.formState.errors.items?.[idx]?.receivedQty
                                     return (
                                         <div
                                             key={field.id}
-                                            className={`grid grid-cols-12 gap-2 px-3 py-2 border-t items-center ${
-                                                !match ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''
+                                            className={`grid grid-cols-12 gap-2 px-3 py-2 border-t items-start ${
+                                                overReceived ? 'bg-red-50/50 dark:bg-red-900/10' : !match ? 'bg-amber-50/50 dark:bg-amber-900/10' : ''
                                             }`}
                                         >
-                                            <div className="col-span-4 text-sm font-medium truncate">
+                                            <div className="col-span-4 text-sm font-medium truncate pt-1.5">
                                                 {field.itemName}
                                             </div>
-                                            <div className="col-span-2 text-right text-sm text-slate-500">
+                                            <div className="col-span-2 text-right text-sm text-slate-500 pt-1.5">
                                                 {ordered}
                                             </div>
                                             <div className="col-span-2">
                                                 <Input
                                                     type="number"
                                                     step="0.01"
-                                                    className={`h-8 text-sm text-right ${!match ? 'border-amber-400' : ''}`}
+                                                    className={`h-8 text-sm text-right ${overReceived ? 'border-red-500' : !match ? 'border-amber-400' : ''}`}
                                                     {...form.register(`items.${idx}.receivedQty`, { valueAsNumber: true })}
                                                 />
+                                                {itemError && (
+                                                    <p className="mt-0.5 text-xs text-red-600">{itemError.message}</p>
+                                                )}
                                             </div>
-                                            <div className="col-span-2 text-sm text-slate-500">
+                                            <div className="col-span-2 text-sm text-slate-500 pt-1.5">
                                                 {field.unit}
                                             </div>
                                             <div className="col-span-2">
