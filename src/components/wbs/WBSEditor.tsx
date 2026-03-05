@@ -5,12 +5,12 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { Save } from 'lucide-react'
+import { Save, RotateCcw } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
 import { Label } from '../ui/label'
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -29,7 +29,7 @@ export interface WBSEditorProps {
   /** Dialog close handler */
   onClose: () => void
   /** Save handler */
-  onSave: (item: Omit<WBSItem, 'id' | 'createdAt' | 'updatedAt'>) => void
+  onSave: (item: Omit<WBSItem, 'id' | 'createdAt' | 'updatedAt'>, keepOpen?: boolean) => void
   /** All existing items for validation */
   existingItems?: WBSItem[]
   /** Project ID */
@@ -60,6 +60,7 @@ export function WBSEditor({
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [addAnother, setAddAnother] = useState(false)
 
   // Initialize form data when item changes
   useEffect(() => {
@@ -137,7 +138,7 @@ export function WBSEditor({
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validate()) {
       return
     }
@@ -145,8 +146,19 @@ export function WBSEditor({
     setIsSubmitting(true)
 
     try {
-      await onSave(formData)
-      onClose()
+      const keepOpen = addAnother && !item
+      await onSave(formData, keepOpen)
+      if (!keepOpen) {
+        onClose()
+      } else {
+        // Reset form for next entry
+        setFormData(prev => ({
+          ...prev,
+          name: '',
+          description: '',
+          code: '',
+        }))
+      }
     } catch (error) {
       console.error('Failed to save WBS item:', error)
       setErrors({ submit: 'Failed to save item. Please try again.' })
@@ -168,7 +180,7 @@ export function WBSEditor({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {item ? 'Edit WBS Item' : 'Add New WBS Item'}
@@ -256,6 +268,20 @@ export function WBSEditor({
             </div>
           )}
 
+          {/* Add another checkbox (only for new items) */}
+          {!item && (
+            <label className="flex items-center gap-2 pt-2 text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={addAnother}
+                onChange={e => setAddAnother(e.target.checked)}
+                className="h-4 w-4 rounded border-neutral-300"
+              />
+              <RotateCcw size={13} className="text-neutral-400" />
+              Tambah lagi setelah simpan
+            </label>
+          )}
+
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4">
             <Button
@@ -279,7 +305,7 @@ export function WBSEditor({
               ) : (
                 <>
                   <Save size={16} className="mr-2" />
-                  {item ? 'Update' : 'Add'}
+                  {item ? 'Update' : addAnother ? 'Add & Continue' : 'Add'}
                 </>
               )}
             </Button>

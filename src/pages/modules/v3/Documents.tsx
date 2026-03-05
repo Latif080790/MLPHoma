@@ -1,7 +1,8 @@
 
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Folder, FileText, Upload, Download, Trash2, Search, History, Lock, LockOpen, Archive, ArchiveRestore } from "lucide-react"
+import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,8 +30,16 @@ import { DocumentVersionHistory } from "@/components/modules/DocumentVersionHist
 import { QRValidationBadge } from "@/components/document/QRValidationBadge"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
+import ModuleListToolbar from "@/components/common/ModuleListToolbar"
+import { CardSkeleton } from "@/components/common/LoadingSkeleton"
 
 const CATEGORIES = ["Contracts", "Drawings", "Reports", "Invoices", "Correspondence", "Other"]
+const DOC_SORTS = [
+    { value: 'newest', label: 'Newest First' },
+    { value: 'oldest', label: 'Oldest First' },
+    { value: 'title-asc', label: 'Title A-Z' },
+    { value: 'title-desc', label: 'Title Z-A' },
+]
 
 export default function Documents() {
     const { activeProjectId } = useProjectStore()
@@ -38,9 +47,25 @@ export default function Documents() {
     const { user } = useAuthStore()
     const [documents, setDocuments] = useState<ProjectDocument[]>([])
     const [loading, setLoading] = useState(false)
-    const [search, setSearch] = useState("")
+    const [search, setSearch] = useState(() => {
+        try { return localStorage.getItem('documents.toolbar.query') || '' } catch { return '' }
+    })
     const [uploadOpen, setUploadOpen] = useState(false)
-    const [selectedCategory, setSelectedCategory] = useState("All")
+    const [selectedCategory, setSelectedCategory] = useState(() => {
+        try { return localStorage.getItem('documents.toolbar.category') || 'All' } catch { return 'All' }
+    })
+    const [sortBy, setSortBy] = useState(() => {
+        try { return localStorage.getItem('documents.toolbar.sort') || 'newest' } catch { return 'newest' }
+    })
+    const [selectedUploader, setSelectedUploader] = useState(() => {
+        try { return localStorage.getItem('documents.toolbar.uploader') || 'All' } catch { return 'All' }
+    })
+    const [dateFrom, setDateFrom] = useState(() => {
+        try { return localStorage.getItem('documents.toolbar.dateFrom') || '' } catch { return '' }
+    })
+    const [dateTo, setDateTo] = useState(() => {
+        try { return localStorage.getItem('documents.toolbar.dateTo') || '' } catch { return '' }
+    })
 
     // Upload Form State
     const [newDocTitle, setNewDocTitle] = useState("")
@@ -52,9 +77,11 @@ export default function Documents() {
     const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
     const [pendingDeleteDoc, setPendingDeleteDoc] = useState<ProjectDocument | null>(null)
     const [pageError, setPageError] = useState<string | null>(null)
+    const [srStatus, setSrStatus] = useState('')
 
     const loadDocs = useCallback(async () => {
         if (!activeProjectId) return
+        setSrStatus('Loading documents...')
         setLoading(true)
         setPageError(null)
         const data = await handleAsync(async () => {
@@ -64,9 +91,11 @@ export default function Documents() {
 
         if (data) {
             setDocuments(data)
+            setSrStatus(`Loaded ${data.length} documents.`)
         } else {
             setPageError('Failed to load document repository data.')
             toast.error("Failed to load documents")
+            setSrStatus('Failed to load documents.')
         }
 
         setLoading(false)
@@ -80,8 +109,26 @@ export default function Documents() {
         }
     }, [activeProjectId, loadDocs])
 
+    useEffect(() => {
+        try {
+            localStorage.setItem('documents.toolbar.query', search)
+            localStorage.setItem('documents.toolbar.category', selectedCategory)
+            localStorage.setItem('documents.toolbar.sort', sortBy)
+            localStorage.setItem('documents.toolbar.uploader', selectedUploader)
+            localStorage.setItem('documents.toolbar.dateFrom', dateFrom)
+            localStorage.setItem('documents.toolbar.dateTo', dateTo)
+        } catch {
+            // ignore storage errors
+        }
+    }, [search, selectedCategory, sortBy, selectedUploader, dateFrom, dateTo])
+
     async function handleUpload() {
-        if (!newDocTitle) return toast.error("Title required")
+        if (!newDocTitle) {
+            setSrStatus('Title is required before upload.')
+            return toast.error("Title required")
+        }
+
+        setSrStatus('Uploading document...')
 
         const uploaded = await handleAsync(async () => {
             await documentService.uploadDocument({
@@ -94,11 +141,14 @@ export default function Documents() {
 
         if (uploaded) {
             toast.success("Document uploaded")
+            setSrStatus('Document uploaded successfully.')
             setUploadOpen(false)
             loadDocs()
             setNewDocTitle("")
             setNewDocFile(null)
             if (fileInputRef.current) fileInputRef.current.value = ''
+        } else {
+            setSrStatus('Failed to upload document.')
         }
     }
 
@@ -115,9 +165,11 @@ export default function Documents() {
             if (doc.is_locked) {
                 await documentService.unlockDocument(doc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document unlocked")
+                setSrStatus('Document unlocked.')
             } else {
                 await documentService.lockDocument(doc.id, user?.id || '', user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document locked")
+                setSrStatus('Document locked.')
             }
             return true
         }, 'document.general')
@@ -132,9 +184,11 @@ export default function Documents() {
             if (doc.status === 'ARCHIVED') {
                 await documentService.unarchiveDocument(doc.id)
                 toast.success("Document restored")
+                setSrStatus('Document restored from archive.')
             } else {
                 await documentService.archiveDocument(doc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
                 toast.success("Document archived")
+                setSrStatus('Document archived.')
             }
             return true
         }, 'document.general')
@@ -146,6 +200,7 @@ export default function Documents() {
 
     async function handleDelete() {
         if (!pendingDeleteDoc) return
+        setSrStatus('Deleting document...')
         const done = await handleAsync(async () => {
             await documentService.deleteDocument(pendingDeleteDoc.id, user?.id, user?.user_metadata?.full_name || user?.email || 'User')
             return true
@@ -153,14 +208,69 @@ export default function Documents() {
 
         if (done) {
             setPendingDeleteDoc(null)
+            setSrStatus('Document deleted successfully.')
             loadDocs()
+        } else {
+            setSrStatus('Failed to delete document.')
         }
     }
 
-    const filteredDocs = documents.filter(doc => {
-        const matchesSearch = doc.title.toLowerCase().includes(search.toLowerCase())
-        const matchesCategory = selectedCategory === "All" || doc.category === selectedCategory
-        return matchesSearch && matchesCategory
+    const filteredDocs = useMemo(() => {
+        const q = search.trim().toLowerCase()
+        const matches = documents.filter((doc) => {
+            const matchesSearch = !q || doc.title.toLowerCase().includes(q)
+            const matchesCategory = selectedCategory === "All" || doc.category === selectedCategory
+            const uploader = (doc.uploaded_by || doc.created_by || '').toLowerCase()
+            const matchesUploader = selectedUploader === 'All' || uploader === selectedUploader.toLowerCase()
+
+            const createdDate = new Date(doc.created_at)
+            const fromBoundary = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null
+            const toBoundary = dateTo ? new Date(`${dateTo}T23:59:59`) : null
+            const matchesFrom = !fromBoundary || createdDate >= fromBoundary
+            const matchesTo = !toBoundary || createdDate <= toBoundary
+
+            return matchesSearch && matchesCategory && matchesUploader && matchesFrom && matchesTo
+        })
+
+        return [...matches].sort((a, b) => {
+            if (sortBy === 'newest') return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+            if (sortBy === 'oldest') return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+            if (sortBy === 'title-desc') return b.title.localeCompare(a.title)
+            return a.title.localeCompare(b.title)
+        })
+    }, [documents, search, selectedCategory, selectedUploader, dateFrom, dateTo, sortBy])
+
+    const uploaderOptions = useMemo(() => {
+        const values = Array.from(new Set(
+            documents
+                .map((doc) => (doc.uploaded_by || doc.created_by || '').trim())
+                .filter((name) => name.length > 0)
+        ))
+        return values.sort((a, b) => a.localeCompare(b))
+    }, [documents])
+
+    const clearAdvancedFilters = () => {
+        setSelectedUploader('All')
+        setDateFrom('')
+        setDateTo('')
+        setSrStatus('Advanced filters cleared.')
+    }
+
+    // P0.3.4: Grid virtualizer — group docs into rows of GRID_COLS
+    const GRID_COLS = 4
+    const docRows = useMemo(() => {
+        const rows: ProjectDocument[][] = []
+        for (let i = 0; i < filteredDocs.length; i += GRID_COLS) {
+            rows.push(filteredDocs.slice(i, i + GRID_COLS))
+        }
+        return rows
+    }, [filteredDocs])
+    const docsScrollRef = useRef<HTMLDivElement>(null)
+    const docsVirtualizer = useVirtualizer({
+        count: docRows.length,
+        getScrollElement: () => docsScrollRef.current,
+        estimateSize: () => 196,
+        overscan: 3,
     })
 
     if (!activeProjectId) {
@@ -202,10 +312,12 @@ export default function Documents() {
 
     return (
         <div className="space-y-6">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
             <ModuleHeader
                 icon={<Folder size={18} />}
                 title="Documents"
                 description="Centralized project repository."
+                accent="violet"
                 actions={
                     <Button size="sm" className="gap-2" onClick={() => setUploadOpen(true)}>
                         <Upload size={16} /> Upload Document
@@ -213,32 +325,87 @@ export default function Documents() {
                 }
             />
 
-            <div className="flex gap-4 items-center">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-500" />
+            <ModuleListToolbar
+                query={search}
+                onQueryChange={setSearch}
+                queryPlaceholder="Search documents..."
+                filterValue={selectedCategory}
+                onFilterChange={setSelectedCategory}
+                filterOptions={[
+                    { value: 'All', label: 'All Categories' },
+                    ...CATEGORIES.map((category) => ({ value: category, label: category })),
+                ]}
+                sortValue={sortBy}
+                onSortChange={setSortBy}
+                sortOptions={DOC_SORTS}
+                resultCount={filteredDocs.length}
+                resultLabel="documents"
+            />
+
+            <div className="flex flex-col gap-2 rounded-md border border-border/60 bg-background/80 p-3 md:flex-row md:items-end md:gap-3">
+                <div className="grid gap-1 md:w-[220px]">
+                    <Label className="text-xs text-muted-foreground">Uploader</Label>
+                    <Select value={selectedUploader} onValueChange={setSelectedUploader}>
+                        <SelectTrigger className="h-9" aria-label="Filter by uploader">
+                            <SelectValue placeholder="All Uploaders" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Uploaders</SelectItem>
+                            {uploaderOptions.map((name) => (
+                                <SelectItem key={name} value={name}>{name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="grid gap-1 md:w-[170px]">
+                    <Label className="text-xs text-muted-foreground">Date from</Label>
                     <Input
-                        placeholder="Search documents..."
-                        className="pl-8"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        type="date"
+                        value={dateFrom}
+                        onChange={(event) => setDateFrom(event.target.value)}
+                        aria-label="Filter date from"
+                        className="h-9"
                     />
                 </div>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All">All Categories</SelectItem>
-                        {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                </Select>
+                <div className="grid gap-1 md:w-[170px]">
+                    <Label className="text-xs text-muted-foreground">Date to</Label>
+                    <Input
+                        type="date"
+                        value={dateTo}
+                        onChange={(event) => setDateTo(event.target.value)}
+                        aria-label="Filter date to"
+                        className="h-9"
+                    />
+                </div>
+                <Button type="button" variant="outline" className="h-9 md:ml-auto" onClick={clearAdvancedFilters}>
+                    Reset Filters
+                </Button>
             </div>
 
-            {filteredDocs.length === 0 ? (
+            {loading && documents.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4" aria-live="polite" aria-busy="true">
+                    {Array.from({ length: 8 }).map((_, idx) => (
+                        <CardSkeleton key={`doc-reload-skeleton-${idx}`} />
+                    ))}
+                </div>
+            ) : filteredDocs.length === 0 ? (
                 <EmptyState title="No Documents Found" description="Upload contracts, drawings, or reports." imageKeyword="files" />
             ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                    {filteredDocs.map(doc => {
+                <div
+                    ref={docsScrollRef}
+                    className="overflow-auto rounded-lg"
+                    style={{ maxHeight: '600px' }}
+                >
+                    <div style={{ height: `${docsVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+                    {docsVirtualizer.getVirtualItems().map((vRow) => (
+                        <div
+                            key={vRow.index}
+                            data-index={vRow.index}
+                            ref={docsVirtualizer.measureElement}
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vRow.start}px)` }}
+                        >
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+                            {docRows[vRow.index].map(doc => {
                         const isArchived = doc.status === 'ARCHIVED'
                         const isSuperseded = doc.status === 'SUPERSEDED'
                         const isLocked = doc.is_locked
@@ -263,7 +430,7 @@ export default function Documents() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-neutral-400 hover:text-green-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                className="text-neutral-400 hover:text-green-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                                                 onClick={() => handleDownload(doc)}
                                                 title="Download"
                                             >
@@ -272,7 +439,7 @@ export default function Documents() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className={`text-neutral-400 hover:text-orange-500 opacity-0 group-hover:opacity-100 transition-opacity ${isLocked ? 'text-orange-500 opacity-100' : ''}`}
+                                                className={`text-neutral-400 hover:text-orange-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 ${isLocked ? 'text-orange-500 !opacity-100' : ''}`}
                                                 onClick={() => handleToggleLock(doc)}
                                                 disabled={!governance.canLock && !governance.canUnlock}
                                                 title={isLocked ? `Locked by ${doc.locked_by}` : 'Lock document'}
@@ -282,7 +449,7 @@ export default function Documents() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className={`text-neutral-400 hover:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity ${isArchived ? 'text-slate-500 opacity-100' : ''}`}
+                                                className={`text-neutral-400 hover:text-slate-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 ${isArchived ? 'text-slate-500 !opacity-100' : ''}`}
                                                 onClick={() => handleToggleArchive(doc)}
                                                 disabled={!governance.canArchive && !governance.canUnarchive}
                                                 title={isArchived ? 'Restore from archive' : 'Archive document'}
@@ -292,7 +459,7 @@ export default function Documents() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-neutral-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                className="text-neutral-400 hover:text-blue-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                                                 onClick={() => setVersionDoc(doc)}
                                                 disabled={!governance.canCreateVersion && doc.status === 'ACTIVE'}
                                                 title="Version History"
@@ -302,7 +469,7 @@ export default function Documents() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="text-neutral-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                className="text-neutral-400 hover:text-red-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                                                 onClick={() => setPendingDeleteDoc(doc)}
                                                 disabled={!governance.canDelete}
                                             >
@@ -343,6 +510,11 @@ export default function Documents() {
                                             {format(new Date(doc.created_at), 'dd MMM yyyy')}
                                             {doc.file_size ? ` • ${(doc.file_size / 1024).toFixed(0)} KB` : ''}
                                         </div>
+                                        {(doc.uploaded_by || doc.created_by) && (
+                                            <div className="text-xs text-neutral-500 mt-1">
+                                                By {doc.uploaded_by || doc.created_by}
+                                            </div>
+                                        )}
                                         {isLocked && doc.locked_by && (
                                             <div className="text-xs text-orange-600 mt-1">
                                                 🔒 {doc.locked_by}
@@ -362,8 +534,10 @@ export default function Documents() {
                                 </CardContent>
                             </Card>
                         )
-                    })}
-                </div>
+                    })}                            </div>
+                        </div>
+                    ))}
+                    </div>                </div>
             )}
 
             {/* Upload Dialog */}
@@ -405,7 +579,10 @@ export default function Documents() {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setUploadOpen(false)}>Cancel</Button>
-                        <Button onClick={handleUpload} disabled={loading}>{loading ? 'Uploading...' : 'Upload'}</Button>
+                        <Button onClick={handleUpload} disabled={loading} aria-busy={loading} className="gap-2">
+                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                            {loading ? 'Uploading...' : 'Upload'}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -30,15 +30,22 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        // Take control immediately when a new SW is installed — fixes stale chunk crashes after re-deploy
+        skipWaiting: true,
+        clientsClaim: true,
+        // Bust old cached shells by appending cache version
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/obmquofivolvxxkxtlbb\.supabase\.co\/.*/i,
+            // Current Supabase project URL
+            urlPattern: /^https:\/\/gtpcjjjzjjzpgpxwjzqf\.supabase\.co\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-api-cache',
+              cacheName: 'supabase-api-cache-v2',
+              networkTimeoutSeconds: 10,
               expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5 // 5 minutes only — always prefer fresh data
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -62,24 +69,9 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router', 'react-router-dom'],
           'ui-vendor': ['lucide-react', 'sonner', 'clsx', 'tailwind-merge'],
-          'chart-vendor': ['recharts'],
           'date-vendor': ['date-fns'],
           'state-vendor': ['zustand'],
           'auth-vendor': ['@supabase/supabase-js'],
-          'doc-vendor': ['jspdf', 'jspdf-autotable', 'xlsx'],
-          // Feature-based chunks
-          'ahsp-modules': [
-            './src/components/ahsp/AHSPCatalog.tsx',
-            './src/components/ahsp/AHSPItemEditor.tsx',
-            './src/components/ahsp/ResourceManager.tsx'
-          ],
-          'analytics-modules': [
-            './src/pages/modules/v3/CommandCenter.tsx',
-            './src/pages/modules/v3/ProjectOverview.tsx',
-            './src/pages/modules/v3/PortfolioResources.tsx',
-            './src/pages/modules/v3/StrategySimulation.tsx',
-            './src/pages/modules/v3/CostForecastDashboard.tsx'
-          ],
         }
       }
     }

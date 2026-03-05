@@ -44,6 +44,9 @@ export interface RABItem {
   wbsId?: string
   /** Optional Timeline Task link */
   taskId?: string
+  /** AHSP Item link (Task 42: added for AHSP→RAB→Resource Plan chain) */
+  ahspItemId?: string
+  ahsp_item_id?: string
   /** Snapshot price data (for locked baseline) */
   snapshot_price?: unknown
   /** Optional metadata */

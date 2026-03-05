@@ -15,9 +15,6 @@ import { useRabStore } from "../../store/rabStore"
 import { useAHSPStore } from "../../store/ahspStore"
 import { ResponsiveContainer, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, Bar, Legend } from "recharts"
 import { EmptyState } from "../../components/common/EmptyState"
-import * as XLSX from "xlsx"
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table"
@@ -71,7 +68,8 @@ function exportHistogramCSV(rows: HistogramRow[]) {
 /**
  * Export histogram + top items to Excel
  */
-function exportResourceExcel(histogram: HistogramRow[], top: TopItem[]) {
+async function exportResourceExcel(histogram: HistogramRow[], top: TopItem[]) {
+  const XLSX = await import("xlsx")
   const ws1 = XLSX.utils.aoa_to_sheet([
     ["Resource Histogram (Cost Breakdown)"],
     ["GeneratedAt", new Date().toISOString()],
@@ -96,6 +94,10 @@ function exportResourceExcel(histogram: HistogramRow[], top: TopItem[]) {
  */
 async function exportPDF(element: HTMLElement | null, filename = "Resource.pdf") {
   if (!element) return
+  const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+    import("html2canvas"),
+    import("jspdf"),
+  ])
   const canvas = await html2canvas(element, { backgroundColor: "#ffffff", scale: 2 })
   const imgData = canvas.toDataURL("image/png")
   const pdf = new jsPDF("p", "mm", "a4")
@@ -242,6 +244,7 @@ export default function Resource() {
         icon={<Boxes size={18} />}
         title="Resource Planning"
         description="Budget-weighted resource histogram and upcoming high-cost items (proxy via RAP)."
+        accent="orange"
         actions={
           <div className="flex flex-wrap gap-2">
             <button

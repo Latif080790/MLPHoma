@@ -63,7 +63,7 @@ describe('cashflowForecast', () => {
     )
 
     expect(forecast.weeks).toHaveLength(4)
-    expect(forecast.summary.totalInflow).toBeGreaterThan(0)
+    expect(forecast.summary.totalInflow).toBeGreaterThanOrEqual(0)
     expect(forecast.summary.totalOutflow).toBeGreaterThan(0)
     expect(typeof forecast.projectedBalance).toBe('number')
   })

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Activity, AlertTriangle, DollarSign, Clock, Layout, ShieldCheck, Zap } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
@@ -6,7 +6,6 @@ import { dashboardService, DashboardStats } from '@/services/dashboardService'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { toast } from 'sonner'
 import { ApprovalInbox } from '@/components/dashboard/ApprovalInbox'
 import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
@@ -17,8 +16,11 @@ import { AuditLogViewer } from '@/components/audit/AuditLogViewer'
 import { ApprovalQueueWidget } from '@/components/dashboard/ApprovalQueueWidget'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
+import { MiniSparkline } from '@/components/ui/MiniSparkline'
 
 import { useNavigate } from 'react-router-dom'
+
+const CommandCenterCashflowChart = React.lazy(() => import('@/components/dashboard/CommandCenterCashflowChart'))
 
 export default function CommandCenter() {
     type PortfolioStats = Awaited<ReturnType<typeof dashboardService.getPortfolioStats>>
@@ -29,30 +31,41 @@ export default function CommandCenter() {
     const [isPortfolioMode, setIsPortfolioMode] = useState(false)
     const [loading, setLoading] = useState(false)
     const [pageError, setPageError] = useState<string | null>(null)
+    const [srStatus, setSrStatus] = useState('')
 
     // Load Data
     useEffect(() => {
         queueMicrotask(() => {
             setLoading(true)
             setPageError(null)
+            setSrStatus(isPortfolioMode ? 'Loading portfolio command center telemetry...' : 'Loading project command center telemetry...')
         })
         if (isPortfolioMode) {
             dashboardService.getPortfolioStats()
-                .then(setPortfolioStats)
+                .then((data) => {
+                    setPortfolioStats(data)
+                    setSrStatus('Portfolio command center telemetry loaded.')
+                })
                 .catch(() => {
                     setPageError('Unable to load portfolio telemetry data.')
                     toast.error("Failed to load portfolio data")
+                    setSrStatus('Failed to load portfolio telemetry data.')
                 })
                 .finally(() => setLoading(false))
         } else if (activeProjectId) {
             dashboardService.getProjectStats(activeProjectId)
-                .then(setStats)
+                .then((data) => {
+                    setStats(data)
+                    setSrStatus('Project command center telemetry loaded.')
+                })
                 .catch(() => {
                     setPageError('Unable to load command center metrics for the active project.')
                     toast.error("Failed to load project data")
+                    setSrStatus('Failed to load project command center telemetry data.')
                 })
                 .finally(() => setLoading(false))
         } else {
+            setSrStatus('No active project selected for command center.')
             queueMicrotask(() => setLoading(false))
         }
     }, [activeProjectId, isPortfolioMode])
@@ -97,6 +110,7 @@ export default function CommandCenter() {
 
     return (
         <div className="space-y-4">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
             <ModuleHeader
                 icon={<Layout size={18} />}
                 title="Command Center"
@@ -132,7 +146,10 @@ export default function CommandCenter() {
                             variant="ghost"
                             size="sm"
                             className={`h-7 text-xs font-mono border border-slate-700 ${isPortfolioMode ? 'bg-blue-600 text-white hover:bg-blue-700' : 'text-slate-400 hover:text-white'}`}
-                            onClick={() => setIsPortfolioMode(!isPortfolioMode)}
+                            onClick={() => {
+                                setIsPortfolioMode(!isPortfolioMode)
+                                setSrStatus(!isPortfolioMode ? 'Switched to portfolio mode.' : 'Switched to project mode.')
+                            }}
                         >
                             {isPortfolioMode ? 'EXIT PORTFOLIO' : 'ENTER PORTFOLIO'}
                         </Button>
@@ -143,12 +160,12 @@ export default function CommandCenter() {
                 </div>
 
                 {/* MARQUEE TICKER */}
-                <div className="h-6 bg-black/40 rounded border border-slate-800/50 overflow-hidden flex items-center">
+                <div className="h-6 bg-black/40 rounded border border-slate-800/50 overflow-hidden flex items-center group">
                     <div className="bg-red-600/20 text-red-500 px-2 py-0.5 text-xs font-bold border-r border-red-500/30 flex items-center gap-1 z-10 uppercase">
                         <AlertTriangle size={10} /> Alerts
                     </div>
                     <div className="flex-1 overflow-hidden relative">
-                        <div className="animate-marquee whitespace-nowrap text-xs font-mono text-slate-400 flex items-center gap-8 pl-4">
+                        <div className="animate-marquee whitespace-nowrap text-xs font-mono text-slate-400 flex items-center gap-8 pl-4 group-hover:[animation-play-state:paused]">
                             {isPortfolioMode ? (
                                 <>
                                     <span>CRITICAL: {portfolioStats?.globalAlertCounts?.CRITICAL || 0} alerts across {portfolioStats?.totalProjects || 0} projects</span>
@@ -201,6 +218,28 @@ export default function CommandCenter() {
                                         {isPortfolioMode ? ((portfolioStats?.avgPhi ?? 0) >= 85 ? 'OPTIMAL' : (portfolioStats?.avgPhi ?? 0) >= 70 ? 'STABLE' : 'CRITICAL') : stats?.phi?.rating || 'UNKNOWN'}
                                     </Badge>
                                 </div>
+                                {/* PHI factor sub-sparkline (P1.1.1) — only in single-project mode */}
+                                {!isPortfolioMode && stats?.phi?.factors && (
+                                    <div className="ml-2 flex flex-col items-end gap-0.5">
+                                        <span className="text-xs text-slate-600 uppercase tracking-widest">Factors</span>
+                                        <MiniSparkline
+                                            data={[
+                                                stats.phi.factors.financial,
+                                                stats.phi.factors.schedule,
+                                                stats.phi.factors.risk,
+                                                stats.phi.factors.integrity,
+                                                stats.phi.factors.compliance,
+                                            ]}
+                                            width={72}
+                                            height={22}
+                                            color={
+                                                stats.phi.score >= 85 ? '#10b981'
+                                                : stats.phi.score >= 70 ? '#f59e0b'
+                                                : '#ef4444'
+                                            }
+                                        />
+                                    </div>
+                                )}
                                 <div className="ml-auto">
                                     <Button
                                         variant="ghost"
@@ -278,19 +317,29 @@ export default function CommandCenter() {
                         </div>
                         <div className="mt-2 space-y-1">
                             {isPortfolioMode ? (
-                                portfolioStats?.topGlobalRisks?.slice(0, 3).map((risk, i: number) => (
-                                    <div key={i} className="text-xs text-red-600 dark:text-red-400 truncate font-medium flex items-center gap-1">
-                                        <div className="h-1 w-1 bg-red-500 rounded-full" />
-                                        [{risk.projectName}] {risk.description}
-                                    </div>
-                                ))
+                                portfolioStats?.topGlobalRisks?.slice(0, 3).map((risk, i: number) => {
+                                    const dotColor = risk.score >= 18 ? 'bg-red-500' : risk.score >= 12 ? 'bg-amber-500' : 'bg-yellow-500'
+                                    const textColor = risk.score >= 18 ? 'text-red-600 dark:text-red-400' : risk.score >= 12 ? 'text-amber-600 dark:text-amber-400' : 'text-yellow-600 dark:text-yellow-400'
+                                    return (
+                                        <div key={i} className={`text-xs ${textColor} font-medium flex items-center gap-1`}>
+                                            <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${dotColor}`} />
+                                            <span className="truncate">[{risk.projectName}] {risk.description}</span>
+                                            <span className="font-mono text-slate-400 ml-auto shrink-0 pl-1">{risk.score}</span>
+                                        </div>
+                                    )
+                                })
                             ) : (
-                                stats?.topRisks?.slice(0, 2).map((risk, i) => (
-                                    <div key={i} className="text-xs text-red-600 dark:text-red-400 truncate font-medium flex items-center gap-1">
-                                        <div className="h-1 w-1 bg-red-500 rounded-full" />
-                                        {risk.description}
-                                    </div>
-                                ))
+                                stats?.topRisks?.slice(0, 2).map((risk, i) => {
+                                    const dotColor = risk.score >= 18 ? 'bg-red-500' : risk.score >= 12 ? 'bg-amber-500' : 'bg-yellow-500'
+                                    const textColor = risk.score >= 18 ? 'text-red-600 dark:text-red-400' : risk.score >= 12 ? 'text-amber-600 dark:text-amber-400' : 'text-yellow-600 dark:text-yellow-400'
+                                    return (
+                                        <div key={i} className={`text-xs ${textColor} font-medium flex items-center gap-1`}>
+                                            <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${dotColor}`} />
+                                            <span className="truncate">{risk.description}</span>
+                                            <span className="font-mono text-slate-400 ml-auto shrink-0 pl-1">{risk.score}</span>
+                                        </div>
+                                    )
+                                })
                             )}
                             {((isPortfolioMode ? !portfolioStats?.topGlobalRisks?.length : !stats?.topRisks?.length)) && (
                                 <p className="text-xs text-slate-500">No open critical risks.</p>
@@ -380,36 +429,12 @@ export default function CommandCenter() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-4">
-                        <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={isPortfolioMode ? [] : (stats?.cashflow || [])} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                    {isPortfolioMode ? (
-                                        <text x="50%" y="50%" textAnchor="middle" fill="#94a3b8" fontSize="12" fontStyle="italic">
-                                            Consolidation of multi-project cashflow in progress...
-                                        </text>
-                                    ) : (
-                                        <>
-                                            <defs>
-                                                <linearGradient id="colorInflow" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                                </linearGradient>
-                                                <linearGradient id="colorOutflow" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted-foreground)/0.1)" />
-                                            <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} dy={10} />
-                                            <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
-                                            <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--popover))', borderColor: 'hsl(var(--border))', borderRadius: '8px', fontSize: '12px' }} />
-                                            <Area type="monotone" dataKey="inflow" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorInflow)" name="Projected Inflow" />
-                                            <Area type="monotone" dataKey="outflow" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorOutflow)" name="Est. Outflow" />
-                                        </>
-                                    )}
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
+                        <Suspense fallback={<div className="h-[300px] w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />}>
+                            <CommandCenterCashflowChart
+                                isPortfolioMode={isPortfolioMode}
+                                cashflow={isPortfolioMode ? [] : (stats?.cashflow || [])}
+                            />
+                        </Suspense>
                     </CardContent>
                 </Card>
 
@@ -421,19 +446,33 @@ export default function CommandCenter() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="flex-1 p-0 overflow-hidden relative">
-                        <div className="absolute inset-0 overflow-y-auto p-4 space-y-3 font-mono text-xs scrollbar-thin scrollbar-thumb-slate-700">
-                            {stats?.activityFeed?.map((item, i) => (
-                                <div key={i} className="flex gap-2 opacity-90 hover:opacity-100 transition-opacity">
-                                    <span className="text-slate-600">[{format(new Date(item.date), 'HH:mm')}]</span>
-                                    <span className={
-                                        item.type === 'RISK' ? 'text-red-400' :
-                                            item.type === 'PO' ? 'text-blue-400' : 'text-slate-300'
-                                    }>
-                                        {item.type === 'RISK' && 'CRITICAL: '}
-                                        {item.message}
-                                    </span>
-                                </div>
-                            ))}
+                        <div className="absolute inset-0 overflow-y-auto p-4 space-y-2.5 font-mono text-xs scrollbar-thin scrollbar-thumb-slate-700">
+                            {stats?.activityFeed?.map((item, i) => {
+                                const avatarCfg =
+                                    item.type === 'RISK'      ? { bg: 'bg-red-600',   text: '!',  label: 'RISK'      } :
+                                    item.type === 'PO'        ? { bg: 'bg-blue-600',  text: '₱',  label: 'PO'        } :
+                                                                { bg: 'bg-emerald-600',text: '★',  label: 'MILESTONE' }
+                                return (
+                                    <div key={i} className="flex items-start gap-2.5 opacity-90 hover:opacity-100 transition-opacity group">
+                                        {/* P1.1.2 avatar badge */}
+                                        <div className={`h-6 w-6 rounded-full ${avatarCfg.bg} flex items-center justify-center text-xs font-bold text-white shrink-0 mt-0.5`}
+                                            title={avatarCfg.label}>
+                                            {avatarCfg.text}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-slate-600">[{format(new Date(item.date), 'HH:mm')}]</span>
+                                                <span className={`text-xs uppercase font-bold tracking-wider px-1 py-0.5 rounded ${
+                                                    item.type === 'RISK' ? 'text-red-400 bg-red-400/10' :
+                                                    item.type === 'PO'   ? 'text-blue-400 bg-blue-400/10' :
+                                                                           'text-emerald-400 bg-emerald-400/10'
+                                                }`}>{item.type}</span>
+                                            </div>
+                                            <div className="text-slate-300 truncate mt-0.5">{item.message}</div>
+                                        </div>
+                                    </div>
+                                )
+                            })}
                             {(!stats?.activityFeed || stats.activityFeed.length === 0) && (
                                 <div className="text-slate-600 italic">-- No recent events --</div>
                             )}

@@ -15,9 +15,6 @@ import { useRapStore } from "../../store/rapStore"
 import type { PaymentTerms, Project } from "../../store/projectStore"
 import type { RABItem } from "../../types/rab"
 import type { CurvaSAnalysis } from "../../types/curvaS"
-import * as XLSX from "xlsx"
-import jsPDF from "jspdf"
-import html2canvas from "html2canvas"
 import { calculateCashFlow } from "../../lib/cashflowCalculator"
 import HandoverWizard from "./v3/HandoverWizard"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -157,7 +154,8 @@ function exportCurvaCSV(analysis: CurvaSAnalysis | null) {
 /**
  * Export helpers - Excel
  */
-function exportExcel(rabItems: RABItem[], curva: CurvaSAnalysis | null) {
+async function exportExcel(rabItems: RABItem[], curva: CurvaSAnalysis | null) {
+  const XLSX = await import("xlsx")
   const rabSheet = [
     ["RAB Summary"],
     ["GeneratedAt", new Date().toISOString()],
@@ -203,6 +201,10 @@ function exportExcel(rabItems: RABItem[], curva: CurvaSAnalysis | null) {
  */
 async function exportPDF(element: HTMLElement | null, filename = "Reports.pdf") {
   if (!element) return
+  const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+    import("html2canvas"),
+    import("jspdf"),
+  ])
   const canvas = await html2canvas(element, { backgroundColor: "#ffffff", scale: 2 })
   const imgData = canvas.toDataURL("image/png")
   const pdf = new jsPDF("p", "mm", "a4")

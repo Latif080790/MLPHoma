@@ -14,6 +14,7 @@ import { AppShell } from './components/layout/AppShell'
 import { useAuthStore } from './store/authStore'
 import { useProjectStore } from './store/projectStore'
 import { NetworkProvider } from './providers/NetworkProvider'
+import { getProtectedRouteItems, type NavComponentKey } from './config/navRegistry'
 
 // Lazy-loaded page components for optimal code splitting
 const ProjectManagement = React.lazy(() => import('./pages/modules/ProjectManagement'))
@@ -31,9 +32,11 @@ const HandoverWizard = React.lazy(() => import('./pages/modules/v3/HandoverWizar
 const ProjectOverview = React.lazy(() => import('./pages/modules/v3/ProjectOverview'))
 const CostForecastDashboard = React.lazy(() => import('./pages/modules/v3/CostForecastDashboard'))
 const PortfolioResources = React.lazy(() => import('./pages/modules/v3/PortfolioResources'))
+const PortfolioAnalytics = React.lazy(() => import('./pages/modules/v3/PortfolioAnalytics'))
 const StrategySimulation = React.lazy(() => import('./pages/modules/v3/StrategySimulation'))
 const TKDNPage = React.lazy(() => import('./pages/TKDNPage'))
 const FeatureEditor = React.lazy(() => import('./components/feature/FeatureEditor'))
+const GlobalCommandPalette = React.lazy(() => import('./components/common/GlobalCommandPalette'))
 
 // Legacy Modules (Keep for reference if needed, but routes will be replaced)
 const NotFound = React.lazy(() => import('./pages/NotFound'))
@@ -44,6 +47,26 @@ const Login = React.lazy(() => import('./pages/auth/Login'))
 const Register = React.lazy(() => import('./pages/auth/Register'))
 const ForgotPassword = React.lazy(() => import('./pages/auth/ForgotPassword'))
 const ResetPassword = React.lazy(() => import('./pages/auth/ResetPassword'))
+
+const PROTECTED_COMPONENT_MAP: Record<NavComponentKey, React.LazyExoticComponent<React.ComponentType>> = {
+  CommandCenter,
+  ProjectManagement,
+  ProjectOverview,
+  ProjectCosting,
+  CostForecastDashboard,
+  ScheduleOps,
+  SupplyChain,
+  Finance,
+  ChangeManagement,
+  Documents,
+  HandoverWizard,
+  PortfolioResources,
+  PortfolioAnalytics,
+  StrategySimulation,
+  TKDNPage,
+  FeatureEditor,
+  Settings,
+}
 
 /**
  * ProtectedLayout
@@ -65,6 +88,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const initialize = useAuthStore((state) => state.initialize)
+  const protectedRoutes = React.useMemo(() => getProtectedRouteItems(), [])
 
   // Initialize auth on app mount
   useEffect(() => {
@@ -76,6 +100,10 @@ export default function App() {
       <NetworkProvider>
         {/* Global toaster untuk notifikasi */}
         <AppToaster />
+        {/* P1.2.2: Global Cmd+K command palette */}
+        <Suspense fallback={null}>
+          <GlobalCommandPalette />
+        </Suspense>
         {/* Error boundary membungkus seluruh routing */}
         <ErrorBoundary>
           <Suspense fallback={<PageSkeleton />}>
@@ -86,25 +114,17 @@ export default function App() {
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
 
-              {/* Protected routes — all wrapped with sidebar layout */}
-              <Route path="/" element={<ProtectedLayout><CommandCenter /></ProtectedLayout>} />
-              <Route path="/projects" element={<ProtectedLayout><ProjectManagement /></ProtectedLayout>} />
-              <Route path="/project-overview" element={<ProtectedLayout><ProjectOverview /></ProtectedLayout>} />
-
-              {/* v3 Ultra Routes */}
-              <Route path="/costing" element={<ProtectedLayout><ProjectCosting /></ProtectedLayout>} />
-              <Route path="/cost-forecast" element={<ProtectedLayout><CostForecastDashboard /></ProtectedLayout>} />
-              <Route path="/schedule" element={<ProtectedLayout><ScheduleOps /></ProtectedLayout>} />
-              <Route path="/supply-chain" element={<ProtectedLayout><SupplyChain /></ProtectedLayout>} />
-              <Route path="/finance" element={<ProtectedLayout><Finance /></ProtectedLayout>} />
-              <Route path="/change-management" element={<ProtectedLayout><ChangeManagement /></ProtectedLayout>} />
-              <Route path="/documents" element={<ProtectedLayout><Documents /></ProtectedLayout>} />
-              <Route path="/settings" element={<ProtectedLayout><Settings /></ProtectedLayout>} />
-              <Route path="/handover" element={<ProtectedLayout><HandoverWizard /></ProtectedLayout>} />
-              <Route path="/portfolio-resources" element={<ProtectedLayout><PortfolioResources /></ProtectedLayout>} />
-              <Route path="/strategy-simulation" element={<ProtectedLayout><StrategySimulation /></ProtectedLayout>} />
-              <Route path="/tkdn" element={<ProtectedLayout><TKDNPage /></ProtectedLayout>} />
-              <Route path="/features" element={<ProtectedLayout><FeatureEditor /></ProtectedLayout>} />
+              {/* Protected routes — generated from NAV_REGISTRY */}
+              {protectedRoutes.map((item) => {
+                const Component = PROTECTED_COMPONENT_MAP[item.componentKey!]
+                return (
+                  <Route
+                    key={item.id}
+                    path={item.path}
+                    element={<ProtectedLayout><Component /></ProtectedLayout>}
+                  />
+                )
+              })}
 
               <Route path="*" element={<NotFound />} />
             </Routes>

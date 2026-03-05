@@ -14,6 +14,11 @@ vi.mock('../../lib/supabaseSyncService', () => ({
 vi.mock('../../lib/supabaseClient', () => ({
   fetchProjects: vi.fn(),
   supabase: null,
+  assertSupabase: vi.fn(() => ({
+    from: vi.fn(() => ({
+      insert: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    })),
+  })),
 }))
 
 vi.mock('../../lib/validationMiddleware', () => ({

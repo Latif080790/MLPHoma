@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, Calculator, Edit2, Check, Database, Search } from 'lucide-react'
+import { Plus, Trash2, Calculator, Edit2, Check, Database, Search, ChevronRight, ChevronLeft } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
@@ -101,11 +101,17 @@ export function AHSPItemEditor({
   const [resourceSearch, setResourceSearch] = useState('')
   const [selectedSNIPreset, setSelectedSNIPreset] = useState<string | null>(null)
   const [_showSNIHelp, setShowSNIHelp] = useState(false)
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1)
 
   // Update SNI help visibility when mode changes
   useEffect(() => {
     setShowSNIHelp(mode === 'sni' && !item)
   }, [mode, item])
+
+  // Reset step to 1 when dialog opens or item changes
+  useEffect(() => {
+    if (open) setCurrentStep(1)
+  }, [open, item])
 
   const mainCategories = getMainCategories()
 
@@ -523,12 +529,49 @@ export function AHSPItemEditor({
               <p className="text-sm text-slate-400 font-medium">Atur detail item dan komponen biaya</p>
             </div>
           </div>
+          {/* Step indicator */}
+          <div className="flex items-center gap-0 mt-4">
+            <button
+              type="button"
+              onClick={() => setCurrentStep(1)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-l-xl border text-xs font-bold transition-colors ${
+                currentStep === 1
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+              }`}
+            >
+              <span className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-black ${
+                currentStep === 1 ? 'bg-white text-blue-600' : 'bg-slate-200 text-slate-500'
+              }`}>1</span>
+              Info Dasar
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(2)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-r-xl border-t border-b border-r text-xs font-bold transition-colors ${
+                currentStep === 2
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+              }`}
+            >
+              <span className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-black ${
+                currentStep === 2 ? 'bg-white text-blue-600' : 'bg-slate-200 text-slate-500'
+              }`}>2</span>
+              Komponen
+              {components.length + manualComponents.filter(c => !c.editing).length > 0 && (
+                <Badge variant="secondary" className="h-4 px-1.5 text-xs ml-1">
+                  {components.length + manualComponents.filter(c => !c.editing).length}
+                </Badge>
+              )}
+            </button>
+          </div>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
-          {/* Unified Content - All sections visible */}
+          {/* Unified Content - Sections shown based on current step */}
           <div className="flex-1 overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-0">
-            {/* Section 1: Master Data */}
+            {/* Section 1: Master Data — shown on Step 1 */}
+            {currentStep === 1 && (
             <div className="border-b-4 border-slate-100 bg-white p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 lg:col-[1]">
               <div className="flex items-center gap-3 pb-4 border-b-2 border-blue-100">
                 <div className="bg-blue-600 p-2 rounded-xl text-white">
@@ -768,8 +811,10 @@ export function AHSPItemEditor({
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Section 2: Component Analysis */}
+            {/* Section 2: Component Analysis — shown on Step 2 */}
+            {currentStep === 2 && (
             <div className="min-h-[600px] border-b-4 border-slate-100 bg-slate-50/50 lg:col-[1]">
               <div className="px-4 sm:px-6 lg:px-8 py-6 bg-white border-b flex items-center gap-3">
                 <div className="bg-blue-600 p-2 rounded-xl text-white">
@@ -866,7 +911,7 @@ export function AHSPItemEditor({
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => handleDeleteManualComponent(comp.tempId)}
-                                    className="h-8 w-8 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                                    className="h-8 w-8 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-full opacity-80 transition-all md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -916,7 +961,7 @@ export function AHSPItemEditor({
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => handleDeleteComponent(component.id)}
-                                    className="h-8 w-8 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                                    className="h-8 w-8 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-full opacity-80 transition-all md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -991,7 +1036,7 @@ export function AHSPItemEditor({
                             </div>
                             <div className="flex flex-col items-end">
                               <span className="font-mono text-sm font-black text-slate-900">{formatIDR(res.unitPrice)}</span>
-                              <Button size="sm" variant="ghost" className="h-8 px-4 text-xs font-black uppercase text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button size="sm" variant="ghost" className="h-8 px-4 text-xs font-black uppercase text-blue-600 opacity-100 transition-opacity">
                                 Tambahkan
                               </Button>
                             </div>
@@ -1003,8 +1048,9 @@ export function AHSPItemEditor({
                 </div>
               </div>
             </div>
+            )}
 
-            {/* Section 3: Cost Distribution Summary */}
+            {/* Section 3: Cost Distribution Summary — always visible right sidebar */}
             <div className="bg-white p-4 sm:p-6 space-y-6 lg:col-[2] lg:row-[1/span_2] lg:border-l lg:border-slate-200 lg:sticky lg:top-0 lg:h-fit lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
               <div className="flex items-center gap-3 pb-4 border-b-2 border-blue-100">
                 <div className="bg-blue-600 p-2 rounded-xl text-white">
@@ -1113,18 +1159,44 @@ export function AHSPItemEditor({
           </div>
 
           <div className="shrink-0 px-4 sm:px-8 py-4 sm:py-6 border-t bg-white flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="h-11 sm:h-12 w-full sm:w-auto px-6 font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl"
-            >
-              Batalkan Perubahan
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="h-11 sm:h-12 w-full sm:w-auto px-6 font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl"
+              >
+                Batalkan
+              </Button>
+              {currentStep === 2 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCurrentStep(1)}
+                  disabled={isSubmitting}
+                  className="h-11 sm:h-12 px-5 font-bold rounded-xl border-slate-200"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Info Dasar
+                </Button>
+              )}
+            </div>
             <div className="flex w-full sm:w-auto flex-col-reverse sm:flex-row gap-3 sm:gap-4">
               {errors.submit && (
                 <p className="text-sm text-red-500 self-center font-bold mr-4 animate-bounce">⚠️ {errors.submit}</p>
+              )}
+              {currentStep === 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCurrentStep(2)}
+                  disabled={isSubmitting}
+                  className="h-11 sm:h-12 w-full sm:w-auto px-6 font-bold rounded-2xl border-blue-200 text-blue-700 hover:bg-blue-50"
+                >
+                  Komponen
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
               )}
               <Button type="submit" size="lg" className="h-11 sm:h-12 w-full sm:w-auto px-8 sm:px-10 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black shadow-xl shadow-blue-200 transition-all hover:-translate-y-1 active:scale-95" disabled={isSubmitting}>
                 {isSubmitting ? (
@@ -1135,7 +1207,7 @@ export function AHSPItemEditor({
                 ) : (
                   <span className="flex items-center gap-3">
                     <Check className="h-5 w-5" />
-                    Simpan Perubahan
+                    Simpan
                   </span>
                 )}
               </Button>

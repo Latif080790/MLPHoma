@@ -17,7 +17,7 @@ import { Label } from '../../components/ui/label'
 import { Input } from '../../components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
-import { Plus, Trash2, AlertTriangle, Filter, Search, Settings2, Download, Flag, FileText, GanttChartSquare } from 'lucide-react'
+import { Plus, Trash2, AlertTriangle, Filter, Settings2, Download, Flag, FileText, GanttChartSquare, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
 import GanttChart from '../../components/timeline/GanttChart'
 import TaskEditor from '../../components/timeline/TaskEditor'
 import type { TaskEditorProps } from '../../components/timeline/TaskEditor'
@@ -27,8 +27,6 @@ import { useProjectStore } from '../../store/projectStore'
 import type { TimelineState, TimelineTask } from '../../store/timelineStore'
 import { calculateTimelineAlerts } from '../../lib/timelineAlerts'
 import { toast } from 'sonner'
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +47,7 @@ import {
 } from '../../components/ui/alert-dialog'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { EmptyState } from '../../components/common/EmptyState'
+import ModuleListToolbar from '../../components/common/ModuleListToolbar'
 
 /** YYYY-MM-DD from Date (local-safe for UI) */
 function toISODate(d: Date): string {
@@ -73,6 +72,14 @@ function addDays(base: Date, days: number): Date {
 type ViewMode = 'day' | 'week' | 'month'
 
 type TimelineStoreApi = Pick<TimelineState, 'addTask' | 'updateTask' | 'updateTaskDates' | 'setBaseline'>
+
+const TIMELINE_STATUS_OPTIONS = [
+  { value: 'all', label: 'All Status' },
+  { value: 'not_started', label: 'Not Started' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'delayed', label: 'Delayed' },
+]
 
 function isViewMode(value: string): value is ViewMode {
   return value === 'day' || value === 'week' || value === 'month'
@@ -203,11 +210,56 @@ export default function Timeline() {
   const [showTooltip] = useState<boolean>(true)
   const [pxPerDay, setPxPerDay] = useState<number>(24)
   const [viewMode, setViewMode] = useState<ViewMode>('week')
+
+  // P1.6.1 + QW.9: Zoom step helpers
+  const ZOOM_MIN = 10
+  const ZOOM_MAX = 64
+  const ZOOM_STEP = 4
+  const zoomIn  = () => setPxPerDay(v => Math.min(v + ZOOM_STEP, ZOOM_MAX))
+  const zoomOut = () => setPxPerDay(v => Math.max(v - ZOOM_STEP, ZOOM_MIN))
+  const zoomReset = () => setPxPerDay(24)
+
+  // Keyboard shortcuts: ] = zoom in, [ = zoom out, \ = reset
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.key === ']') zoomIn()
+      else if (e.key === '[') zoomOut()
+      else if (e.key === '\\') zoomReset()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
   const [showDeps, setShowDeps] = useState(true)
   const [showBaseline, setShowBaseline] = useState(true)
   const [showTodayLine] = useState(true)
-  const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [query, setQuery] = useState(() => {
+    try { return localStorage.getItem('timeline.toolbar.query') || '' } catch { return '' }
+  })
+  const [statusFilter, setStatusFilter] = useState<string>(() => {
+    try { return localStorage.getItem('timeline.toolbar.status') || 'all' } catch { return 'all' }
+  })
+  const [resourceFilter, setResourceFilter] = useState<string>(() => {
+    try { return localStorage.getItem('timeline.toolbar.resource') || 'all' } catch { return 'all' }
+  })
+  const [dateFrom, setDateFrom] = useState<string>(() => {
+    try { return localStorage.getItem('timeline.toolbar.dateFrom') || '' } catch { return '' }
+  })
+  const [dateTo, setDateTo] = useState<string>(() => {
+    try { return localStorage.getItem('timeline.toolbar.dateTo') || '' } catch { return '' }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('timeline.toolbar.query', query)
+      localStorage.setItem('timeline.toolbar.status', statusFilter)
+      localStorage.setItem('timeline.toolbar.resource', resourceFilter)
+      localStorage.setItem('timeline.toolbar.dateFrom', dateFrom)
+      localStorage.setItem('timeline.toolbar.dateTo', dateTo)
+    } catch {
+      // ignore storage errors
+    }
+  }, [query, statusFilter, resourceFilter, dateFrom, dateTo])
 
   // Auto-seed demo tasks if empty
   useEffect(() => {
@@ -285,9 +337,33 @@ export default function Timeline() {
     return rawTasks.filter((t) => {
       const okQ = !q || t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q)
       const okS = statusFilter === 'all' || t.status === statusFilter
-      return okQ && okS
+      const resources = (t.assignedResources || []).map((r) => r.toLowerCase())
+      const okR = resourceFilter === 'all' || resources.includes(resourceFilter.toLowerCase())
+
+      const taskStart = new Date(t.startDate)
+      const fromBoundary = dateFrom ? new Date(`${dateFrom}T00:00:00`) : null
+      const toBoundary = dateTo ? new Date(`${dateTo}T23:59:59`) : null
+      const okFrom = !fromBoundary || taskStart >= fromBoundary
+      const okTo = !toBoundary || taskStart <= toBoundary
+
+      return okQ && okS && okR && okFrom && okTo
     })
-  }, [rawTasks, query, statusFilter])
+  }, [rawTasks, query, statusFilter, resourceFilter, dateFrom, dateTo])
+
+  const resourceOptions = useMemo(() => {
+    return Array.from(new Set(
+      rawTasks
+        .flatMap((task) => task.assignedResources || [])
+        .map((resource) => resource.trim())
+        .filter((resource) => resource.length > 0)
+    )).sort((a, b) => a.localeCompare(b))
+  }, [rawTasks])
+
+  const resetAdvancedFilters = () => {
+    setResourceFilter('all')
+    setDateFrom('')
+    setDateTo('')
+  }
 
   const summary = useMemo(() => {
     const total = rawTasks.length
@@ -307,6 +383,7 @@ export default function Timeline() {
   /** Export current schedule view to PNG */
   const exportPNG = async () => {
     if (!exportRef.current) return
+    const { default: html2canvas } = await import('html2canvas')
     const canvas = await html2canvas(exportRef.current, { backgroundColor: '#ffffff' })
     const url = canvas.toDataURL('image/png', 1.0)
     const a = document.createElement('a')
@@ -318,6 +395,10 @@ export default function Timeline() {
   /** Export current schedule view to PDF (A4 landscape, scaled to fit width) */
   const exportPDF = async () => {
     if (!exportRef.current) return
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ])
     const canvas = await html2canvas(exportRef.current, { backgroundColor: '#ffffff' })
     const imgData = canvas.toDataURL('image/png')
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
@@ -353,6 +434,7 @@ export default function Timeline() {
         icon={<AlertTriangle size={18} />}
         title="Timeline & Gantt"
         description="Interactive Gantt chart with CPM analysis, dependencies, and baseline tracking."
+        accent="indigo"
         actions={
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={() => setImportWBSOpen(true)} className="gap-2" size="sm">
@@ -390,18 +472,62 @@ export default function Timeline() {
             </Tabs>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Label className="text-xs text-neutral-500 font-medium uppercase tracking-wider">Zoom</Label>
+          {/* P1.6.1 + QW.9: Zoom controls with +/- buttons */}
+          <div className="flex items-center gap-2">
+            <Label className="text-xs text-neutral-500 font-medium uppercase tracking-wider shrink-0">Zoom</Label>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 shrink-0"
+              onClick={zoomOut}
+              disabled={pxPerDay <= ZOOM_MIN}
+              title="Zoom out  [  ]"
+              aria-label="Zoom out"
+            >
+              <ZoomOut className="h-3.5 w-3.5" />
+            </Button>
             <input
               type="range"
-              min={12}
-              max={48}
-              step={1}
+              min={ZOOM_MIN}
+              max={ZOOM_MAX}
+              step={ZOOM_STEP}
               value={pxPerDay}
               onChange={(e) => setPxPerDay(parseInt(e.target.value, 10))}
-              className="w-32 accent-blue-600 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700"
+              className="w-24 accent-blue-600 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700"
+              aria-label="Zoom level"
             />
-            <span className="w-10 text-xs tabular-nums text-neutral-600 font-mono py-1 px-1.5 bg-slate-100 rounded text-center">{pxPerDay}px</span>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-7 w-7 shrink-0"
+              onClick={zoomIn}
+              disabled={pxPerDay >= ZOOM_MAX}
+              title="Zoom in  ]"
+              aria-label="Zoom in"
+            >
+              <ZoomIn className="h-3.5 w-3.5" />
+            </Button>
+            <button
+              onClick={zoomReset}
+              className="w-12 text-xs tabular-nums text-neutral-600 font-mono py-1 px-1.5 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 rounded text-center transition-colors cursor-pointer border border-transparent hover:border-blue-200"
+              title="Reset zoom  \\"
+              aria-label="Reset zoom to default"
+            >
+              {pxPerDay}px
+            </button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0 text-slate-400 hover:text-blue-600"
+              onClick={() => {
+                setViewMode('month')
+                setPxPerDay(10)
+              }}
+              title="Fit overview (month view, min zoom)"
+              aria-label="Fit overview"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+            </Button>
           </div>
 
           <div className="md:col-span-2 xl:col-span-2 flex items-center gap-4 flex-wrap">
@@ -434,28 +560,57 @@ export default function Timeline() {
             </label>
           </div>
 
-          <div className="md:col-span-2 xl:col-span-2 flex gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search tasks..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="pl-9 h-9 text-sm bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-              />
+          <div className="md:col-span-2 xl:col-span-2">
+            <ModuleListToolbar
+              query={query}
+              onQueryChange={setQuery}
+              queryPlaceholder="Search tasks..."
+              filterValue={statusFilter}
+              onFilterChange={setStatusFilter}
+              filterOptions={TIMELINE_STATUS_OPTIONS}
+              resultCount={filteredTasks.length}
+              resultLabel="tasks"
+              className="md:justify-start"
+            />
+            <div className="mt-2 flex flex-col gap-2 rounded-md border border-border/60 bg-background/80 p-3 md:flex-row md:items-end md:gap-3">
+              <div className="grid gap-1 md:w-[220px]">
+                <Label className="text-xs text-muted-foreground">Assigned Resource</Label>
+                <Select value={resourceFilter} onValueChange={setResourceFilter}>
+                  <SelectTrigger className="h-9" aria-label="Filter by assigned resource">
+                    <SelectValue placeholder="All Resources" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Resources</SelectItem>
+                    {resourceOptions.map((resource) => (
+                      <SelectItem key={resource} value={resource}>{resource}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-1 md:w-[170px]">
+                <Label className="text-xs text-muted-foreground">Start from</Label>
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(event) => setDateFrom(event.target.value)}
+                  aria-label="Filter task start date from"
+                  className="h-9"
+                />
+              </div>
+              <div className="grid gap-1 md:w-[170px]">
+                <Label className="text-xs text-muted-foreground">Start to</Label>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(event) => setDateTo(event.target.value)}
+                  aria-label="Filter task start date to"
+                  className="h-9"
+                />
+              </div>
+              <Button type="button" variant="outline" className="h-9 md:ml-auto" onClick={resetAdvancedFilters}>
+                Reset Filters
+              </Button>
             </div>
-            <Select value={statusFilter} onValueChange={(v: string) => setStatusFilter(v)}>
-              <SelectTrigger className="w-[140px] h-9 text-sm bg-slate-50 border-slate-200">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="not_started">Not Started</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="delayed">Delayed</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </div>
       </div>

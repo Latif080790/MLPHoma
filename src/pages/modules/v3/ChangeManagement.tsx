@@ -1,5 +1,6 @@
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { GitPullRequest, DollarSign, Clock, Plus, TrendingUp, Check, X, Loader2, AlertTriangle } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -19,6 +20,7 @@ import { CCO_STATUS_LABELS, CCO_STATUS_COLORS } from "@/services/ccoStateMachine
 import type { ChangeOrderStatus } from "@/types/change-order"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
+import { Skeleton } from "@/components/common/LoadingSkeleton"
 
 export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
@@ -28,9 +30,19 @@ export default function ChangeManagement() {
     const [dialogOpen, setDialogOpen] = useState(false)
     const [confirmOpen, setConfirmOpen] = useState(false)
     const [rejectConfirmOpen, setRejectConfirmOpen] = useState(false)
+
+    // P0.3: Virtualizer for change orders table
+    const coScrollRef = useRef<HTMLDivElement>(null)
+    const coVirtualizer = useVirtualizer({
+        count: orders.length,
+        getScrollElement: () => coScrollRef.current,
+        estimateSize: () => 56,
+        overscan: 8,
+    })
     const [pendingApprovalId, setPendingApprovalId] = useState<string | null>(null)
     const [pendingRejectId, setPendingRejectId] = useState<string | null>(null)
     const [actionLoading, setActionLoading] = useState<string | null>(null)
+    const [srStatus, setSrStatus] = useState('')
 
     useEffect(() => {
         if (activeProjectId) {
@@ -52,6 +64,7 @@ export default function ChangeManagement() {
 
     const handleConfirmApprove = async () => {
         if (!pendingApprovalId) return
+        setSrStatus('Approving change order...')
         setActionLoading(pendingApprovalId)
         const result = await handleAsync(async () => {
             await updateStatus(pendingApprovalId, 'APPROVED')
@@ -60,6 +73,9 @@ export default function ChangeManagement() {
 
         if (result) {
             toast.success('Change Order approved')
+            setSrStatus('Change order approved.')
+        } else {
+            setSrStatus('Failed to approve change order.')
         }
 
         setActionLoading(null)
@@ -75,6 +91,7 @@ export default function ChangeManagement() {
 
     const handleRejectConfirm = async () => {
         if (!pendingRejectId) return
+        setSrStatus('Rejecting change order...')
         setActionLoading(pendingRejectId)
         const result = await handleAsync(async () => {
             await updateStatus(pendingRejectId, 'REJECTED')
@@ -83,6 +100,9 @@ export default function ChangeManagement() {
 
         if (result) {
             toast.success('Change Order rejected')
+            setSrStatus('Change order rejected.')
+        } else {
+            setSrStatus('Failed to reject change order.')
         }
 
         setActionLoading(null)
@@ -122,10 +142,12 @@ export default function ChangeManagement() {
 
     return (
         <div className="space-y-6">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
             <ModuleHeader
                 icon={<GitPullRequest size={18} />}
                 title="Change Management (CCO)"
                 description="Track Contract Change Orders (CCO) and Variation Orders (VO)."
+                accent="rose"
                 actions={
                     <Button size="sm" className="gap-2" onClick={() => setDialogOpen(true)}>
                         <Plus size={16} /> New Change Order
@@ -140,6 +162,7 @@ export default function ChangeManagement() {
                 <div className="flex items-center gap-2 flex-wrap">
                     {(['DRAFT', 'SUBMITTED', 'REVIEWED', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED'] as ChangeOrderStatus[]).map(status => {
                         const count = orders.filter(o => o.status === status).length
+                        if (count === 0) return null
                         return (
                             <div key={status} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${CCO_STATUS_COLORS[status]}`}>
                                 <span className="text-xs opacity-70">{CCO_STATUS_LABELS[status]}</span>
@@ -169,7 +192,7 @@ export default function ChangeManagement() {
                         />
                     ) : (
                         <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
-                            <div className="max-h-[600px] overflow-auto relative">
+                            <div ref={coScrollRef} className="max-h-[600px] overflow-auto relative">
                                 <Table>
                                     <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
                                         <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
@@ -183,8 +206,14 @@ export default function ChangeManagement() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {orders.map(order => (
-                                            <TableRow key={order.id} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors">
+                                        {/* P0.3 virtual rows */}
+                                        {coVirtualizer.getVirtualItems().length > 0 && (
+                                            <tr style={{ height: coVirtualizer.getVirtualItems()[0].start }} aria-hidden />
+                                        )}
+                                        {coVirtualizer.getVirtualItems().map(vRow => {
+                                            const order = orders[vRow.index]
+                                            return (
+                                            <TableRow key={order.id} data-index={vRow.index} ref={coVirtualizer.measureElement} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors">
                                                 <TableCell className="p-3 font-mono text-xs font-medium text-blue-600 dark:text-blue-400 border-r border-transparent">{order.vo_number}</TableCell>
                                                 <TableCell className="p-3">
                                                     <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{order.title}</div>
@@ -229,7 +258,13 @@ export default function ChangeManagement() {
                                                     )}
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
+                                            )
+                                        })}
+                                        {coVirtualizer.getVirtualItems().length > 0 && (() => {
+                                            const last = coVirtualizer.getVirtualItems().at(-1)!
+                                            const pad = coVirtualizer.getTotalSize() - last.end
+                                            return pad > 0 ? <tr style={{ height: pad }} aria-hidden /> : null
+                                        })()}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -312,9 +347,18 @@ export default function ChangeManagement() {
                     </DialogHeader>
 
                     {previewLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                            <span className="ml-2 text-sm text-muted-foreground">Calculating impact...</span>
+                        <div className="space-y-3 py-2" aria-live="polite" aria-busy="true">
+                            <div className="text-sm text-muted-foreground">Calculating impact...</div>
+                            <div className="grid grid-cols-2 gap-3">
+                                {Array.from({ length: 4 }).map((_, idx) => (
+                                    <Card key={`preview-skeleton-${idx}`}>
+                                        <CardContent className="p-3 space-y-2">
+                                            <Skeleton className="h-8 w-16" />
+                                            <Skeleton className="h-3 w-24" />
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
                         </div>
                     ) : cascadePreview ? (
                         <div className="space-y-3 py-2">

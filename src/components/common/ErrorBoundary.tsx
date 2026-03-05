@@ -81,7 +81,22 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     })
   }
 
+  private isChunkLoadError(): boolean {
+    const msg = this.state.error?.message || ''
+    return (
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('Loading chunk') ||
+      msg.includes('Importing a module script failed') ||
+      this.state.error?.name === 'ChunkLoadError'
+    )
+  }
+
   private handleRetry = () => {
+    // Chunk load errors (stale CDN cache after re-deploy) require a hard reload
+    if (this.isChunkLoadError()) {
+      window.location.reload()
+      return
+    }
     this.setState({ hasError: false, error: undefined, errorInfo: undefined })
     
     // Call custom reset handler if provided

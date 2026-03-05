@@ -20,9 +20,6 @@ import { useWBSStore } from "../../store/wbsStore"
 import type { Project } from "../../store/projectStore"
 import type { CurvaSDataPoint } from "../../types/curvaS"
 import { EmptyState } from "../../components/common/EmptyState"
-import * as XLSX from "xlsx"
-import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
 import { timelineService } from "@/services/timelineService"
 import { Camera, Loader2 } from "lucide-react"
 import { toast } from "sonner"
@@ -80,7 +77,8 @@ function exportProgressCSV(rows: RecentProgressRow[]) {
 /**
  * Export progress rows to Excel
  */
-function exportProgressExcel(rows: RecentProgressRow[]) {
+async function exportProgressExcel(rows: RecentProgressRow[]) {
+  const XLSX = await import("xlsx")
   const sheetData = [
     ["Progress History"],
     ["GeneratedAt", new Date().toISOString()],
@@ -105,6 +103,10 @@ function exportProgressExcel(rows: RecentProgressRow[]) {
  */
 async function exportPDF(element: HTMLElement | null, filename = "Progress.pdf") {
   if (!element) return
+  const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+    import("html2canvas"),
+    import("jspdf"),
+  ])
   const canvas = await html2canvas(element, { backgroundColor: "#ffffff", scale: 2 })
   const imgData = canvas.toDataURL("image/png")
   const pdf = new jsPDF("p", "mm", "a4")
@@ -307,6 +309,7 @@ export default function Progress() {
         icon={<BarChart2 size={18} />}
         title="Progress Tracking"
         description="Input progres aktual dan biaya lapangan—terhubung langsung ke Curva‑S."
+        accent="blue"
         actions={
           <div className="flex flex-wrap gap-2">
             <button

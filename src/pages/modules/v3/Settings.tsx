@@ -1,7 +1,7 @@
 
 import React, { useCallback, useEffect, useState } from "react"
 import { ModuleHeader } from "@/components/modules/ModuleHeader"
-import { Settings as SettingsIcon, Save, Users, Database, Globe } from "lucide-react"
+import { Settings as SettingsIcon, Save, Users, Database, Globe, Loader2 } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -26,14 +26,23 @@ export default function Settings() {
     const { handleAsync } = useErrorHandler()
     const [project, setProject] = useState<SettingsProject | null>(null)
     const [loading, setLoading] = useState(false)
+    const [srStatus, setSrStatus] = useState('')
 
     const loadProject = useCallback(async (id: string) => {
+        setSrStatus('Loading project settings...')
+        setLoading(true)
         const data = await handleAsync(async () => {
             const client = assertSupabase()
             const res = await client.from('projects').select('*').eq('id', id).single()
             return res.data
         }, 'data.sync_failed')
-        if (data) setProject(data)
+        if (data) {
+            setProject(data)
+            setSrStatus('Project settings loaded.')
+        } else {
+            setSrStatus('Failed to load project settings.')
+        }
+        setLoading(false)
     }, [handleAsync])
 
     useEffect(() => {
@@ -52,6 +61,7 @@ export default function Settings() {
 
     async function handleSave() {
         if (!project || !activeProjectId) return
+        setSrStatus('Saving project settings...')
         setLoading(true)
         const result = await handleAsync(async () => {
             updateProject(activeProjectId, {
@@ -66,6 +76,9 @@ export default function Settings() {
 
         if (result) {
             toast.success("Project settings saved")
+            setSrStatus('Project settings saved.')
+        } else {
+            setSrStatus('Failed to save project settings.')
         }
 
         setLoading(false)
@@ -97,13 +110,15 @@ export default function Settings() {
 
     return (
         <div className="space-y-6">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
             <ModuleHeader
                 icon={<SettingsIcon size={18} />}
                 title="Settings"
                 description="Project configuration and master data."
+                accent="default"
                 actions={
-                    <Button size="sm" className="gap-2" onClick={handleSave} disabled={loading}>
-                        <Save size={16} /> Save Changes
+                    <Button size="sm" className="gap-2" onClick={handleSave} disabled={loading} aria-busy={loading}>
+                        {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} {loading ? 'Saving...' : 'Save Changes'}
                     </Button>
                 }
             />

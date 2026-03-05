@@ -9,7 +9,7 @@ import React, { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { QrCode, ShieldCheck, AlertCircle, Copy, ExternalLink, Shield } from 'lucide-react'
+import { QrCode, ShieldCheck, AlertCircle, Copy, ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
 import { qrValidationService, type QRValidationRecord } from '@/services/qrValidationService'
 import { useAuthStore } from '@/store/authStore'
@@ -76,12 +76,9 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
     }
 
     // Visual variants based on state
+    // QW.1: Only show badge for APPROVED documents — hide for DRAFT/REVIEW/ARCHIVED
     if (status !== 'APPROVED') {
-        return (
-            <Badge variant="outline" className="text-xs text-slate-400 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-1 py-0 h-4">
-                <Shield size={10} className="mr-1" /> No QR (Draft)
-            </Badge>
-        )
+        return null
     }
 
     return (
