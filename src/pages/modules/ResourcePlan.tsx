@@ -211,7 +211,7 @@ export default function ResourcePlan() {
       <ModulePageState
         icon={<Wrench size={18} />}
         title="Resource Plan"
-        description="Rekap kebutuhan resource dari AHSP × volume RAB."
+        description="Rekap kebutuhan resource dari AHSP × volume RAP."
         variant="empty"
         message="Pilih proyek aktif untuk melihat Resource Plan."
       />
@@ -347,7 +347,7 @@ export default function ResourcePlan() {
           icon={<Wrench size={18} />}
           title="Tidak ada data resource"
           variant="empty"
-          message="Tidak ada resource yang cocok dengan filter aktif, atau item RAB belum terhubung ke AHSP."
+          message="Tidak ada resource yang cocok dengan filter aktif, atau item RAP belum terhubung ke AHSP."
         />
       ) : (
         <Card className="shadow-sm">

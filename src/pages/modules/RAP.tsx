@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { LayoutList, CalendarClock, Search, Info, ChevronDown, ChevronUp, Download, Plus } from 'lucide-react'
+import { LayoutList, CalendarClock, Search, Info, ChevronDown, ChevronUp, Download, Plus, Link2, Link2Off } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { useRapStore } from '@/store/rapStore'
 import { useRabStore } from '@/store/rabStore'
@@ -158,6 +158,10 @@ export default function RAP(): JSX.Element {
     return name.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
+  // Items without ahsp_id won't feed Resource Plan — show warning
+  const projectItems = items.filter(i => i.project_id === projectId)
+  const unlinkedAHSPCount = projectItems.filter(i => !i.ahsp_id).length
+
   // Task 41: Export Excel
   const handleExportExcel = async () => {
     const { utils, writeFile } = await import('xlsx')
@@ -289,6 +293,16 @@ export default function RAP(): JSX.Element {
           </Card>
 
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+            {/* AHSP linkage warning — items without ahsp_id won't show in Resource Plan */}
+            {unlinkedAHSPCount > 0 && (
+              <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50/70 px-4 py-2 text-xs dark:border-amber-800 dark:bg-amber-900/20">
+                <Link2Off size={13} className="shrink-0 text-amber-600" />
+                <span className="text-amber-700 dark:text-amber-300">
+                  <strong>{unlinkedAHSPCount} dari {projectItems.length} item</strong> belum terhubung ke AHSP — item ini tidak akan dihitung di Resource Plan.
+                  Re-sync dari RAB untuk mengisi link AHSP secara otomatis.
+                </span>
+              </div>
+            )}
             <div className="max-h-[600px] overflow-auto relative">
               <Table>
                 <TableHeader className="sticky-glass-tablehead">
@@ -363,6 +377,17 @@ export default function RAP(): JSX.Element {
                               <span className="text-xs font-semibold">{item.name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-xs text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Vol: {item.qty_budget}</span>
+                                {item.ahsp_id ? (
+                                  <span className="inline-flex items-center gap-0.5 text-xs text-emerald-600 dark:text-emerald-400">
+                                    <Link2 size={10} />
+                                    <span className="font-mono">{item.ahsp_items?.name || item.ahsp_id.slice(-6)}</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-0.5 text-xs text-amber-500 dark:text-amber-400">
+                                    <Link2Off size={10} />
+                                    <span>No AHSP</span>
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </TableCell>
