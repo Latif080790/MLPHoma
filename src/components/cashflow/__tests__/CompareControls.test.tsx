@@ -12,7 +12,7 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import CompareControls from '../CompareControls'
-import { act } from 'react-dom/test-utils'
+import { act } from 'react'
 import useCurvaSStore, { SavedScenario } from '../../../store/curvaSStore'
 
 describe('CompareControls', () => {

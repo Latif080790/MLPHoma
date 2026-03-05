@@ -1,19 +1,21 @@
 
 /**
  * WBSTree.tsx
- * Hierarchical WBS tree component with drag & drop functionality
+ * Hierarchical WBS tree component with drag & drop, keyboard nav, and budget badges
  */
 
-import React, { useCallback, useRef } from 'react'
-import { 
-  ChevronRight, 
-  ChevronDown, 
-  MoreHorizontal, 
-  Plus, 
-  Edit2, 
+import React, { useCallback, useRef, useMemo } from 'react'
+import {
+  ChevronRight,
+  ChevronDown,
+  MoreHorizontal,
+  Plus,
+  Edit2,
   Trash2,
-  GripVertical
+  GripVertical,
+  Calculator,
 } from 'lucide-react'
+import { formatIDR } from '../../lib/utils'
 import type { WBSItem } from '../../types/wbs'
 
 /** Props for WBSTree component */
@@ -46,6 +48,10 @@ export interface WBSTreeProps {
   maxNestingLevel?: number
   /** Expand all items */
   expandAll?: boolean
+  /** Filter text — shows only matching items + their ancestors */
+  filterText?: string
+  /** Budget per WBS node (Task 18: budget badges) */
+  budgetByWbs?: Map<string, number>
 }
 
 /**
@@ -67,6 +73,7 @@ function WBSTreeItem({
   onDrop,
   renderItem,
   maxNestingLevel = 5,
+  budgetByWbs,
 }: {
   item: WBSItem
   level?: number
@@ -83,6 +90,7 @@ function WBSTreeItem({
   onDrop: (e: React.DragEvent, newParentId: string | null, index: number) => void
   renderItem?: (item: WBSItem) => React.ReactNode
   maxNestingLevel?: number
+  budgetByWbs?: Map<string, number>
 }) {
   const [showMenu, setShowMenu] = React.useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -90,6 +98,7 @@ function WBSTreeItem({
 
   const isSelected = item.id === selectedId
   const isExpanded = expandedIds?.has(item.id) ?? false
+  const budget = budgetByWbs?.get(item.id) ?? 0
 
   // Close menu on click outside
   React.useEffect(() => {
@@ -107,7 +116,7 @@ function WBSTreeItem({
     e.dataTransfer.setData('text/plain', item.id)
     e.dataTransfer.effectAllowed = 'move'
     onDragStart()
-    
+
     if (itemRef.current) {
       itemRef.current.style.opacity = '0.5'
     }
@@ -138,7 +147,7 @@ function WBSTreeItem({
   const hasChildren = item.children && item.children.length > 0
 
   return (
-    <div className="select-none">
+    <div className="select-none" data-wbs-item-id={item.id}>
       <div
         ref={itemRef}
         draggable
@@ -148,8 +157,8 @@ function WBSTreeItem({
         onDrop={handleDrop}
         className={`
           group relative flex items-center gap-2 rounded-lg px-2 py-2 transition-colors
-          ${isSelected 
-            ? 'bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' 
+          ${isSelected
+            ? 'bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
             : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
           }
           ${item.isDragging ? 'opacity-50' : ''}
@@ -158,7 +167,7 @@ function WBSTreeItem({
         style={{ paddingLeft: `${level * 24 + 8}px` }}
       >
         {/* Drag handle */}
-        <div className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="cursor-grab active:cursor-grabbing opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
           <GripVertical size={14} className="text-neutral-400" />
         </div>
 
@@ -173,7 +182,7 @@ function WBSTreeItem({
         </button>
 
         {/* Item content */}
-        <div 
+        <div
           className="flex-1 min-w-0"
           onClick={() => onSelect(item)}
         >
@@ -185,6 +194,13 @@ function WBSTreeItem({
               <span className="text-sm font-medium truncate">
                 {item.name}
               </span>
+              {/* Budget badge (Task 18) */}
+              {budget > 0 && (
+                <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0 text-xs font-mono font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 shrink-0">
+                  <Calculator size={9} />
+                  {formatIDR(budget)}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -193,15 +209,15 @@ function WBSTreeItem({
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700"
+            className="opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700"
           >
             <MoreHorizontal size={14} />
           </button>
 
           {showMenu && (
-            <div 
+            <div
               ref={menuRef}
-              className="absolute right-0 top-full mt-1 w-40 rounded-lg border bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900 z-10"
+              className="absolute right-0 top-full mt-1 w-44 rounded-lg border bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900 z-10"
             >
               <button
                 onClick={() => {
@@ -260,6 +276,7 @@ function WBSTreeItem({
               onDrop={onDrop}
               renderItem={renderItem}
               maxNestingLevel={maxNestingLevel}
+              budgetByWbs={budgetByWbs}
             />
           ))}
         </div>
@@ -286,22 +303,50 @@ export function WBSTree({
   onReorderItems: _onReorderItems,
   maxNestingLevel = 5,
   expandAll: _expandAll = false,
+  filterText = '',
+  budgetByWbs,
 }: WBSTreeProps) {
   const [draggedItem, setDraggedItem] = React.useState<string | null>(null)
   const [dropTarget, setDropTarget] = React.useState<{ id: string; position: 'before' | 'after' | 'inside' } | null>(null)
+  const treeContainerRef = useRef<HTMLDivElement>(null)
+
+  // Compute visible items based on filterText (matching items + all ancestors)
+  const displayedItems = React.useMemo(() => {
+    if (!filterText.trim()) return items
+    const q = filterText.toLowerCase()
+    const matchingIds = new Set(
+      items
+        .filter(i => i.name.toLowerCase().includes(q) || (i.code ?? '').toLowerCase().includes(q))
+        .map(i => i.id)
+    )
+    // Walk up to collect ancestors
+    const visibleIds = new Set(matchingIds)
+    const parentMap = new Map(items.map(i => [i.id, i.parentId ?? null]))
+    matchingIds.forEach(id => {
+      let cur = parentMap.get(id)
+      while (cur) {
+        visibleIds.add(cur)
+        cur = parentMap.get(cur) ?? null
+      }
+    })
+    return items.filter(i => visibleIds.has(i.id))
+  }, [items, filterText])
 
   // Build tree structure
   const tree = React.useMemo(() => {
-    const itemMap = new Map(items.map(item => [item.id, { ...item, children: [] as WBSItem[] }]))
+    const itemMap = new Map(displayedItems.map(item => [item.id, { ...item, children: [] as WBSItem[] }]))
     const rootItems: WBSItem[] = []
 
-    items.forEach(item => {
+    displayedItems.forEach(item => {
       const itemWithChildren = itemMap.get(item.id)!
-      
+
       if (item.parentId) {
         const parent = itemMap.get(item.parentId)
         if (parent) {
           parent.children!.push(itemWithChildren)
+        } else {
+          // Parent filtered out or missing — promote to root
+          rootItems.push(itemWithChildren)
         }
       } else {
         rootItems.push(itemWithChildren)
@@ -309,7 +354,74 @@ export function WBSTree({
     })
 
     return rootItems
-  }, [items])
+  }, [displayedItems])
+
+  // Flatten tree for keyboard navigation (Task 15)
+  const flatVisibleIds = useMemo(() => {
+    const ids: string[] = []
+    function walk(nodes: WBSItem[]) {
+      for (const n of nodes) {
+        ids.push(n.id)
+        if (expandedIds.has(n.id) && n.children?.length) {
+          walk(n.children)
+        }
+      }
+    }
+    walk(tree)
+    return ids
+  }, [tree, expandedIds])
+
+  // Keyboard navigation handler (Task 15)
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (!flatVisibleIds.length) return
+    const currentIdx = selectedId ? flatVisibleIds.indexOf(selectedId) : -1
+
+    switch (e.key) {
+      case 'ArrowDown': {
+        e.preventDefault()
+        const nextIdx = Math.min(currentIdx + 1, flatVisibleIds.length - 1)
+        const nextId = flatVisibleIds[nextIdx]
+        const nextItem = items.find(i => i.id === nextId)
+        if (nextItem) onItemClick?.(nextItem)
+        // Scroll into view
+        const el = treeContainerRef.current?.querySelector(`[data-wbs-item-id="${nextId}"]`)
+        el?.scrollIntoView({ block: 'nearest' })
+        break
+      }
+      case 'ArrowUp': {
+        e.preventDefault()
+        const prevIdx = Math.max(currentIdx - 1, 0)
+        const prevId = flatVisibleIds[prevIdx]
+        const prevItem = items.find(i => i.id === prevId)
+        if (prevItem) onItemClick?.(prevItem)
+        const el = treeContainerRef.current?.querySelector(`[data-wbs-item-id="${prevId}"]`)
+        el?.scrollIntoView({ block: 'nearest' })
+        break
+      }
+      case 'ArrowRight': {
+        e.preventDefault()
+        if (selectedId && !expandedIds.has(selectedId)) {
+          onToggleExpand?.(selectedId)
+        }
+        break
+      }
+      case 'ArrowLeft': {
+        e.preventDefault()
+        if (selectedId && expandedIds.has(selectedId)) {
+          onToggleExpand?.(selectedId)
+        }
+        break
+      }
+      case 'Enter': {
+        e.preventDefault()
+        if (selectedId) {
+          const item = items.find(i => i.id === selectedId)
+          if (item) onEditItem?.(item)
+        }
+        break
+      }
+    }
+  }, [flatVisibleIds, selectedId, items, onItemClick, onToggleExpand, expandedIds, onEditItem])
 
   const handleDragStart = useCallback((itemId: string) => {
     setDraggedItem(itemId)
@@ -322,15 +434,15 @@ export function WBSTree({
 
   const handleDragOver = useCallback((e: React.DragEvent, itemId: string) => {
     e.preventDefault()
-    
+
     if (!draggedItem || draggedItem === itemId) return
 
     const rect = e.currentTarget.getBoundingClientRect()
     const y = e.clientY - rect.top
     const height = rect.height
-    
+
     let position: 'before' | 'after' | 'inside' = 'inside'
-    
+
     if (y < height * 0.25) {
       position = 'before'
     } else if (y > height * 0.75) {
@@ -342,7 +454,7 @@ export function WBSTree({
 
   const handleDrop = useCallback((e: React.DragEvent, targetId: string | null, index: number) => {
     e.preventDefault()
-    
+
     if (!draggedItem || !onMoveItem) return
 
     let newParentId: string | null = null
@@ -392,23 +504,44 @@ export function WBSTree({
   if (!items.length) {
     return (
       <div className="text-center p-8 text-neutral-500 dark:text-neutral-400">
-        No WBS items found. Create your first item to get started.
+        <p className="mb-3 text-sm">Belum ada item WBS.</p>
+        {onAddItem && (
+          <button
+            onClick={() => onAddItem(null)}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={14} />
+            Buat Item WBS Pertama
+          </button>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="w-full">
-      {/* Add root item button */}
+    <div
+      ref={treeContainerRef}
+      className="w-full outline-none"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+    >
+      {/* Add root item button (shown only when items exist) */}
       {onAddItem && (
-        <div className="mb-4">
+        <div className="mb-2">
           <button
             onClick={() => onAddItem(null)}
-            className="flex items-center gap-2 rounded-lg border border-dashed border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:border-neutral-400 hover:text-neutral-800 dark:border-neutral-600 dark:text-neutral-400 dark:hover:border-neutral-500 dark:hover:text-neutral-200"
+            className="flex items-center gap-2 rounded-lg border border-dashed border-neutral-300 px-3 py-1.5 text-xs text-neutral-600 hover:border-neutral-400 hover:text-neutral-800 dark:border-neutral-600 dark:text-neutral-400 dark:hover:border-neutral-500 dark:hover:text-neutral-200"
           >
-            <Plus size={16} />
+            <Plus size={13} />
             Add Root Item
           </button>
+        </div>
+      )}
+
+      {/* No results for search */}
+      {filterText.trim() && displayedItems.length === 0 && (
+        <div className="py-6 text-center text-xs text-neutral-400">
+          No items match &ldquo;{filterText}&rdquo;
         </div>
       )}
 
@@ -431,16 +564,15 @@ export function WBSTree({
             onDrop={handleDrop}
             renderItem={renderItem}
             maxNestingLevel={maxNestingLevel}
+            budgetByWbs={budgetByWbs}
           />
         ))}
       </div>
 
-      {/* Drop indicator */}
+      {/* Inline drop position indicator (replaces fullscreen overlay) */}
       {dropTarget && (
-        <div className="fixed inset-0 pointer-events-none z-50">
-          <div className="border-2 border-blue-400 border-dashed rounded-lg bg-blue-50/20 dark:bg-blue-900/20">
-            Drop here
-          </div>
+        <div className="pointer-events-none mt-1 rounded border border-dashed border-blue-400 bg-blue-50/30 py-1 text-center text-xs text-blue-500 dark:bg-blue-900/20">
+          Drop {dropTarget.position === 'inside' ? 'inside' : dropTarget.position}
         </div>
       )}
     </div>

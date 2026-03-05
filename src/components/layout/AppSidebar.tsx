@@ -20,37 +20,33 @@ import {
     Hexagon,
     Zap,
     BarChart3,
-    Layers
+    Layers,
+    PieChart
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { approvalService } from '@/services/approvalService'
 import { useProjectStore } from '@/store/projectStore'
+import { getSidebarGroups, type NavIconKey } from '@/config/navRegistry'
 
-interface NavItem {
-    href: string
-    icon: React.ElementType
-    label: string
-    color: string
+const ICON_MAP: Record<NavIconKey, React.ElementType> = {
+    LayoutDashboard,
+    FolderKanban,
+    ClipboardList,
+    Calculator,
+    BarChart3,
+    CalendarClock,
+    Truck,
+    Wallet,
+    FileDiff,
+    FolderOpen,
+    ClipboardCheck,
+    Flag,
+    Layers,
+    PieChart,
+    Zap,
+    Sliders,
+    Settings,
 }
-
-const NAV_ITEMS: NavItem[] = [
-    { href: '/', icon: LayoutDashboard, label: 'Command Center', color: 'text-blue-500' },
-    { href: '/projects', icon: FolderKanban, label: 'Projects', color: 'text-yellow-600' },
-    { href: '/project-overview', icon: ClipboardList, label: 'Project Overview', color: 'text-sky-500' },
-    { href: '/costing', icon: Calculator, label: 'Project Costing', color: 'text-emerald-500' },
-    { href: '/cost-forecast', icon: BarChart3, label: 'Cost Forecast', color: 'text-rose-500' },
-    { href: '/schedule', icon: CalendarClock, label: 'Operation & Sch', color: 'text-indigo-500' },
-    { href: '/supply-chain', icon: Truck, label: 'Supply Chain', color: 'text-orange-500' },
-    { href: '/portfolio-resources', icon: Layers, label: 'Resource Heatmap', color: 'text-cyan-500' },
-    { href: '/strategy-simulation', icon: Zap, label: 'Strategic Modeling', color: 'text-yellow-500' },
-    { href: '/finance', icon: Wallet, label: 'Finance', color: 'text-teal-500' },
-    { href: '/change-management', icon: FileDiff, label: 'Change Mgmt', color: 'text-rose-500' },
-    { href: '/documents', icon: FolderOpen, label: 'Document', color: 'text-slate-500' },
-    { href: '/handover', icon: ClipboardCheck, label: 'Handover', color: 'text-violet-500' },
-    { href: '/tkdn', icon: Flag, label: 'TKDN', color: 'text-green-600' },
-    { href: '/features', icon: Sliders, label: 'Feature Config', color: 'text-purple-500' },
-    { href: '/settings', icon: Settings, label: 'Settings', color: 'text-gray-500' },
-]
 
 interface AppSidebarProps {
     collapsed: boolean
@@ -62,6 +58,7 @@ export function AppSidebar({ collapsed, setCollapsed }: AppSidebarProps) {
     const currentPath = location.pathname
     const { activeProjectId } = useProjectStore()
     const [pendingApprovals, setPendingApprovals] = React.useState(0)
+    const navGroups = React.useMemo(() => getSidebarGroups(), [])
 
     React.useEffect(() => {
         let mounted = true
@@ -113,50 +110,60 @@ export function AppSidebar({ collapsed, setCollapsed }: AppSidebarProps) {
             </div>
 
             {/* Navigation - Scrollable Area */}
-            <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
-                {NAV_ITEMS.map((item) => {
-                    const isActive = currentPath === item.href
-
-                    return (
-                        <Link
-                            key={item.href}
-                            to={item.href}
-                            className={cn(
-                                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 relative overflow-hidden",
-                                isActive
-                                    ? "bg-blue-50/80 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800"
-                                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200"
-                            )}
-                            title={collapsed ? item.label : undefined}
-                        >
-                            {/* Active Indicator Bar */}
-                            {isActive && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                            )}
-
-                            <item.icon
-                                size={20}
-                                className={cn(
-                                    "flex-shrink-0 transition-transform duration-200 group-hover:scale-110",
-                                    isActive ? "text-blue-600 dark:text-blue-400" : item.color
-                                )}
-                            />
-
-                            <span className={cn(
-                                "truncate transition-all duration-300",
-                                collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
-                            )}>
-                                {item.label}
-                            </span>
-
-                            {!collapsed && item.href === '/' && pendingApprovals > 0 && (
-                                <span className="ml-auto rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
-                                    {pendingApprovals}
+            <div className="flex-1 overflow-y-auto py-3 px-2.5 space-y-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+                {navGroups.map((group) => (
+                    <div key={group.label}>
+                        {/* Group Label */}
+                        {!collapsed && (
+                            <div className="mb-1 px-2 pb-1 border-b border-slate-100 dark:border-slate-800">
+                                <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-600">
+                                    {group.label}
                                 </span>
-                            )}
-                        </Link>
-                    )
-                })}
+                            </div>
+                        )}
+                        <div className="space-y-0.5">
+                            {group.items.map((item) => {
+                                const isActive = currentPath === item.path
+                                const Icon = ICON_MAP[item.iconKey]
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        className={cn(
+                                            "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 relative overflow-hidden",
+                                            isActive
+                                                ? "bg-blue-50/80 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 shadow-sm ring-1 ring-blue-100 dark:ring-blue-800"
+                                                : "text-slate-600 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200"
+                                        )}
+                                        title={collapsed ? item.label : undefined}
+                                    >
+                                        {isActive && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-blue-500 rounded-r-full shadow-[0_0_6px_rgba(59,130,246,0.6)]" />
+                                        )}
+                                        <Icon
+                                            size={18}
+                                            className={cn(
+                                                "flex-shrink-0 transition-transform duration-200 group-hover:scale-110",
+                                                isActive ? "text-blue-600 dark:text-blue-400" : item.colorClass
+                                            )}
+                                        />
+                                        <span className={cn(
+                                            "truncate transition-all duration-300",
+                                            collapsed ? "w-0 opacity-0" : "w-auto opacity-100"
+                                        )}>
+                                            {item.label}
+                                        </span>
+                                        {!collapsed && item.path === '/' && pendingApprovals > 0 && (
+                                            <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white leading-none">
+                                                {pendingApprovals}
+                                            </span>
+                                        )}
+                                    </Link>
+                                )
+                            })}
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Footer / User Profile Stub */}

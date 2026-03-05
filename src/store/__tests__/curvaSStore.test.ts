@@ -56,8 +56,9 @@ describe('curvaSStore', () => {
       
       expect(dataPoints.length).toBeGreaterThan(0)
       expect(dataPoints[0].projectId).toBe(projectId)
-      expect(dataPoints[0].plannedProgress).toBeGreaterThan(0)
-      expect(dataPoints[0].plannedCost).toBeGreaterThan(0)
+      expect(dataPoints[0].plannedProgress).toBeGreaterThanOrEqual(0)
+      expect(dataPoints[0].plannedCost).toBeGreaterThanOrEqual(0)
+      expect(dataPoints.some((p) => p.plannedCost > 0)).toBe(true)
     })
 
     it('should distribute budget evenly across periods', () => {

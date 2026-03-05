@@ -73,48 +73,102 @@ function DaysBadge({ days }: { days: number }) {
 
 // ─── Section: KPI Cards ─────────────────────────────────────────────────────
 function KPISection({ kpis }: { kpis: ProjectKPIs }) {
-  const cards = [
-    { label: 'RAB Total', value: kpis.rabTotal, icon: DollarSign, color: 'text-blue-600' },
-    { label: 'RAP Total', value: kpis.rapTotal, icon: TrendingUp, color: 'text-emerald-600' },
-    { label: 'Actual Cost', value: kpis.actualCost, icon: TrendingDown, color: 'text-orange-600' },
-    { label: 'Committed', value: kpis.committedCost, icon: DollarSign, color: 'text-indigo-600' },
-    { label: 'Remaining', value: kpis.remainingBudget, icon: DollarSign, color: kpis.remainingBudget < 0 ? 'text-red-600' : 'text-green-600' },
+  const utilPct = kpis.rabTotal > 0 ? (kpis.actualCost / kpis.rabTotal) * 100 : 0
+  const overBudget = kpis.remainingBudget < 0
+
+  const cards: Array<{
+    label: string
+    value: string
+    sub?: string
+    icon: React.ElementType
+    accent: string
+    badge?: React.ReactNode
+    bar?: number
+  }> = [
+    {
+      label: 'RAB Total',
+      value: formatIDR(kpis.rabTotal),
+      sub: 'Baseline Budget',
+      icon: DollarSign,
+      accent: 'border-t-blue-500',
+    },
+    {
+      label: 'RAP Total',
+      value: formatIDR(kpis.rapTotal),
+      sub: 'Working Estimate',
+      icon: TrendingUp,
+      accent: 'border-t-emerald-500',
+      bar: kpis.rabTotal > 0 ? (kpis.rapTotal / kpis.rabTotal) * 100 : 0,
+    },
+    {
+      label: 'Actual Cost',
+      value: formatIDR(kpis.actualCost),
+      sub: `${utilPct.toFixed(1)}% of RAB`,
+      icon: TrendingDown,
+      accent: utilPct > 100 ? 'border-t-red-500' : utilPct > 80 ? 'border-t-amber-500' : 'border-t-orange-400',
+      bar: utilPct,
+    },
+    {
+      label: 'Committed',
+      value: formatIDR(kpis.committedCost),
+      sub: 'PO + Contracts',
+      icon: Calculator,
+      accent: 'border-t-indigo-500',
+    },
+    {
+      label: 'Remaining',
+      value: formatIDR(Math.abs(kpis.remainingBudget)),
+      sub: overBudget ? 'OVER BUDGET' : 'Budget Left',
+      icon: Wallet,
+      accent: overBudget ? 'border-t-red-500' : 'border-t-green-500',
+      badge: overBudget ? (
+        <Badge variant="destructive" className="text-xs px-1 py-0">▲ OVER</Badge>
+      ) : undefined,
+    },
+    {
+      label: 'Progress',
+      value: `${kpis.progressPercent}%`,
+      sub: 'Overall Complete',
+      icon: BarChart3,
+      accent:
+        kpis.progressPercent >= 80 ? 'border-t-emerald-500' :
+        kpis.progressPercent >= 50 ? 'border-t-sky-500' : 'border-t-slate-400',
+      bar: kpis.progressPercent,
+    },
   ]
 
   return (
-    <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
       {cards.map((c) => (
-        <Card key={c.label}>
-          <CardContent className="pt-4 pb-3 px-4">
-            <div className="flex items-center gap-2 mb-1">
-              <c.icon className={`h-4 w-4 ${c.color}`} />
-              <span className="text-xs text-muted-foreground">{c.label}</span>
+        <Card key={c.label} className={`border-t-2 ${c.accent}`}>
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between mb-0.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{c.label}</span>
+              <c.icon className="h-3 w-3 text-muted-foreground/60 flex-shrink-0" />
             </div>
-            <div className="text-lg font-bold">{formatIDR(c.value)}</div>
-            {c.label === 'Remaining' && c.value < 0 && (
-              <Badge variant="destructive" className="mt-1 text-xs">Over Budget</Badge>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm font-bold tabular-nums">{c.value}</span>
+              {c.badge}
+            </div>
+            {c.sub && (
+              <div className={`text-xs mt-0.5 ${
+                c.label === 'Remaining' && overBudget ? 'text-red-500 font-semibold' : 'text-muted-foreground'
+              }`}>{c.sub}</div>
+            )}
+            {c.bar !== undefined && (
+              <div className="mt-1.5 h-1 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    c.bar > 100 ? 'bg-red-500' : c.bar > 80 ? 'bg-amber-400' : 'bg-current opacity-60'
+                  }`}
+                  style={{ width: `${Math.min(c.bar, 100)}%` }}
+                />
+              </div>
             )}
           </CardContent>
         </Card>
       ))}
     </div>
-  )
-}
-
-// ─── Section: Progress Bar ──────────────────────────────────────────────────
-function ProgressSection({ value }: { value: number }) {
-  return (
-    <Card>
-      <CardContent className="pt-4 pb-3 px-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-cyan-600" /> Overall Progress
-          </span>
-          <span className="text-sm font-bold">{value}%</span>
-        </div>
-        <Progress value={value} className="h-2" />
-      </CardContent>
-    </Card>
   )
 }
 
@@ -390,8 +444,10 @@ export default function ProjectOverview() {
   const [activities, setActivities] = useState<ActivityEntry[]>([])
   const [loading, setLoading] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [srStatus, setSrStatus] = useState('')
 
   const loadData = useCallback(async (projectId: string) => {
+    setSrStatus('Loading project overview metrics...')
     setLoading(true)
     const loaded = await handleAsync(async () => {
       const [kpiData, upcomingData, overdueData, riskData, teamData, activityData] =
@@ -415,6 +471,9 @@ export default function ProjectOverview() {
 
     if (!loaded) {
       console.error('Failed to load project overview data')
+      setSrStatus('Failed to load project overview metrics.')
+    } else {
+      setSrStatus('Project overview metrics loaded.')
     }
 
     setLoading(false)
@@ -457,11 +516,13 @@ export default function ProjectOverview() {
   // ─── Main layout ──────────────────────────────────────────────────────────
   return (
     <div className="space-y-6">
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
       {/* Header with project info */}
       <ModuleHeader
         icon={<ClipboardList size={18} />}
         title="Project Overview"
         description={`${activeProject.name}${activeProject.clientName ? ` — ${activeProject.clientName}` : ''}`}
+        accent="blue"
       />
 
       {/* Project Info Banner */}
@@ -518,11 +579,8 @@ export default function ProjectOverview() {
         onOpenChange={setShowSettings}
       />
 
-      {/* Section 1: KPI Cards */}
+      {/* Section 1: Compact 6-Card KPI Row (P1.3.1) */}
       {kpis && <KPISection kpis={kpis} />}
-
-      {/* Section 1b: Progress */}
-      {kpis && <ProgressSection value={kpis.progressPercent} />}
 
       {/* Section 2+3: Timeline + Risks (3-column grid) */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">

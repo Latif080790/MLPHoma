@@ -1,6 +1,6 @@
 import React from "react"
 import { ThemeToggle } from "@/components/shared/ThemeToggle"
-import { LogOut, User, Search } from "lucide-react"
+import { LogOut, User, Search, Command } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { useNavigate } from "react-router"
 import { NotificationCenter } from "@/components/common/NotificationCenter"
@@ -44,6 +44,16 @@ export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        {/* P1.2.2: Cmd+K palette trigger */}
+        <button
+          onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
+          className="hidden md:flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-slate-200 dark:border-slate-700 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 transition-colors bg-transparent"
+          title="Open command palette  Ctrl+K"
+          aria-label="Open command palette"
+        >
+          <Command size={12} />
+          <span>K</span>
+        </button>
         {/* Search Bar (Collapsible on mobile) */}
         {onSearch && (
           <div className="relative hidden md:block group">

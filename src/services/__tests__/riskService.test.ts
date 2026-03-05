@@ -39,7 +39,7 @@ describe('riskService', () => {
   describe('getRisks', () => {
     it('should return risks with wbs_name mapped', async () => {
       const rows = [
-        { id: 'r1', project_id: 'P1', description: 'Soil instability', category: 'Technical', probability: 4, impact: 5, risk_score: 20, status: 'OPEN', wbs_items: { name: 'Foundation' }, created_at: '2025-01-01', updated_at: '2025-01-01' },
+        { id: 'r1', project_id: 'P1', description: 'Soil instability', category: 'Technical', probability: 4, impact: 5, risk_score: 20, status: 'OPEN', wbs: { name: 'Foundation' }, created_at: '2025-01-01', updated_at: '2025-01-01' },
       ]
       mockFromImpl = () => makeChain({ data: rows, error: null })
 

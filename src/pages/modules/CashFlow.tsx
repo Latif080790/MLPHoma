@@ -232,6 +232,7 @@ export default function CashFlow(): JSX.Element {
       <ModuleHeader
         title="Cash Flow"
         description="Time-phased cashflow, scenario compare and what-if simulator."
+        accent="teal"
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" className="bg-transparent" onClick={() => setDense((v) => !v)}>

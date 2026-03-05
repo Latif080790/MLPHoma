@@ -28,9 +28,6 @@ import { useTimelineStore } from '../../store/timelineStore'
 import { useRabStore } from '../../store/rabStore'
 import type { RABItem } from '../../types/rab'
 import { toast } from 'sonner'
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
-import * as XLSX from 'xlsx'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
 
 /** Budget definition for a task used by RAP */
@@ -322,11 +319,12 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
   }
 
   /** Export schedule + task amounts to Excel */
-  const exportExcel = () => {
+  const exportExcel = async () => {
     if (!schedule.length) {
       toast.message('Generate schedule first')
       return
     }
+    const XLSX = await import('xlsx')
     const ws1 = XLSX.utils.json_to_sheet(
       schedule.map((p) => ({
         period: p.label,
@@ -357,6 +355,10 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
       toast.message('Nothing to export')
       return
     }
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ])
     const canvas = await html2canvas(exportRef.current, { backgroundColor: '#ffffff', scale: 2 })
     const img = canvas.toDataURL('image/png')
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })

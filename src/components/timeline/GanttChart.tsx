@@ -23,8 +23,6 @@ import {
 } from '../ui/context-menu'
 import { Image as ImageIcon, FileText, Activity } from 'lucide-react'
 import GanttLegend from './GanttLegend'
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
 import { createCpmWorker } from '../../workers/createCpmWorker'
 
 /**
@@ -869,6 +867,7 @@ export default function GanttChart({
     const clone = makePrintClone()
     if (!clone) return
     try {
+      const { default: html2canvas } = await import('html2canvas')
       const canvas = await html2canvas(clone as HTMLElement, { backgroundColor: palette.bg, scale: 2, useCORS: true })
       const url = canvas.toDataURL('image/png', 1.0)
       const a = document.createElement('a')
@@ -886,6 +885,10 @@ export default function GanttChart({
     const clone = makePrintClone()
     if (!clone) return
     try {
+      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ])
       const canvas = await html2canvas(clone as HTMLElement, { backgroundColor: palette.bg, scale: 2, useCORS: true })
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
@@ -1182,7 +1185,11 @@ export default function GanttChart({
                 const isCritical = criticalIds.has(t.id)
                 const isSelected = r.taskIndex === selectedIndex
 
-                const leftCellBase = `sticky left-0 z-10 flex items-center gap-3 px-4 text-sm bg-white/95 dark:bg-neutral-900/95 border-b border-r ${isSelected ? 'ring-2 ring-sky-300' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`
+                const leftCellBase = `sticky left-0 z-10 flex items-center gap-3 px-4 text-sm border-b border-r ${
+                  isCritical
+                    ? 'bg-red-50/60 dark:bg-red-950/20 border-l-2 border-l-red-500'
+                    : 'bg-white/95 dark:bg-neutral-900/95'
+                } ${isSelected ? 'ring-2 ring-sky-300' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`
 
                 // keep bars slightly inset vertically so baseline can sit below
                 const barTop = (rowHeight - barHeight) / 2

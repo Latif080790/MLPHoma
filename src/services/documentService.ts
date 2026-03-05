@@ -29,6 +29,8 @@ export interface ProjectDocument {
     // Version lineage
     predecessor_id?: string // Previous version
     successor_id?: string   // Next version
+    uploaded_by?: string
+    created_by?: string
 }
 
 export interface DocumentGovernanceState {

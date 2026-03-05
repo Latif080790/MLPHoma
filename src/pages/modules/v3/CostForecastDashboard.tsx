@@ -5,7 +5,7 @@
  * Displays: EVM gauges, S-Curve chart, cost breakdown by WBS, and forecast panel.
  */
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { Suspense, useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,17 +21,19 @@ import {
     RefreshCw,
     BarChart3,
     Minus,
+    FileDown,
 } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { useRapStore } from '@/store/rapStore'
 import useCurvaSStore from '@/store/curvaSStore'
 import { dashboardService, DashboardStats } from '@/services/dashboardService'
 import { computeEVM, computeForecasts, classifyHealth, calcPlannedProgressPercent } from '@/services/evmService'
-import CurvaSChart from '@/components/charts/CurvaSChart'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
 import type { Project } from '@/store/projectStore'
+
+const CurvaSChart = React.lazy(() => import('@/components/charts/CurvaSChart'))
 
 // ─── Helpers ───
 
@@ -73,6 +75,59 @@ function getHealthBadge(status: string) {
         default:
             return <Badge variant="outline" className="text-xs">N/A</Badge>
     }
+}
+
+// ─── EVM Radial Gauge ───
+
+// P1.5.1: Semicircle gauge for CPI / SPI (scale 0–2, target 1.0)
+function EvmRadialGauge({ value }: { value: number | null }) {
+    const R = 56, cx = 80, cy = 80
+    const pt = (v: number): [number, number] => {
+        const pct = Math.max(0, Math.min(2, v)) / 2
+        const a = Math.PI * (1 - pct)
+        return [cx + R * Math.cos(a), cy - R * Math.sin(a)]
+    }
+    const seg = (from: number, to: number) => {
+        const [x1, y1] = pt(from), [x2, y2] = pt(to)
+        const largeArc = (to - from) / 2 > 1 ? 1 : 0
+        return `M ${x1.toFixed(1)},${y1.toFixed(1)} A ${R},${R} 0 ${largeArc},1 ${x2.toFixed(1)},${y2.toFixed(1)}`
+    }
+    const v = Math.max(0, Math.min(2, value ?? 0))
+    const [nx, ny] = pt(v)
+    const color = value === null ? '#64748b' : value >= 1.0 ? '#10b981' : value >= 0.85 ? '#f59e0b' : '#ef4444'
+    const tick = (tv: number) => {
+        const a = Math.PI * (1 - Math.max(0, Math.min(2, tv)) / 2)
+        return {
+            x1: (cx + (R - 8) * Math.cos(a)).toFixed(1),
+            y1: (cy - (R - 8) * Math.sin(a)).toFixed(1),
+            x2: (cx + (R + 4) * Math.cos(a)).toFixed(1),
+            y2: (cy - (R + 4) * Math.sin(a)).toFixed(1),
+        }
+    }
+    const t85 = tick(0.85), t100 = tick(1.0)
+    return (
+        <svg viewBox="0 0 160 90" className="w-full max-w-[160px]" aria-hidden>
+            {/* Gray track */}
+            <path d={seg(0, 2)} fill="none" stroke="#0f172a" strokeWidth="14" strokeLinecap="round" />
+            {/* Zone bands */}
+            <path d={seg(0, 0.85)} fill="none" stroke="#ef4444" strokeWidth="14" strokeLinecap="butt" opacity="0.28" />
+            <path d={seg(0.85, 1.0)} fill="none" stroke="#f59e0b" strokeWidth="14" strokeLinecap="butt" opacity="0.28" />
+            <path d={seg(1.0, 2)} fill="none" stroke="#10b981" strokeWidth="14" strokeLinecap="butt" opacity="0.28" />
+            {/* Active value arc */}
+            {v > 0 && <path d={seg(0, v)} fill="none" stroke={color} strokeWidth="14" strokeLinecap="round" />}
+            {/* Tick marks at 0.85 and 1.0 */}
+            <line x1={t85.x1} y1={t85.y1} x2={t85.x2} y2={t85.y2} stroke="white" strokeWidth="2" opacity="0.6" />
+            <line x1={t100.x1} y1={t100.y1} x2={t100.x2} y2={t100.y2} stroke="white" strokeWidth="2.5" opacity="0.9" />
+            {/* Needle cap */}
+            {value !== null && v > 0 && (
+                <circle cx={nx.toFixed(1)} cy={ny.toFixed(1)} r="5" fill={color} stroke="white" strokeWidth="1.5" />
+            )}
+            {/* Scale labels */}
+            <text x="24" y="84" fontSize="7" fill="#475569" textAnchor="middle">0</text>
+            <text x="80" y="18" fontSize="7" fill="#475569" textAnchor="middle">1.0</text>
+            <text x="136" y="84" fontSize="7" fill="#475569" textAnchor="middle">2.0</text>
+        </svg>
+    )
 }
 
 // ─── Metric Card Component ───
@@ -145,6 +200,7 @@ export default function CostForecastDashboard() {
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [loading, setLoading] = useState(true)
     const [pageError, setPageError] = useState<string | null>(null)
+    const [srStatus, setSrStatus] = useState('')
     const [fallbackDates] = useState(() => {
         const now = Date.now()
         return {
@@ -159,6 +215,7 @@ export default function CostForecastDashboard() {
         let cancelled = false
 
         async function load() {
+            setSrStatus('Loading forecast metrics...')
             setLoading(true)
             setPageError(null)
             const dashStats = await handleAsync(async () => {
@@ -169,8 +226,10 @@ export default function CostForecastDashboard() {
             if (!cancelled && dashStats) {
                 setStats(dashStats)
                 analyzeProject(activeProjectId!)
+                setSrStatus('Forecast metrics loaded.')
             } else if (!cancelled && !dashStats) {
                 setPageError('Unable to load forecast metrics for the active project.')
+                setSrStatus('Failed to load forecast metrics.')
             }
 
             if (!cancelled) setLoading(false)
@@ -260,17 +319,21 @@ export default function CostForecastDashboard() {
 
     return (
         <div className="space-y-6 p-6">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
             <ModuleHeader
                 icon={<BarChart3 size={18} />}
                 title="Cost Forecast & EVM"
                 description={`Earned Value Management analysis for ${project?.name || 'project'}`}
+                accent="rose"
                 actions={
                     <div className="flex items-center gap-3">
                         {evmData && getHealthBadge(evmData.health.status)}
                         <Button
                             variant="outline"
                             size="sm"
+                            disabled={loading}
                             onClick={async () => {
+                                setSrStatus('Refreshing forecast metrics...')
                                 setLoading(true)
                                 setPageError(null)
                                 const s = await handleAsync(async () => {
@@ -280,8 +343,10 @@ export default function CostForecastDashboard() {
                                 if (s) {
                                     setStats(s)
                                     analyzeProject(activeProjectId!)
+                                    setSrStatus('Forecast metrics refreshed.')
                                 } else {
                                     setPageError('Unable to refresh forecast metrics.')
+                                    setSrStatus('Failed to refresh forecast metrics.')
                                 }
 
                                 setLoading(false)
@@ -289,8 +354,28 @@ export default function CostForecastDashboard() {
                             className="border-slate-700 text-slate-400 hover:text-slate-200"
                         >
                             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                            Refresh
+                            {loading ? 'Refreshing...' : 'Refresh'}
                         </Button>
+                        {stats && project && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                    const { reportingService } = await import('@/services/reportingService')
+                                    reportingService.generateReport({
+                                        projectId: activeProjectId!,
+                                        projectName: project.name,
+                                        stats,
+                                        type: 'EXECUTIVE_SUMMARY',
+                                        format: 'PDF',
+                                    })
+                                }}
+                                className="border-slate-700 text-slate-400 hover:text-slate-200 gap-1"
+                            >
+                                <FileDown size={14} />
+                                Export PDF
+                            </Button>
+                        )}
                     </div>
                 }
             />
@@ -301,27 +386,30 @@ export default function CostForecastDashboard() {
                 <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <CardContent className="p-6 relative z-10">
-                        <div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">
+                        <div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-3">
                             Cost Performance Index
                         </div>
-                        <div className="flex items-end gap-3">
-                            <span className={`text-5xl font-mono font-black ${getIndexColor(evmData?.metrics.cpi ?? 1)}`}>
-                                {evmData ? evmData.metrics.cpi.toFixed(2) : '—'}
-                            </span>
-                            <div className="mb-1.5">
-                                <div className="text-xs text-slate-500">Target: 1.00</div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex-shrink-0">
+                                <EvmRadialGauge value={evmData?.metrics.cpi ?? null} />
+                            </div>
+                            <div className="flex-1">
+                                <span className={`text-4xl font-mono font-black ${getIndexColor(evmData?.metrics.cpi ?? 1)}`}>
+                                    {evmData ? evmData.metrics.cpi.toFixed(2) : '—'}
+                                </span>
+                                <div className="mt-1 text-xs text-slate-500">Target: 1.00</div>
                                 {evmData && (
-                                    <div className={`text-sm font-mono ${evmData.metrics.cv >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    <div className={`text-sm font-mono mt-0.5 ${evmData.metrics.cv >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                         CV: {formatCurrency(evmData.metrics.cv)}
+                                    </div>
+                                )}
+                                {evmData && (
+                                    <div className={`mt-2 px-2 py-0.5 rounded text-xs inline-block border ${getIndexBg(evmData.metrics.cpi)}`}>
+                                        {evmData.metrics.cpi >= 1 ? 'Under Budget' : 'Over Budget'}
                                     </div>
                                 )}
                             </div>
                         </div>
-                        {evmData && (
-                            <div className={`mt-3 px-2 py-1 rounded text-xs inline-block border ${getIndexBg(evmData.metrics.cpi)}`}>
-                                {evmData.metrics.cpi >= 1 ? 'Under Budget' : 'Over Budget'}
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
 
@@ -329,27 +417,30 @@ export default function CostForecastDashboard() {
                 <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                     <CardContent className="p-6 relative z-10">
-                        <div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">
+                        <div className="text-xs text-slate-500 uppercase tracking-widest font-bold mb-3">
                             Schedule Performance Index
                         </div>
-                        <div className="flex items-end gap-3">
-                            <span className={`text-5xl font-mono font-black ${getIndexColor(evmData?.metrics.spi ?? 1)}`}>
-                                {evmData ? evmData.metrics.spi.toFixed(2) : '—'}
-                            </span>
-                            <div className="mb-1.5">
-                                <div className="text-xs text-slate-500">Target: 1.00</div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex-shrink-0">
+                                <EvmRadialGauge value={evmData?.metrics.spi ?? null} />
+                            </div>
+                            <div className="flex-1">
+                                <span className={`text-4xl font-mono font-black ${getIndexColor(evmData?.metrics.spi ?? 1)}`}>
+                                    {evmData ? evmData.metrics.spi.toFixed(2) : '—'}
+                                </span>
+                                <div className="mt-1 text-xs text-slate-500">Target: 1.00</div>
                                 {evmData && (
-                                    <div className={`text-sm font-mono ${evmData.metrics.sv >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    <div className={`text-sm font-mono mt-0.5 ${evmData.metrics.sv >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                                         SV: {formatCurrency(evmData.metrics.sv)}
+                                    </div>
+                                )}
+                                {evmData && (
+                                    <div className={`mt-2 px-2 py-0.5 rounded text-xs inline-block border ${getIndexBg(evmData.metrics.spi)}`}>
+                                        {evmData.metrics.spi >= 1 ? 'Ahead of Schedule' : 'Behind Schedule'}
                                     </div>
                                 )}
                             </div>
                         </div>
-                        {evmData && (
-                            <div className={`mt-3 px-2 py-1 rounded text-xs inline-block border ${getIndexBg(evmData.metrics.spi)}`}>
-                                {evmData.metrics.spi >= 1 ? 'Ahead of Schedule' : 'Behind Schedule'}
-                            </div>
-                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -416,14 +507,16 @@ export default function CostForecastDashboard() {
                     </CardHeader>
                     <CardContent>
                         {curvaSData.length > 0 ? (
-                            <CurvaSChart
-                                data={curvaSData}
-                                analysis={curvaSAnalysis}
-                                type="both"
-                                theme="dark"
-                                height={320}
-                                denseMode
-                            />
+                            <Suspense fallback={<div className="h-[320px] w-full animate-pulse rounded-md bg-slate-800/60" />}>
+                                <CurvaSChart
+                                    data={curvaSData}
+                                    analysis={curvaSAnalysis}
+                                    type="both"
+                                    theme="dark"
+                                    height={320}
+                                    denseMode
+                                />
+                            </Suspense>
                         ) : (
                             <div className="flex items-center justify-center h-64 text-slate-500 text-sm">
                                 No S-Curve data available. Generate a baseline from RAP first.

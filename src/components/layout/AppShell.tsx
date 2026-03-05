@@ -25,7 +25,14 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
   }, [collapsed])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-neutral-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900/30">
+    <div
+      className="min-h-screen bg-slate-50 dark:bg-neutral-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900/30"
+      style={{
+        backgroundImage:
+          'radial-gradient(circle, rgba(148,163,184,0.12) 1px, transparent 1px)',
+        backgroundSize: '28px 28px',
+      }}
+    >
 
       {/* 1. Glass Sidebar */}
       <AppSidebar collapsed={collapsed} setCollapsed={setCollapsed} />

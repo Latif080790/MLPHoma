@@ -144,7 +144,7 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
                 <DialogTrigger asChild>
                     <Card className={`group cursor-pointer hover:border-slate-400 transition-all border-l-4 ${isCritical ? 'border-l-red-500' : isHealthy ? 'border-l-emerald-500' : 'border-l-amber-500'}`}>
                         <CardContent className="p-4 relative">
-                            <ExternalLink size={12} className="absolute right-2 top-2 opacity-0 group-hover:opacity-40 transition-opacity" />
+                            <ExternalLink size={12} className="absolute right-2 top-2 opacity-30 transition-opacity md:opacity-0 md:group-hover:opacity-40" />
                             <div className="flex justify-between items-center">
                                 <div>
                                     <div className="text-xs text-muted-foreground uppercase tracking-wider">Profit Margin</div>

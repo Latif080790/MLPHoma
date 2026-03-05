@@ -2,20 +2,13 @@ import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ChevronRight, Home } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getBreadcrumbLabel } from '@/config/navRegistry'
 
-const ROUTE_LABELS: Record<string, string> = {
-    'projects': 'Projects',
-    'project-overview': 'Overview',
-    'costing': 'Costing',
-    'schedule': 'Schedule & Ops',
-    'supply-chain': 'Supply Chain',
-    'finance': 'Finance',
-    'change-management': 'Change Mgmt',
-    'documents': 'Documents',
-    'handover': 'Handover',
-    'tkdn': 'TKDN',
-    'features': 'Features',
-    'settings': 'Settings'
+function fallbackLabel(segment: string) {
+    return segment
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ')
 }
 
 export function AppBreadcrumbs({ projectName }: { projectName?: string }) {
@@ -35,7 +28,7 @@ export function AppBreadcrumbs({ projectName }: { projectName?: string }) {
             {pathSegments.map((segment: string, index: number) => {
                 const path = `/${pathSegments.slice(0, index + 1).join('/')}`
                 const isLast = index === pathSegments.length - 1
-                const label = ROUTE_LABELS[segment] || segment
+                const label = getBreadcrumbLabel(path) || fallbackLabel(segment)
 
                 return (
                     <div key={path} className="flex items-center">

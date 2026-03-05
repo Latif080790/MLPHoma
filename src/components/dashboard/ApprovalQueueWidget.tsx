@@ -105,7 +105,7 @@ export function ApprovalQueueWidget({ projectId, maxItems = 5, onOpenInbox }: Ap
                         by {item.requesterName || 'Unknown'} · {timeAgo(item.createdAt)}
                       </div>
                     </div>
-                    <Badge variant="outline" className={`text-[10px] h-5 ${config.className}`}>
+                    <Badge variant="outline" className={`text-xs h-5 ${config.className}`}>
                       <Icon className="h-3 w-3 mr-1" />
                       {config.label}
                     </Badge>

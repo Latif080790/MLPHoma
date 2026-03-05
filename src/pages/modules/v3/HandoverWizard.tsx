@@ -18,6 +18,7 @@ import { PermissionGuard } from '@/components/common/PermissionGuard'
 import { toast } from 'sonner'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
 import ModulePageState from '@/components/common/ModulePageState'
+import { Skeleton } from '@/components/common/LoadingSkeleton'
 
 import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
 
@@ -36,6 +37,7 @@ export default function HandoverWizard() {
     const [outstanding, setOutstanding] = useState<OutstandingIssue[]>([])
     const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
     const [pageError, setPageError] = useState<string | null>(null)
+    const [srStatus, setSrStatus] = useState('')
 
     useEffect(() => {
         if (!projectId) {
@@ -45,6 +47,7 @@ export default function HandoverWizard() {
         let cancelled = false
         const load = async () => {
             queueMicrotask(() => {
+                setSrStatus('Loading handover metrics...')
                 setLoading(true)
                 setPageError(null)
             })
@@ -59,11 +62,13 @@ export default function HandoverWizard() {
             if (result && !cancelled) {
                 setSummary(result.s)
                 setOutstanding(result.o)
+                setSrStatus('Handover metrics loaded.')
             }
 
             if (!result && !cancelled) {
                 setPageError('Failed to load handover metrics and outstanding issues.')
                 toast.error("Failed to load handover data")
+                setSrStatus('Failed to load handover data.')
             }
 
             if (!cancelled) setLoading(false)
@@ -76,6 +81,7 @@ export default function HandoverWizard() {
 
 
     const handleGenerateReport = async () => {
+        setSrStatus('Generating handover PDF report...')
         setGenerating(true)
         if (summary && project) {
             const generated = await handleAsync(async () => {
@@ -86,6 +92,9 @@ export default function HandoverWizard() {
             if (generated) {
                 setReportReady(true)
                 toast.success("Report Generated Successfully")
+                setSrStatus('Handover report generated successfully.')
+            } else {
+                setSrStatus('Failed to generate handover report.')
             }
         }
 
@@ -95,6 +104,7 @@ export default function HandoverWizard() {
     const handleMarkResolved = (issueId: string) => {
         setOutstanding(prev => prev.filter(i => i.id !== issueId))
         toast.success('Issue marked as resolved')
+        setSrStatus('Outstanding issue marked as resolved.')
     }
 
     const handleArchiveProject = async () => {
@@ -105,6 +115,9 @@ export default function HandoverWizard() {
 
         if (archived) {
             setConfirmArchiveOpen(false)
+            setSrStatus('Project archived successfully.')
+        } else {
+            setSrStatus('Failed to archive project.')
         }
     }
 
@@ -146,6 +159,7 @@ export default function HandoverWizard() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 p-6">
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
             <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">Project Handover Wizard</h1>
                 <p className="text-muted-foreground">Finalize &quot;{project.name}&quot; and generate completion documents.</p>
@@ -184,9 +198,23 @@ export default function HandoverWizard() {
 
                 <CardContent className="flex-1">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center p-12 space-y-4">
-                            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                            <p className="text-muted-foreground animate-pulse">Fetching project metrics...</p>
+                        <div className="space-y-6 p-4" aria-live="polite" aria-busy="true">
+                            <div className="grid gap-4 md:grid-cols-3">
+                                {Array.from({ length: 3 }).map((_, idx) => (
+                                    <div key={`hw-kpi-skeleton-${idx}`} className="rounded-lg border p-4 space-y-2">
+                                        <Skeleton className="h-4 w-28" />
+                                        <Skeleton className="h-8 w-20" />
+                                        <Skeleton className="h-3 w-24" />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="rounded-md border p-4 space-y-3">
+                                <Skeleton className="h-4 w-40" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <p className="text-sm text-muted-foreground">Fetching project metrics...</p>
                         </div>
                     ) : (
                         <>
@@ -270,9 +298,9 @@ export default function HandoverWizard() {
                                                 Generates a comprehensive PDF including Budget, Schedule, Assets, and Safety records.
                                             </p>
                                         </div>
-                                        <Button onClick={handleGenerateReport} disabled={generating}>
+                                        <Button onClick={handleGenerateReport} disabled={generating} aria-busy={generating}>
                                             {generating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                                            {reportReady ? 'Download Again' : 'Generate & Download PDF'}
+                                            {generating ? 'Generating PDF...' : reportReady ? 'Download Again' : 'Generate & Download PDF'}
                                         </Button>
                                     </div>
 

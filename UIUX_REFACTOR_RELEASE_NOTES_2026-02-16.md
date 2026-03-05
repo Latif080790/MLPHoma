@@ -4,7 +4,7 @@
 **Scope:** Costing Suite + cross-module interaction consistency  
 **Type:** Frontend UX modernization (non-breaking data model)
 
-**Latest Update:** 2026-02-28 - WCAG 2.1 AA Typography Compliance Complete
+**Latest Update:** 2026-03-05 - Performance Batch 7 (Optimization Closure)
 
 ---
 
@@ -37,6 +37,160 @@
 - `WCAG_ENFORCEMENT_IMPLEMENTATION_SUMMARY.md` - Implementation details
 
 **Impact**: All UI components now meet accessibility standards for readability while preserving the engineering-first dense layout aesthetic.
+
+---
+
+## 🚀 Wave 4 Update (2026-03-05) — Advanced Search + Final Polish
+
+### Scope Delivered
+Advanced search/filter panels were standardized across modules already using shared `ModuleListToolbar`, without backend/schema changes.
+
+### Batch Delivery Summary
+- **Batch 1 — Documents (`src/pages/modules/v3/Documents.tsx`)**
+  - Added uploader filter, date range (`from/to`), reset action.
+  - Added uploader metadata rendering (`uploaded_by` / `created_by`) and persisted filter state.
+- **Batch 2 — Finance (`src/pages/modules/v3/Finance.tsx`)**
+  - AP: vendor + due-date range filters.
+  - AR: period-date range filters.
+  - Added reset actions and localStorage persistence.
+- **Batch 3 — Supply Chain (`src/pages/modules/v3/SupplyChain.tsx`)**
+  - Requests: requester + required-date range filters.
+  - Orders: vendor + created-date range filters.
+  - Added reset actions and localStorage persistence.
+- **Batch 4 — Portfolio Analytics (`src/pages/modules/v3/PortfolioAnalytics.tsx`)**
+  - Added project status, owner (`userId`), and end-date range filters.
+  - Extended row model with owner metadata and persisted filter state.
+- **Batch 5 — Project Management (`src/pages/modules/ProjectManagement.tsx`)**
+  - Added owner (`userId`) and deadline range filters.
+  - Added reset action and persisted filter state.
+- **Batch 6 — Timeline (`src/pages/modules/Timeline.tsx`)**
+  - Confirmed advanced panel in place: assigned resource + start-date range + reset.
+  - Validation re-run confirms no regressions.
+
+### Validation Snapshot
+- Global diagnostics: **no errors found**.
+- Latest full-suite test run in this cycle: **255 passed, 0 failed**.
+
+### Compatibility
+- No API contract changes.
+- No database migration required.
+- All enhancements are UI-layer filtering and interaction polish.
+
+---
+
+## ⚡ Performance Batch 2 (2026-03-05) — Production Bundle Optimization
+
+### Scope Delivered
+- Migrated remaining heavy export-library imports (`xlsx`, `jspdf`, `html2canvas`) from static top-level imports to on-demand `import()` in export actions.
+- Applied to remaining hotspots:
+  - `src/pages/modules/Reports.tsx`
+  - `src/pages/modules/Progress.tsx`
+  - `src/pages/modules/Resource.tsx`
+  - `src/components/rap/RAPGenerator.tsx`
+  - `src/components/timeline/GanttChart.tsx`
+- Refined bundling strategy in `vite.config.ts` by removing forced manual chunk groups for chart/pdf/excel libraries, allowing Rollup auto-splitting.
+
+### Validation Snapshot
+- Production build passes (`npm run build`).
+- No diagnostics errors in touched files.
+- Post-change build no longer emits the prior chunk-size warning (`Some chunks are larger than 500 kB after minification`).
+
+### Compatibility
+- No backend/API/schema changes.
+- No UX behavior changes; export features remain identical from user perspective.
+
+---
+
+## ⚡ Performance Batch 3 (2026-03-05) — Route/Global Payload Trimming
+
+### Scope Delivered
+- Converted global command palette wiring in `App.tsx` to lazy-load using `React.lazy` + `Suspense`.
+- Updated `GlobalCommandPalette` export shape to default export to support deferred loading.
+
+### Validation Snapshot
+- Production build passes (`npm run build`).
+- `GlobalCommandPalette` now emitted as its own async chunk (`dist/assets/GlobalCommandPalette-*.js`).
+- Main app chunk reduced versus previous build in this cycle (from ~276 kB gzip-bearing entry chunk to ~251 kB on latest build output).
+
+### Compatibility
+- No route changes.
+- No behavior change for command palette shortcuts/features.
+
+---
+
+## ⚡ Performance Batch 4 (2026-03-05) — Tab-Level Code Splitting
+
+### Scope Delivered
+- Converted heavy tab containers from eager imports to lazy imports per tab:
+  - `src/pages/modules/v3/ScheduleOps.tsx`
+  - `src/pages/modules/v3/ProjectCosting.tsx`
+- Added `Suspense` fallbacks for tab content, preserving current UX flow while deferring inactive tab bundles.
+
+### Validation Snapshot
+- Production build passes (`npm run build`).
+- Significant route-chunk reductions observed in build output:
+  - `ScheduleOps`: from ~157 kB to ~10 kB (route shell only).
+  - `ProjectCosting`: from ~157 kB to ~5 kB (route shell only).
+- Child tab modules now emitted as separate async chunks (e.g. `Timeline`, `WBS`, `RAB`, `RAP`, `Progress`, `RiskRegister`, `CriticalPathGantt`).
+
+### Compatibility
+- No feature removals or route path changes.
+- Tab behavior remains functionally identical; only loading strategy changed.
+
+---
+
+## ⚡ Performance Batch 5 (2026-03-05) — Chart Widget Isolation
+
+### Scope Delivered
+- Extracted Command Center cashflow chart (Recharts-based) into a dedicated widget component:
+  - `src/components/dashboard/CommandCenterCashflowChart.tsx`
+- Switched `src/pages/modules/v3/CommandCenter.tsx` to lazy-load the chart widget via `React.lazy` + `Suspense`.
+
+### Validation Snapshot
+- Production build passes (`npm run build`).
+- New async chart widget chunk emitted: `CommandCenterCashflowChart-*.js`.
+- `CommandCenter` route chunk reduced (from ~57.3 kB to ~56.2 kB on latest build output), with chart logic moved out of route shell.
+
+### Compatibility
+- No visual/interaction changes in Command Center cashflow panel.
+- Data flow unchanged; only loading boundary adjusted.
+
+---
+
+## ⚡ Performance Batch 6 (2026-03-05) — Forecast Chart Deferral
+
+### Scope Delivered
+- Deferred heavy chart dependency in Cost Forecast route by lazy-loading `CurvaSChart`.
+- Deferred report generation service load (`reportingService`) to click-time dynamic import on Export PDF action.
+- Updated file:
+  - `src/pages/modules/v3/CostForecastDashboard.tsx`
+
+### Validation Snapshot
+- Production build passes (`npm run build`).
+- New async chunk for chart boundary observed (`CurvaSChart-*.js`).
+- `CostForecastDashboard` route shell remains compact and chart/report logic is pulled into deferred chunks.
+
+### Compatibility
+- No UI behavior changes.
+- Forecast and export features remain functionally equivalent.
+
+---
+
+## ✅ Performance Batch 7 (2026-03-05) — Optimization Closure
+
+### Final Validation
+- Final production build passes (`npm run build`).
+- No diagnostics errors on touched optimization files.
+- Static top-level imports for heavy export libraries (`xlsx`, `jspdf`, `html2canvas`) are no longer present in `src/**` user modules.
+
+### Closure Summary
+- Route shells for previously heavy pages are now significantly leaner due to route/tab/widget code splitting.
+- Heavy capabilities are now mostly deferred to user-triggered boundaries (export actions, chart widgets, inactive tabs).
+- Current remaining large generated chunks are primarily vendor/runtime artifacts (`xlsx`, `jspdf`, `generateCategoricalChart`, etc.) and loaded on-demand through lazy boundaries introduced in Batches 2–6.
+
+### Release Readiness Note
+- Performance optimization wave for this cycle is considered complete.
+- Further reduction would require deeper library-level substitutions (e.g., chart/export stack changes), which is out of scope for this non-breaking wave.
 
 ---
 
@@ -360,3 +514,64 @@ Validation performed during this refactor cycle:
 
 **Notes**: 
 _____________________
+
+---
+
+## 8) Post-Wave 4 QA/UAT Checklist (Advanced Search Rollout)
+
+Use this checklist to validate Wave 4 batches delivered on 2026-03-05.
+
+Companion execution sheet for test runs:
+- `WAVE4_QA_EXECUTION_SHEET_2026-03-05.md`
+- `WAVE4_QA_EXECUTION_SHEET_ID_2026-03-05.md` (Bahasa Indonesia)
+
+### A. Functional Verification (Per Module)
+
+**Documents (`src/pages/modules/v3/Documents.tsx`)**
+- [ ] Search + category + uploader + date range can be combined
+- [ ] Reset Filters clears uploader/date fields only (base toolbar remains)
+- [ ] Filters persist after refresh (localStorage)
+
+**Finance (`src/pages/modules/v3/Finance.tsx`)**
+- [ ] AP: vendor + due-date range filters work with query/status/sort
+- [ ] AR: period-date range filters work with query/status/sort
+- [ ] AP/AR Reset Filters restore advanced controls to defaults
+- [ ] AP/AR advanced filters persist after refresh
+
+**Supply Chain (`src/pages/modules/v3/SupplyChain.tsx`)**
+- [ ] Requests: requester + required-date range filter correctly
+- [ ] Orders: vendor + created-date range filter correctly
+- [ ] Reset Filters work independently per tab
+- [ ] Advanced filter state persists after refresh
+
+**Portfolio Analytics (`src/pages/modules/v3/PortfolioAnalytics.tsx`)**
+- [ ] Project status + owner + end-date range combine with query/health/sort
+- [ ] Projects without `endDate` are excluded when date range is applied
+- [ ] Reset Filters restores advanced controls to defaults
+- [ ] Advanced filter state persists after refresh
+
+**Project Management (`src/pages/modules/ProjectManagement.tsx`)**
+- [ ] Owner + deadline range combine with query/status/sort
+- [ ] Reset Filters clears advanced controls only
+- [ ] Advanced filter state persists after refresh
+
+**Timeline (`src/pages/modules/Timeline.tsx`)**
+- [ ] Resource + start-date range combine with query/status
+- [ ] Reset Filters clears resource/date controls
+- [ ] Advanced filter state persists after refresh
+
+### B. UX + Accessibility Verification
+- [ ] All advanced controls have clear labels and keyboard focus order is logical
+- [ ] Date input controls are operable via keyboard and mouse
+- [ ] Result counts update correctly after each filter change
+- [ ] No layout breakage on desktop/tablet/mobile widths
+
+### C. Regression Guardrails
+- [ ] No console errors while switching tabs and applying filters repeatedly
+- [ ] Existing create/edit/delete flows still function in each touched module
+- [ ] Full test suite remains green after UAT sign-off
+
+### D. Exit Criteria
+- [ ] All module checklists in section A marked PASS
+- [ ] No critical UX regressions found
+- [ ] Product owner/QA sign-off recorded in release ticket

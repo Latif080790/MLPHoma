@@ -63,6 +63,7 @@ import {
 } from '../ui/select'
 
 import { useWBSStore } from '../../store/wbsStore'
+import { useUnsavedChanges } from '../../hooks/useUnsavedChanges'
 import type { WBSItem } from '../../types/wbs'
 type WBSImportItem = Omit<WBSItem, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>
 import type { AHSPItem } from '../../types/ahsp'
@@ -70,6 +71,8 @@ import type { AHSPComponent } from '../../types/ahsp'
 
 interface RABTableProps {
   projectId: string
+  /** When provided, only show RAB items linked to this WBS node ID */
+  filterWbsId?: string
 }
 
 // Column definitions for the RAB Table
@@ -82,7 +85,7 @@ const COLUMN_DEFS = [
   { key: 'task', label: 'Linked Task', defaultVisible: false, alwaysVisible: false },
   { key: 'unit', label: 'Unit', defaultVisible: true, alwaysVisible: false },
   { key: 'volume', label: 'Volume', defaultVisible: true, alwaysVisible: false },
-  { key: 'tkdn', label: 'TKDN %', defaultVisible: false, alwaysVisible: false },
+  { key: 'tkdn', label: 'TKDN %', defaultVisible: false, alwaysVisible: false }, // Task 30: hidden by default
   { key: 'cost_material', label: 'Material', defaultVisible: false, alwaysVisible: false },
   { key: 'cost_labor', label: 'Labor', defaultVisible: false, alwaysVisible: false },
   { key: 'cost_equipment', label: 'Equipment', defaultVisible: false, alwaysVisible: false },
@@ -106,7 +109,7 @@ function saveColumnPrefs(cols: Set<ColumnKey>) {
   localStorage.setItem(STORAGE_KEY_COLS, JSON.stringify([...cols]))
 }
 
-export function RABTable({ projectId }: RABTableProps) {
+export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const {
     ahspItems,
     searchAHSPItems,
@@ -123,11 +126,28 @@ export function RABTable({ projectId }: RABTableProps) {
 
   const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot } = useRabStore()
   const [activeTab, setActiveTab] = useState<'direct' | 'overhead'>('direct')
+  // Task 25: Search filter for RAB items
+  const [tableSearchQuery, setTableSearchQuery] = useState('')
   const allItems = getItems(projectId)
-  const items = allItems.filter(i => activeTab === 'direct' ? !i.is_overhead : i.is_overhead)
+  const items = allItems.filter(i => {
+    if (activeTab === 'direct' ? i.is_overhead : !i.is_overhead) return false
+    if (filterWbsId && i.wbsId !== filterWbsId) return false
+    // Task 25: Apply search filter
+    if (tableSearchQuery) {
+      const q = tableSearchQuery.toLowerCase()
+      const name = (i.name || '').toLowerCase()
+      const code = (i.item_code || i.code || '').toLowerCase()
+      const notes = ((i.notes as string) || '').toLowerCase()
+      if (!name.includes(q) && !code.includes(q) && !notes.includes(q)) return false
+    }
+    return true
+  })
   const draftCount = getDraftCount(projectId)
   const hasUnsavedChanges = hasUnsaved(projectId)
   const projectLocked = isLocked(projectId)
+
+  // QW.8: Guard navigation when RAB has unsaved changes
+  useUnsavedChanges(hasUnsavedChanges, 'RAB has unpublished drafts. Leave without saving?')
 
   // Get tasks for linking
   const { getTasks, setTasks } = useTimelineStore()
@@ -729,59 +749,71 @@ export function RABTable({ projectId }: RABTableProps) {
       )}
 
 
-      <div className="sticky-glass-panel flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="control-compact gap-1.5">
-                <Settings2 size={14} />
-                Columns
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-52 p-2" align="start">
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 px-2 py-1">Toggle Columns</p>
-              {COLUMN_DEFS.filter(c => c.key !== 'actions').map(col => (
-                <label key={col.key} className={`flex items-center gap-2 rounded px-2 py-1.5 text-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 ${col.alwaysVisible ? 'opacity-50' : ''}`}>
-                  <Checkbox
-                    checked={isColVisible(col.key)}
-                    disabled={col.alwaysVisible}
-                    onCheckedChange={() => toggleColumn(col.key)}
-                    className="h-3.5 w-3.5"
-                  />
-                  <span className="font-medium text-slate-700 dark:text-slate-300">{col.label}</span>
-                </label>
-              ))}
-            </PopoverContent>
-          </Popover>
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-2" />
-          <h3 className="text-sm font-semibold tracking-tight text-slate-700 dark:text-slate-300 uppercase">Cost Items</h3>
-          <Badge variant="secondary" className="ml-2 font-mono text-xs text-slate-500 bg-slate-100 dark:bg-slate-800">{items.length}</Badge>
-          {draftCount > 0 && (
-            <Badge variant="outline" className="ml-2 font-mono text-xs text-yellow-700 bg-yellow-50 border-yellow-300">
-              <Save className="h-3 w-3 mr-1" />
-              {draftCount} Draft{draftCount > 1 ? 's' : ''}
-            </Badge>
-          )}
-          {hasUnsavedChanges && (
-            <Badge variant="outline" className="ml-2 font-mono text-xs text-orange-700 bg-orange-50 border-orange-300 animate-pulse">
-              Unsaved
-            </Badge>
-          )}
-          {loading.zonePrices && (
-            <LoadingSpinner size="sm" text="Loading zone prices..." className="ml-2" />
-          )}
-          {projectLocked && (
-            <Badge variant="outline" className="ml-2 font-mono text-xs text-amber-700 bg-amber-50 border-amber-300">
-              <Lock className="h-3 w-3 mr-1" />
-              Locked Baseline
-            </Badge>
-          )}
-          {selectedScenarioVersion && (
-            <Badge variant="outline" className="ml-2 font-mono text-xs text-blue-700 bg-blue-50 border-blue-300">
-              <Layers className="h-3 w-3 mr-1" />
-              Scenario: v{selectedScenarioVersion}
-            </Badge>
-          )}
+      <div className="sticky-glass-panel flex flex-col gap-2 p-3">
+        {/* Row 1: Primary actions + Search (Task 24/25) */}
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* View group */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="control-compact gap-1.5">
+                  <Settings2 size={14} />
+                  Columns
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-52 p-2" align="start">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 px-2 py-1">Toggle Columns</p>
+                {COLUMN_DEFS.filter(c => c.key !== 'actions').map(col => (
+                  <label key={col.key} className={`flex items-center gap-2 rounded px-2 py-1.5 text-xs cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 ${col.alwaysVisible ? 'opacity-50' : ''}`}>
+                    <Checkbox
+                      checked={isColVisible(col.key)}
+                      disabled={col.alwaysVisible}
+                      onCheckedChange={() => toggleColumn(col.key)}
+                      className="h-3.5 w-3.5"
+                    />
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{col.label}</span>
+                  </label>
+                ))}
+              </PopoverContent>
+            </Popover>
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+            <h3 className="text-sm font-semibold tracking-tight text-slate-700 dark:text-slate-300 uppercase">Cost Items</h3>
+            <Badge variant="secondary" className="font-mono text-xs text-slate-500 bg-slate-100 dark:bg-slate-800">{items.length}</Badge>
+            {draftCount > 0 && (
+              <Badge variant="outline" className="font-mono text-xs text-yellow-700 bg-yellow-50 border-yellow-300">
+                <Save className="h-3 w-3 mr-1" />
+                {draftCount} Draft{draftCount > 1 ? 's' : ''}
+              </Badge>
+            )}
+            {projectLocked && (
+              <Badge variant="outline" className="font-mono text-xs text-amber-700 bg-amber-50 border-amber-300">
+                <Lock className="h-3 w-3 mr-1" />
+                Locked Baseline
+              </Badge>
+            )}
+            {selectedScenarioVersion && (
+              <Badge variant="outline" className="font-mono text-xs text-blue-700 bg-blue-50 border-blue-300">
+                <Layers className="h-3 w-3 mr-1" />
+                Scenario: v{selectedScenarioVersion}
+              </Badge>
+            )}
+          </div>
+
+          {/* Task 25: Search filter */}
+          <div className="relative w-full md:w-64 shrink-0">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={tableSearchQuery}
+              onChange={e => setTableSearchQuery(e.target.value)}
+              placeholder="Search name, code, spec..."
+              className="h-8 pl-8 pr-8 text-xs border-slate-200 bg-white focus:border-blue-400"
+            />
+            {tableSearchQuery && (
+              <button onClick={() => setTableSearchQuery('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                <X size={12} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Tab Controls */}
@@ -1188,7 +1220,8 @@ export function RABTable({ projectId }: RABTableProps) {
                   {isColVisible('select') && <TableHead className="w-[48px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">
                     <Checkbox checked={isAllSelected} onCheckedChange={handleSelectAll} />
                   </TableHead>}
-                  {isColVisible('no') && <TableHead className="w-[56px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4 text-center">No.</TableHead>}
+                  {/* Task 32: Sticky No column */}
+                  {isColVisible('no') && <TableHead className="w-[56px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-white/95 dark:bg-neutral-900/95 py-4 text-center sticky left-0 z-10">No.</TableHead>}
                   {isColVisible('cls') && <TableHead className="w-[48px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4 text-center">
                     <div className="inline-flex items-center gap-1 justify-center w-full">
                       <span>Cls</span>
@@ -1201,7 +1234,8 @@ export function RABTable({ projectId }: RABTableProps) {
                     </div>
                   </TableHead>}
                   {isColVisible('code') && <TableHead className="w-[100px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">Code</TableHead>}
-                  {isColVisible('description') && <TableHead className="w-[320px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">Pekerjaan / Item Description</TableHead>}
+                  {/* Task 32: Sticky Description column */}
+                  {isColVisible('description') && <TableHead className="w-[320px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-white/95 dark:bg-neutral-900/95 py-4 sticky left-[56px] z-10">Pekerjaan / Item Description</TableHead>}
                   {isColVisible('task') && <TableHead className="w-[150px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">Linked Task</TableHead>}
                   {isColVisible('unit') && <TableHead className="w-[64px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">Unit</TableHead>}
                   {isColVisible('volume') && <TableHead className="w-[100px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">Volume</TableHead>}
@@ -1217,11 +1251,23 @@ export function RABTable({ projectId }: RABTableProps) {
               </TableHeader>
               <TableBody style={{ height: `${mainVirtualizer.getTotalSize()}px`, position: 'relative' }}>
                 {virtualRows.length === 0 ? (
-                  <TableRow style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '128px' }}>
+                  <TableRow style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '200px' }}>
                     <TableCell colSpan={visibleColCount} className="text-center py-12 text-slate-400 bg-slate-50/20 w-full">
-                      <div className="flex flex-col items-center gap-2">
-                        <Search className="h-8 w-8 opacity-20" />
-                        <p>No items in RAB. Click &quot;Add Item&quot; to start.</p>
+                      {/* Task 23: Onboarding empty state with 2 CTA */}
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="flex items-center gap-2 text-indigo-400/60">
+                          <Calculator className="h-10 w-10" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Belum ada item RAB</p>
+                          <p className="text-xs text-slate-400 mt-1">Mulai dengan menambah item dari katalog AHSP atau import BoQ.</p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setIsAddDialogOpen(true)}>
+                            <Plus size={14} />
+                            Add from AHSP
+                          </Button>
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1465,6 +1511,39 @@ export function RABTable({ projectId }: RABTableProps) {
           </div>
         </div>
       </TooltipProvider>
+
+      {/* Task 29: Draft sticky bar */}
+      {hasUnsavedChanges && draftCount > 0 && (
+        <div className="sticky bottom-0 z-30 flex items-center justify-between gap-4 rounded-lg border border-yellow-300 bg-yellow-50/95 p-3 backdrop-blur-sm dark:border-yellow-700 dark:bg-yellow-900/80 shadow-lg">
+          <div className="flex items-center gap-2">
+            <Save size={14} className="text-yellow-600 animate-pulse" />
+            <span className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">
+              {draftCount} draft{draftCount > 1 ? 's' : ''} belum dipublish
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs text-yellow-700 hover:text-yellow-900"
+              onClick={() => {
+                /* Discard logic — reload from storage */
+                window.location.reload()
+              }}
+            >
+              Discard
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 text-xs bg-green-600 hover:bg-green-700 text-white gap-1.5"
+              onClick={() => setShowPublishConfirm(true)}
+            >
+              <CheckCircle2 size={13} />
+              Publish All
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="sticky-glass-footer flex flex-col gap-4 rounded-lg p-3 md:p-4 mt-6">
         <div className="flex flex-wrap items-center justify-between gap-4">

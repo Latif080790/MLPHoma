@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, X, RotateCcw } from 'lucide-react'
+import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, X, RotateCcw, MoreHorizontal } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -24,7 +24,15 @@ import {
   AlertDialogTitle,
 } from '../ui/alert-dialog'
 import { TooltipProvider } from '../ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu'
 import { useAHSPStore, getAHSPSummary } from '../../store/ahspStore'
+import { useRabStore } from '@/store/rabStore'
 import { AHSPItemEditor } from './AHSPItemEditor'
 import { ZoneManager } from './ZoneManager'
 import { ZonePriceEditor } from './ZonePriceEditor'
@@ -34,6 +42,30 @@ import { saveCreationLog } from '../../lib/supabaseClient'
 import { formatIDR } from '../../lib/utils'
 import type { AHSPItem } from '../../types/ahsp'
 import { toast } from 'sonner'
+
+/**
+ * Mini horizontal stacked bar showing cost composition (material/labor/equipment/subcon)
+ */
+function CostMixBar({ mat, lab, eqp, sub }: { mat: number; lab: number; eqp: number; sub: number }) {
+  const total = mat + lab + eqp + sub
+  if (total === 0) return null
+  const matPct = (mat / total) * 100
+  const labPct = (lab / total) * 100
+  const eqpPct = (eqp / total) * 100
+  const subPct = (sub / total) * 100
+  const tip = `Material ${Math.round(matPct)}% · Labor ${Math.round(labPct)}% · Equip ${Math.round(eqpPct)}% · Subcon ${Math.round(subPct)}%`
+  return (
+    <div
+      className="flex h-1.5 w-full max-w-[160px] rounded-full overflow-hidden mt-1 opacity-70"
+      title={tip}
+    >
+      {matPct > 0 && <div className="bg-blue-500 h-full" style={{ width: `${matPct}%` }} />}
+      {labPct > 0 && <div className="bg-orange-400 h-full" style={{ width: `${labPct}%` }} />}
+      {eqpPct > 0 && <div className="bg-indigo-400 h-full" style={{ width: `${eqpPct}%` }} />}
+      {subPct > 0 && <div className="bg-purple-400 h-full" style={{ width: `${subPct}%` }} />}
+    </div>
+  )
+}
 
 /** Extended AHSPItem with zone price breakdown fields */
 interface AHSPItemWithPrices extends AHSPItem {
@@ -77,6 +109,8 @@ export function AHSPCatalog({
   const [sourceReference, setSourceReference] = useState<string | undefined>(undefined)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
+  const [pendingBulkDeleteIds, setPendingBulkDeleteIds] = useState<string[]>([])
   const parentRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -228,7 +262,18 @@ export function AHSPCatalog({
 
     return rows
   }, [displayItems])
-
+  // RAB usage count per AHSP item (Item 13)
+  const rabItemsByProject = useRabStore(s => s.itemsByProject)
+  const ahspUsageMap = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const items of Object.values(rabItemsByProject)) {
+      for (const ri of items) {
+        const aid = (ri as { ahspItemId?: string }).ahspItemId
+        if (aid) map.set(aid, (map.get(aid) ?? 0) + 1)
+      }
+    }
+    return map
+  }, [rabItemsByProject])
   const totals = useMemo(() => {
     let materialTotal = 0
     let laborTotal = 0
@@ -276,17 +321,19 @@ export function AHSPCatalog({
     setSelectedIds(newSelected)
   }
 
-  // Handle Bulk Delete
+  // Handle Bulk Delete  — uses AlertDialog instead of browser confirm()
   const handleBulkDelete = () => {
     if (selectedIds.size === 0) return
-    const idsToDelete = Array.from(selectedIds)
+    setPendingBulkDeleteIds(Array.from(selectedIds))
+    setShowBulkDeleteConfirm(true)
+  }
 
-    // In a real app, we might want a bulk delete confirmation
-    if (confirm(`Yakin ingin menghapus ${selectedIds.size} item?`)) {
-      idsToDelete.forEach(id => deleteAHSPItem(id))
-      setSelectedIds(new Set())
-      toast.success(`${idsToDelete.length} item berhasil dihapus`)
-    }
+  const confirmBulkDelete = () => {
+    pendingBulkDeleteIds.forEach(id => deleteAHSPItem(id))
+    setSelectedIds(new Set())
+    toast.success(`${pendingBulkDeleteIds.length} item berhasil dihapus`)
+    setPendingBulkDeleteIds([])
+    setShowBulkDeleteConfirm(false)
   }
 
   // Handle actions
@@ -526,16 +573,33 @@ export function AHSPCatalog({
               Tambah Item
             </Button>
 
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setShowResetConfirm(true)}
-              className="h-8 text-xs"
-              disabled={ahspItems.length === 0 && resources.length === 0}
-            >
-              <RotateCcw className="h-3.5 w-3.5 mr-2" />
-              Reset Sistem
-            </Button>
+            {/* Overflow menu — keeps destructive action out of primary toolbar */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">More actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem
+                  onClick={() => handleExport(selectedIds.size > 0 ? displayItems.filter((i: AHSPItem) => selectedIds.has(i.id)) : undefined)}
+                  disabled={ahspItems.length === 0}
+                >
+                  <Download className="mr-2 h-3.5 w-3.5" />
+                  Ekspor Terpilih
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 focus:bg-red-50 focus:text-red-700 dark:focus:bg-red-900/20"
+                  onClick={() => setShowResetConfirm(true)}
+                  disabled={ahspItems.length === 0 && resources.length === 0}
+                >
+                  <RotateCcw className="mr-2 h-3.5 w-3.5" />
+                  Reset Sistem
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -627,7 +691,7 @@ export function AHSPCatalog({
                         className={`group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 ${selectedIds.has(item.id) ? 'bg-blue-50/50 hover:bg-blue-50/80 shadow-[inset_4px_0_0_0_#2563eb]' : ''}`}
                         onClick={() => handleEditItem(item)}
                       >
-                        <TableCell className="w-12 text-center py-1.5" onClick={(e) => e.stopPropagation()}>
+                        <TableCell className="w-12 text-center py-2" onClick={(e) => e.stopPropagation()}>
                           <Checkbox
                             checked={selectedIds.has(item.id)}
                             onCheckedChange={(checked) => handleToggleOne(item.id, !!checked)}
@@ -635,18 +699,27 @@ export function AHSPCatalog({
                             className="translate-y-0.5 border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                           />
                         </TableCell>
-                        <TableCell className="text-center font-mono text-xs text-slate-400 py-1.5">{row.rowNumber}</TableCell>
-                        <TableCell className="py-1.5">
+                        <TableCell className="text-center font-mono text-xs text-slate-400 py-2">{row.rowNumber}</TableCell>
+                        <TableCell className="py-2">
                           <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-medium text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
                               {hasZoneOverride && <Badge variant="secondary" className="h-4 px-1.5 text-xs uppercase tracking-wider">Adj Zona</Badge>}
+                              {(() => {
+                                const useCount = ahspUsageMap.get(item.id) ?? 0
+                                return useCount > 0 ? (
+                                  <Badge variant="outline" className="h-4 px-1.5 text-xs font-semibold text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-400">
+                                    {useCount} RAB
+                                  </Badge>
+                                ) : null
+                              })()}
                             </div>
                             <span className="text-xs font-mono text-slate-400">{item.code}</span>
+                            <CostMixBar mat={matPrice} lab={labPrice} eqp={eqpPrice} sub={subPrice} />
                           </div>
                         </TableCell>
-                        <TableCell className="text-center text-xs text-slate-500 py-1.5">{item.unit}</TableCell>
-                        <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-blue-50/10">
+                        <TableCell className="text-center text-xs text-slate-500 py-2">{item.unit}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 py-2 bg-blue-50/10">
                           {isUnallocated ? (
                             <span className="text-amber-600 font-bold" title="Komponen belum terhubung. Harga berasal dari data master.">
                               {formatIDR(item.finalPrice)} (!)
@@ -655,12 +728,12 @@ export function AHSPCatalog({
                             matPrice > 0 ? formatIDR(matPrice) : '-'
                           )}
                         </TableCell>
-                        <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-orange-50/10">{!isUnallocated && labPrice > 0 ? formatIDR(labPrice) : '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-indigo-50/10">{!isUnallocated && eqpPrice > 0 ? formatIDR(eqpPrice) : '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-xs text-slate-600 py-1.5 bg-purple-50/10">{!isUnallocated && subPrice > 0 ? formatIDR(subPrice) : '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-xs font-bold text-slate-800 dark:text-slate-200 py-1.5">{formatIDR(totalPrice)}</TableCell>
-                        <TableCell className="py-1.5 text-right">
-                          <div className="flex justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 py-2 bg-orange-50/10">{!isUnallocated && labPrice > 0 ? formatIDR(labPrice) : '-'}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 py-2 bg-indigo-50/10">{!isUnallocated && eqpPrice > 0 ? formatIDR(eqpPrice) : '-'}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-slate-600 py-2 bg-purple-50/10">{!isUnallocated && subPrice > 0 ? formatIDR(subPrice) : '-'}</TableCell>
+                        <TableCell className="text-right font-mono text-xs font-bold text-slate-800 dark:text-slate-200 py-2">{formatIDR(totalPrice)}</TableCell>
+                        <TableCell className="py-2 text-right">
+                          <div className="flex justify-end gap-0.5 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100" onClick={(e) => e.stopPropagation()}>
                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleHistoryClick(item)}><History className="h-3 w-3" /></Button>
                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditItem(item)}><Edit2 className="h-3 w-3" /></Button>
                             <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleDeleteItem(item)}><Trash2 className="h-3 w-3" /></Button>
@@ -836,6 +909,30 @@ export function AHSPCatalog({
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 focus:ring-red-600">
               Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation — Item 12 */}
+      <AlertDialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
+        <AlertDialogContent className="max-w-[400px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              Hapus {pendingBulkDeleteIds.length} Item AHSP?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Semua item yang dipilih beserta komponen analisanya akan dihapus permanen dari katalog.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmBulkDelete}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Ya, Hapus Semua
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

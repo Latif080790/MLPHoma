@@ -148,13 +148,27 @@ describe('changeOrderService', () => {
   describe('updateChangeOrderStatus', () => {
     it('should update status by id', async () => {
       let updatedData: any = null
+      let callCount = 0
 
-      mockFromImpl = () => ({
-        update: (data: any) => {
-          updatedData = data
-          return { eq: () => Promise.resolve({ error: null }) }
-        },
-      })
+      mockFromImpl = () => {
+        callCount += 1
+        if (callCount === 1) {
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () => Promise.resolve({ data: { id: 'co-1', vo_number: 'VO-001' }, error: null }),
+              }),
+            }),
+          }
+        }
+
+        return {
+          update: (data: any) => {
+            updatedData = data
+            return { eq: () => Promise.resolve({ error: null }) }
+          },
+        }
+      }
 
       await changeOrderService.updateChangeOrderStatus('co-1', 'APPROVED')
       expect(updatedData).toEqual({ status: 'APPROVED' })
@@ -174,13 +188,27 @@ describe('changeOrderService', () => {
   describe('deleteChangeOrder', () => {
     it('should delete order by id', async () => {
       let deleteCalled = false
+      let callCount = 0
 
-      mockFromImpl = () => ({
-        delete: () => {
-          deleteCalled = true
-          return { eq: () => Promise.resolve({ error: null }) }
-        },
-      })
+      mockFromImpl = () => {
+        callCount += 1
+        if (callCount === 1) {
+          return {
+            select: () => ({
+              eq: () => ({
+                single: () => Promise.resolve({ data: { id: 'co-1', vo_number: 'VO-001' }, error: null }),
+              }),
+            }),
+          }
+        }
+
+        return {
+          delete: () => {
+            deleteCalled = true
+            return { eq: () => Promise.resolve({ error: null }) }
+          },
+        }
+      }
 
       await changeOrderService.deleteChangeOrder('co-1')
       expect(deleteCalled).toBe(true)
