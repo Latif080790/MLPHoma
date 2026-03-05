@@ -5,7 +5,7 @@
  */
 
 import type { RABItem } from '../types/rab'
-import type { AHSPComponent, Resource, ResourceType } from '../types/ahsp'
+import type { AHSPComponent, AHSPItem, Resource, ResourceType } from '../types/ahsp'
 
 // ── Types ─────────────────────────────────────────────────────
 export interface ResourceNeed {
@@ -31,20 +31,32 @@ export interface ResourcePlanStats {
 /**
  * Compute resource needs from RAB items × AHSP components × resources.
  * Returns sorted by totalCost descending.
+ * @param ahspItems  Optional — used for code-based auto-matching when ahspItemId is not set on RAB item.
  */
 export function computeResourceNeeds(
     rabItems: RABItem[],
     componentsByAHSP: Record<string, AHSPComponent[]>,
     resources: Resource[],
+    ahspItems?: AHSPItem[],
 ): ResourceNeed[] {
     const map = new Map<string, ResourceNeed>()
+
+    // Build code → AHSP id map for auto-matching when ahspItemId is missing
+    const ahspByCode = new Map<string, string>()
+    if (ahspItems) {
+        ahspItems.forEach(a => { if (a.code) ahspByCode.set(a.code, a.id) })
+    }
 
     for (const rabItem of rabItems) {
         const volume = rabItem.volume || 0
         if (volume === 0) continue
 
-        // Look for AHSP link
-        const ahspItemId = rabItem.ahspItemId || rabItem.ahsp_item_id
+        // Explicit link first, then fall back to item_code → AHSP code matching
+        const ahspItemId =
+            rabItem.ahspItemId ||
+            rabItem.ahsp_item_id ||
+            ahspByCode.get(rabItem.item_code || rabItem.itemCode || rabItem.code || '')
+
         if (!ahspItemId) continue
 
         const components = componentsByAHSP[ahspItemId] || []
@@ -80,10 +92,12 @@ export function computeResourceNeeds(
 
 /**
  * Compute summary statistics from resource needs.
+ * @param ahspItems  Optional — used for code-based matching to accurately count linked items.
  */
 export function computeResourceStats(
     needs: ResourceNeed[],
     rabItems: RABItem[],
+    ahspItems?: AHSPItem[],
 ): ResourcePlanStats {
     const TYPE_ORDER: ResourceType[] = ['material', 'labor', 'equipment', 'subcontractor']
 
@@ -95,7 +109,17 @@ export function computeResourceStats(
     }, {} as Record<ResourceType, number>)
 
     const totalCost = needs.reduce((s, r) => s + r.totalCost, 0)
-    const linkedCount = rabItems.filter(i => !!(i.ahspItemId || i.ahsp_item_id)).length
+
+    // Build code → id map for auto-matching
+    const codeMap = new Map<string, string>()
+    if (ahspItems) {
+        ahspItems.forEach(a => { if (a.code) codeMap.set(a.code, a.id) })
+    }
+
+    const linkedCount = rabItems.filter(i =>
+        !!(i.ahspItemId || i.ahsp_item_id ||
+            codeMap.get(i.item_code || i.itemCode || i.code || ''))
+    ).length
 
     return { byType, totalCost, linkedCount, totalRab: rabItems.length }
 }

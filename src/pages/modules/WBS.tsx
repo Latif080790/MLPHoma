@@ -6,19 +6,19 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react'
-import { ModuleHeader } from '../../components/modules/ModuleHeader'
-import { useProjectStore } from '../../store/projectStore'
-import { useWBSStore, validateWBS } from '../../store/wbsStore'
-import { useRabStore } from '../../store/rabStore'
-import { WBSTree } from '../../components/wbs/WBSTree'
-import { WBSEditor } from '../../components/wbs/WBSEditor'
-import { EmptyState } from '../../components/common/EmptyState'
-import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
-import { Alert, AlertDescription } from '../../components/ui/alert'
+import { ModuleHeader } from '@/components/modules/ModuleHeader'
+import { useProjectStore } from '@/store/projectStore'
+import { useWBSStore, validateWBS } from '@/store/wbsStore'
+import { useRabStore } from '@/store/rabStore'
+import { WBSTree } from '@/components/wbs/WBSTree'
+import { WBSEditor } from '@/components/wbs/WBSEditor'
+import { EmptyState } from '@/components/common/EmptyState'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
-import { RABTable } from '../../components/rab/RABTable'
-import BoQImportDialog from '../../components/rab/BoQImportDialog'
+import { RABTable } from '@/components/rab/RABTable'
+import BoQImportDialog from '@/components/rab/BoQImportDialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,8 +34,8 @@ import {
   Search, ChevronsDownUp, ChevronsUpDown, X, Layers, Calculator,
   Link2, PanelLeft, PanelRight,
 } from 'lucide-react'
-import { formatIDR } from '../../lib/utils'
-import type { WBSItem } from '../../types/wbs'
+import { formatIDR } from '@/lib/utils'
+import type { WBSItem } from '@/types/wbs'
 
 // ── KPI Mini Bar ──────────────────────────────────────────────
 function WBSKpiBar({ items, rabLinkedCount, totalBudget }: {
@@ -69,48 +69,50 @@ function WBSKpiBar({ items, rabLinkedCount, totalBudget }: {
   )
 }
 
+// Stable fallbacks to prevent infinite re-render loops
+const EMPTY_ARRAY: any[] = []
+
 /**
  * WBS Page Component
  */
 export default function WBS() {
-  // Project context
-  const activeProject = useProjectStore((s) => s.getActiveProject())
+  // Project context (Task: use stable selector to avoid getSnapshot warning)
+  const activeProjectId = useProjectStore((s) => s.activeProjectId)
+  const activeProject = useProjectStore((s) => activeProjectId ? s.projects[activeProjectId] : null)
   const projectId = activeProject?.id ?? ''
 
-  // WBS state
-  const {
-    itemsByProject,
-    selectedId,
-    expandedIds,
-    loading,
-    error,
-    addItem,
-    updateItem,
-    deleteItem,
-    moveItem,
-    toggleExpanded,
-    selectItem,
-    generateCodes,
-    importWBS,
-    exportWBS,
-  } = useWBSStore()
+  // WBS state (Task: use stable selectors)
+  const itemsByProject = useWBSStore((s) => s.itemsByProject)
+  const selectedId = useWBSStore((s) => s.selectedId)
+  const expandedIds = useWBSStore((s) => s.expandedIds)
+  const loading = useWBSStore((s) => s.loading)
+  const error = useWBSStore((s) => s.error)
+  const addItem = useWBSStore((s) => s.addItem)
+  const updateItem = useWBSStore((s) => s.updateItem)
+  const deleteItem = useWBSStore((s) => s.deleteItem)
+  const moveItem = useWBSStore((s) => s.moveItem)
+  const toggleExpanded = useWBSStore((s) => s.toggleExpanded)
+  const selectItem = useWBSStore((s) => s.selectItem)
+  const generateCodes = useWBSStore((s) => s.generateCodes)
+  const importWBS = useWBSStore((s) => s.importWBS)
+  const exportWBS = useWBSStore((s) => s.exportWBS)
 
-  const items = itemsByProject[projectId] || []
+  const items = itemsByProject[projectId] || EMPTY_ARRAY
   const validation = validateWBS(items)
 
-  // RAB state for KPI + budget badges
-  const rabItems = useRabStore(s => s.itemsByProject[projectId] || [])
+  // RAB state for KPI + budget badges (Task: use stable selector)
+  const rabItems = useRabStore(s => s.itemsByProject[projectId] || EMPTY_ARRAY)
 
   // KPI derived
   const kpiData = useMemo(() => {
-    const wbsIdsWithRab = new Set(rabItems.filter(r => r.wbsId).map(r => r.wbsId!))
-    const rabLinkedCount = items.filter(i => wbsIdsWithRab.has(i.id)).length
-    const totalBudget = rabItems.reduce((s, r) => s + ((r.volume || 0) * (r.unit_price || 0)), 0)
+    const wbsIdsWithRab = new Set(rabItems.filter((r: any) => r.wbsId).map((r: any) => r.wbsId!))
+    const rabLinkedCount = items.filter((i: any) => wbsIdsWithRab.has(i.id)).length
+    const totalBudget = rabItems.reduce((s: number, r: any) => s + ((r.volume || 0) * (r.unit_price || r.unitPrice || 0)), 0)
     // Budget per WBS node
     const budgetByWbs = new Map<string, number>()
-    rabItems.forEach(r => {
+    rabItems.forEach((r: any) => {
       if (r.wbsId) {
-        budgetByWbs.set(r.wbsId, (budgetByWbs.get(r.wbsId) || 0) + ((r.volume || 0) * (r.unit_price || 0)))
+        budgetByWbs.set(r.wbsId, (budgetByWbs.get(r.wbsId) || 0) + ((r.volume || 0) * (r.unit_price || r.unitPrice || 0)))
       }
     })
     return { rabLinkedCount, totalBudget, budgetByWbs }

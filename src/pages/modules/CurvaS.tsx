@@ -36,7 +36,8 @@ const EMPTY_POINTS: CurvaSDataPoint[] = []
  * Page-level component orchestrating Curva-S data and analysis.
  */
 export default function CurvaSPage() {
-  const activeProject = useProjectStore((s) => s.getActiveProject())
+  const activeProjectId = useProjectStore(s => s.activeProjectId)
+  const activeProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
   const projectId = activeProject?.id || ''
   const projectBudget = activeProject?.budget || 0
 

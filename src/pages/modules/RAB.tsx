@@ -9,15 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Calculator, CloudUpload, MapPin, Settings2 } from 'lucide-react'
-import { useRabStore } from '../../store/rabStore'
-import { useProjectStore } from '../../store/projectStore'
-import { useAHSPStore } from '../../store/ahspStore'
+import { useRabStore } from '@/store/rabStore'
+import { useProjectStore } from '@/store/projectStore'
+import { useAHSPStore } from '@/store/ahspStore'
 import { toast } from 'sonner'
-import { RABTable } from '../../components/rab/RABTable'
-import { formatIDR } from '../../lib/utils'
-import { ModuleHeader } from '../../components/modules/ModuleHeader'
-import { CardSkeleton } from '../../components/common/LoadingSkeleton'
-import type { RABItem } from '../../types/rab'
+import { RABTable } from '@/components/rab/RABTable'
+import { formatIDR } from '@/lib/utils'
+import { ModuleHeader } from '@/components/modules/ModuleHeader'
+import { CardSkeleton } from '@/components/common/LoadingSkeleton'
+import type { RABItem } from '@/types/rab'
 
 const EMPTY_ARRAY: RABItem[] = []
 

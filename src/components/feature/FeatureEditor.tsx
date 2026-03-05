@@ -25,14 +25,9 @@ import CashFlowEditor from './modules/CashFlowEditor'
 import ProgressEditor from './modules/ProgressEditor'
 import ReportingEditor from './modules/ReportingEditor'
 
-/**
- * FeatureEditor
- *
- * Top-level editor UI that shows per-module editors in tabs.
- * Loads config from useFeatureStore, allows local edits, persists to localStorage and optionally syncs to backend.
- */
 export default function FeatureEditor(): JSX.Element {
-  const activeProject = useProjectStore((s) => (typeof s.getActiveProject === 'function' ? s.getActiveProject() : null))
+  const activeProjectId = useProjectStore(s => s.activeProjectId)
+  const activeProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
   const projectId = activeProject?.id ?? ''
   const projectName = activeProject?.name ?? ''
   void projectName // suppress unused warning

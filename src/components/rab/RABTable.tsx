@@ -83,8 +83,8 @@ const COLUMN_DEFS = [
   { key: 'code', label: 'Code', defaultVisible: true, alwaysVisible: false },
   { key: 'description', label: 'Description & Specification', defaultVisible: true, alwaysVisible: true },
   { key: 'task', label: 'Linked Task', defaultVisible: false, alwaysVisible: false },
-  { key: 'unit', label: 'Unit', defaultVisible: true, alwaysVisible: false },
   { key: 'volume', label: 'Volume', defaultVisible: true, alwaysVisible: false },
+  { key: 'unit', label: 'SAT. (Satuan)', defaultVisible: true, alwaysVisible: false },
   { key: 'tkdn', label: 'TKDN %', defaultVisible: false, alwaysVisible: false }, // Task 30: hidden by default
   { key: 'cost_material', label: 'Material', defaultVisible: false, alwaysVisible: false },
   { key: 'cost_labor', label: 'Labor', defaultVisible: false, alwaysVisible: false },
@@ -482,7 +482,8 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       cost_labor: ahspItem.price_labor || 0,
       cost_equipment: ahspItem.price_equipment || 0,
       cost_subcon: ahspItem.price_subcon || 0,
-      is_overhead: activeTab === 'overhead'
+      is_overhead: activeTab === 'overhead',
+      ahspItemId: ahspItem.id,  // Link to AHSP item for Resource Plan computation
     })
 
     setIsAddDialogOpen(false)
@@ -1237,8 +1238,8 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                   {/* Task 32: Sticky Description column */}
                   {isColVisible('description') && <TableHead className="w-[320px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-white/95 dark:bg-neutral-900/95 py-4 sticky left-[56px] z-10">Pekerjaan / Item Description</TableHead>}
                   {isColVisible('task') && <TableHead className="w-[150px] font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">Linked Task</TableHead>}
-                  {isColVisible('unit') && <TableHead className="w-[64px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">Unit</TableHead>}
                   {isColVisible('volume') && <TableHead className="w-[100px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">Volume</TableHead>}
+                  {isColVisible('unit') && <TableHead className="w-[64px] text-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">SAT.</TableHead>}
                   {isColVisible('tkdn') && <TableHead className="w-[80px] text-right font-bold text-slate-700 dark:text-slate-300 text-xs uppercase bg-transparent py-4">TKDN %</TableHead>}
                   {isColVisible('cost_material') && <TableHead className="w-[110px] text-right bg-blue-50/50 dark:bg-blue-900/20 font-bold text-blue-700 dark:text-blue-300 text-xs uppercase py-4 border-l-2 border-blue-200 dark:border-blue-800">Material</TableHead>}
                   {isColVisible('cost_labor') && <TableHead className="w-[110px] text-right bg-green-50/50 dark:bg-green-900/20 font-bold text-green-700 dark:text-green-300 text-xs uppercase py-4">Labor</TableHead>}
@@ -1421,13 +1422,13 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                             </SelectContent>
                           </Select>
                         </TableCell>}
+                        {isColVisible('volume') && <TableCell className="w-[100px] py-2.5">
+                          <Input type="number" value={item.volume || ''} onChange={e => handleVolumeChange(item.id, e.target.value)} className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none font-bold" />
+                        </TableCell>}
                         {isColVisible('unit') && <TableCell className="w-[64px] py-2.5 text-center px-0">
                           <Badge variant="outline" className="text-xs h-6 bg-slate-50 font-black uppercase text-slate-600 border-slate-200 min-w-[32px] justify-center mx-auto">
                             {item.unit || '-'}
                           </Badge>
-                        </TableCell>}
-                        {isColVisible('volume') && <TableCell className="w-[100px] py-2.5">
-                          <Input type="number" value={item.volume || ''} onChange={e => handleVolumeChange(item.id, e.target.value)} className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none font-bold" />
                         </TableCell>}
                         {isColVisible('tkdn') && <TableCell className="w-[80px] py-2.5">
                           <Input type="number" placeholder="0" value={(item.tkdn_percent as number | undefined) || ''} onChange={e => updateItem(projectId, item.id, { tkdn_percent: parseFloat(e.target.value) || 0 })} className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none text-slate-500" />
@@ -1472,8 +1473,8 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                     {isColVisible('code') && <TableCell className="w-[100px] py-3" />}
                     {isColVisible('description') && <TableCell className="w-[320px] py-3 text-right font-black text-xs text-slate-500 uppercase tracking-wider">Sub-Totals</TableCell>}
                     {isColVisible('task') && <TableCell className="w-[150px] py-3" />}
-                    {isColVisible('unit') && <TableCell className="w-[64px] py-3" />}
                     {isColVisible('volume') && <TableCell className="w-[100px] py-3" />}
+                    {isColVisible('unit') && <TableCell className="w-[64px] py-3" />}
                     {isColVisible('tkdn') && <TableCell className="w-[80px] py-3" />}
 
                     {isColVisible('cost_material') && (

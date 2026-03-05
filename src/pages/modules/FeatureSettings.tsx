@@ -43,8 +43,9 @@ function downloadJSON(data: unknown, filename = 'feature-config.json') {
  */
 export default function FeatureSettings(): JSX.Element {
   // Defensive read of active project
-  const activeProject = useProjectStore((s) => (typeof s.getActiveProject === 'function' ? s.getActiveProject() : null))
-  const projectId = activeProject?.id ?? ''
+  const activeProjectId = useProjectStore(s => s.activeProjectId)
+  const activeProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
+  const projectId = activeProject?.id || ''
 
   // Generate a default config for preview if project exists
   const defaultConfig = useMemo<FeatureConfig | null>(() => {
