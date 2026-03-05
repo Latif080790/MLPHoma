@@ -8,7 +8,7 @@ import React, { useMemo, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
-import { Calculator, CloudUpload, MapPin, Settings2 } from 'lucide-react'
+import { Calculator, CloudUpload, Lock, MapPin, Settings2 } from 'lucide-react'
 import { useRabStore } from '@/store/rabStore'
 import { useProjectStore } from '@/store/projectStore'
 import { useAHSPStore } from '@/store/ahspStore'
@@ -27,6 +27,7 @@ export default function RAB() {
   // Use direct state selection to ensure stability
   const currentProject = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const items = useRabStore(s => currentProject ? s.getItems(currentProject.id) : EMPTY_ARRAY)
+  const isLocked = useRabStore(s => currentProject ? s.isLocked(currentProject.id) : false)
   const { zones, loading } = useAHSPStore()
   const [syncing, setSyncing] = React.useState(false)
   const [showSettings, setShowSettings] = React.useState(false)
@@ -168,6 +169,17 @@ export default function RAB() {
       />
 
       <div className="space-y-4">
+        {/* G4 Fix: Lock banner — shown when RAB baseline has been snapshotted */}
+        {isLocked && (
+          <div className="flex items-center gap-2.5 rounded-lg border border-red-200 bg-red-50/60 px-4 py-3 text-sm dark:border-red-800 dark:bg-red-900/20">
+            <Lock size={15} className="shrink-0 text-red-600 dark:text-red-400" />
+            <span className="font-semibold text-red-700 dark:text-red-300">Baseline RAB Terkunci</span>
+            <span className="text-red-600 dark:text-red-400">
+              — RAB bersifat read-only. Import item dan publikasi draft dinonaktifkan.
+            </span>
+          </div>
+        )}
+
         {/* Zone Badge */}
         {currentZone && (
           <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50/50 px-3 py-2 dark:border-blue-900 dark:bg-blue-950/30">

@@ -13,7 +13,7 @@ import { Wrench, Download, AlertCircle, CalendarDays } from 'lucide-react'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
 import { useProjectStore } from '@/store/projectStore'
-import { useRabStore } from '@/store/rabStore'
+import { useRapStore } from '@/store/rapStore'
 import { useAHSPStore } from '@/store/ahspStore'
 import { useTimelineStore } from '@/store/timelineStore'
 import { Button } from '@/components/ui/button'
@@ -23,12 +23,15 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { formatIDR } from '@/lib/utils'
-import { computeResourceNeeds, computeResourceStats } from '@/services/resourcePlanService'
+import {
+  computeResourceNeedsFromRAP,
+  computeResourceStatsFromRAP,
+} from '@/services/resourcePlanService'
 import type { ResourceType } from '@/types/ahsp'
-import type { RABItem } from '@/types/rab'
+import type { RapItem } from '@/services/rapService'
 
 // Stable fallback — never recreated, prevents Zustand infinite re-render
-const EMPTY_RAB: RABItem[] = []
+const EMPTY_RAP: RapItem[] = []
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const TYPE_LABEL: Record<ResourceType, string> = {
@@ -58,39 +61,44 @@ export default function ResourcePlan() {
   const project = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = project?.id || ''
 
-  // Must select from itemsByProject (stable ref), NOT getItems() which may create new arrays
-  const rabItems = useRabStore(s => s.itemsByProject[projectId] ?? EMPTY_RAB)
-  const { ahspItems, componentsByAHSP, resources, fetchComponents } = useAHSPStore()
+  // G11/G12 Fix: read from RAP store (the authoritative budget plan), not RAB store
+  const { items: allRapItems, fetchItems: fetchRapItems } = useRapStore()
+  const rapItems = useMemo(
+    () => (projectId ? allRapItems.filter(i => i.project_id === projectId) : EMPTY_RAP),
+    [allRapItems, projectId]
+  )
+  const { componentsByAHSP, resources, fetchComponents } = useAHSPStore()
   const { getTasks } = useTimelineStore()
 
-  // ── Auto-load components for AHSP items matched by code from RAB ──
+  // Auto-load RAP items on mount
   useEffect(() => {
-    if (!rabItems.length || !ahspItems.length) return
-    const codeMap = new Map(ahspItems.map(a => [a.code, a.id]))
-    const ahspIdsNeeded = new Set<string>()
-    rabItems.forEach(r => {
-      const id =
-        r.ahspItemId || r.ahsp_item_id ||
-        codeMap.get(r.item_code || r.itemCode || r.code || '')
-      if (id && !componentsByAHSP[id]) ahspIdsNeeded.add(id)
+    if (projectId) fetchRapItems(projectId)
+  }, [projectId, fetchRapItems])
+
+  // ── Auto-load AHSP components for RAP items ──
+  useEffect(() => {
+    if (!rapItems.length) return
+    rapItems.forEach(r => {
+      if (r.ahsp_id && !componentsByAHSP[r.ahsp_id]) {
+        fetchComponents(r.ahsp_id).catch(() => null)
+      }
     })
-    ahspIdsNeeded.forEach(id => { fetchComponents(id).catch(() => null) })
-  }, [rabItems, ahspItems, componentsByAHSP, fetchComponents])
+  }, [rapItems, componentsByAHSP, fetchComponents])
 
   const [activeTypes, setActiveTypes] = useState<Set<ResourceType>>(
     new Set(['material', 'labor', 'equipment', 'subcontractor'])
   )
 
-  // ── Compute resource needs using service (Task 43) ──────────
+  // ── Compute resource needs using service (G11/G12 fix: from RAP not RAB) ──
   const resourceNeeds = useMemo(
-    () => computeResourceNeeds(rabItems, componentsByAHSP, resources, ahspItems),
-    [rabItems, componentsByAHSP, resources, ahspItems]
+    () => computeResourceNeedsFromRAP(rapItems, componentsByAHSP, resources),
+    [rapItems, componentsByAHSP, resources]
   )
 
   // ── Stats ──────────────────────────────────────────────────────
   const stats = useMemo(
-    () => computeResourceStats(resourceNeeds, rabItems, ahspItems),
-    [resourceNeeds, rabItems, ahspItems]
+    () => computeResourceStatsFromRAP(resourceNeeds, rapItems),
+    [resourceNeeds, rapItems]
   )
 
   // ── Filtered rows ──────────────────────────────────────────────
@@ -102,14 +110,14 @@ export default function ResourcePlan() {
   // ── Task 44: Jadwal Pendatangan data ───────────────────────────
   /**
    * Compute monthly resource cost distribution from WBS timeline tasks.
-   * For each RAB item that has a linked task with start/end dates,
+   * For each RAP item that has a linked task with start/end dates,
    * distribute the resource cost linearly across the months.
    */
   const arrivalSchedule = useMemo(() => {
     const tasks = getTasks(projectId)
     if (!tasks.length || !resourceNeeds.length) return []
 
-    // Build task map by RAB item
+    // Build task map by RAB item id (timeline tasks reference rabId)
     const taskByRabId = new Map<string, { start: string; end: string }>()
     tasks.forEach(t => {
       if (t.rabId && t.startDate && t.endDate) {
@@ -120,20 +128,18 @@ export default function ResourcePlan() {
     // Monthly buckets per resource type
     const buckets = new Map<string, Record<ResourceType, number>>()
 
-    for (const rabItem of rabItems) {
-      const volume = rabItem.volume || 0
+    for (const rapItem of rapItems) {
+      const volume = rapItem.qty_budget || 0
       if (volume === 0) continue
 
-      const task = taskByRabId.get(rabItem.id)
+      // Use rab_item_id to cross-reference the timeline task
+      const task = rapItem.rab_item_id ? taskByRabId.get(rapItem.rab_item_id) : undefined
       if (!task) continue
 
-      const ahspItemId =
-          rabItem.ahspItemId ||
-          rabItem.ahsp_item_id ||
-          (ahspItems.find(a => a.code === (rabItem.item_code || rabItem.itemCode || rabItem.code))?.id)
-      if (!ahspItemId) continue
+      const ahspId = rapItem.ahsp_id
+      if (!ahspId) continue
 
-      const components = componentsByAHSP[ahspItemId] || []
+      const components = componentsByAHSP[ahspId] || []
       for (const comp of components) {
         if (!comp.resource && !comp.resourceId) continue
         const resource = comp.resource || resources.find(r => r.id === comp.resourceId)
@@ -172,7 +178,7 @@ export default function ResourcePlan() {
         ...costs,
         total: costs.material + costs.labor + costs.equipment + costs.subcontractor,
       }))
-  }, [rabItems, componentsByAHSP, resources, ahspItems, projectId, getTasks, resourceNeeds.length])
+  }, [rapItems, componentsByAHSP, resources, projectId, getTasks, resourceNeeds.length])
 
   const toggleType = (t: ResourceType) => {
     setActiveTypes(prev => {
@@ -212,7 +218,7 @@ export default function ResourcePlan() {
     )
   }
 
-  if (rabItems.length === 0) {
+  if (rapItems.length === 0) {
     return (
       <div className="space-y-4 density-compact">
         <ModuleHeader
@@ -223,9 +229,9 @@ export default function ResourcePlan() {
         />
         <ModulePageState
           icon={<Wrench size={18} />}
-          title="Belum ada item RAB"
+          title="Belum ada item RAP"
           variant="empty"
-          message="Tambahkan item RAB terlebih dahulu untuk melihat kebutuhan resource."
+          message="Sync RAP dari RAB terlebih dahulu untuk melihat kebutuhan resource."
         />
       </div>
     )
@@ -249,13 +255,13 @@ export default function ResourcePlan() {
         }
       />
 
-      {/* ── Warning: unlinked RAB items ─────────────────────────────── */}
+      {/* ── Warning: unlinked RAP items ─────────────────────────────── */}
       {unlinkedCount > 0 && (
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs dark:border-amber-800 dark:bg-amber-900/20">
           <AlertCircle size={14} className="mt-0.5 shrink-0 text-amber-600" />
           <p className="text-amber-700 dark:text-amber-300">
-            <strong>{unlinkedCount} dari {stats.totalRab} item RAB</strong> belum terhubung ke AHSP.
-            Link AHSP di tab RAB untuk menghitung kebutuhan resource item tersebut.
+            <strong>{unlinkedCount} dari {stats.totalRab} item RAP</strong> belum terhubung ke AHSP.
+            Link AHSP di modul RAP / RAB untuk menghitung kebutuhan resource item tersebut.
           </p>
         </div>
       )}

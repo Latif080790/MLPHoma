@@ -113,6 +113,16 @@ export const rapService = {
                 qty_budget: rab.volume || 0,
                 unit_price_budget: rab.unit_price || rab.unitPrice || 0,
 
+                // G7 Fix: compute total_budget and remaining_budget (was missing before)
+                total_budget: (Number(rab.volume) || 0) * (Number(rab.unit_price || rab.unitPrice) || 0),
+                remaining_budget: existing
+                    ? Math.max(
+                        0,
+                        (Number(rab.volume) || 0) * (Number(rab.unit_price || rab.unitPrice) || 0)
+                        - (existing.committed_cost || 0)
+                    )
+                    : (Number(rab.volume) || 0) * (Number(rab.unit_price || rab.unitPrice) || 0),
+
                 cost_material: rab.cost_material || 0,
                 cost_labor: rab.cost_labor || 0,
                 cost_equipment: rab.cost_equipment || 0,

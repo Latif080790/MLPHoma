@@ -85,15 +85,26 @@ export async function checkBudgetAvailability(
   const linkedItems = items.filter(item => item.rapItemId)
 
   if (linkedItems.length === 0) {
-    // No linked items - no budget validation needed
+    // G13 Fix: items without rapItemId cannot be validated against budget.
+    // Reject instead of silent pass to prevent unauthorized spending.
     return {
-      isValid: true,
+      isValid: false,
       hasExceeded: false,
-      requiresApproval: false,
+      requiresApproval: true,
       items: [],
-      message: 'No budget-linked items to validate',
+      message: `${items.length} item tidak terhubung ke RAP — validasi anggaran tidak dapat dilakukan. Hubungkan item PO ke RAP terlebih dahulu.`,
       exceededItems: [],
-      approvalItems: []
+      approvalItems: items.map(i => ({
+        rapItemId: '',
+        itemName: i.itemName || '',
+        totalBudget: 0,
+        committed: 0,
+        actual: 0,
+        remaining: 0,
+        requested: (i.quantity || 0) * (i.unitPrice || 0),
+        exceeds: false,
+        overageAmount: 0,
+      }))
     }
   }
 
