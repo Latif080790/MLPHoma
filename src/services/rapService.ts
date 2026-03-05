@@ -107,21 +107,14 @@ export const rapService = {
                 project_id: projectId,
                 rab_item_id: rab.id,
                 wbs_id: rab.wbs_id || rab.wbsId || null,
-                ahsp_id: rab.ahsp_id || rab.ahspId || null,
+                // Fix: RABItem stores AHSP link as ahspItemId / ahsp_item_id (not ahsp_id / ahspId)
+                ahsp_id: rab.ahsp_id || rab.ahspId || rab.ahspItemId || rab.ahsp_item_id || null,
                 name: rab.name || rab.item_name || 'Unnamed Item',
 
                 qty_budget: rab.volume || 0,
                 unit_price_budget: rab.unit_price || rab.unitPrice || 0,
-
-                // G7 Fix: compute total_budget and remaining_budget (was missing before)
-                total_budget: (Number(rab.volume) || 0) * (Number(rab.unit_price || rab.unitPrice) || 0),
-                remaining_budget: existing
-                    ? Math.max(
-                        0,
-                        (Number(rab.volume) || 0) * (Number(rab.unit_price || rab.unitPrice) || 0)
-                        - (existing.committed_cost || 0)
-                    )
-                    : (Number(rab.volume) || 0) * (Number(rab.unit_price || rab.unitPrice) || 0),
+                // NOTE: total_budget and remaining_budget are GENERATED ALWAYS AS columns
+                // in Supabase (qty_budget * unit_price_budget) — do NOT include them here.
 
                 cost_material: rab.cost_material || 0,
                 cost_labor: rab.cost_labor || 0,
