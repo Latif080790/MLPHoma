@@ -91,24 +91,49 @@ export const rapService = {
     async initFromRab(projectId: string, rabItems: Array<Record<string, unknown>>) {
         const client = assertSupabase()
 
-        // 1. Fetch existing RAP items
-        const { data: existingRap } = await client
-            .from('rap_items')
-            .select('id, rab_item_id, committed_cost, actual_cost')
-            .eq('project_id', projectId)
+        // 1. Fetch existing RAP items + AHSP code→id map in parallel
+        const [existingRapResult, ahspResult] = await Promise.all([
+            client
+                .from('rap_items')
+                .select('id, rab_item_id, committed_cost, actual_cost')
+                .eq('project_id', projectId),
+            client
+                .from('ahsp_items')
+                .select('id, code')
+                .not('code', 'is', null),
+        ])
 
-        const existingMap = new Map((existingRap || []).map(r => [r.rab_item_id, r]))
+        const existingMap = new Map((existingRapResult.data || []).map(r => [r.rab_item_id, r]))
+
+        // Build code → AHSP text-id map (rab_items stores ahsp_code, ahsp_items stores code)
+        const ahspCodeMap = new Map<string, string>(
+            (ahspResult.data || [])
+                .filter(a => a.code && a.id)
+                .map(a => [a.code as string, a.id as string])
+        )
 
         // 2. Prepare items for Upsert
         const toUpsert = rabItems.map(rab => {
             const existing = existingMap.get(rab.id)
+
+            // AHSP id resolution priority:
+            // 1. Explicit UUID field (rab_items.ahsp_id — uuid column, often null)
+            // 2. Text aliases used in frontend store (ahspItemId / ahsp_item_id)
+            // 3. Code-based lookup via ahsp_code → ahsp_items.code (most reliable)
+            const resolvedAhspId =
+                (rab.ahsp_id as string | null) ||
+                (rab.ahspId as string | null) ||
+                (rab.ahspItemId as string | null) ||
+                (rab.ahsp_item_id as string | null) ||
+                ahspCodeMap.get(rab.ahsp_code as string) ||
+                null
+
             return {
                 id: (rab as Record<string, unknown>).rap_id as string || existing?.id || generateId('rap'),
                 project_id: projectId,
                 rab_item_id: rab.id,
                 wbs_id: rab.wbs_id || rab.wbsId || null,
-                // Fix: RABItem stores AHSP link as ahspItemId / ahsp_item_id (not ahsp_id / ahspId)
-                ahsp_id: rab.ahsp_id || rab.ahspId || rab.ahspItemId || rab.ahsp_item_id || null,
+                ahsp_id: resolvedAhspId,
                 name: rab.name || rab.item_name || 'Unnamed Item',
 
                 qty_budget: rab.volume || 0,
@@ -130,7 +155,7 @@ export const rapService = {
 
         // 3. Identify items to delete (those in existing but NOT in new selection)
         const incomingRabIds = new Set(rabItems.map(r => r.id))
-        const toDeleteIds = (existingRap || [])
+        const toDeleteIds = (existingRapResult.data || [])
             .filter(r => r.rab_item_id && !incomingRabIds.has(r.rab_item_id))
             .filter(r => Number(r.committed_cost || 0) === 0 && Number(r.actual_cost || 0) === 0)
             .map(r => r.id)
