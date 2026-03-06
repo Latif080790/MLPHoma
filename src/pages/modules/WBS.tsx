@@ -5,7 +5,7 @@
  * Phase 3: KPI bar, mobile layout, RAB integration context menu
  */
 
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import { useProjectStore } from '@/store/projectStore'
 import { useWBSStore, validateWBS } from '@/store/wbsStore'
@@ -96,6 +96,12 @@ export default function WBS() {
   const generateCodes = useWBSStore((s) => s.generateCodes)
   const importWBS = useWBSStore((s) => s.importWBS)
   const exportWBS = useWBSStore((s) => s.exportWBS)
+  const fetchItems = useWBSStore((s) => s.fetchItems)
+
+  // Load WBS items from Supabase on project change
+  useEffect(() => {
+    if (projectId) fetchItems(projectId)
+  }, [projectId, fetchItems])
 
   const items = itemsByProject[projectId] || EMPTY_ARRAY
   const validation = validateWBS(items)

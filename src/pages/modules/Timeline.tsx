@@ -199,7 +199,7 @@ export default function Timeline() {
   const activeProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
   const projectId = activeProject?.id || ''
 
-  const { getTasks, removeTask } = useTimelineStore()
+  const { getTasks, removeTask, fetchTasks } = useTimelineStore()
   const [editorOpen, setEditorOpen] = useState(false)
   const [importWBSOpen, setImportWBSOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TaskEditorProps['task']>(null)
@@ -261,6 +261,11 @@ export default function Timeline() {
       // ignore storage errors
     }
   }, [query, statusFilter, resourceFilter, dateFrom, dateTo])
+
+  // Load tasks from Supabase on project change
+  useEffect(() => {
+    if (projectId) fetchTasks(projectId)
+  }, [projectId, fetchTasks])
 
   // Auto-seed demo tasks if empty
   useEffect(() => {

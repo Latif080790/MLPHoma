@@ -16,6 +16,7 @@ import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/valida
 import { syncTimelineTask, syncDelete, syncTimelineTasks } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
 import type { TimelineProgressEvidence } from '../types/progressEvidence'
+import { supabase } from '../lib/supabaseClient'
 
 /**
  * Task status
@@ -105,6 +106,9 @@ export interface TimelineState {
 
   /** Import multiple tasks (Batch) */
   importTasks: (projectId: string, tasks: Partial<TimelineTask>[]) => void
+
+  /** Load tasks from Supabase for a project (replaces local state) */
+  fetchTasks: (projectId: string) => Promise<void>
 }
 
 /**
@@ -335,6 +339,55 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
 
       // Sync to Supabase using batch
       syncTimelineTasks(newTasks, projectId)
+    },
+
+    fetchTasks: async (projectId: string) => {
+      if (!supabase) return
+      const { data, error } = await supabase
+        .from('timeline_tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('start_date', { ascending: true })
+      if (error) {
+        toast.error('Failed to load timeline tasks', { description: error.message })
+        return
+      }
+      type TaskRow = {
+        id: string; project_id: string; name: string; description?: string
+        start_date: string; end_date: string; duration: number; progress: number
+        status: string; priority: string; wbs_id?: string; rab_id?: string
+        dependencies?: string | null; assigned_resources?: string[]
+        baseline_start_date?: string; baseline_end_date?: string
+        created_at: string; updated_at: string
+        progress_evidence?: TimelineProgressEvidence
+      }
+      const tasks: TimelineTask[] = ((data || []) as TaskRow[]).map((row) => ({
+        id: row.id,
+        projectId: row.project_id,
+        name: row.name,
+        description: row.description,
+        startDate: row.start_date,
+        endDate: row.end_date,
+        duration: row.duration ?? inclusiveDays(row.start_date, row.end_date),
+        progress: Number(row.progress ?? 0),
+        progressEvidence: row.progress_evidence,
+        status: (row.status as TimelineTask['status']) || 'not_started',
+        priority: (row.priority as TimelineTask['priority']) || 'medium',
+        wbsId: row.wbs_id,
+        rabId: row.rab_id,
+        dependencies: (() => {
+          try { return typeof row.dependencies === 'string' ? JSON.parse(row.dependencies) : (row.dependencies ?? []) }
+          catch { return [] }
+        })(),
+        assignedResources: row.assigned_resources ?? [],
+        baselineStartDate: row.baseline_start_date,
+        baselineEndDate: row.baseline_end_date,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      }))
+      set((s) => ({
+        tasksByProject: { ...s.tasksByProject, [projectId]: tasks },
+      }))
     },
   }
 })

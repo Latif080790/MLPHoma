@@ -232,7 +232,18 @@ export const useRabStore = create<RabState>((set, get) => {
       snapshotForHistory(projectId)
       set((s) => {
         const arr = s.itemsByProject[projectId] || []
-        const updated = arr.map((it) => (it.id === id ? { ...it, ...validation.data!, updatedAt: new Date().toISOString() } : it))
+        const updated = arr.map((it) => {
+          if (it.id !== id) return it
+          const merged = { ...it, ...validation.data!, updatedAt: new Date().toISOString() }
+          // Canonical finalTotal: if not explicitly provided, recalculate from volume × unit_price
+          if (!('finalTotal' in validation.data!) && ('volume' in validation.data! || 'unit_price' in validation.data!)) {
+            merged.finalTotal = Number(merged.volume || 0) * Number(merged.unit_price || 0)
+          }
+          // Keep legacy aliases in sync with the canonical finalTotal
+          merged.final_total = merged.finalTotal
+          merged.finalPrice  = merged.finalTotal
+          return merged
+        })
         return { itemsByProject: { ...s.itemsByProject, [projectId]: updated } }
       })
       get().logAction({ projectId, action: 'updateItem', payload: { id, updates } })
