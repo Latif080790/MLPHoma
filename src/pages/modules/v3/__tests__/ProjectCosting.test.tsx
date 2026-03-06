@@ -70,7 +70,7 @@ vi.mock('sonner', () => ({
 }));
 
 import { useProjectStore } from '../../../../store/projectStore';
-import ProjectCosting from '../ProjectCosting';
+import ProjectCosting from '../../ProjectCosting';
 
 describe('ProjectCosting - Sprint 0 Epic S0.1 Regression Tests', () => {
   beforeEach(() => {
