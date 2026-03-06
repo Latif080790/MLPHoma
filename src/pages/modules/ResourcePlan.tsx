@@ -1,15 +1,22 @@
-/**
+﻿/**
  * ResourcePlan.tsx
- * Resource Plan module — Volume kebutuhan resource dari AHSP × volume RAB.
- * Panel 1: Rekap total per resource (material/labor/equipment/subkon)
- * Panel 2: Jadwal pendatangan berbasis periode WBS timeline (bar chart)
+ * Resource Plan module â€” Volume kebutuhan resource dari AHSP Ã— volume RAP.
  *
- * Task 43: uses resourcePlanService for computation
- * Task 44: Adds Jadwal Pendatangan bar chart
+ * Features:
+ *  - Summary cards by resource type (toggle filter)
+ *  - Rekap table with DRILL-DOWN: expand a resource row to see audit trail
+ *    (which RAP items contribute, coefficient Ã— qty â†’ volume)
+ *  - Jadwal Pendatangan: monthly stacked bar chart, click month to see
+ *    per-WBS / per-resource breakdown (traceability)
+ *  - JIT scheduling visual: shows estimated PO deadline (H-14 from arrival)
+ *  - Export to Excel (full table + trace sheet)
  */
 
-import React, { useState, useMemo, useEffect } from 'react'
-import { Wrench, Download, AlertCircle, CalendarDays } from 'lucide-react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import {
+  Wrench, Download, AlertCircle, CalendarDays,
+  ChevronRight, ChevronDown, Info, X, Package, Clock,
+} from 'lucide-react'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
 import { useProjectStore } from '@/store/projectStore'
@@ -24,16 +31,18 @@ import {
 } from '@/components/ui/table'
 import { formatIDR } from '@/lib/utils'
 import {
-  computeResourceNeedsFromRAP,
+  computeResourceNeedsFromRAPWithTrace,
   computeResourceStatsFromRAP,
+  computeArrivalScheduleWithTrace,
 } from '@/services/resourcePlanService'
+import type { ResourceNeedWithTrace } from '@/services/resourcePlanService'
 import type { ResourceType } from '@/types/ahsp'
 import type { RapItem } from '@/services/rapService'
 
-// Stable fallback — never recreated, prevents Zustand infinite re-render
+// Stable fallback â€” never recreated, prevents Zustand infinite re-render
 const EMPTY_RAP: RapItem[] = []
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TYPE_LABEL: Record<ResourceType, string> = {
   material: 'Material',
   labor: 'Tenaga Kerja',
@@ -57,25 +66,34 @@ const TYPE_BAR_COLOR: Record<ResourceType, string> = {
 
 const TYPE_ORDER: ResourceType[] = ['material', 'labor', 'equipment', 'subcontractor']
 
+// JIT: days before work start that material should arrive; PO lead time
+const JIT_BUFFER_DAYS = 2
+const PO_LEAD_TIME_DAYS = 14
+
+function subDays(dateStr: string, days: number): string {
+  const d = new Date(dateStr)
+  d.setDate(d.getDate() - days)
+  return d.toISOString().split('T')[0]
+}
+
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ResourcePlan() {
   const project = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = project?.id || ''
 
-  // G11/G12 Fix: read from RAP store (the authoritative budget plan), not RAB store
   const { items: allRapItems, fetchItems: fetchRapItems } = useRapStore()
   const rapItems = useMemo(
     () => (projectId ? allRapItems.filter(i => i.project_id === projectId) : EMPTY_RAP),
-    [allRapItems, projectId]
+    [allRapItems, projectId],
   )
   const { componentsByAHSP, resources, fetchComponents } = useAHSPStore()
   const { getTasks } = useTimelineStore()
 
-  // Auto-load RAP items on mount
+  // â”€â”€ Load data â”€â”€
   useEffect(() => {
     if (projectId) fetchRapItems(projectId)
   }, [projectId, fetchRapItems])
 
-  // ── Auto-load AHSP components for RAP items ──
   useEffect(() => {
     if (!rapItems.length) return
     rapItems.forEach(r => {
@@ -85,100 +103,12 @@ export default function ResourcePlan() {
     })
   }, [rapItems, componentsByAHSP, fetchComponents])
 
+  // â”€â”€ UI state â”€â”€
   const [activeTypes, setActiveTypes] = useState<Set<ResourceType>>(
-    new Set(['material', 'labor', 'equipment', 'subcontractor'])
+    new Set(['material', 'labor', 'equipment', 'subcontractor']),
   )
-
-  // ── Compute resource needs using service (G11/G12 fix: from RAP not RAB) ──
-  const resourceNeeds = useMemo(
-    () => computeResourceNeedsFromRAP(rapItems, componentsByAHSP, resources),
-    [rapItems, componentsByAHSP, resources]
-  )
-
-  // ── Stats ──────────────────────────────────────────────────────
-  const stats = useMemo(
-    () => computeResourceStatsFromRAP(resourceNeeds, rapItems),
-    [resourceNeeds, rapItems]
-  )
-
-  // ── Filtered rows ──────────────────────────────────────────────
-  const filtered = useMemo(
-    () => resourceNeeds.filter(r => activeTypes.has(r.resourceType)),
-    [resourceNeeds, activeTypes]
-  )
-
-  // ── Task 44: Jadwal Pendatangan data ───────────────────────────
-  /**
-   * Compute monthly resource cost distribution from WBS timeline tasks.
-   * For each RAP item that has a linked task with start/end dates,
-   * distribute the resource cost linearly across the months.
-   */
-  const arrivalSchedule = useMemo(() => {
-    const tasks = getTasks(projectId)
-    if (!tasks.length || !resourceNeeds.length) return []
-
-    // Build task map by RAB item id (timeline tasks reference rabId)
-    const taskByRabId = new Map<string, { start: string; end: string }>()
-    tasks.forEach(t => {
-      if (t.rabId && t.startDate && t.endDate) {
-        taskByRabId.set(t.rabId, { start: t.startDate, end: t.endDate })
-      }
-    })
-
-    // Monthly buckets per resource type
-    const buckets = new Map<string, Record<ResourceType, number>>()
-
-    for (const rapItem of rapItems) {
-      const volume = rapItem.qty_budget || 0
-      if (volume === 0) continue
-
-      // Use rab_item_id to cross-reference the timeline task
-      const task = rapItem.rab_item_id ? taskByRabId.get(rapItem.rab_item_id) : undefined
-      if (!task) continue
-
-      const ahspId = rapItem.ahsp_id
-      if (!ahspId) continue
-
-      const components = componentsByAHSP[ahspId] || []
-      for (const comp of components) {
-        if (!comp.resource && !comp.resourceId) continue
-        const resource = comp.resource || resources.find(r => r.id === comp.resourceId)
-        if (!resource) continue
-
-        const totalCost = comp.coefficient * volume * (resource.unitPrice || comp.unitPrice || 0)
-
-        // Distribute across months
-        const startDate = new Date(task.start)
-        const endDate = new Date(task.end)
-        const diffMs = endDate.getTime() - startDate.getTime()
-        const totalMonths = Math.max(1, Math.ceil(diffMs / (30 * 86400000)))
-
-        const costPerMonth = totalCost / totalMonths
-
-        for (let i = 0; i < totalMonths; i++) {
-          const d = new Date(startDate)
-          d.setMonth(d.getMonth() + i)
-          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-
-          if (!buckets.has(key)) {
-            buckets.set(key, { material: 0, labor: 0, equipment: 0, subcontractor: 0 })
-          }
-          const bucket = buckets.get(key)!
-          bucket[resource.type] = (bucket[resource.type] || 0) + costPerMonth
-        }
-      }
-    }
-
-    // Sort by month and return
-    return Array.from(buckets.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([month, costs]) => ({
-        month,
-        label: new Date(month + '-01').toLocaleDateString('id-ID', { year: '2-digit', month: 'short' }),
-        ...costs,
-        total: costs.material + costs.labor + costs.equipment + costs.subcontractor,
-      }))
-  }, [rapItems, componentsByAHSP, resources, projectId, getTasks, resourceNeeds.length])
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
 
   const toggleType = (t: ResourceType) => {
     setActiveTypes(prev => {
@@ -188,6 +118,55 @@ export default function ResourcePlan() {
     })
   }
 
+  const toggleRow = useCallback((id: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) { next.delete(id) } else { next.add(id) }
+      return next
+    })
+  }, [])
+
+  // â”€â”€ Compute resource needs with full audit trail â”€â”€
+  const resourceNeeds: ResourceNeedWithTrace[] = useMemo(
+    () => computeResourceNeedsFromRAPWithTrace(rapItems, componentsByAHSP, resources),
+    [rapItems, componentsByAHSP, resources],
+  )
+
+  const stats = useMemo(
+    () => computeResourceStatsFromRAP(resourceNeeds, rapItems),
+    [resourceNeeds, rapItems],
+  )
+
+  const filtered = useMemo(
+    () => resourceNeeds.filter(r => activeTypes.has(r.resourceType)),
+    [resourceNeeds, activeTypes],
+  )
+
+  // â”€â”€ Schedule Pendatangan with WBS traceability â”€â”€
+  const taskByRabId = useMemo(() => {
+    const tasks = getTasks(projectId)
+    const map = new Map<string, { start: string; end: string; wbsName?: string }>()
+    tasks.forEach(t => {
+      if (t.rabId && t.startDate && t.endDate) {
+        map.set(t.rabId, { start: t.startDate, end: t.endDate, wbsName: (t as { wbsName?: string }).wbsName || t.name })
+      }
+    })
+    return map
+  }, [getTasks, projectId])
+
+  const arrivalSchedule = useMemo(
+    () => computeArrivalScheduleWithTrace(rapItems, componentsByAHSP, resources, taskByRabId),
+    [rapItems, componentsByAHSP, resources, taskByRabId],
+  )
+
+  const maxMonthly = Math.max(...arrivalSchedule.map(m => m.total), 1)
+
+  const selectedMonthData = useMemo(
+    () => arrivalSchedule.find(m => m.month === selectedMonth) ?? null,
+    [arrivalSchedule, selectedMonth],
+  )
+
+  // â”€â”€ Export Excel (two sheets: summary + audit trail) â”€â”€
   const handleExport = async () => {
     const { utils, writeFile } = await import('xlsx')
     const rows = filtered.map(r => ({
@@ -195,23 +174,39 @@ export default function ResourcePlan() {
       Nama: r.resourceName,
       Tipe: TYPE_LABEL[r.resourceType],
       Satuan: r.unit,
-      'Harga Satuan': r.unitPrice,
+      'Harga Satuan (AHSP)': r.unitPrice,
       'Volume Total': r.totalVolume,
       'Total Biaya': r.totalCost,
     }))
-    const ws = utils.json_to_sheet(rows)
+    const traceRows: object[] = []
+    filtered.forEach(r => {
+      r.traceItems.forEach(t => {
+        traceRows.push({
+          Resource: r.resourceName,
+          Tipe: TYPE_LABEL[r.resourceType],
+          'Item RAP': t.rapItemName,
+          WBS: t.wbsName || 'â€”',
+          'AHSP Code': t.ahspCode || 'â€”',
+          Koefisien: t.coefficient,
+          'Volume RAP': t.qty,
+          'Vol Kontribusi': t.volumeContrib,
+          'Biaya Kontribusi': t.costContrib,
+        })
+      })
+    })
     const wb = utils.book_new()
-    utils.book_append_sheet(wb, ws, 'Resource Plan')
+    utils.book_append_sheet(wb, utils.json_to_sheet(rows), 'Resource Plan')
+    utils.book_append_sheet(wb, utils.json_to_sheet(traceRows), 'Audit Trail')
     writeFile(wb, `resource-plan-${projectId}-${new Date().toISOString().split('T')[0]}.xlsx`)
   }
 
-  // ── Guards ─────────────────────────────────────────────────────
+  // â”€â”€ Guards â”€â”€
   if (!project || !projectId) {
     return (
       <ModulePageState
         icon={<Wrench size={18} />}
         title="Resource Plan"
-        description="Rekap kebutuhan resource dari AHSP × volume RAP."
+        description="Rekap kebutuhan resource dari AHSP Ã— volume RAP."
         variant="empty"
         message="Pilih proyek aktif untuk melihat Resource Plan."
       />
@@ -224,7 +219,7 @@ export default function ResourcePlan() {
         <ModuleHeader
           icon={<Wrench size={18} />}
           title="Resource Plan"
-          description={`Kebutuhan resource — ${project.name}`}
+          description={`Kebutuhan resource â€” ${project.name}`}
           accent="indigo"
         />
         <ModulePageState
@@ -238,24 +233,28 @@ export default function ResourcePlan() {
   }
 
   const unlinkedCount = stats.totalRab - stats.linkedCount
-  const maxMonthly = Math.max(...arrivalSchedule.map(m => m.total), 1)
 
   return (
     <div className="space-y-4 density-compact">
       <ModuleHeader
         icon={<Wrench size={18} />}
         title="Resource Plan"
-        description={`Rekap volume & jadwal kebutuhan resource — ${project.name}`}
+        description={`Rekap volume & jadwal kebutuhan resource â€” ${project.name}`}
         accent="indigo"
         actions={
-          <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleExport} disabled={filtered.length === 0}>
+          <Button
+            variant="outline" size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={handleExport}
+            disabled={filtered.length === 0}
+          >
             <Download size={13} />
             Export Excel
           </Button>
         }
       />
 
-      {/* ── Warning: unlinked RAP items ─────────────────────────────── */}
+      {/* â”€â”€ Warning: unlinked RAP items â”€â”€ */}
       {unlinkedCount > 0 && (
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs dark:border-amber-800 dark:bg-amber-900/20">
           <AlertCircle size={14} className="mt-0.5 shrink-0 text-amber-600" />
@@ -266,7 +265,7 @@ export default function ResourcePlan() {
         </div>
       )}
 
-      {/* ── Summary by type ────────────────────────────────────────── */}
+      {/* â”€â”€ Summary cards â”€â”€ */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {TYPE_ORDER.map(type => (
           <Card
@@ -287,7 +286,7 @@ export default function ResourcePlan() {
         ))}
       </div>
 
-      {/* ── Task 44: Jadwal Pendatangan Bar Chart ───────────────────── */}
+      {/* â”€â”€ Jadwal Pendatangan â€” stacked bar + click-to-trace â”€â”€ */}
       {arrivalSchedule.length > 0 && (
         <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-2 pt-4 dark:border-slate-700">
@@ -295,20 +294,26 @@ export default function ResourcePlan() {
               <CalendarDays size={15} className="text-indigo-500" />
               Jadwal Pendatangan Resource
             </CardTitle>
-            <span className="text-xs text-slate-400">{arrivalSchedule.length} bulan</span>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-xs text-slate-400">
+                <Clock size={11} />
+                JIT H-{JIT_BUFFER_DAYS} buffer Â· klik bulan untuk rincian
+              </span>
+              <span className="text-xs text-slate-400">{arrivalSchedule.length} bln</span>
+            </div>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {arrivalSchedule.map(m => (
-                <div key={m.month} className="flex items-center gap-3">
-                  {/* Month label */}
-                  <div className="w-16 shrink-0 text-right text-xs font-mono text-slate-500">
-                    {m.label}
-                  </div>
-                  {/* Stacked bar */}
+                <button
+                  key={m.month}
+                  className={`flex w-full items-center gap-3 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${selectedMonth === m.month ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}
+                  onClick={() => setSelectedMonth(prev => prev === m.month ? null : m.month)}
+                >
+                  <div className="w-16 shrink-0 text-right text-xs font-mono text-slate-500">{m.label}</div>
                   <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden flex">
                     {TYPE_ORDER.map(type => {
-                      const val = m[type] || 0
+                      const val = (m as unknown as Record<string, number>)[type] || 0
                       if (val <= 0) return null
                       const pct = (val / maxMonthly) * 100
                       return (
@@ -321,11 +326,14 @@ export default function ResourcePlan() {
                       )
                     })}
                   </div>
-                  {/* Total cost */}
                   <div className="w-28 shrink-0 text-right text-xs font-mono font-semibold text-slate-700 dark:text-slate-200">
                     {formatIDR(m.total)}
                   </div>
-                </div>
+                  <ChevronRight
+                    size={12}
+                    className={`shrink-0 text-slate-400 transition-transform ${selectedMonth === m.month ? 'rotate-90 text-indigo-500' : ''}`}
+                  />
+                </button>
               ))}
             </div>
             {/* Legend */}
@@ -341,7 +349,83 @@ export default function ResourcePlan() {
         </Card>
       )}
 
-      {/* ── Resource needs table ────────────────────────────────────── */}
+      {/* â”€â”€ Month detail: per-WBS per-resource traceability panel â”€â”€ */}
+      {selectedMonthData && (
+        <Card className="shadow-sm border-indigo-200 dark:border-indigo-800">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-2 pt-3 dark:border-slate-700">
+            <CardTitle className="text-sm font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+              <Info size={14} />
+              Detail {selectedMonthData.label} â€” Rincian Resource per Item Pekerjaan
+            </CardTitle>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setSelectedMonth(null)}>
+              <X size={13} />
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {/* Sub-total by type */}
+            <div className="flex flex-wrap gap-4 px-4 py-2 border-b border-slate-100 dark:border-slate-700">
+              {TYPE_ORDER.map(type => {
+                const val = (selectedMonthData as unknown as Record<string, number>)[type] || 0
+                if (val <= 0) return null
+                return (
+                  <div key={type} className="flex items-center gap-1.5 text-xs">
+                    <div className={`w-2 h-2 rounded-sm ${TYPE_BAR_COLOR[type]}`} />
+                    <span className="text-slate-500">{TYPE_LABEL[type]}:</span>
+                    <span className="font-mono font-semibold text-slate-700 dark:text-slate-200">{formatIDR(val)}</span>
+                  </div>
+                )
+              })}
+            </div>
+            {/* Trace table */}
+            <div className="max-h-[280px] overflow-auto">
+              <Table>
+                <TableHeader className="sticky-glass-tablehead">
+                  <TableRow className="border-b border-slate-200 dark:border-slate-700 hover:bg-transparent">
+                    <TableHead className="h-7 text-xs font-bold uppercase tracking-wider">Item Pekerjaan (RAP)</TableHead>
+                    <TableHead className="h-7 text-xs font-bold uppercase tracking-wider">WBS</TableHead>
+                    <TableHead className="h-7 text-xs font-bold uppercase tracking-wider">Resource</TableHead>
+                    <TableHead className="h-7 text-xs font-bold uppercase tracking-wider">Tipe</TableHead>
+                    <TableHead className="h-7 text-right text-xs font-bold uppercase tracking-wider">Volume / bln</TableHead>
+                    <TableHead className="h-7 text-right text-xs font-bold uppercase tracking-wider">Biaya / bln</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {selectedMonthData.traces.map((t, i) => (
+                    <TableRow key={i} className="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/40">
+                      <TableCell className="py-1 text-xs font-medium max-w-[200px] truncate" title={t.rapItemName}>{t.rapItemName}</TableCell>
+                      <TableCell className="py-1 text-xs text-slate-500">{t.wbsName || 'â€”'}</TableCell>
+                      <TableCell className="py-1 text-xs">{t.resourceName}</TableCell>
+                      <TableCell className="py-1">
+                        <Badge variant="outline" className={`text-xs ${TYPE_COLOR[t.resourceType]}`}>
+                          {TYPE_LABEL[t.resourceType]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="py-1 text-right font-mono text-xs">
+                        {t.volumeContrib.toFixed(3)} {t.unit}
+                      </TableCell>
+                      <TableCell className="py-1 text-right font-mono text-xs font-semibold">
+                        {formatIDR(t.costContrib)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {/* JIT / PO deadline reminder */}
+            <div className="px-4 py-2 border-t border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-900/10 flex items-start gap-2">
+              <Package size={12} className="mt-0.5 shrink-0 text-amber-600" />
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                <strong>JIT:</strong> Material bulan {selectedMonthData.label} harus tiba paling lambat H-{JIT_BUFFER_DAYS} sebelum pekerjaan dimulai.{' '}
+                <strong>Batas terbit PO:</strong>{' '}
+                {new Date(subDays(selectedMonthData.month + '-01', PO_LEAD_TIME_DAYS)).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {' '}(H-{PO_LEAD_TIME_DAYS} lead time pemesanan).
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* â”€â”€ Rekap resource table with drill-down audit trail â”€â”€ */}
       {filtered.length === 0 ? (
         <ModulePageState
           icon={<Wrench size={18} />}
@@ -352,21 +436,25 @@ export default function ResourcePlan() {
       ) : (
         <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 pb-2 pt-4 dark:border-slate-700">
-            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500">
+            <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
               Rekap Kebutuhan Resource
+              <span className="text-xs font-normal text-slate-400 normal-case tracking-normal">
+                â€” klik baris â–¶ untuk audit trail kalkulasi
+              </span>
             </CardTitle>
-            <span className="text-xs text-slate-400">{filtered.length} item ditampilkan</span>
+            <span className="text-xs text-slate-400">{filtered.length} item</span>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="max-h-[550px] overflow-auto">
+            <div className="max-h-[650px] overflow-auto">
               <Table>
                 <TableHeader className="sticky-glass-tablehead">
                   <TableRow className="border-b border-slate-200 dark:border-slate-700 hover:bg-transparent">
+                    <TableHead className="h-8 w-6" />
                     <TableHead className="h-8 text-xs font-bold uppercase tracking-wider">Kode</TableHead>
-                    <TableHead className="h-8 w-[250px] text-xs font-bold uppercase tracking-wider">Nama Resource</TableHead>
+                    <TableHead className="h-8 w-[220px] text-xs font-bold uppercase tracking-wider">Nama Resource</TableHead>
                     <TableHead className="h-8 text-xs font-bold uppercase tracking-wider">Tipe</TableHead>
                     <TableHead className="h-8 text-xs font-bold uppercase tracking-wider">Satuan</TableHead>
-                    <TableHead className="h-8 text-right text-xs font-bold uppercase tracking-wider">Volume Total</TableHead>
+                    <TableHead className="h-8 text-right text-xs font-bold uppercase tracking-wider">Vol Total</TableHead>
                     <TableHead className="h-8 text-right text-xs font-bold uppercase tracking-wider">Harga Satuan</TableHead>
                     <TableHead className="h-8 text-right text-xs font-bold uppercase tracking-wider">Total Biaya</TableHead>
                   </TableRow>
@@ -378,9 +466,9 @@ export default function ResourcePlan() {
                     const subtotal = rows.reduce((s, r) => s + r.totalCost, 0)
                     return (
                       <React.Fragment key={type}>
-                        {/* Group header */}
+                        {/* Group header row */}
                         <TableRow className="border-b border-slate-100 bg-slate-50/60 dark:bg-slate-800/30">
-                          <TableCell colSpan={6} className="py-1.5 pl-3">
+                          <TableCell colSpan={7} className="py-1.5 pl-3">
                             <Badge className={`text-xs ${TYPE_COLOR[type]}`}>{TYPE_LABEL[type]}</Badge>
                             <span className="ml-2 text-xs text-slate-400">{rows.length} item</span>
                           </TableCell>
@@ -388,32 +476,89 @@ export default function ResourcePlan() {
                             {formatIDR(subtotal)}
                           </TableCell>
                         </TableRow>
-                        {/* Item rows */}
-                        {rows.map(r => (
-                          <TableRow key={r.resourceId} className="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/40 transition-colors">
-                            <TableCell className="py-1.5 font-mono text-xs text-slate-500">{r.resourceCode}</TableCell>
-                            <TableCell className="py-1.5 text-xs font-medium">{r.resourceName}</TableCell>
-                            <TableCell className="py-1.5">
-                              <Badge variant="outline" className="text-xs">{TYPE_LABEL[r.resourceType]}</Badge>
-                            </TableCell>
-                            <TableCell className="py-1.5 text-xs text-slate-500">{r.unit}</TableCell>
-                            <TableCell className="py-1.5 text-right font-mono text-xs">
-                              {r.totalVolume % 1 === 0 ? r.totalVolume.toLocaleString('id-ID') : r.totalVolume.toFixed(3)}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-right font-mono text-xs text-slate-500">
-                              {formatIDR(r.unitPrice)}
-                            </TableCell>
-                            <TableCell className="py-1.5 text-right font-mono text-xs font-semibold text-slate-800 dark:text-slate-100">
-                              {formatIDR(r.totalCost)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+
+                        {/* Resource rows (Level 1) */}
+                        {rows.map(r => {
+                          const isExpanded = expandedRows.has(r.resourceId)
+                          return (
+                            <React.Fragment key={r.resourceId}>
+                              <TableRow
+                                className="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+                                onClick={() => toggleRow(r.resourceId)}
+                              >
+                                <TableCell className="py-1.5 pl-2 w-6">
+                                  {isExpanded
+                                    ? <ChevronDown size={13} className="text-indigo-500" />
+                                    : <ChevronRight size={13} className="text-slate-400" />}
+                                </TableCell>
+                                <TableCell className="py-1.5 font-mono text-xs text-slate-500">{r.resourceCode}</TableCell>
+                                <TableCell className="py-1.5 text-xs font-medium">{r.resourceName}</TableCell>
+                                <TableCell className="py-1.5">
+                                  <Badge variant="outline" className="text-xs">{TYPE_LABEL[r.resourceType]}</Badge>
+                                </TableCell>
+                                <TableCell className="py-1.5 text-xs text-slate-500">{r.unit}</TableCell>
+                                <TableCell className="py-1.5 text-right font-mono text-xs">
+                                  {r.totalVolume % 1 === 0
+                                    ? r.totalVolume.toLocaleString('id-ID')
+                                    : r.totalVolume.toFixed(3)}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-right font-mono text-xs text-slate-500">
+                                  {formatIDR(r.unitPrice)}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-right font-mono text-xs font-semibold text-slate-800 dark:text-slate-100">
+                                  {formatIDR(r.totalCost)}
+                                </TableCell>
+                              </TableRow>
+
+                              {/* Audit trail rows (Level 2 drill-down) */}
+                              {isExpanded && r.traceItems.map((t, i) => (
+                                <TableRow
+                                  key={`${r.resourceId}-t${i}`}
+                                  className="border-b border-dashed border-slate-100 bg-indigo-50/30 dark:bg-indigo-900/10 dark:border-slate-800/60"
+                                >
+                                  <TableCell />
+                                  <TableCell colSpan={2} className="py-1 pl-7">
+                                    <div className="flex items-start gap-1.5">
+                                      <span className="mt-0.5 text-indigo-400 select-none">â†³</span>
+                                      <div>
+                                        <div className="text-xs font-medium text-slate-700 dark:text-slate-200 leading-tight">
+                                          {t.rapItemName}
+                                        </div>
+                                        <div className="flex gap-2 mt-0.5 flex-wrap">
+                                          {t.wbsName && (
+                                            <span className="text-xs text-slate-400">WBS: {t.wbsName}</span>
+                                          )}
+                                          {t.ahspCode && (
+                                            <span className="text-xs text-slate-400">AHSP: {t.ahspCode}</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="py-1" colSpan={2}>
+                                    <span className="text-xs text-slate-400 font-mono">
+                                      koef {t.coefficient} Ã— vol {t.qty.toLocaleString('id-ID')} = {t.volumeContrib.toFixed(3)} {r.unit}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="py-1 text-right font-mono text-xs text-indigo-600 dark:text-indigo-400">
+                                    {t.volumeContrib.toFixed(3)}
+                                  </TableCell>
+                                  <TableCell />
+                                  <TableCell className="py-1 text-right font-mono text-xs text-indigo-600 dark:text-indigo-400">
+                                    {formatIDR(t.costContrib)}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </React.Fragment>
+                          )
+                        })}
                       </React.Fragment>
                     )
                   })}
+
                   {/* Grand total */}
                   <TableRow className="border-t-2 border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
-                    <TableCell colSpan={6} className="py-2 pl-3 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
+                    <TableCell colSpan={7} className="py-2 pl-3 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                       TOTAL
                     </TableCell>
                     <TableCell className="py-2 text-right font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -429,3 +574,5 @@ export default function ResourcePlan() {
     </div>
   )
 }
+
+
