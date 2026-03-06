@@ -86,7 +86,7 @@ export default function ResourcePlan() {
     () => (projectId ? allRapItems.filter(i => i.project_id === projectId) : EMPTY_RAP),
     [allRapItems, projectId],
   )
-  const { componentsByAHSP, resources, fetchComponents } = useAHSPStore()
+  const { componentsByAHSP, resources, fetchComponents, ahspItems } = useAHSPStore()
   const { getTasks } = useTimelineStore()
 
   // â”€â”€ Load data â”€â”€
@@ -126,10 +126,33 @@ export default function ResourcePlan() {
     })
   }, [])
 
-  // â”€â”€ Compute resource needs with full audit trail â”€â”€
+  // â"€â"€ Maps for rich audit trail labels â"€â"€
+  // ahsp_id -> code (for drill-down display)
+  const ahspCodeMapForTrace = useMemo(() => {
+    const m = new Map<string, string>()
+    ahspItems.forEach(a => { if (a.id && a.code) m.set(a.id, a.code) })
+    // Also infer from rapItem.ahsp_id + rab_items joined data if available
+    return m
+  }, [ahspItems])
+
+  // wbs_id -> name (built from joined wbs_items on the rap rows themselves)
+  const wbsNameMapForTrace = useMemo(() => {
+    const m = new Map<string, string>()
+    rapItems.forEach(r => {
+      if (r.wbs_id && (r as RapItem & { wbs_items?: { name: string } }).wbs_items?.name) {
+        m.set(r.wbs_id, (r as RapItem & { wbs_items?: { name: string } }).wbs_items!.name)
+      }
+    })
+    return m
+  }, [rapItems])
+
+  // â"€â"€ Compute resource needs with full audit trail â"€â"€
   const resourceNeeds: ResourceNeedWithTrace[] = useMemo(
-    () => computeResourceNeedsFromRAPWithTrace(rapItems, componentsByAHSP, resources),
-    [rapItems, componentsByAHSP, resources],
+    () => computeResourceNeedsFromRAPWithTrace(
+      rapItems, componentsByAHSP, resources,
+      ahspCodeMapForTrace, wbsNameMapForTrace,
+    ),
+    [rapItems, componentsByAHSP, resources, ahspCodeMapForTrace, wbsNameMapForTrace],
   )
 
   const stats = useMemo(
