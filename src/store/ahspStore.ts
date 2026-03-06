@@ -38,6 +38,15 @@ import type {
 } from '../types/ahsp'
 
 /**
+ * Debounce timer for cascading recalculation after resource price changes
+ */
+let _recalcTimer: ReturnType<typeof setTimeout> | null = null
+const scheduleRecalc = (fn: () => void, ms = 400) => {
+  if (_recalcTimer) clearTimeout(_recalcTimer)
+  _recalcTimer = setTimeout(fn, ms)
+}
+
+/**
  * Create AHSP Store with Zustand
  */
 export const useAHSPStore = create<AHSPStore>()(
@@ -159,6 +168,33 @@ export const useAHSPStore = create<AHSPStore>()(
           ])
         },
 
+        fetchComponentsBatch: async (ahspIds: string[]) => {
+          if (!ahspIds.length) return
+          // Filter out ids already in store
+          const cached = get().componentsByAHSP
+          const missing = ahspIds.filter(id => !(id in cached))
+          if (!missing.length) return
+
+          set((state) => ({
+            loading: { ...state.loading, components: true },
+            errors: { ...state.errors, components: null },
+          }))
+
+          const { data: batchData, error } = await ahspRepository.fetchComponentsBatch(missing)
+          if (error) {
+            set((state) => ({
+              loading: { ...state.loading, components: false },
+              errors: { ...state.errors, components: error },
+            }))
+            toast.error('Failed to load components', { description: error })
+          } else {
+            set((state) => ({
+              componentsByAHSP: { ...state.componentsByAHSP, ...batchData },
+              loading: { ...state.loading, components: false },
+            }))
+          }
+        },
+
         // Resource actions
         addResource: (resource) => {
           // Validate input
@@ -219,6 +255,9 @@ export const useAHSPStore = create<AHSPStore>()(
                 : resource
             ),
           }))
+
+          // Cascade: any AHSP item whose component references this resource gets a new price
+          scheduleRecalc(() => get().recalculateAllPrices())
         },
 
         deleteResource: (id) => {

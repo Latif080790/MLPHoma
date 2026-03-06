@@ -8,6 +8,10 @@ export interface RapItem {
     ahsp_id?: string
     rab_item_id?: string
     name?: string  // Local name carried from RAB source
+    /** Planned start date populated from Timeline or RAPGeneratorSimple */
+    start_date?: string
+    /** Planned end date populated from Timeline or RAPGeneratorSimple */
+    end_date?: string
 
     qty_budget: number
     unit_price_budget: number
@@ -120,12 +124,14 @@ export const rapService = {
             // 1. Explicit UUID field (rab_items.ahsp_id — uuid column, often null)
             // 2. Text aliases used in frontend store (ahspItemId / ahsp_item_id)
             // 3. Code-based lookup via ahsp_code → ahsp_items.code (most reliable)
+            // 4. Code-based lookup via item_code (RAB item code may match AHSP code)
             const resolvedAhspId =
                 (rab.ahsp_id as string | null) ||
                 (rab.ahspId as string | null) ||
                 (rab.ahspItemId as string | null) ||
                 (rab.ahsp_item_id as string | null) ||
                 ahspCodeMap.get(rab.ahsp_code as string) ||
+                ahspCodeMap.get(rab.item_code as string) ||
                 null
 
             return {
@@ -149,7 +155,10 @@ export const rapService = {
                 // Preserve existing costs
                 committed_cost: existing?.committed_cost || 0,
                 actual_cost: existing?.actual_cost || 0,
-                status: (rab as Record<string, unknown>).status as string || 'not_started'
+                status: (rab as Record<string, unknown>).status as string || 'not_started',
+                // Schedule dates — carried from linked timeline task or distributeVolumeByTasks output
+                start_date: (rab.start_date || rab.startDate) as string | null || null,
+                end_date: (rab.end_date || rab.endDate) as string | null || null,
             }
         })
 

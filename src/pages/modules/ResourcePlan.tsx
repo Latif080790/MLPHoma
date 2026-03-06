@@ -86,7 +86,7 @@ export default function ResourcePlan() {
     () => (projectId ? allRapItems.filter(i => i.project_id === projectId) : EMPTY_RAP),
     [allRapItems, projectId],
   )
-  const { componentsByAHSP, resources, fetchComponents, ahspItems } = useAHSPStore()
+  const { componentsByAHSP, resources, fetchComponentsBatch, ahspItems } = useAHSPStore()
   const { getTasks } = useTimelineStore()
 
   // â”€â”€ Load data â”€â”€
@@ -96,12 +96,13 @@ export default function ResourcePlan() {
 
   useEffect(() => {
     if (!rapItems.length) return
-    rapItems.forEach(r => {
-      if (r.ahsp_id && !componentsByAHSP[r.ahsp_id]) {
-        fetchComponents(r.ahsp_id).catch(() => null)
-      }
-    })
-  }, [rapItems, componentsByAHSP, fetchComponents])
+    const missingIds = rapItems
+      .map(r => r.ahsp_id)
+      .filter((id): id is string => !!id && !(id in componentsByAHSP))
+    if (missingIds.length) {
+      fetchComponentsBatch(missingIds).catch(() => null)
+    }
+  }, [rapItems, componentsByAHSP, fetchComponentsBatch])
 
   // â”€â”€ UI state â”€â”€
   const [activeTypes, setActiveTypes] = useState<Set<ResourceType>>(

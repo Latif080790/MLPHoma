@@ -148,6 +148,8 @@ export interface AHSPActions {
   fetchResources: () => Promise<void>
   fetchAHSPItems: () => Promise<void>
   fetchComponents: (ahspId?: string) => Promise<void>
+  /** Batch-fetch components for multiple AHSP ids in a single query */
+  fetchComponentsBatch: (ahspIds: string[]) => Promise<void>
   fetchAll: () => Promise<void>
   fetchZones: () => Promise<void>
   fetchZonePrices: (zoneId: string) => Promise<void>

@@ -12,6 +12,7 @@ import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { wbsItemInputSchema, wbsItemUpdateSchema } from '../lib/validationSchemas'
 import { syncWBSItem, syncDelete, syncWBSItems } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
+import { supabase } from '../lib/supabaseClient'
 
 /**
  * Sort items by hierarchy and order
@@ -393,6 +394,42 @@ export const useWBSStore = create<WBSStore>()(
 
         collectDescendants(itemId)
         return descendants
+      },
+
+      // Load WBS items from Supabase
+      fetchItems: async (projectId: string) => {
+        if (!supabase) return
+        set({ loading: true, error: null })
+        const { data, error } = await supabase
+          .from('wbs_items')
+          .select('*')
+          .eq('project_id', projectId)
+          .order('sort_order', { ascending: true })
+        if (error) {
+          set({ loading: false, error: error.message })
+          toast.error('Failed to load WBS', error.message)
+          return
+        }
+        type WBSRow = { id: string; project_id: string; code: string; name: string; description?: string; level: number; parent_id: string | null; sort_order: number; qc_status?: string; progress?: number; created_at: string; updated_at: string }
+        const items: WBSItem[] = ((data || []) as WBSRow[]).map((row) => ({
+          id: row.id,
+          projectId: row.project_id,
+          code: row.code || '',
+          name: row.name,
+          description: row.description,
+          level: row.level ?? 1,
+          parentId: row.parent_id ?? null,
+          sortOrder: row.sort_order ?? 0,
+          qc_status: (row.qc_status as WBSItem['qc_status']) ?? 'NOT_REQUIRED',
+          progress: row.progress ?? 0,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        }))
+        const finalItems = generateCodesForProject(items)
+        set((state) => ({
+          itemsByProject: { ...state.itemsByProject, [projectId]: finalItems },
+          loading: false,
+        }))
       },
 
       // Clear project WBS

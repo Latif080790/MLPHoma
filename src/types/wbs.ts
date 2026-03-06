@@ -78,6 +78,8 @@ export interface WBSActions {
   exportWBS: (projectId: string) => WBSItem[]
   /** Find all descendants of an item (recursive) */
   findDescendants: (projectId: string, itemId: string) => WBSItem[]
+  /** Load WBS items from Supabase (replaces local state) */
+  fetchItems: (projectId: string) => Promise<void>
   /** Clear project WBS */
   clearProject: (projectId: string) => void
 }

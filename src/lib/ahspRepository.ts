@@ -249,6 +249,40 @@ export const ahspRepository = {
         }
     },
 
+    /**
+     * Batch-fetch components for multiple AHSP ids in a single query.
+     * Replaces N individual fetchComponents() calls in ResourcePlan.
+     */
+    async fetchComponentsBatch(ahspIds: string[]): Promise<{ data: Record<string, AHSPComponent[]>; error: string | null }> {
+        if (!ahspIds.length) return { data: {}, error: null }
+        try {
+            const client = assertSupabase()
+            const componentsByAHSP: Record<string, AHSPComponent[]> = {}
+
+            // Use .in() filter — single round-trip for all ids
+            const { data, error } = await client
+                .from('ahsp_components')
+                .select(`*, resource:resources(*)`)
+                .in('ahsp_id', ahspIds)
+                .order('created_at', { ascending: true })
+
+            if (error) throw error
+
+            const rows = (data as (AhspComponentRow & { resource: ResourceRow | null })[]) || []
+            rows.forEach(row => {
+                const component = mapComponentRow(row)
+                if (!componentsByAHSP[row.ahsp_id]) {
+                    componentsByAHSP[row.ahsp_id] = []
+                }
+                componentsByAHSP[row.ahsp_id].push(component)
+            })
+
+            return { data: componentsByAHSP, error: null }
+        } catch (err: unknown) {
+            return { data: {}, error: (err as Error).message || 'Failed to batch-fetch components' }
+        }
+    },
+
     syncComponent(component: AHSPComponent) {
         syncAHSPComponent(component)
     },
