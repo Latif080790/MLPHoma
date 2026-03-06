@@ -13,6 +13,7 @@ import React, { useMemo, useState } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import useRabStore from '../../store/rabStore'
+import { useProjectStore } from '../../store/projectStore'
 import { distributeVolumeByTasks, distributionToSeries, ScheduleTask } from '../../lib/rapUtils'
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 import notify from '../../lib/toast'
@@ -37,6 +38,23 @@ function TaskRow({ task, onChange, onRemove }: { task: ScheduleTask; onChange: (
 export default function RAPGeneratorSimple({ projectId = 'default' }: { projectId?: string }) {
   const getItems = useRabStore((s) => s.getItems)
   const items = getItems(projectId)
+
+  // Read project markup config (set in ProjectCosting > CostingConfigPanel)
+  const projectMeta = useProjectStore(s => s.projects[projectId]?.meta)
+  const costingConfig = projectMeta?.costingConfig as {
+    overheadPercent?: number
+    profitPercent?: number
+    taxPercent?: number
+    profitBasis?: 'base_plus_overhead' | 'base'
+  } | undefined
+  const markupConfig = costingConfig && ((costingConfig.overheadPercent || 0) > 0 || (costingConfig.profitPercent || 0) > 0)
+    ? {
+        overheadPercent: costingConfig.overheadPercent || 0,
+        profitPercent: costingConfig.profitPercent || 0,
+        taxPercent: costingConfig.taxPercent || 0,
+        profitBasis: costingConfig.profitBasis ?? 'base_plus_overhead',
+      }
+    : undefined
 
   // tasks state - use lazy initializer for date calculations
   const [tasks, setTasks] = useState<ScheduleTask[]>(() => {
@@ -77,9 +95,9 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
       notify.error('Add at least one task')
       return
     }
-    const dist = distributeVolumeByTasks(items, tasks)
+    const dist = distributeVolumeByTasks(items, tasks, markupConfig)
     setDistribution(dist)
-    notify.success('RAP generated (prototype)')
+    notify.success(`RAP generated${markupConfig ? ` (OH ${markupConfig.overheadPercent}% + Profit ${markupConfig.profitPercent}%)` : ''}`)
   }
 
   const chartData = useMemo(() => {
