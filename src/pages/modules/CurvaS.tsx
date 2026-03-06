@@ -18,14 +18,18 @@ import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { useProjectStore } from '../../store/projectStore'
 import { useCurvaSStore } from '../../store/curvaSStore'
 import { useRapStore } from '../../store/rapStore'
+import { useRabStore } from '../../store/rabStore'
 import CurvaSChart from '../../components/charts/CurvaSChart'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { Card, CardContent } from '../../components/ui/card'
 import { Alert, AlertDescription } from '../../components/ui/alert'
-import { Download, LineChart, Play, Rocket, RefreshCw, AlertTriangle, Rows, GitPullRequest } from 'lucide-react'
+import { Download, LineChart, Play, Rocket, RefreshCw, AlertTriangle, Rows, GitPullRequest, Table2 } from 'lucide-react'
 import { downloadCSV, formatDate } from '../../lib/utils'
 import { shadowCurveService } from '../../services/shadowCurveService'
+import { distributeVolumeByTasks } from '../../lib/rapUtils'
+import type { ScheduleTask } from '../../lib/rapUtils'
+import { toast } from 'sonner'
 import type { CurvaSDataPoint } from '../../types/curvaS'
 
 /** Stable empty array reference to avoid new [] creation in selectors/defaults. */
@@ -52,6 +56,9 @@ export default function CurvaSPage() {
 
   // RAP store accessor
   const getRapPlan = useRapStore((s) => s.getPlan)
+
+  // RAB store accessor (for Import dari RAB)
+  const getRabItems = useRabStore((s) => s.getItems)
 
   // UI state toggles
   const [type, setType] = useState<'progress' | 'cost'>('progress')
@@ -80,6 +87,79 @@ export default function CurvaSPage() {
   const handleAnalyze = () => {
     if (!projectId) return
     analyzeProject(projectId)
+  }
+
+  /** Import planned curve computed directly from RAB finalTotal distributed over project timeline.
+   * More accurate than RAP-based import when RAP schedule hasn’t been set up yet.
+   * Uses project.meta.costingConfig for markup if items lack precomputed finalTotal.
+   */
+  const handleImportFromRAB = () => {
+    if (!projectId || !activeProject) return
+    const rabItems = getRabItems(projectId)
+    if (!rabItems.length) {
+      toast.error('Belum ada item RAB untuk proyek ini')
+      return
+    }
+
+    const start = activeProject.startDate || new Date().toISOString().slice(0, 10)
+    const end = activeProject.endDate
+      || new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString().slice(0, 10)
+
+    // Build monthly task buckets from project start to end
+    const tasks: ScheduleTask[] = []
+    let cur = new Date(start)
+    const endDate = new Date(end)
+    while (cur <= endDate) {
+      const y = cur.getFullYear()
+      const m = cur.getMonth()
+      const monthEnd = new Date(y, m + 1, 0) // last day of month
+      const clampedEnd = monthEnd <= endDate ? monthEnd : endDate
+      tasks.push({
+        id: `${y}-${String(m + 1).padStart(2, '0')}`,
+        title: `${y}-${String(m + 1).padStart(2, '0')}`,
+        startDate: cur.toISOString().slice(0, 10),
+        endDate: clampedEnd.toISOString().slice(0, 10),
+      })
+      cur = new Date(y, m + 1, 1)
+    }
+    if (!tasks.length) {
+      toast.error('Tanggal proyek tidak valid')
+      return
+    }
+
+    // Use project.meta.costingConfig for markup when items lack precomputed finalTotal
+    const cc = activeProject.meta?.costingConfig as {
+      overheadPercent?: number
+      profitPercent?: number
+      taxPercent?: number
+      profitBasis?: 'base_plus_overhead' | 'base'
+    } | undefined
+    const markupConfig = cc && ((cc.overheadPercent || 0) > 0 || (cc.profitPercent || 0) > 0)
+      ? {
+          overheadPercent: cc.overheadPercent || 0,
+          profitPercent: cc.profitPercent || 0,
+          taxPercent: cc.taxPercent || 0,
+          profitBasis: cc.profitBasis ?? 'base_plus_overhead',
+        }
+      : undefined
+
+    const dist = distributeVolumeByTasks(rabItems, tasks, markupConfig)
+
+    const curvaPlan = tasks.map(t => ({
+      period: t.id,
+      planned: dist[t.id]?.totalValue || 0,
+      actual: 0,
+    }))
+
+    const totalVal = curvaPlan.reduce((s, p) => s + p.planned, 0)
+    setPlannedFromRap(projectId, curvaPlan, projectBudget || totalVal)
+    setTimeout(() => analyzeProject(projectId), 0)
+    toast.success(
+      `S-Curve diimpor dari RAB (${rabItems.length} item, contract value Rp ${
+        Math.round(totalVal).toLocaleString('id-ID')
+      })`,
+      { duration: 5000 }
+    )
   }
 
   /** Import planned/actual curve from RAP monthly schedule, then analyze once */
@@ -155,7 +235,11 @@ export default function CurvaSPage() {
               Export CSV
             </Button>
             <Button variant="outline" size="sm" className="bg-transparent" onClick={() => handleImportFromRAP()}>
-              Import from RAP
+              Import dari RAP
+            </Button>
+            <Button variant="outline" size="sm" className="bg-transparent" onClick={() => handleImportFromRAB()}>
+              <Table2 size={14} className="mr-1.5" />
+              Import dari RAB
             </Button>
             <Button variant="outline" size="sm" className="bg-transparent" onClick={() => handleAnalyze()} disabled={empty}>
               <RefreshCw size={16} className="mr-2" />

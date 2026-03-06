@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react'
+﻿import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow
@@ -1377,8 +1377,47 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                                   })()}
                                 </div>
                               ) : (
-                                <div className="text-xs text-slate-400 italic py-2">No AHSP analysis linked � item code not found in catalog.</div>
+                                <div className="text-xs text-slate-400 italic py-2">No AHSP analysis linked — item code not found in catalog.</div>
                               )}
+
+                              {/* ── Markup Config per item ─────────────── */}
+                              <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-4">
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Costing overrides</span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs text-slate-500">Markup Source</span>
+                                  <Select
+                                    value={(item.markup_source as string) || 'project_level'}
+                                    onValueChange={(v) => updateItem(projectId, item.id, { markup_source: v as 'project_level' | 'baked_in' | 'none' })}
+                                  >
+                                    <SelectTrigger className="h-6 text-xs w-[138px] border-slate-200">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="project_level">Project Level</SelectItem>
+                                      <SelectItem value="baked_in">Baked-in (AHSP)</SelectItem>
+                                      <SelectItem value="none">None (no markup)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs text-slate-500">Profit Basis</span>
+                                  <Select
+                                    value={(item.profit_basis as string) || 'base_plus_overhead'}
+                                    onValueChange={(v) => updateItem(projectId, item.id, { profit_basis: v as 'base_plus_overhead' | 'base' })}
+                                  >
+                                    <SelectTrigger className="h-6 text-xs w-[148px] border-slate-200">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="base_plus_overhead">Base + OH (SNI)</SelectItem>
+                                      <SelectItem value="base">Base only</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                {item.is_overhead && (
+                                  <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">is_overhead — OH tidak ditambahkan ulang</span>
+                                )}
+                              </div>
                             </div>
                           </TableCell>
                         </TableRow>
