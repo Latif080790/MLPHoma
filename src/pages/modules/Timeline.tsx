@@ -205,6 +205,8 @@ export default function Timeline() {
   const [editingTask, setEditingTask] = useState<TaskEditorProps['task']>(null)
   const [selectedId, setSelectedId] = useState<string>('')
   const [pendingDeleteTaskId, setPendingDeleteTaskId] = useState<string | null>(null)
+  // Track per-project fetch completion to gate the demo-seed guard
+  const [fetchedForProject, setFetchedForProject] = useState<string | null>(null)
 
   // Toolbar states
   const [criticalOnly, setCriticalOnly] = useState<boolean>(false)
@@ -264,12 +266,14 @@ export default function Timeline() {
 
   // Load tasks from Supabase on project change
   useEffect(() => {
-    if (projectId) fetchTasks(projectId)
+    if (!projectId) return
+    setFetchedForProject(null) // reset guard when project changes
+    fetchTasks(projectId).then(() => setFetchedForProject(projectId))
   }, [projectId, fetchTasks])
 
-  // Auto-seed demo tasks if empty
+  // Auto-seed demo tasks if empty — ONLY after fetch completes (prevents duplicate seeding on real projects)
   useEffect(() => {
-    if (!projectId) return
+    if (!projectId || fetchedForProject !== projectId) return
     const tasks = getTasks(projectId) || []
     if (!tasks.length) {
       const seeded = seedDemoTasks(projectId)
@@ -277,7 +281,7 @@ export default function Timeline() {
         toast.info('Demo tasks added', { description: 'You can drag bars to reschedule.' })
       }
     }
-  }, [getTasks, projectId])
+  }, [getTasks, projectId, fetchedForProject])
 
   /** Open editor for a new task */
   const openNew = () => {
