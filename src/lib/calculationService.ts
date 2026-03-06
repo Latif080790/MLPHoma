@@ -24,6 +24,8 @@ const PriceInputSchema = z.object({
   overheadPercent: z.number().min(0).max(100).optional(),
   profitPercent: z.number().min(0).max(100).optional(),
   taxPercent: z.number().min(0).max(100).optional(),
+  /** Controls whether profit is calculated on base alone or on (base + overhead). Default: base_plus_overhead */
+  profitBasis: z.enum(['base_plus_overhead', 'base']).optional(),
 })
 
 const ComponentSchema = z.object({
@@ -37,6 +39,11 @@ const VolumeCalculationSchema = z.object({
   overheadPercent: z.number().min(0).max(100).optional(),
   profitPercent: z.number().min(0).max(100).optional(),
   taxPercent: z.number().min(0).max(100).optional(),
+  profitBasis: z.enum(['base_plus_overhead', 'base']).optional(),
+  /** Anti-double-counting: 'baked_in' skips all markup; 'none' same; default 'project_level' applies markup */
+  markupSource: z.enum(['project_level', 'baked_in', 'none']).optional(),
+  /** If true, this item IS an overhead line — zeroes overheadPercent to prevent double-counting */
+  isOverheadItem: z.boolean().optional(),
 })
 
 /**
@@ -50,6 +57,35 @@ export interface PriceInput {
   overheadPercent?: number
   profitPercent?: number
   taxPercent?: number
+  /**
+   * profitBasis — controls whether profit is compounded on (base + overhead) or applied to base only.
+   * Default 'base_plus_overhead' preserves existing SNI-standard behavior.
+   */
+  profitBasis?: 'base_plus_overhead' | 'base'
+}
+
+/** Result type for preventDoubleMarkup() */
+export interface DoubleMarkupCheckResult {
+  /** True when the input unitPrice appears to already contain markup */
+  isDoubleMarkupRisk: boolean
+  /** Back-calculated pure base price (markup stripped) */
+  strippedBasePrice: number
+  /** Human-readable warning message */
+  warning: string
+}
+
+/** Input type for calculateRABItemTotalSafe() */
+export interface RABItemTotalSafeInput {
+  volume: number
+  unitPrice: number
+  overheadPercent?: number
+  profitPercent?: number
+  taxPercent?: number
+  profitBasis?: 'base_plus_overhead' | 'base'
+  /** Discriminant: 'baked_in' means unitPrice already includes markup — skip re-applying */
+  markupSource?: 'project_level' | 'baked_in' | 'none'
+  /** True if this RAB line IS an overhead item — prevents double-applying overheadPercent */
+  isOverheadItem?: boolean
 }
 
 export interface ComponentInput {
@@ -94,6 +130,10 @@ export interface PriceBreakdown {
 
 /**
  * Calculate price with overhead, profit, and tax applied sequentially.
+ *
+ * profitBasis controls compound vs simple profit:
+ *  - 'base_plus_overhead' (default/SNI): profit = (base + overhead) × profitPct
+ *  - 'base': profit = base × profitPct  (avoids OH amplification)
  */
 export function calculatePriceWithMarkup(input: PriceInput): PriceBreakdown {
   // Validate input
@@ -103,13 +143,17 @@ export function calculatePriceWithMarkup(input: PriceInput): PriceBreakdown {
   const overheadPercent = validated.overheadPercent || 0
   const profitPercent = validated.profitPercent || 0
   const taxPercent = validated.taxPercent || 0
+  const profitBasis = validated.profitBasis ?? 'base_plus_overhead'
 
   // Step 1: Apply overhead
   const overheadAmount = basePrice * (overheadPercent / 100)
   const priceWithOverhead = basePrice + overheadAmount
 
-  // Step 2: Apply profit (on price including overhead)
-  const profitAmount = priceWithOverhead * (profitPercent / 100)
+  // Step 2: Apply profit — basis-aware
+  //   'base_plus_overhead': profit on (base + overhead)  ← SNI default
+  //   'base':              profit on base only           ← simple margin
+  const profitBase = profitBasis === 'base' ? basePrice : priceWithOverhead
+  const profitAmount = profitBase * (profitPercent / 100)
   const priceWithProfit = priceWithOverhead + profitAmount
 
   // Step 3: Apply tax (on price including overhead and profit)
@@ -225,17 +269,43 @@ export function calculateRABItemTotal(input: {
   overheadPercent?: number
   profitPercent?: number
   taxPercent?: number
+  profitBasis?: 'base_plus_overhead' | 'base'
+  markupSource?: 'project_level' | 'baked_in' | 'none'
+  isOverheadItem?: boolean
 }) {
   // Validate
   const validated = VolumeCalculationSchema.parse(input)
 
   const subtotal = validated.volume * validated.unitPrice
 
+  // Anti-double-counting: baked_in / none → skip all markup, return subtotal as-is
+  if (validated.markupSource === 'baked_in' || validated.markupSource === 'none') {
+    return {
+      volume: validated.volume,
+      unitPrice: validated.unitPrice,
+      subtotal: Number(subtotal.toFixed(2)),
+      basePrice: Number(subtotal.toFixed(2)),
+      overheadAmount: 0,
+      overheadPercent: 0,
+      priceWithOverhead: Number(subtotal.toFixed(2)),
+      profitAmount: 0,
+      profitPercent: 0,
+      priceWithProfit: Number(subtotal.toFixed(2)),
+      taxAmount: 0,
+      taxPercent: 0,
+      finalPrice: Number(subtotal.toFixed(2)),
+    }
+  }
+
+  // is_overhead guard: if this line IS an overhead item, applying overheadPercent again = double-count
+  const effectiveOverhead = validated.isOverheadItem ? 0 : (validated.overheadPercent ?? 0)
+
   const breakdown = calculatePriceWithMarkup({
     basePrice: subtotal,
-    overheadPercent: validated.overheadPercent,
+    overheadPercent: effectiveOverhead,
     profitPercent: validated.profitPercent,
     taxPercent: validated.taxPercent,
+    profitBasis: validated.profitBasis,
   })
 
   return {
@@ -244,6 +314,85 @@ export function calculateRABItemTotal(input: {
     subtotal: Number(subtotal.toFixed(2)),
     ...breakdown,
   }
+}
+
+/**
+ * calculateRABItemTotalSafe
+ *
+ * Type-safe wrapper that accepts RABItem-shaped input including markup_source and is_overhead.
+ * Preferred entry point for all RAB item cost calculations — replaces ad-hoc calls to
+ * calculateRABItemTotal with raw inputs.
+ *
+ * Rules applied (in order):
+ *  1. markup_source === 'baked_in' | 'none' → return volume × unitPrice, no markup
+ *  2. is_overhead === true → zero out overheadPercent (item IS overhead; don't stack)
+ *  3. profitBasis controls compound vs simple profit
+ */
+export function calculateRABItemTotalSafe(input: RABItemTotalSafeInput) {
+  return calculateRABItemTotal({
+    volume: input.volume,
+    unitPrice: input.unitPrice,
+    overheadPercent: input.overheadPercent,
+    profitPercent: input.profitPercent,
+    taxPercent: input.taxPercent,
+    profitBasis: input.profitBasis,
+    markupSource: input.markupSource ?? 'project_level',
+    isOverheadItem: input.isOverheadItem ?? false,
+  })
+}
+
+/**
+ * preventDoubleMarkup
+ *
+ * Pure validation helper. Given an AHSP finalPrice and the overhead/profit percentages
+ * that were applied to produce it, checks whether passing that price into a new
+ * markup calculation would constitute double-counting.
+ *
+ * Returns:
+ *  - isDoubleMarkupRisk: true when the markup multiplier > 1 (i.e. markup IS applied)
+ *  - strippedBasePrice: the back-calculated pure base cost (markup removed)
+ *  - warning: human-readable message for UI display or console warning
+ *
+ * @example
+ *   preventDoubleMarkup(1210, 10, 0)  // ahsp finalPrice=1210, OH=10%, profit=0%
+ *   // → { isDoubleMarkupRisk: true, strippedBasePrice: 1100, warning: '...' }
+ */
+export function preventDoubleMarkup(
+  ahspFinalPrice: number,
+  ahspOverheadPct: number,
+  ahspProfitPct: number,
+  ahspProfitBasis: 'base_plus_overhead' | 'base' = 'base_plus_overhead',
+): DoubleMarkupCheckResult {
+  const oh = Math.max(0, ahspOverheadPct || 0)
+  const p = Math.max(0, ahspProfitPct || 0)
+
+  // Compute the combined markup multiplier that was applied
+  const ohMultiplier = 1 + oh / 100
+  const profitMultiplier = ahspProfitBasis === 'base'
+    ? 1 + p / 100
+    : 1 + p / 100  // profit amount differs but total multiplier chain is the same
+
+  // When profitBasis === 'base_plus_overhead': finalPrice = base × ohM × profitM_on_ohPrice
+  // When profitBasis === 'base':               finalPrice = base × ohM + base × profitPct
+  //   = base × (ohM + profitPct/100)
+  let divisor: number
+  if (ahspProfitBasis === 'base') {
+    divisor = ohMultiplier + p / 100
+  } else {
+    divisor = ohMultiplier * profitMultiplier
+  }
+
+  const strippedBasePrice = divisor > 0 ? ahspFinalPrice / divisor : ahspFinalPrice
+  const isDoubleMarkupRisk = (oh > 0 || p > 0)
+
+  const warning = isDoubleMarkupRisk
+    ? `Unit price Rp ${ahspFinalPrice.toLocaleString('id-ID')} contains embedded markup ` +
+      `(OH ${oh}% + Profit ${p}%). ` +
+      `Setting markup_source='baked_in' will use this price as-is. ` +
+      `Stripped base cost ≈ Rp ${Math.round(strippedBasePrice).toLocaleString('id-ID')}.`
+    : 'No markup detected in AHSP price — safe to apply project-level markup.'
+
+  return { isDoubleMarkupRisk, strippedBasePrice: Number(strippedBasePrice.toFixed(2)), warning }
 }
 
 /**
@@ -394,6 +543,8 @@ export default {
   calculatePriceWithMarkup,
   calculateComponentsTotal,
   calculateRABItemTotal,
+  calculateRABItemTotalSafe,
+  preventDoubleMarkup,
   calculateAHSPPrice,
   calculateRABTotals,
   roundPrice,

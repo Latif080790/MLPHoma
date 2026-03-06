@@ -16,16 +16,37 @@ function calculatePriceWithMarkup(input: {
     overheadPercent?: number
     profitPercent?: number
     taxPercent?: number
+    /** 'base_plus_overhead' (default/SNI) | 'base' (simple margin) */
+    profitBasis?: 'base_plus_overhead' | 'base'
+    /** Anti-double-counting: 'baked_in' | 'none' → skip markup entirely */
+    markupSource?: 'project_level' | 'baked_in' | 'none'
+    /** True when this RAB line IS an overhead item — zeroes overheadPercent */
+    isOverheadItem?: boolean
 }) {
     const basePrice = Math.max(0, input.basePrice || 0)
-    const overheadPercent = input.overheadPercent || 0
+
+    // Anti-double-counting: if markup is already baked in, return as-is
+    if (input.markupSource === 'baked_in' || input.markupSource === 'none') {
+        return {
+            basePrice, overheadAmount: 0, overheadPercent: 0,
+            priceWithOverhead: basePrice, profitAmount: 0, profitPercent: 0,
+            priceWithProfit: basePrice, taxAmount: 0, taxPercent: 0,
+            finalPrice: Number(basePrice.toFixed(2)),
+        }
+    }
+
+    // is_overhead guard: item IS overhead → don't stack overheadPercent again
+    const overheadPercent = input.isOverheadItem ? 0 : (input.overheadPercent || 0)
     const profitPercent = input.profitPercent || 0
     const taxPercent = input.taxPercent || 0
+    const profitBasis = input.profitBasis ?? 'base_plus_overhead'
 
     const overheadAmount = basePrice * (overheadPercent / 100)
     const priceWithOverhead = basePrice + overheadAmount
 
-    const profitAmount = priceWithOverhead * (profitPercent / 100)
+    // Basis-aware profit: 'base' → profit on basePrice; 'base_plus_overhead' → profit on priceWithOverhead
+    const profitBase = profitBasis === 'base' ? basePrice : priceWithOverhead
+    const profitAmount = profitBase * (profitPercent / 100)
     const priceWithProfit = priceWithOverhead + profitAmount
 
     const taxAmount = priceWithProfit * (taxPercent / 100)
