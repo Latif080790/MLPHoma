@@ -35,9 +35,11 @@ export const useRapStore = create<RapState>((set, get) => {
       if (!items.length) return EMPTY_PLAN
       const monthly: Record<string, { planned: number; actual: number }> = {}
       items.forEach((i) => {
-        const key = (i as RapItem & { createdAt?: string }).createdAt
-          ? (i as RapItem & { createdAt?: string }).createdAt!.substring(0, 7)
-          : new Date().toISOString().substring(0, 7)
+        // Prefer start_date (added in migration 046), fall back to createdAt
+        const dateStr = i.start_date
+          || (i as RapItem & { createdAt?: string }).createdAt
+          || new Date().toISOString()
+        const key = dateStr.substring(0, 7)
         if (!monthly[key]) monthly[key] = { planned: 0, actual: 0 }
         monthly[key].planned += i.total_budget || 0
         monthly[key].actual += i.actual_cost || 0
