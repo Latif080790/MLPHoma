@@ -53,6 +53,7 @@ import { RABVersionHistory } from './RABVersionHistory'
 import { useTimelineStore } from '../../store/timelineStore'
 import { generateScheduleFromRAB } from '../../lib/autoScheduler'
 import { CalendarClock } from 'lucide-react'
+import { preventDoubleMarkup } from '../../lib/calculationService'
 import { useProjectStore } from '../../store/projectStore'
 import {
   Select,
@@ -467,9 +468,25 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   }
 
   const handleAddFromAhsp = (ahspItem: AHSPItem) => {
-    // Determine split costs from AHSP if available (requires mapping or store support)
-    // For now, mapping from typical AHSP naming if present
-    const price = ahspItem.finalPrice || ahspItem.basePrice || 0
+    // Prefer finalPrice (includes OH+profit from AHSP) over basePrice.
+    // When finalPrice is used, mark as 'baked_in' to prevent double-applying markup downstream.
+    const usesFinalPrice = !!(ahspItem.finalPrice && ahspItem.finalPrice > 0)
+    const price = usesFinalPrice ? ahspItem.finalPrice : (ahspItem.basePrice || 0)
+    const markupSource = usesFinalPrice ? 'baked_in' : 'project_level'
+
+    // Warn user if the price contains embedded OH/profit
+    if (usesFinalPrice) {
+      const ohPct = ahspItem.overheadPercentage || 0
+      const profitPct = ahspItem.profitPercentage || 0
+      const check = preventDoubleMarkup(price, ohPct, profitPct)
+      if (check.isDoubleMarkupRisk) {
+        toast.info(
+          `⚠️ ${ahspItem.code}: Harga sudah termasuk OH ${ohPct}% + Profit ${profitPct}%. ` +
+          `Markup tidak diterapkan ulang (markup_source: baked_in).`,
+          { duration: 5000 }
+        )
+      }
+    }
 
     addItem(projectId, {
       item_code: ahspItem.code,
@@ -477,14 +494,17 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       unit: ahspItem.unit,
       unit_price: price,
       volume: 1,
-      finalTotal: price * 1,
+      finalTotal: price,
+      final_total: price,
+      finalPrice: price,
       cost_material: ahspItem.price_material || 0,
       cost_labor: ahspItem.price_labor || 0,
       cost_equipment: ahspItem.price_equipment || 0,
       cost_subcon: ahspItem.price_subcon || 0,
       is_overhead: activeTab === 'overhead',
-      ahspItemId: ahspItem.id,  // Link to AHSP item for Resource Plan computation
-    })
+      ahspItemId: ahspItem.id,
+      markup_source: markupSource,
+    } as Parameters<typeof addItem>[1])
 
     setIsAddDialogOpen(false)
     toast.success(project?.zoneId ? 'Item added with Zone Price' : 'Item added from AHSP')
@@ -1448,6 +1468,31 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                         {isColVisible('unit_price') && <TableCell className="w-[140px] py-2.5">
                           <div className="flex items-center justify-end gap-1">
                             {!!item.snapshot_price && <Lock size={10} className="text-amber-500 shrink-0" />}
+                            {item.markup_source === 'baked_in' && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-xs font-bold uppercase tracking-wide text-violet-600 bg-violet-50 border border-violet-200 rounded px-1 py-0.5 shrink-0 cursor-default select-none leading-none">
+                                    BI
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="left" className="text-xs max-w-[220px] leading-snug">
+                                  Harga sudah termasuk OH + Profit dari AHSP.
+                                  Markup tidak diterapkan ulang (baked-in).
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            {item.markup_source === 'none' && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="text-xs font-bold uppercase tracking-wide text-slate-400 bg-slate-50 border border-slate-200 rounded px-1 py-0.5 shrink-0 cursor-default select-none leading-none">
+                                    NM
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="left" className="text-xs max-w-[220px]">
+                                  Tidak ada markup (provisional sum / contingency).
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                             <Input type="number" disabled={projectLocked || !!item.snapshot_price} value={item.unit_price || ''} onChange={e => handlePriceChange(item.id, e.target.value)} className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none font-bold text-slate-900 disabled:opacity-50" />
                           </div>
                         </TableCell>}
