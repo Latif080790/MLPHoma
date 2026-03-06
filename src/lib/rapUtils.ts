@@ -12,6 +12,7 @@
 
 import type { RABItem } from '../store/rabStore'
 import { computeCPM, CPMTask, CPMDependency } from './cpm'
+import { calculatePriceWithMarkup } from './calculationService'
 
 /**
  * ScheduleTask
@@ -53,7 +54,57 @@ export function businessDaysBetween(start: string, end: string): number {
  *
  * Distribute RAB items across tasks proportionally to business days.
  */
-export function distributeVolumeByTasks(items: RABItem[], tasks: ScheduleTask[]) {
+/**
+ * Derive the effective per-unit final price from a RABItem.
+ *
+ * Priority:
+ *  1. Pre-computed finalTotal / volume  (markup already applied upstream — most accurate)
+ *  2. markupConfig supplied by caller    (applies OH/profit to unitPrice on the fly)
+ *  3. Raw unit_price                     (no markup — cashflow understates by OH+profit)
+ *
+ * This ensures the S-Curve and cashflow projections reflect the RAB *contract* total,
+ * not just the bare base-cost subtotal.
+ */
+function effectiveFinalUnitPrice(
+  it: RABItem,
+  markupConfig?: { overheadPercent: number; profitPercent: number; taxPercent: number; profitBasis?: 'base_plus_overhead' | 'base' },
+): number {
+  const volume = Number(it.volume || 0)
+  const unitPrice = Number(it.unit_price || it.unitPrice || 0)
+
+  // 1. Use pre-computed finalTotal (set after RAB aggregate calculation)
+  const precomputed = Number(it.finalTotal || it.final_total || 0)
+  if (precomputed > 0 && volume > 0) return precomputed / volume
+
+  // 2. Compute via markupConfig if provided
+  if (markupConfig && (markupConfig.overheadPercent > 0 || markupConfig.profitPercent > 0 || markupConfig.taxPercent > 0)) {
+    const breakdown = calculatePriceWithMarkup({
+      basePrice: unitPrice,
+      overheadPercent: it.is_overhead ? 0 : markupConfig.overheadPercent,  // is_overhead guard
+      profitPercent: markupConfig.profitPercent,
+      taxPercent: markupConfig.taxPercent,
+      profitBasis: markupConfig.profitBasis ?? 'base_plus_overhead',
+    })
+    return breakdown.finalPrice
+  }
+
+  // 3. Fallback: raw unitPrice (no markup)
+  return unitPrice
+}
+
+/**
+ * distributeVolumeByTasks
+ *
+ * Distribute RAB items across tasks proportionally to business days.
+ * Uses effectiveFinalUnitPrice() so cashflow reflects full contract value (OH + profit included).
+ *
+ * @param markupConfig  Optional — if items lack precomputed finalTotal, apply these markup %s.
+ */
+export function distributeVolumeByTasks(
+  items: RABItem[],
+  tasks: ScheduleTask[],
+  markupConfig?: { overheadPercent: number; profitPercent: number; taxPercent: number; profitBasis?: 'base_plus_overhead' | 'base' },
+) {
   const taskDays = tasks.map((t) => ({ ...t, days: businessDaysBetween(t.startDate, t.endDate) }))
   const totalDays = taskDays.reduce((s, t) => s + t.days, 0) || 0.000001
 
@@ -67,15 +118,16 @@ export function distributeVolumeByTasks(items: RABItem[], tasks: ScheduleTask[])
 
   for (const it of items) {
     const volume = Number(it.volume || 0)
-    const unitPrice = Number(it.unit_price || 0)
     if (volume <= 0) {
       for (const t of taskDays) result[t.id].items.push({ id: it.id, volume: 0, value: 0 })
       continue
     }
+    // Use finalTotal-aware unit price instead of raw unit_price
+    const finalUnitPrice = effectiveFinalUnitPrice(it, markupConfig)
     for (const t of taskDays) {
       const share = t.days / totalDays
       const v = volume * share
-      const val = v * unitPrice
+      const val = v * finalUnitPrice
       result[t.id].items.push({ id: it.id, volume: v, value: val })
       result[t.id].totalVolume += v
       result[t.id].totalValue += val
@@ -97,10 +149,19 @@ export function distributeVolumeByTasks(items: RABItem[], tasks: ScheduleTask[])
  * @param options - { criticalBoost?: number }
  * @returns { distribution, cpm } where distribution is same shape as distributeVolumeByTasks and cpm is computeCPM result
  */
+/**
+ * distributeVolumeByTasksCPMAware
+ *
+ * Same as distributeVolumeByTasks but biases allocation toward CPM critical-path tasks.
+ * markupConfig is forwarded to effectiveFinalUnitPrice for cashflow accuracy.
+ */
 export function distributeVolumeByTasksCPMAware(
   items: RABItem[],
   tasks: ScheduleTask[],
-  options?: { criticalBoost?: number }
+  options?: {
+    criticalBoost?: number
+    markupConfig?: { overheadPercent: number; profitPercent: number; taxPercent: number; profitBasis?: 'base_plus_overhead' | 'base' }
+  },
 ) {
   const criticalBoost = Number(options?.criticalBoost ?? 1.5)
 
@@ -133,11 +194,12 @@ export function distributeVolumeByTasksCPMAware(
 
   for (const it of items) {
     const volume = Number(it.volume || 0)
-    const unitPrice = Number(it.unit_price || 0)
     if (volume <= 0) {
       for (const info of taskInfo) result[info.id].items.push({ id: it.id, volume: 0, value: 0 })
       continue
     }
+    // Use finalTotal-aware unit price (same logic as distributeVolumeByTasks)
+    const finalUnitPrice = effectiveFinalUnitPrice(it, options?.markupConfig)
 
     let allocated = 0
     for (let i = 0; i < taskInfo.length; i++) {
@@ -149,7 +211,7 @@ export function distributeVolumeByTasksCPMAware(
       } else {
         v = Number(v)
       }
-      const val = v * unitPrice
+      const val = v * finalUnitPrice
       result[info.id].items.push({ id: it.id, volume: v, value: val })
       result[info.id].totalVolume += v
       result[info.id].totalValue += val
