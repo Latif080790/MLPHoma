@@ -87,7 +87,7 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
           // Join rab_items to filter by projectId
           const { data, error } = await supabase
             .from('rab_wbs_links')
-            .select('rab_wbs_links.*, rab_items!inner(project_id)')
+            .select('*, rab_items!inner(project_id)')
             .eq('rab_items.project_id', projectId)
             .order('created_at', { ascending: true })
 
