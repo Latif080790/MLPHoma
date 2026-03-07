@@ -13,6 +13,7 @@ import { wbsItemInputSchema, wbsItemUpdateSchema } from '../lib/validationSchema
 import { syncWBSItem, syncDelete, syncWBSItems } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
 import { supabase } from '../lib/supabaseClient'
+import { useRabWbsLinkStore } from './rabWbsLinkStore'
 
 /**
  * Sort items by hierarchy and order
@@ -212,6 +213,8 @@ export const useWBSStore = create<WBSStore>()(
         // Sync deletions + re-sync remaining items (codes of siblings changed)
         toDeleteIds.forEach(itemId => {
           syncDelete('wbs_items', itemId)
+          // Auto-unlink all RAB items that pointed to this WBS node
+          useRabWbsLinkStore.getState().unlinkByWbsId(itemId)
         })
         const remaining = get().itemsByProject[projectId] || []
         if (remaining.length > 0) syncWBSItems(remaining, projectId)

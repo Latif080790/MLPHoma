@@ -10,6 +10,9 @@ import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import { useProjectStore } from '@/store/projectStore'
 import { useWBSStore, validateWBS } from '@/store/wbsStore'
 import { useRabStore } from '@/store/rabStore'
+import type { RABItem } from '@/store/rabStore'
+import { useRabWbsLinkStore } from '@/store/rabWbsLinkStore'
+import { allocatedAmount } from '@/types/rabWbsLink'
 import { WBSTree } from '@/components/wbs/WBSTree'
 import { WBSEditor } from '@/components/wbs/WBSEditor'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -71,7 +74,7 @@ function WBSKpiBar({ items, rabLinkedCount, totalBudget }: {
 }
 
 // Stable fallbacks to prevent infinite re-render loops
-const EMPTY_ARRAY: any[] = []
+const EMPTY_ARRAY: RABItem[] = []
 
 /**
  * WBS Page Component
@@ -109,21 +112,28 @@ export default function WBS() {
 
   // RAB state for KPI + budget badges (Task: use stable selector)
   const rabItems = useRabStore(s => s.itemsByProject[projectId] || EMPTY_ARRAY)
+  const linksByRabItem = useRabWbsLinkStore(s => s.linksByRabItem)
 
   // KPI derived
   const kpiData = useMemo(() => {
-    const wbsIdsWithRab = new Set(rabItems.filter((r: any) => r.wbsId).map((r: any) => r.wbsId!))
-    const rabLinkedCount = items.filter((i: any) => wbsIdsWithRab.has(i.id)).length
-    const totalBudget = rabItems.reduce((s: number, r: any) => s + ((r.volume || 0) * (r.unit_price || r.unitPrice || 0)), 0)
-    // Budget per WBS node
+    const totalBudget = rabItems.reduce((s: number, r) => s + ((r.volume || 0) * (r.unit_price || r.unitPrice || 0)), 0)
+    // Budget per WBS node using junction table allocations
     const budgetByWbs = new Map<string, number>()
-    rabItems.forEach((r: any) => {
-      if (r.wbsId) {
-        budgetByWbs.set(r.wbsId, (budgetByWbs.get(r.wbsId) || 0) + ((r.volume || 0) * (r.unit_price || r.unitPrice || 0)))
-      }
+    const linkedRabIds = new Set<string>()
+    Object.entries(linksByRabItem).forEach(([rabItemId, links]) => {
+      // Only consider links for RAB items that belong to this project
+      const rabItem = rabItems.find((r) => r.id === rabItemId)
+      if (!rabItem) return
+      const itemTotal = (rabItem.volume || 0) * (rabItem.unit_price || rabItem.unitPrice || 0)
+      links.forEach((link) => {
+        const allocated = allocatedAmount(itemTotal, link.allocationPct)
+        budgetByWbs.set(link.wbsItemId, (budgetByWbs.get(link.wbsItemId) || 0) + allocated)
+        linkedRabIds.add(rabItemId)
+      })
     })
+    const rabLinkedCount = items.filter((i) => budgetByWbs.has(i.id)).length
     return { rabLinkedCount, totalBudget, budgetByWbs }
-  }, [items, rabItems])
+  }, [items, rabItems, linksByRabItem])
 
   // Editor state
   const [editorItem, setEditorItem] = useState<WBSItem | null>(null)
