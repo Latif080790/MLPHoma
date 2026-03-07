@@ -100,6 +100,24 @@ function WBSTreeItem({
   const isExpanded = expandedIds?.has(item.id) ?? false
   const budget = budgetByWbs?.get(item.id) ?? 0
 
+  // ── Level-based visual style helpers ──────────────────────────────────────
+  const lvl = item.level ?? 1
+  const rowBg = isSelected
+    ? 'bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
+    : lvl === 1
+      ? 'bg-slate-50/80 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-700/50 border border-transparent'
+      : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-transparent'
+  const nameClass = lvl === 1
+    ? 'text-sm font-bold text-neutral-800 dark:text-neutral-100'
+    : lvl === 2
+      ? 'text-sm font-semibold text-neutral-700 dark:text-neutral-200'
+      : 'text-xs font-medium text-neutral-600 dark:text-neutral-300'
+  const codeClass = lvl === 1
+    ? 'font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded'
+    : lvl === 2
+      ? 'font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1 rounded'
+      : 'font-mono text-xs text-slate-400 dark:text-slate-500 px-1'
+
   // Close menu on click outside
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -157,10 +175,7 @@ function WBSTreeItem({
         onDrop={handleDrop}
         className={`
           group relative flex items-center gap-2 rounded-lg px-2 py-2 transition-colors
-          ${isSelected
-            ? 'bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
-            : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'
-          }
+          ${rowBg}
           ${item.isDragging ? 'opacity-50' : ''}
           ${item.isDropTarget ? 'border-2 border-dashed border-blue-400' : ''}
         `}
@@ -187,16 +202,16 @@ function WBSTreeItem({
           onClick={() => onSelect(item)}
         >
           {renderItem ? renderItem(item) : (
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-neutral-500 dark:text-neutral-400">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={codeClass}>
                 {item.code}
               </span>
-              <span className="text-sm font-medium truncate">
+              <span className={`${nameClass} truncate`}>
                 {item.name}
               </span>
               {/* Budget badge (Task 18) */}
               {budget > 0 && (
-                <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0 text-xs font-mono font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 shrink-0">
+                <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0 text-xs font-mono font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 shrink-0 ml-auto">
                   <Calculator size={9} />
                   {formatIDR(budget)}
                 </span>
@@ -255,9 +270,9 @@ function WBSTreeItem({
         </div>
       </div>
 
-      {/* Children */}
+      {/* Children — left border creates the tree-line visual */}
       {isExpanded && item.children && (
-        <div className="ml-2">
+        <div className="ml-4 border-l-2 border-slate-200 dark:border-slate-700 pl-1">
           {item.children.map((child) => (
             <WBSTreeItem
               key={child.id}

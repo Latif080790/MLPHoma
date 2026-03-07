@@ -345,8 +345,15 @@ export const useWBSStore = create<WBSStore>()(
         })
       },
 
-      // Import WBS structure
-      importWBS: (projectId, items) => {
+      // Import WBS structure — async: deletes all existing DB rows first to prevent accumulation
+      importWBS: async (projectId, items) => {
+        // Step 1: Delete ALL existing WBS rows for this project from Supabase.
+        // This prevents the accumulation bug where repeated "Generate WBS" clicks
+        // produce new IDs on each call, so old rows are never overwritten by upsert.
+        if (supabase) {
+          await supabase.from('wbs_items').delete().eq('project_id', projectId)
+        }
+
         const now = new Date().toISOString()
         const newItems: WBSItem[] = items.map((item, index) => ({
           ...item,
@@ -359,7 +366,6 @@ export const useWBSStore = create<WBSStore>()(
 
         set((state) => {
           const finalItems = generateCodesForProject(newItems)
-
           return {
             itemsByProject: {
               ...state.itemsByProject,
@@ -368,7 +374,7 @@ export const useWBSStore = create<WBSStore>()(
           }
         })
 
-        // Sync to Supabase using batch
+        // Step 2: Batch-upsert the new items to Supabase
         const finalItems = get().itemsByProject[projectId] || []
         syncWBSItems(finalItems, projectId)
       },
