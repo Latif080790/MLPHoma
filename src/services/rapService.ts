@@ -103,7 +103,7 @@ export const rapService = {
                 .eq('project_id', projectId),
             client
                 .from('ahsp_items')
-                .select('id, code')
+                .select('id, code, base_price')
                 .not('code', 'is', null),
         ])
 
@@ -114,6 +114,14 @@ export const rapService = {
             (ahspResult.data || [])
                 .filter(a => a.code && a.id)
                 .map(a => [a.code as string, a.id as string])
+        )
+
+        // Build AHSP id → base_price map (production cost, no overhead/profit markup)
+        // base_price = sum of resource components; RAP uses this so total_budget = execution cost ≠ contract price
+        const ahspBasePriceMap = new Map<string, number>(
+            (ahspResult.data || [])
+                .filter(a => a.id && a.base_price != null && Number(a.base_price) > 0)
+                .map(a => [a.id as string, Number(a.base_price)])
         )
 
         // 2. Prepare items for Upsert
@@ -143,7 +151,13 @@ export const rapService = {
                 name: rab.name || rab.item_name || 'Unnamed Item',
 
                 qty_budget: rab.volume || 0,
-                unit_price_budget: rab.unit_price || rab.unitPrice || 0,
+                // RAP unit_price_budget = AHSP base_price (production/execution cost,
+                // WITHOUT overhead + profit markup). This separates RAP (cost to execute)
+                // from RAB (contract price to client = base + OH + profit + tax).
+                // Falls back to rab.unit_price when the item has no AHSP link.
+                unit_price_budget: (resolvedAhspId && ahspBasePriceMap.has(resolvedAhspId))
+                    ? ahspBasePriceMap.get(resolvedAhspId)!
+                    : ((rab.unit_price as number) || (rab.unitPrice as number) || 0),
                 // NOTE: total_budget and remaining_budget are GENERATED ALWAYS AS columns
                 // in Supabase (qty_budget * unit_price_budget) — do NOT include them here.
 
