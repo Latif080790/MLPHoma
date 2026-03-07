@@ -58,6 +58,7 @@ function mapAhspItemRow(item: AhspItemRow): AHSPItem {
         price_subcon: item.price_subcon || 0,
         overheadPercentage: item.overhead_percentage || 0,
         profitPercentage: item.profit_percentage || 0,
+        currentVersion: (item as unknown as { current_version?: number }).current_version ?? 1,
         createdAt: item.created_at,
         updatedAt: item.updated_at
     } as AHSPItem
@@ -390,6 +391,47 @@ export const ahspRepository = {
     },
 
     // ─────────────────── Price History ───────────────────
+
+    async insertPriceHistory(record: {
+        ahspId: string
+        zoneId?: string | null
+        oldPrice: number | null
+        newPrice: number
+        overheadPercentage?: number | null
+        profitPercentage?: number | null
+        priceMaterial?: number | null
+        priceLabor?: number | null
+        priceEquipment?: number | null
+        priceSubcon?: number | null
+        versionNumber?: number | null
+        changeType?: string
+        changeReason?: string | null
+        changeNote?: string | null
+    }): Promise<{ error: string | null }> {
+        try {
+            const client = assertSupabase()
+            const { error } = await client.from('ahsp_price_history').insert({
+                ahsp_id: record.ahspId,
+                zone_id: record.zoneId ?? null,
+                old_price: record.oldPrice,
+                new_price: record.newPrice,
+                overhead_percentage: record.overheadPercentage ?? null,
+                profit_percentage: record.profitPercentage ?? null,
+                price_material: record.priceMaterial ?? null,
+                price_labor: record.priceLabor ?? null,
+                price_equipment: record.priceEquipment ?? null,
+                price_subcon: record.priceSubcon ?? null,
+                version_number: record.versionNumber ?? null,
+                change_type: record.changeType ?? 'UPDATE',
+                change_reason: record.changeReason ?? null,
+                change_note: record.changeNote ?? null,
+            })
+            if (error) throw error
+            return { error: null }
+        } catch (err: unknown) {
+            return { error: (err as Error).message || 'Failed to insert price history' }
+        }
+    },
 
     async fetchPriceHistory(ahspId: string, zoneId?: string): Promise<{ data: PriceHistory[]; error: string | null }> {
         try {

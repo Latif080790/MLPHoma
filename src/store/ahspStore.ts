@@ -342,10 +342,18 @@ export const useAHSPStore = create<AHSPStore>()(
             return
           }
 
+          // Capture old item for version history
+          const oldItem = get().ahspItems.find(i => i.id === id)
+
           set((state) => ({
             ahspItems: state.ahspItems.map(item =>
               item.id === id
-                ? { ...item, ...validation.data!, updatedAt: new Date().toISOString() }
+                ? {
+                    ...item,
+                    ...validation.data!,
+                    updatedAt: new Date().toISOString(),
+                    currentVersion: (item.currentVersion ?? 1) + 1,
+                  }
                 : item
             ),
           }))
@@ -354,6 +362,37 @@ export const useAHSPStore = create<AHSPStore>()(
           const updated = state.ahspItems.find(i => i.id === id)
           if (updated) {
             syncAHSPItem(updated)
+            // Fire-and-forget version history record
+            void (async () => {
+              try {
+                // Bump current_version in DB
+                const { assertSupabase } = await import('../lib/supabaseClient')
+                const client = assertSupabase()
+                await client
+                  .from('ahsp_items')
+                  .update({ current_version: updated.currentVersion ?? 1 })
+                  .eq('id', id)
+
+                // Insert history snapshot
+                await ahspRepository.insertPriceHistory({
+                  ahspId: id,
+                  zoneId: null,
+                  oldPrice: oldItem?.basePrice ?? null,
+                  newPrice: updated.basePrice,
+                  overheadPercentage: updated.overheadPercentage ?? null,
+                  profitPercentage: updated.profitPercentage ?? null,
+                  priceMaterial: updated.price_material ?? null,
+                  priceLabor: updated.price_labor ?? null,
+                  priceEquipment: updated.price_equipment ?? null,
+                  priceSubcon: updated.price_subcon ?? null,
+                  versionNumber: updated.currentVersion ?? 1,
+                  changeType: 'UPDATE',
+                  changeNote: null,
+                })
+              } catch (err) {
+                console.warn('[AHSP] Version history insert failed:', err)
+              }
+            })()
           }
         },
 

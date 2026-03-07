@@ -183,6 +183,12 @@ export default function ResourcePlan() {
     [rapItems, componentsByAHSP, resources, taskByRabId],
   )
 
+  /** Number of RAP items that have a linked timeline task with start/end dates */
+  const linkedToTimeline = useMemo(
+    () => rapItems.filter(r => r.rab_item_id && taskByRabId.has(r.rab_item_id)).length,
+    [rapItems, taskByRabId],
+  )
+
   const maxMonthly = Math.max(...arrivalSchedule.map(m => m.total), 1)
 
   const selectedMonthData = useMemo(
@@ -288,7 +294,30 @@ export default function ResourcePlan() {
           </p>
         </div>
       )}
+      {/* ─── Warning: no timeline dates → Jadwal Pendatangan will be empty ─── */}
+      {rapItems.length > 0 && arrivalSchedule.length === 0 && (
+        <div className="flex items-start gap-2 rounded-lg border border-orange-200 bg-orange-50/60 p-3 text-xs dark:border-orange-800 dark:bg-orange-900/20">
+          <AlertCircle size={14} className="mt-0.5 shrink-0 text-orange-600" />
+          <p className="text-orange-700 dark:text-orange-300">
+            <strong>Jadwal Pendatangan kosong</strong> —{' '}
+            {linkedToTimeline === 0
+              ? `${rapItems.length} item RAP belum memiliki tanggal di Timeline.`
+              : `${rapItems.length - linkedToTimeline} dari ${rapItems.length} item RAP belum memiliki tanggal di Timeline.`}{' '}
+            Buka modul <strong>Timeline</strong> dan gunakan <strong>Auto-Schedule</strong> agar jadwal kedatangan resource dapat dihitung.
+          </p>
+        </div>
+      )}
 
+      {/* ─── Info: partial timeline coverage ─── */}
+      {arrivalSchedule.length > 0 && linkedToTimeline < rapItems.length && (
+        <div className="flex items-start gap-2 rounded-lg border border-sky-200 bg-sky-50/60 p-3 text-xs dark:border-sky-800 dark:bg-sky-900/20">
+          <AlertCircle size={14} className="mt-0.5 shrink-0 text-sky-500" />
+          <p className="text-sky-700 dark:text-sky-300">
+            <strong>{linkedToTimeline} dari {rapItems.length} item RAP</strong> terjadwal di Timeline.
+            {' '}{rapItems.length - linkedToTimeline} item belum memiliki tanggal — jadwal ini belum mencerminkan seluruh kebutuhan resource.
+          </p>
+        </div>
+      )}
       {/* â”€â”€ Summary cards â”€â”€ */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {TYPE_ORDER.map(type => (
@@ -317,6 +346,16 @@ export default function ResourcePlan() {
             <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
               <CalendarDays size={15} className="text-indigo-500" />
               Jadwal Pendatangan Resource
+              <span
+                className={`text-xs font-semibold px-1.5 py-0 rounded leading-4 ${
+                  linkedToTimeline === rapItems.length
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                }`}
+                title={`${linkedToTimeline} dari ${rapItems.length} item RAP memiliki tanggal Timeline`}
+              >
+                {linkedToTimeline}/{rapItems.length} terjadwal
+              </span>
             </CardTitle>
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1 text-xs text-slate-400">
