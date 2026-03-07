@@ -39,28 +39,30 @@ CREATE TRIGGER set_rab_wbs_links_updated_at
 ALTER TABLE public.rab_wbs_links ENABLE ROW LEVEL SECURITY;
 
 -- 5. RLS Policies
--- Root cause of 403: RLS policies that use EXISTS(SELECT FROM rab_items)
--- fail because rab_items also has RLS. The subquery runs as the calling user,
--- so rab_items RLS blocks it → EXISTS = false → INSERT denied.
--- Fix: use a SECURITY DEFINER function that runs as postgres (bypasses RLS
--- on internal tables) while auth.uid() still refers to the logged-in user.
+-- Uses the proven is_project_member_by_text() SECURITY DEFINER function
+-- (defined in 20260226_migrate_to_is_project_member_by_text.sql)
+-- via a thin wrapper that resolves rab_item_id -> project_id.
 
-CREATE OR REPLACE FUNCTION public.user_has_rab_item_access(p_rab_item_id text)
+CREATE OR REPLACE FUNCTION public.rab_link_check_access(p_rab_item_id text)
 RETURNS boolean
-LANGUAGE sql
+LANGUAGE plpgsql
 SECURITY DEFINER
 STABLE
 SET search_path = public
 AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.rab_items ri
-    JOIN public.projects p ON p.id = ri.project_id
-    WHERE ri.id = p_rab_item_id
-      AND (p.user_id = auth.uid() OR EXISTS (
-        SELECT 1 FROM public.project_members pm
-        WHERE pm.project_id = p.id AND pm.user_id = auth.uid()
-      ))
-  )
+DECLARE
+  _project_id text;
+BEGIN
+  SELECT ri.project_id INTO _project_id
+  FROM rab_items ri
+  WHERE ri.id = p_rab_item_id;
+
+  IF _project_id IS NULL THEN
+    RETURN false;
+  END IF;
+
+  RETURN is_project_member_by_text(_project_id);
+END;
 $$;
 
 DROP POLICY IF EXISTS "select_rab_wbs_links" ON public.rab_wbs_links;
@@ -69,16 +71,16 @@ DROP POLICY IF EXISTS "update_rab_wbs_links" ON public.rab_wbs_links;
 DROP POLICY IF EXISTS "delete_rab_wbs_links" ON public.rab_wbs_links;
 
 CREATE POLICY "select_rab_wbs_links" ON public.rab_wbs_links
-  FOR SELECT USING (public.user_has_rab_item_access(rab_item_id));
+  FOR SELECT USING (public.rab_link_check_access(rab_item_id));
 
 CREATE POLICY "insert_rab_wbs_links" ON public.rab_wbs_links
-  FOR INSERT WITH CHECK (public.user_has_rab_item_access(rab_item_id));
+  FOR INSERT WITH CHECK (public.rab_link_check_access(rab_item_id));
 
 CREATE POLICY "update_rab_wbs_links" ON public.rab_wbs_links
-  FOR UPDATE USING (public.user_has_rab_item_access(rab_item_id));
+  FOR UPDATE USING (public.rab_link_check_access(rab_item_id));
 
 CREATE POLICY "delete_rab_wbs_links" ON public.rab_wbs_links
-  FOR DELETE USING (public.user_has_rab_item_access(rab_item_id));
+  FOR DELETE USING (public.rab_link_check_access(rab_item_id));
 
 -- 6. Grant permissions
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.rab_wbs_links TO authenticated;
