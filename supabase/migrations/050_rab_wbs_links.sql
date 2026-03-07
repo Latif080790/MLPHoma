@@ -39,6 +39,12 @@ CREATE TRIGGER set_rab_wbs_links_updated_at
 ALTER TABLE public.rab_wbs_links ENABLE ROW LEVEL SECURITY;
 
 -- 5. RLS Policies — access scoped via parent rab_items → projects
+-- Drop first to make this script idempotent (safe to re-run)
+DROP POLICY IF EXISTS "select_rab_wbs_links" ON public.rab_wbs_links;
+DROP POLICY IF EXISTS "insert_rab_wbs_links" ON public.rab_wbs_links;
+DROP POLICY IF EXISTS "update_rab_wbs_links" ON public.rab_wbs_links;
+DROP POLICY IF EXISTS "delete_rab_wbs_links" ON public.rab_wbs_links;
+
 CREATE POLICY "select_rab_wbs_links" ON public.rab_wbs_links
   FOR SELECT USING (
     EXISTS (
