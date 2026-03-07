@@ -97,7 +97,9 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
     }
     const dist = distributeVolumeByTasks(items, tasks, markupConfig)
     setDistribution(dist)
-    notify.success(`RAP generated${markupConfig ? ` (OH ${markupConfig.overheadPercent}% + Profit ${markupConfig.profitPercent}%)` : ''}`)
+    // Note: this is a cashflow preview chart only; actual RAP savings to Supabase
+    // use rapService.initFromRab() which pulls AHSP base_price (biaya produksi).
+    notify.success(`Preview cashflow RAP${markupConfig ? ` — markup OH ${markupConfig.overheadPercent}% Profit ${markupConfig.profitPercent}% diterapkan ke nilai RAB` : ' — nilai RAB tanpa markup (biaya produksi)'}`)  
   }
 
   const chartData = useMemo(() => {
@@ -109,7 +111,7 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
     <div className="rounded-md border p-4 bg-white shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-medium">RAP Generator (prototype)</h4>
-        <div className="text-xs text-neutral-500">Distribute RAB by task durations (business days)</div>
+        <div className="text-xs text-neutral-500">Preview cashflow dari distribusi RAB (biaya produksi = AHSP base price)</div>
       </div>
 
       <div className="space-y-2">

@@ -60,10 +60,11 @@ export function businessDaysBetween(start: string, end: string): number {
  * Priority:
  *  1. Pre-computed finalTotal / volume  (markup already applied upstream — most accurate)
  *  2. markupConfig supplied by caller    (applies OH/profit to unitPrice on the fly)
- *  3. Raw unit_price                     (no markup — cashflow understates by OH+profit)
+ *  3. Raw unit_price                     (= AHSP base cost; correct for RAP production-cost tracking)
  *
  * This ensures the S-Curve and cashflow projections reflect the RAB *contract* total,
- * not just the bare base-cost subtotal.
+ * not just the bare base-cost subtotal. For RAP (biaya produksi), path 3 is
+ * the authoritative source when no markupConfig is provided.
  */
 function effectiveFinalUnitPrice(
   it: RABItem,

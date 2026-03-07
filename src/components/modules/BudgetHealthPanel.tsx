@@ -143,7 +143,7 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
     if (projectBudget > 0 && rabTotal > projectBudget)
       alerts.push(`RAB melebihi Project Budget sebesar ${formatIDR(rabTotal - projectBudget)}`)
     if (rabTotal > 0 && rapPlanned > rabTotal * 1.05)
-      alerts.push(`RAP Planned melebihi RAB total ${((rapPlanned / rabTotal - 1) * 100).toFixed(1)}%`)
+      alerts.push(`Biaya produksi RAP melebihi harga kontrak RAB — selisih ${formatIDR(rapPlanned - rabTotal)} (${((rapPlanned / rabTotal - 1) * 100).toFixed(1)}%)`)
     if (rapActual > rapPlanned && rapPlanned > 0)
       alerts.push(`Actual cost melebihi RAP Planned — CPI ${cpi.toFixed(2)}`)
     if (rapCommit > rapPlanned * 0.95 && rapPlanned > 0)
@@ -206,10 +206,10 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
             <MetricCard
               label="RAP Planned"
               value={rapPlanned > 0 ? formatIDR(rapPlanned) : '—'}
-              sub={rabTotal > 0 ? `${(kpi.rapVsRab * 100).toFixed(1)}% dari RAB` : 'belum di-import'}
+              sub={rabTotal > 0 ? `margin ${(100 - kpi.rapVsRab * 100).toFixed(1)}% dari kontrak` : 'biaya produksi (AHSP base)'}
               status={kpi.rapStatus}
               pct={rabTotal > 0 ? kpi.rapVsRab * 100 : undefined}
-              pctLabel={rabTotal > 0 ? `${(kpi.rapVsRab * 100).toFixed(1)}% vs RAB` : undefined}
+              pctLabel={rabTotal > 0 ? `${(kpi.rapVsRab * 100).toFixed(1)}% biaya dari kontrak` : undefined}
             />
             <MetricCard
               label="Actual Spent"
