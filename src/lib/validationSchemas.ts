@@ -194,7 +194,8 @@ export type ProjectUpdate = z.infer<typeof projectUpdateSchema>
 /** WBS Item input schema */
 export const wbsItemInputSchema = z.object({
   projectId: z.string().min(1, 'Project ID is required'),
-  code: commonValidations.code,
+  // code is auto-generated from hierarchy — allow empty or omit; store fills it via generateCodesForProject
+  code: z.string().optional().default(''),
   name: commonValidations.name,
   description: commonValidations.description,
   parentId: z.string().nullable().optional(),

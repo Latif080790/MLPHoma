@@ -84,16 +84,16 @@ export const useWBSStore = create<WBSStore>()(
           const currentItems = state.itemsByProject[projectId] || []
           const updatedItems = [...currentItems, newItem]
 
-          // Update sort order for siblings
-          const siblings = updatedItems.filter(i => i.parentId === newItem.parentId)
-          siblings.forEach((sibling, index) => {
-            if (sibling.id !== newItem.id) {
-              sibling.sortOrder = index + 1
-            }
+          // Assign sortOrder: append new item at the end of its sibling group
+          const existingSiblings = updatedItems
+            .filter(i => i.parentId === newItem.parentId && i.id !== newItem.id)
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+          existingSiblings.forEach((sibling, index) => {
+            sibling.sortOrder = index
           })
-          newItem.sortOrder = 0
+          newItem.sortOrder = existingSiblings.length  // append at end
 
-          // Generate codes for affected items
+          // Generate codes for the entire project (codes are derived from sortOrder)
           const finalItems = generateCodesForProject(updatedItems)
 
           return {
@@ -105,8 +105,9 @@ export const useWBSStore = create<WBSStore>()(
           }
         })
 
-        // Sync to Supabase
-        syncWBSItem(newItem)
+        // Sync ALL project items so every code change (siblings included) persists
+        const allItems = get().itemsByProject[projectId] || []
+        syncWBSItems(allItems, projectId)
       },
 
       // Update WBS item
@@ -208,10 +209,12 @@ export const useWBSStore = create<WBSStore>()(
           }
         })
 
-        // Sync deletions to Supabase
+        // Sync deletions + re-sync remaining items (codes of siblings changed)
         toDeleteIds.forEach(itemId => {
           syncDelete('wbs_items', itemId)
         })
+        const remaining = get().itemsByProject[projectId] || []
+        if (remaining.length > 0) syncWBSItems(remaining, projectId)
       },
 
       // Move item (drag & drop)
@@ -286,6 +289,10 @@ export const useWBSStore = create<WBSStore>()(
             },
           }
         })
+
+        // Sync all items — codes and sortOrders for multiple rows changed
+        const movedItems = get().itemsByProject[projectId] || []
+        syncWBSItems(movedItems, projectId)
       },
 
       // Toggle item expansion
@@ -328,6 +335,10 @@ export const useWBSStore = create<WBSStore>()(
             },
           }
         })
+
+        // Sync reordered items — sortOrders and codes changed
+        const reorderedItems = get().itemsByProject[projectId] || []
+        syncWBSItems(reorderedItems, projectId)
       },
 
       // Generate WBS codes
