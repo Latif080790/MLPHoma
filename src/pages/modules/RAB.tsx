@@ -26,24 +26,35 @@ export default function RAB() {
   const syncProjectToSupabase = useRabStore(s => s.syncProjectToSupabase)
   // Use direct state selection to ensure stability
   const currentProject = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
+  const updateProject   = useProjectStore(s => s.updateProject)
   const items = useRabStore(s => currentProject ? s.getItems(currentProject.id) : EMPTY_ARRAY)
   const isLocked = useRabStore(s => currentProject ? s.isLocked(currentProject.id) : false)
   const { zones, loading } = useAHSPStore()
   const [syncing, setSyncing] = React.useState(false)
   const [showSettings, setShowSettings] = React.useState(false)
 
-  // Configurable rates — persisted per-project in localStorage
+  // Configurable rates — read from projectStore.meta.rabRates (reactive),
+  // fallback to legacy localStorage key for backward compat.
   const storageKey = `rab:rates:${currentProject?.id ?? '_'}`
+  const metaRates = currentProject?.meta?.rabRates as { overhead?: number; tax?: number } | undefined
   const [overheadPct, setOverheadPct] = React.useState<number>(() => {
+    if (metaRates?.overhead != null) return Number(metaRates.overhead)
     try { return Number(JSON.parse(localStorage.getItem(storageKey) ?? '{}').overhead ?? 0) } catch { return 0 }
   })
   const [taxRate, setTaxRate] = React.useState<number>(() => {
+    if (metaRates?.tax != null) return Number(metaRates.tax)
     try { return Number(JSON.parse(localStorage.getItem(storageKey) ?? '{}').tax ?? 11) } catch { return 11 }
   })
 
   const persistRates = useCallback((oh: number, tx: number) => {
+    // Write to both localStorage (legacy) AND projectStore.meta.rabRates (reactive)
     localStorage.setItem(storageKey, JSON.stringify({ overhead: oh, tax: tx }))
-  }, [storageKey])
+    if (currentProject?.id) {
+      updateProject(currentProject.id, {
+        meta: { ...currentProject.meta, rabRates: { overhead: oh, tax: tx } },
+      })
+    }
+  }, [storageKey, currentProject, updateProject])
 
   // Get zone name if project has zoneId
   const currentZone = currentProject?.zoneId ? zones.find(z => z.id === currentProject.zoneId) : null

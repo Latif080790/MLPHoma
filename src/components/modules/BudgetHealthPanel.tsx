@@ -10,6 +10,7 @@ import React, { useState, useMemo } from 'react'
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Info, ChevronDown, ChevronUp } from 'lucide-react'
 import { useRabStore } from '@/store/rabStore'
 import { useRapStore } from '@/store/rapStore'
+import { useProjectStore } from '@/store/projectStore'
 import { formatIDR } from '@/lib/utils'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -125,20 +126,18 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
   const rabSubtotal = useRabStore(s => (s.itemsByProject[projectId] ?? []).reduce((sum, i) => sum + ((i.volume || 0) * (i.unit_price || 0)), 0))
   const rapPlanned  = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.total_budget || 0), 0))
 
-  // Apply the same overhead+tax rates that RAB.tsx uses (localStorage "rab:rates:{projectId}")
-  // so that rabTotal here = RAB FINAL TOTAL (contract price) = subtotal + OH + tax
-  const rabTotal = useMemo(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(`rab:rates:${projectId}`) ?? '{}')
-      const ohPct  = Number(stored.overhead ?? 0) / 100
-      const taxPct = Number(stored.tax ?? 11)     / 100
-      const oh  = rabSubtotal * ohPct
-      const tax = (rabSubtotal + oh) * taxPct
-      return rabSubtotal + oh + tax
-    } catch {
-      return rabSubtotal
-    }
-  }, [rabSubtotal, projectId])
+  // Read RAB rates from projectStore.meta.rabRates (reactive via Zustand).
+  // Falls back to localStorage for projects that haven't saved rates yet.
+  const rabRatesMeta = useProjectStore(s => s.projects[projectId]?.meta?.rabRates as { overhead?: number; tax?: number } | undefined)
+  const rabOhPct  = rabRatesMeta?.overhead != null ? Number(rabRatesMeta.overhead) / 100
+    : (() => { try { return Number(JSON.parse(localStorage.getItem(`rab:rates:${projectId}`) ?? '{}').overhead ?? 0) / 100 } catch { return 0 } })()
+  const rabTaxPct = rabRatesMeta?.tax      != null ? Number(rabRatesMeta.tax)      / 100
+    : (() => { try { return Number(JSON.parse(localStorage.getItem(`rab:rates:${projectId}`) ?? '{}').tax ?? 11) / 100 } catch { return 0.11 } })()
+
+  // RAB FINAL TOTAL = subtotal + OH + Tax (matches RAB Builder FINAL TOTAL)
+  const rabOh    = rabSubtotal * rabOhPct
+  const rabTax   = (rabSubtotal + rabOh) * rabTaxPct
+  const rabTotal = rabSubtotal + rabOh + rabTax
 
   const rapCommit  = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.committed_cost || 0), 0))
   const rapActual  = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.actual_cost || 0), 0))
