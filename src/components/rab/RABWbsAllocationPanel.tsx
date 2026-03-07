@@ -10,7 +10,7 @@
  * - Delete individual links
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   Sheet,
   SheetContent,
@@ -64,11 +64,18 @@ export function RABWbsAllocationPanel({
     getAllocationSum,
   } = useRabWbsLinkStore()
 
-  const { itemsByProject } = useWBSStore()
+  const { itemsByProject, fetchItems } = useWBSStore()
   const wbsItems = useMemo(
     () => (itemsByProject[projectId] || []).sort((a, b) => a.sortOrder - b.sortOrder),
     [itemsByProject, projectId]
   )
+
+  // Fetch WBS items when panel opens (may not be loaded if user hasn't visited WBS page)
+  useEffect(() => {
+    if (open && itemsByProject[projectId] === undefined) {
+      fetchItems(projectId)
+    }
+  }, [open, projectId, itemsByProject, fetchItems])
 
   const links = useMemo(
     () => (rabItemId ? (linksByRabItem[rabItemId] || []) : []),
