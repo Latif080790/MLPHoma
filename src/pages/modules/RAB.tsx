@@ -103,63 +103,20 @@ export default function RAB() {
         accent="emerald"
         actions={
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 text-xs"
-                onClick={() => setShowSettings(s => !s)}
-              >
-                <Settings2 className="h-3.5 w-3.5" />
-                Rates
-              </Button>
-              {showSettings && (
-                <div className="absolute right-0 top-full z-50 mt-1 w-64 rounded-xl border bg-white p-4 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
-                  <h4 className="mb-3 text-xs font-semibold text-neutral-700 dark:text-neutral-300">RAB Rate Configuration</h4>
-                  <div className="space-y-3">
-                    <label className="block">
-                      <span className="mb-1 block text-xs text-neutral-500">Overhead / Profit (%)</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={overheadPct}
-                        onChange={e => {
-                          const v = Math.max(0, Math.min(100, Number(e.target.value)))
-                          setOverheadPct(v)
-                          persistRates(v, taxRate)
-                        }}
-                        className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800"
-                      />
-                    </label>
-                    <label className="block">
-                      <span className="mb-1 block text-xs text-neutral-500">PPN / Tax (%)</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={taxRate}
-                        onChange={e => {
-                          const v = Math.max(0, Math.min(100, Number(e.target.value)))
-                          setTaxRate(v)
-                          persistRates(overheadPct, v)
-                        }}
-                        className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800"
-                      />
-                    </label>
-                    <Button
-                      size="sm"
-                      className="h-7 w-full text-xs"
-                      onClick={() => setShowSettings(false)}
-                    >
-                      Apply
-                    </Button>
-                  </div>
-                </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => setShowSettings(s => !s)}
+            >
+              <Settings2 className="h-3.5 w-3.5" />
+              Rates
+              {(overheadPct > 0 || taxRate !== 11) && (
+                <span className="ml-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 px-1.5 text-xs font-bold">
+                  OH {overheadPct}% · T {taxRate}%
+                </span>
               )}
-            </div>
+            </Button>
             <Button onClick={handleSync} disabled={syncing} variant="outline" className="h-8 gap-2 text-xs">
               <CloudUpload className="h-4 w-4" />
               {syncing ? 'Syncing...' : 'Sync to Supabase'}
@@ -167,6 +124,64 @@ export default function RAB() {
           </div>
         }
       />
+
+      {/* Rates config — inline panel, no overflow/z-index issues */}
+      {showSettings && (
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">RAB Rate Configuration</span>
+            <button
+              type="button"
+              onClick={() => setShowSettings(false)}
+              className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              ✕ Tutup
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <label className="block min-w-[140px]">
+              <span className="mb-1 block text-xs text-slate-500">Overhead / Profit (%)</span>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={overheadPct}
+                onChange={e => {
+                  const v = Math.max(0, Math.min(100, Number(e.target.value)))
+                  setOverheadPct(v)
+                  persistRates(v, taxRate)
+                }}
+                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
+              />
+            </label>
+            <label className="block min-w-[140px]">
+              <span className="mb-1 block text-xs text-slate-500">PPN / Tax (%)</span>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={taxRate}
+                onChange={e => {
+                  const v = Math.max(0, Math.min(100, Number(e.target.value)))
+                  setTaxRate(v)
+                  persistRates(overheadPct, v)
+                }}
+                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
+              />
+            </label>
+            <div className="flex items-end">
+              <Button size="sm" className="h-8 text-xs" onClick={() => setShowSettings(false)}>
+                Apply
+              </Button>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            Tersimpan otomatis · Digunakan oleh Budget Health Panel untuk menghitung RAB Final Total (harga kontrak).
+          </p>
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* G4 Fix: Lock banner — shown when RAB baseline has been snapshotted */}
