@@ -122,8 +122,24 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
   const [expanded, setExpanded] = useState(true)
 
   // All selectors return PRIMITIVES — avoids new-reference infinite loops
-  const rabTotal   = useRabStore(s => (s.itemsByProject[projectId] ?? []).reduce((sum, i) => sum + ((i.volume || 0) * (i.unit_price || 0)), 0))
-  const rapPlanned = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.total_budget || 0), 0))
+  const rabSubtotal = useRabStore(s => (s.itemsByProject[projectId] ?? []).reduce((sum, i) => sum + ((i.volume || 0) * (i.unit_price || 0)), 0))
+  const rapPlanned  = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.total_budget || 0), 0))
+
+  // Apply the same overhead+tax rates that RAB.tsx uses (localStorage "rab:rates:{projectId}")
+  // so that rabTotal here = RAB FINAL TOTAL (contract price) = subtotal + OH + tax
+  const rabTotal = useMemo(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(`rab:rates:${projectId}`) ?? '{}')
+      const ohPct  = Number(stored.overhead ?? 0) / 100
+      const taxPct = Number(stored.tax ?? 11)     / 100
+      const oh  = rabSubtotal * ohPct
+      const tax = (rabSubtotal + oh) * taxPct
+      return rabSubtotal + oh + tax
+    } catch {
+      return rabSubtotal
+    }
+  }, [rabSubtotal, projectId])
+
   const rapCommit  = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.committed_cost || 0), 0))
   const rapActual  = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.actual_cost || 0), 0))
 
@@ -198,10 +214,10 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
             <MetricCard
               label="RAB Total"
               value={rabTotal > 0 ? formatIDR(rabTotal) : '—'}
-              sub={projectBudget > 0 ? `${(kpi.rabVsBudget * 100).toFixed(1)}% dari Budget` : 'belum ada items'}
+              sub={rabTotal > rabSubtotal ? `harga kontrak (subtotal + OH + Tax)` : projectBudget > 0 ? `${(kpi.rabVsBudget * 100).toFixed(1)}% dari Budget` : 'belum ada items'}
               status={kpi.rabStatus}
               pct={projectBudget > 0 ? kpi.rabVsBudget * 100 : undefined}
-              pctLabel={projectBudget > 0 ? `${(kpi.rabVsBudget * 100).toFixed(1)}% terpakai` : undefined}
+              pctLabel={projectBudget > 0 ? `${(kpi.rabVsBudget * 100).toFixed(1)}% dari Budget` : undefined}
             />
             <MetricCard
               label="RAP Planned"
