@@ -128,16 +128,19 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
 
   // Read RAB rates from projectStore.meta.rabRates (reactive via Zustand).
   // Falls back to localStorage for projects that haven't saved rates yet.
-  const rabRatesMeta = useProjectStore(s => s.projects[projectId]?.meta?.rabRates as { overhead?: number; tax?: number } | undefined)
+  const rabRatesMeta = useProjectStore(s => s.projects[projectId]?.meta?.rabRates as { overhead?: number; profit?: number; tax?: number } | undefined)
   const rabOhPct  = rabRatesMeta?.overhead != null ? Number(rabRatesMeta.overhead) / 100
     : (() => { try { return Number(JSON.parse(localStorage.getItem(`rab:rates:${projectId}`) ?? '{}').overhead ?? 0) / 100 } catch { return 0 } })()
+  const rabProfitPct = rabRatesMeta?.profit != null ? Number(rabRatesMeta.profit) / 100
+    : (() => { try { return Number(JSON.parse(localStorage.getItem(`rab:rates:${projectId}`) ?? '{}').profit ?? 0) / 100 } catch { return 0 } })()
   const rabTaxPct = rabRatesMeta?.tax      != null ? Number(rabRatesMeta.tax)      / 100
     : (() => { try { return Number(JSON.parse(localStorage.getItem(`rab:rates:${projectId}`) ?? '{}').tax ?? 11) / 100 } catch { return 0.11 } })()
 
-  // RAB FINAL TOTAL = subtotal + OH + Tax (matches RAB Builder FINAL TOTAL)
-  const rabOh    = rabSubtotal * rabOhPct
-  const rabTax   = (rabSubtotal + rabOh) * rabTaxPct
-  const rabTotal = rabSubtotal + rabOh + rabTax
+  // RAB FINAL TOTAL = subtotal + OH + Profit + Tax (matches RAB Builder FINAL TOTAL)
+  const rabOh     = rabSubtotal * rabOhPct
+  const rabProfit = rabSubtotal * rabProfitPct
+  const rabTax    = (rabSubtotal + rabOh + rabProfit) * rabTaxPct
+  const rabTotal  = rabSubtotal + rabOh + rabProfit + rabTax
 
   const rapCommit  = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.committed_cost || 0), 0))
   const rapActual  = useRapStore(s => s.items.filter(i => i.project_id === projectId).reduce((sum, i) => sum + (i.actual_cost || 0), 0))

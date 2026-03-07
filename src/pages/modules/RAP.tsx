@@ -6,7 +6,7 @@ import { useRabStore } from '@/store/rabStore'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -43,12 +43,13 @@ import {
   makeMonthKeys,
 } from '../../components/rap/RapUtils'
 
-// ── SummaryPill ───────────────────────────────────────────────
-function SummaryPill({ label, value, color }: { label: string; value: string; color: string }) {
+// ── KPICard ─────────────────────────────────────────────────────────────
+function KPICard({ label, value, sub, colorClass }: { label: string; value: string; sub?: string; colorClass: string }) {
   return (
-    <div className="flex flex-col px-3 py-1.5 min-w-[110px]">
-      <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</span>
-      <span className={`text-sm font-bold font-mono leading-tight ${color}`}>{value}</span>
+    <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 px-4 py-3 shadow-sm">
+      <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">{label}</div>
+      <div className={`text-base font-bold font-mono leading-tight truncate ${colorClass}`}>{value}</div>
+      {sub && <div className="mt-0.5 text-xs text-slate-400">{sub}</div>}
     </div>
   )
 }
@@ -198,6 +199,33 @@ export default function RAP(): JSX.Element {
         actions={
           <div className="flex items-center gap-2">
             {projectId && <ProfitHealthWidget projectId={projectId} compact />}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`h-8 gap-1.5 text-xs ${draftCount > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={openImportConfirm}
+                      disabled={isLoading || !projectId || draftCount > 0}
+                    >
+                      <Plus size={13} />
+                      {items.length > 0 ? 'Re-sync from RAB' : 'Import from RAB'}
+                    </Button>
+                  </div>
+                </TooltipTrigger>
+                {draftCount > 0 && (
+                  <TooltipContent className="bg-amber-50 text-amber-700 border-amber-200 text-xs max-w-[240px]">
+                    <p className="font-bold flex items-center gap-1.5 mb-1 text-amber-900">
+                      <Info size={14} />
+                      Unpublished Changes
+                    </p>
+                    There are <strong>{draftCount}</strong> unpublished changes in RAB. Please <strong>Publish</strong> your RAB baseline before syncing to RAP.
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={handleExportExcel} disabled={!items.length}>
               <Download size={13} />
               Export Excel
@@ -211,89 +239,72 @@ export default function RAP(): JSX.Element {
 
         {/* ── Budget Control section */}
         <div className="space-y-4">
-          <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-            <CardHeader className="sticky top-0 z-10 flex flex-row items-center justify-between border-b border-slate-100 bg-white/95 pb-2 pt-4 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95">
-              <div className="flex items-center gap-4">
-                <CardTitle className="text-sm font-bold text-slate-500 uppercase tracking-wider">Budget Summary</CardTitle>
-                <div className="relative w-64">
-                  <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-400" />
-                  <Input
-                    placeholder="Search items..."
-                    className="control-compact bg-slate-50 border-slate-200 pl-8"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </div>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={openImportConfirm}
-                        disabled={isLoading || !projectId || draftCount > 0}
-                        className={`control-compact ${draftCount > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        {items.length > 0 ? 'Re-sync from RAB' : 'Import from RAB'}
-                      </Button>
-                    </div>
-                  </TooltipTrigger>
-                  {draftCount > 0 && (
-                    <TooltipContent className="bg-amber-50 text-amber-700 border-amber-200 text-xs max-w-[240px]">
-                      <p className="font-bold flex items-center gap-1.5 mb-1 text-amber-900">
-                        <Info size={14} />
-                        Unpublished Changes
-                      </p>
-                      There are <strong>{draftCount}</strong> unpublished changes in RAB.
-                      Please <strong>Publish</strong> your RAB baseline before syncing to RAP.
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </TooltipProvider>
-            </CardHeader>
-            <CardContent className="pt-0 pb-3">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div className="mt-2 flex items-baseline gap-2">
-                  <div className="text-2xl font-bold font-mono text-slate-800 dark:text-slate-100">
-                    Rp {Math.round(totals.totalBudget).toLocaleString('id-ID')}
-                  </div>
-                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total RAP Budget</p>
-                </div>
+          {/* ── KPI Cards ───────────────────────────────────────── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <KPICard label="Total Budget" value={`Rp ${Math.round(totals.totalBudget).toLocaleString('id-ID')}`} colorClass="text-slate-800 dark:text-slate-100" />
+            <KPICard label="Committed" value={`Rp ${Math.round(totals.totalCommitted).toLocaleString('id-ID')}`} colorClass="text-blue-600 dark:text-blue-400" />
+            <KPICard label="Actual Cost" value={`Rp ${Math.round(totals.totalActual).toLocaleString('id-ID')}`} colorClass="text-amber-600 dark:text-amber-400" />
+            <KPICard
+              label="Remaining"
+              value={`Rp ${Math.round(totals.totalRemaining).toLocaleString('id-ID')}`}
+              colorClass={totals.totalRemaining < 0 ? 'text-red-600 font-bold' : 'text-emerald-600'}
+            />
+            <KPICard
+              label="Efisiensi"
+              value={`${totals.efficiency}%`}
+              colorClass={totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600'}
+              sub={totals.efficiency >= 90 ? 'On track' : totals.efficiency >= 75 ? 'Monitor' : 'At Risk'}
+            />
+          </div>
 
-                <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-tight flex items-center gap-1">
-                      <TrendingUp size={10} className="text-emerald-500" />
-                      Profit Simulation
-                    </span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="relative">
-                        <Input
-                          type="number"
-                          value={targetProfit}
-                          onChange={(e) => setTargetProfit(Number(e.target.value))}
-                          className="h-7 w-16 text-xs font-mono pr-5 py-0"
-                        />
-                        <Percent size={10} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800"
-                        onClick={handleApplyProfitSimulation}
-                        disabled={isSimulating || !items.length}
-                      >
-                        <ShieldCheck size={12} className="mr-1" />
-                        Apply Profit First
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+          {/* ── Profit Simulation bar ───────────────────────────── */}
+          <div className="flex flex-wrap items-center gap-4 rounded-lg border border-emerald-100 bg-emerald-50/50 px-4 py-3 dark:border-emerald-900 dark:bg-emerald-950/30">
+            <div className="flex items-center gap-1.5">
+              <TrendingUp size={13} className="text-emerald-600" />
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Profit Simulation</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Input
+                  type="number"
+                  value={targetProfit}
+                  onChange={(e) => setTargetProfit(Number(e.target.value))}
+                  className="h-7 w-16 text-xs font-mono pr-5 py-0"
+                />
+                <Percent size={10} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400" />
               </div>
-            </CardContent>
-          </Card>
+              <Button
+                size="sm"
+                className="h-7 px-3 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 border-0"
+                onClick={handleApplyProfitSimulation}
+                disabled={isSimulating || !items.length}
+              >
+                <ShieldCheck size={12} className="mr-1" />
+                Apply Profit First
+              </Button>
+            </div>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 ml-auto hidden md:inline">
+              Recalculate RAP budget items to achieve target profit margin
+            </span>
+          </div>
+
+          {/* ── Search toolbar ───────────────────────────────────── */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder="Search items..."
+                className="h-8 bg-white border-slate-200 pl-8 text-xs"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            {filteredItems.length > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
 
           <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
             {/* AHSP linkage warning — items without ahsp_id won't show in Resource Plan */}
@@ -451,19 +462,6 @@ export default function RAP(): JSX.Element {
               </Table>
             </div>
           </div>
-        </div>
-
-        {/* ── Summary totals bar ─────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-0 divide-x divide-slate-200 rounded-lg border border-slate-200 bg-slate-50/80 px-1 py-1 text-xs dark:divide-slate-700 dark:border-slate-700 dark:bg-slate-800/50">
-          <SummaryPill label="Total Budget" value={`Rp ${Math.round(totals.totalBudget).toLocaleString('id-ID')}`} color="text-slate-700" />
-          <SummaryPill label="Committed" value={`Rp ${Math.round(totals.totalCommitted).toLocaleString('id-ID')}`} color="text-blue-600" />
-          <SummaryPill label="Actual Cost" value={`Rp ${Math.round(totals.totalActual).toLocaleString('id-ID')}`} color="text-amber-600" />
-          <SummaryPill
-            label="Remaining"
-            value={`Rp ${Math.round(totals.totalRemaining).toLocaleString('id-ID')}`}
-            color={totals.totalRemaining < 0 ? 'text-red-600 font-bold' : 'text-emerald-600'}
-          />
-          <SummaryPill label="Efisiensi" value={`${totals.efficiency}%`} color={totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600'} />
         </div>
 
         {/* ── Collapsible Scheduler ──────────────────────────────── */}

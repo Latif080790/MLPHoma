@@ -36,22 +36,26 @@ export default function RAB() {
   // Configurable rates — read from projectStore.meta.rabRates (reactive),
   // fallback to legacy localStorage key for backward compat.
   const storageKey = `rab:rates:${currentProject?.id ?? '_'}`
-  const metaRates = currentProject?.meta?.rabRates as { overhead?: number; tax?: number } | undefined
+  const metaRates = currentProject?.meta?.rabRates as { overhead?: number; profit?: number; tax?: number } | undefined
   const [overheadPct, setOverheadPct] = React.useState<number>(() => {
     if (metaRates?.overhead != null) return Number(metaRates.overhead)
     try { return Number(JSON.parse(localStorage.getItem(storageKey) ?? '{}').overhead ?? 0) } catch { return 0 }
+  })
+  const [profitPct, setProfitPct] = React.useState<number>(() => {
+    if (metaRates?.profit != null) return Number(metaRates.profit)
+    try { return Number(JSON.parse(localStorage.getItem(storageKey) ?? '{}').profit ?? 0) } catch { return 0 }
   })
   const [taxRate, setTaxRate] = React.useState<number>(() => {
     if (metaRates?.tax != null) return Number(metaRates.tax)
     try { return Number(JSON.parse(localStorage.getItem(storageKey) ?? '{}').tax ?? 11) } catch { return 11 }
   })
 
-  const persistRates = useCallback((oh: number, tx: number) => {
+  const persistRates = useCallback((oh: number, pr: number, tx: number) => {
     // Write to both localStorage (legacy) AND projectStore.meta.rabRates (reactive)
-    localStorage.setItem(storageKey, JSON.stringify({ overhead: oh, tax: tx }))
+    localStorage.setItem(storageKey, JSON.stringify({ overhead: oh, profit: pr, tax: tx }))
     if (currentProject?.id) {
       updateProject(currentProject.id, {
-        meta: { ...currentProject.meta, rabRates: { overhead: oh, tax: tx } },
+        meta: { ...currentProject.meta, rabRates: { overhead: oh, profit: pr, tax: tx } },
       })
     }
   }, [storageKey, currentProject, updateProject])
@@ -83,10 +87,12 @@ export default function RAB() {
   const summary = useMemo(() => {
     const subtotal = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
     const overhead = subtotal * (overheadPct / 100)
-    const tax = (subtotal + overhead) * (taxRate / 100)
-    const total = subtotal + overhead + tax
-    return { subtotal, overhead, tax, total }
-  }, [items, overheadPct, taxRate])
+    const profit   = subtotal * (profitPct / 100)
+    const taxBase  = subtotal + overhead + profit
+    const tax      = taxBase * (taxRate / 100)
+    const total    = taxBase + tax
+    return { subtotal, overhead, profit, tax, total }
+  }, [items, overheadPct, profitPct, taxRate])
 
   if (!currentProject) {
     return (
@@ -122,9 +128,9 @@ export default function RAB() {
             >
               <Settings2 className="h-3.5 w-3.5" />
               Rates
-              {(overheadPct > 0 || taxRate !== 11) && (
+              {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
                 <span className="ml-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 px-1.5 text-xs font-bold">
-                  OH {overheadPct}% · T {taxRate}%
+                  OH {overheadPct}% · P {profitPct}% · T {taxRate}%
                 </span>
               )}
             </Button>
@@ -151,7 +157,7 @@ export default function RAB() {
           </div>
           <div className="flex flex-wrap gap-4">
             <label className="block min-w-[140px]">
-              <span className="mb-1 block text-xs text-slate-500">Overhead / Profit (%)</span>
+              <span className="mb-1 block text-xs text-slate-500">Overhead (%)</span>
               <input
                 type="number"
                 min="0"
@@ -161,7 +167,23 @@ export default function RAB() {
                 onChange={e => {
                   const v = Math.max(0, Math.min(100, Number(e.target.value)))
                   setOverheadPct(v)
-                  persistRates(v, taxRate)
+                  persistRates(v, profitPct, taxRate)
+                }}
+                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
+              />
+            </label>
+            <label className="block min-w-[140px]">
+              <span className="mb-1 block text-xs text-slate-500">Profit (%)</span>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={profitPct}
+                onChange={e => {
+                  const v = Math.max(0, Math.min(100, Number(e.target.value)))
+                  setProfitPct(v)
+                  persistRates(overheadPct, v, taxRate)
                 }}
                 className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
               />
@@ -177,7 +199,7 @@ export default function RAB() {
                 onChange={e => {
                   const v = Math.max(0, Math.min(100, Number(e.target.value)))
                   setTaxRate(v)
-                  persistRates(overheadPct, v)
+                  persistRates(overheadPct, profitPct, v)
                 }}
                 className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
               />
@@ -238,16 +260,14 @@ export default function RAB() {
           <Card className="hover-interactive">
             <CardHeader className="pb-1 pt-4">
               <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Overhead {overheadPct > 0 ? `(${overheadPct}%)` : ''} + Tax ({taxRate}%)
+                OH + Profit + Tax
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatIDR(summary.overhead + summary.tax)}</div>
-              {overheadPct > 0 && (
-                <p className="mt-0.5 text-xs text-neutral-400">
-                  OH {formatIDR(summary.overhead)} + PPN {formatIDR(summary.tax)}
-                </p>
-              )}
+              <div className="text-2xl font-bold">{formatIDR(summary.overhead + summary.profit + summary.tax)}</div>
+              <p className="mt-0.5 text-xs text-neutral-400">
+                OH {formatIDR(summary.overhead)} · P {formatIDR(summary.profit)} · PPN {formatIDR(summary.tax)}
+              </p>
             </CardContent>
           </Card>
           <Card className="bg-primary/5 border-primary/20 hover-interactive">
