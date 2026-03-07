@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useMemo } from 'react'
-import { Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench, ChevronRight, Settings2, RotateCcw } from 'lucide-react'
+import { Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench, ChevronRight, Settings2, RotateCcw, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
 import { BudgetHealthPanel } from '@/components/modules/BudgetHealthPanel'
@@ -218,13 +218,33 @@ function CostingConfigPanel({ projectId }: { projectId: string }) {
                 </Select>
               </div>
             </div>
+
+            {/* ── Semantic guidance: RAB vs RAP price semantics ── */}
+            {!parseFloat(oh) && !parseFloat(profit) ? (
+              <div className="flex items-start gap-2 rounded-md bg-amber-50 border border-amber-200 p-2.5 text-xs text-amber-800 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300 mt-3">
+                <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+                <div>
+                  <div className="font-semibold">Markup belum dikonfigurasi</div>
+                  <div className="mt-0.5 text-amber-700 dark:text-amber-400">
+                    Saat OH% = 0 dan Profit% = 0, harga RAP akan sama dengan RAB &mdash; tidak ada selisih margin.
+                    Set OH% &amp; Profit% untuk memisahkan <strong>biaya produksi (RAP)</strong> dari <strong>harga kontrak (RAB)</strong>.
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-md bg-emerald-50 border border-emerald-200 p-2 text-xs text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-300 mt-3">
+                <CheckCircle2 size={13} className="shrink-0" />
+                <span>RAB = harga kontrak (AHSP base + OH + Profit + PPN) &nbsp;&middot;&nbsp; RAP = biaya produksi (AHSP base price saja).</span>
+              </div>
+            )}
+
             <div className="flex items-center gap-2 mt-3">
               <Button size="sm" onClick={handleSave} className="h-7 text-xs">Simpan</Button>
               <Button size="sm" variant="ghost" onClick={handleReset} className="h-7 text-xs gap-1">
                 <RotateCcw size={11} /> Reset
               </Button>
               <span className="ml-auto text-xs text-slate-400">
-                Digunakan oleh RAP Generator dan Curva-S
+                RAB = harga kontrak &nbsp;&middot;&nbsp; RAP = biaya produksi
               </span>
             </div>
           </CardContent>
