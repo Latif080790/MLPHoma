@@ -334,7 +334,7 @@ export default function ProjectCosting() {
       />
 
       {/* ── Markup Config ───────────────────────────────────────────── */}
-      <CostingConfigPanel projectId={activeProjectId} />
+      <CostingConfigPanel key={activeProjectId} projectId={activeProjectId} />
 
       <div className="min-h-[420px]">{renderContent()}</div>
     </div>
