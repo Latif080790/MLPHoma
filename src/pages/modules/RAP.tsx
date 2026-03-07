@@ -75,13 +75,15 @@ export default function RAP(): JSX.Element {
 
   // Derived totals
   const totals = useMemo(() => {
-    const totalBudget = items.reduce((s, i) => s + (i.total_budget || 0), 0)
-    const totalCommitted = items.reduce((s, i) => s + (i.committed_cost || 0), 0)
-    const totalActual = items.reduce((s, i) => s + (i.actual_cost || 0), 0)
+    // Filter by projectId so multi-project store contamination doesn't inflate totals
+    const pItems = items.filter(i => i.project_id === projectId)
+    const totalBudget = pItems.reduce((s, i) => s + (i.total_budget || 0), 0)
+    const totalCommitted = pItems.reduce((s, i) => s + (i.committed_cost || 0), 0)
+    const totalActual = pItems.reduce((s, i) => s + (i.actual_cost || 0), 0)
     const totalRemaining = totalBudget - totalCommitted - totalActual
     const efficiency = totalBudget > 0 ? Math.round(((totalBudget - totalActual) / totalBudget) * 100) : 100
     return { totalBudget, totalCommitted, totalActual, totalRemaining, efficiency }
-  }, [items])
+  }, [items, projectId])
 
   useEffect(() => {
     if (project?.meta?.targetProfitPercentage) {
@@ -152,20 +154,21 @@ export default function RAP(): JSX.Element {
     setPlan(generated)
   }
 
-  const filteredItems = items.filter(item => {
+  // Filter by projectId first to prevent multi-project store data contamination
+  const projectItems = items.filter(i => i.project_id === projectId)
+  const filteredItems = projectItems.filter(item => {
     if (!searchQuery) return true
     const name = item.name || item.ahsp_items?.name || item.rab_items?.name || ''
     return name.toLowerCase().includes(searchQuery.toLowerCase())
   })
 
   // Items without ahsp_id won't feed Resource Plan — show warning
-  const projectItems = items.filter(i => i.project_id === projectId)
   const unlinkedAHSPCount = projectItems.filter(i => !i.ahsp_id).length
 
   // Task 41: Export Excel
   const handleExportExcel = async () => {
     const { utils, writeFile } = await import('xlsx')
-    const rows = items.map(i => ({
+    const rows = projectItems.map(i => ({
       'Item Name': i.name || i.ahsp_items?.name || i.rab_items?.name || '',
       'Total Budget': i.total_budget || 0,
       'Committed Cost': i.committed_cost || 0,
@@ -254,7 +257,7 @@ export default function RAP(): JSX.Element {
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="mt-2 flex items-baseline gap-2">
                   <div className="text-2xl font-bold font-mono text-slate-800 dark:text-slate-100">
-                    Rp {Math.round(items.reduce((acc, item) => acc + (item.total_budget || 0), 0)).toLocaleString('id-ID')}
+                    Rp {Math.round(totals.totalBudget).toLocaleString('id-ID')}
                   </div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total RAP Budget</p>
                 </div>
