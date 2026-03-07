@@ -72,8 +72,8 @@ export interface WBSActions {
   reorderItems: (projectId: string, parentId: string | null, itemIds: string[]) => void
   /** Generate WBS codes */
   generateCodes: (projectId: string) => void
-  /** Import WBS structure */
-  importWBS: (projectId: string, items: Omit<WBSItem, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>[]) => void
+  /** Import WBS structure (async — clears existing DB rows first) */
+  importWBS: (projectId: string, items: Omit<WBSItem, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>[]) => Promise<void>
   /** Export WBS structure */
   exportWBS: (projectId: string) => WBSItem[]
   /** Find all descendants of an item (recursive) */

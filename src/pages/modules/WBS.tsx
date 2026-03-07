@@ -32,9 +32,10 @@ import {
 import {
   Download, Upload, AlertTriangle, FileText, Plus, FileUp,
   Search, ChevronsDownUp, ChevronsUpDown, X, Layers, Calculator,
-  Link2, PanelLeft, PanelRight,
+  Link2, PanelLeft, PanelRight, Trash2,
 } from 'lucide-react'
 import { formatIDR } from '@/lib/utils'
+import { toast } from 'sonner'
 import type { WBSItem } from '@/types/wbs'
 
 // ── KPI Mini Bar ──────────────────────────────────────────────
@@ -131,6 +132,7 @@ export default function WBS() {
   const [importError, setImportError] = useState<string | null>(null)
   const [pendingDeleteItem, setPendingDeleteItem] = useState<WBSItem | null>(null)
   const [showBoQImport, setShowBoQImport] = useState(false)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
   // Search + filter sync
   const [treeSearch, setTreeSearch] = useState('')
   const [filterWbsId, setFilterWbsId] = useState<string | null>(null)
@@ -465,6 +467,18 @@ export default function WBS() {
               BoQ Import
             </Button>
 
+            {items.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 bg-transparent text-xs border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/20"
+                onClick={() => setShowClearConfirm(true)}
+              >
+                <Trash2 size={16} className="mr-2" />
+                Clear WBS
+              </Button>
+            )}
+
             <Button
               size="sm"
               className="h-8 text-xs"
@@ -587,6 +601,32 @@ export default function WBS() {
         onOpenChange={setShowBoQImport}
         projectId={projectId}
       />
+
+      {/* Clear WBS Confirm Dialog */}
+      <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus semua item WBS?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Semua {items.length} node WBS akan dihapus secara permanen dari proyek ini.
+              Aksi ini tidak dapat dibatalkan. Anda bisa generate ulang dari RAB setelah ini.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => {
+                void importWBS(projectId, [])
+                setShowClearConfirm(false)
+                toast.success('WBS cleared')
+              }}
+            >
+              Hapus Semua
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
