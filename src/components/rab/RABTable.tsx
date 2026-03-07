@@ -7,7 +7,8 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import {
   Calculator, CheckCircle2, ChevronDown, ChevronRight, History, Info, Layers, Lock,
-  LockKeyhole, MapPin, Plus, Save, Search, Settings2, Trash2, TrendingUp, X, Zap
+  LockKeyhole, MapPin, Plus, Save, Search, Settings2, Trash2, TrendingUp, X, Zap,
+  Download, Upload, FileSpreadsheet, AlertTriangle
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Checkbox } from '../ui/checkbox'
@@ -181,6 +182,15 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const [scenarioName, setScenarioName] = useState('')
   const [selectedScenarioVersion, setSelectedScenarioVersion] = useState<number | null>(null)
 
+  // ─── Excel Import state ───
+  interface ImportRow { name: string; unit: string; volume: number; unit_price: number; category: string; ahsp_code: string }
+  interface ImportError { row: number; field: string; message: string }
+  const [importPreview, setImportPreview] = useState<ImportRow[]>([])
+  const [importErrors, setImportErrors] = useState<ImportError[]>([])
+  const [showImportPreview, setShowImportPreview] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const importFileRef = useRef<HTMLInputElement>(null)
+
   const mainParentRef = useRef<HTMLDivElement>(null)
   const ahspParentRef = useRef<HTMLDivElement>(null)
 
@@ -234,6 +244,95 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       setSelectedScenarioVersion(version)
       toast.info(`Switched to scenario: ${ver.description}`)
     }
+  }
+
+  // ─── Excel Template Download ───
+  const handleDownloadTemplate = async () => {
+    const { utils, writeFile } = await import('xlsx')
+    const headers = [['No', 'Nama Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan', 'Kategori', 'Kode AHSP (opsional)']]
+    const examples = [
+      [1, 'Pekerjaan Galian Tanah Biasa', 'm3', 100, 75000, 'Pekerjaan Tanah', '6.1.1.1'],
+      [2, 'Pekerjaan Beton K-225', 'm3', 50, 1200000, 'Pekerjaan Beton', '7.3.2.1'],
+    ]
+    const ws = utils.aoa_to_sheet([...headers, ...examples])
+    ws['!cols'] = [{ wch: 4 }, { wch: 40 }, { wch: 8 }, { wch: 10 }, { wch: 14 }, { wch: 20 }, { wch: 22 }]
+    const wb = utils.book_new()
+    utils.book_append_sheet(wb, ws, 'Template RAB')
+    writeFile(wb, 'template-rab-import.xlsx')
+    toast.success('Template berhasil diunduh')
+  }
+
+  // ─── Excel Import Handler ───
+  const handleImportExcel = async (file: File) => {
+    setIsImporting(true)
+    try {
+      const { read, utils } = await import('xlsx')
+      const buffer = await file.arrayBuffer()
+      const wb = read(buffer, { type: 'array' })
+      const ws = wb.Sheets[wb.SheetNames[0]]
+      const raw = utils.sheet_to_json(ws, { header: 1, defval: '' }) as unknown[][]
+
+      // Skip header row (row 0)
+      const dataRows = raw.slice(1).filter(r => (r as unknown[]).some(cell => cell !== ''))
+      const rows: (typeof importPreview)[number][] = []
+      const errors: typeof importErrors = []
+
+      dataRows.forEach((r, idx) => {
+        const row = idx + 2 // 1-based + header
+        const cells = r as unknown[]
+        const name = String(cells[1] ?? '').trim()
+        const unit = String(cells[2] ?? '').trim()
+        const volume = parseFloat(String(cells[3] ?? '0'))
+        const unit_price = parseFloat(String(cells[4] ?? '0'))
+        const category = String(cells[5] ?? '').trim()
+        const ahsp_code = String(cells[6] ?? '').trim()
+
+        if (!name) errors.push({ row, field: 'Nama Pekerjaan', message: 'Nama tidak boleh kosong' })
+        if (!unit) errors.push({ row, field: 'Satuan', message: 'Satuan tidak boleh kosong' })
+        if (isNaN(volume) || volume <= 0) errors.push({ row, field: 'Volume', message: 'Volume harus > 0' })
+        if (isNaN(unit_price) || unit_price < 0) errors.push({ row, field: 'Harga Satuan', message: 'Harga Satuan harus >= 0' })
+
+        rows.push({ name, unit, volume: isNaN(volume) ? 0 : volume, unit_price: isNaN(unit_price) ? 0 : unit_price, category, ahsp_code })
+      })
+
+      setImportPreview(rows)
+      setImportErrors(errors)
+      setShowImportPreview(true)
+    } catch (err) {
+      toast.error('Gagal membaca file Excel', { description: (err as Error).message })
+    } finally {
+      setIsImporting(false)
+      if (importFileRef.current) importFileRef.current.value = ''
+    }
+  }
+
+  const handleConfirmImport = () => {
+    const fatalRows = new Set(importErrors.map(e => e.row))
+    let added = 0
+    importPreview.forEach((r, idx) => {
+      const row = idx + 2
+      if (fatalRows.has(row)) return
+      // Find AHSP item by code if provided
+      const ahspItem = r.ahsp_code ? ahspItems.find(a => a.code === r.ahsp_code) : undefined
+      addItem(projectId, {
+        name: r.name,
+        unit: r.unit,
+        volume: r.volume,
+        unit_price: r.unit_price,
+        finalTotal: r.volume * r.unit_price,
+        category: r.category || 'Umum',
+        ahspItemId: ahspItem?.id,
+        item_code: r.ahsp_code || undefined,
+        is_overhead: false,
+      })
+      added++
+    })
+    setShowImportPreview(false)
+    setImportPreview([])
+    setImportErrors([])
+    toast.success(`Berhasil import ${added} item RAB`, {
+      description: importPreview.length - added > 0 ? `${importPreview.length - added} baris dilewati karena ada error.` : undefined,
+    })
   }
 
   // Derived: is a column visible?
@@ -682,6 +781,85 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
 
   return (
     <div className="space-y-3 density-compact">
+      {/* ─── Excel Import Preview Dialog ─── */}
+      <Dialog open={showImportPreview} onOpenChange={v => { if (!v) { setShowImportPreview(false); setImportPreview([]); setImportErrors([]) } }}>
+        <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold">
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
+              Preview Import Excel — {importPreview.length} baris
+            </DialogTitle>
+          </DialogHeader>
+          {importErrors.length > 0 && (
+            <div className="rounded-md border border-rose-200 bg-rose-50/60 p-3 text-xs dark:border-rose-800 dark:bg-rose-900/20">
+              <div className="flex items-center gap-1.5 font-semibold text-rose-700 dark:text-rose-300 mb-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {importErrors.length} validasi gagal — baris dengan error akan dilewati
+              </div>
+              <ul className="space-y-0.5 text-rose-600 dark:text-rose-400">
+                {importErrors.slice(0, 8).map((e, i) => (
+                  <li key={i}>Baris {e.row} [{e.field}]: {e.message}</li>
+                ))}
+                {importErrors.length > 8 && <li className="font-medium">+{importErrors.length - 8} error lainnya...</li>}
+              </ul>
+            </div>
+          )}
+          <ScrollArea className="flex-1 overflow-auto">
+            <table className="w-full text-xs border-collapse min-w-[600px]">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 dark:bg-slate-800">
+                  <th className="px-2 py-1.5 text-left font-semibold text-slate-600">No</th>
+                  <th className="px-2 py-1.5 text-left font-semibold text-slate-600">Nama Pekerjaan</th>
+                  <th className="px-2 py-1.5 text-center font-semibold text-slate-600">Sat</th>
+                  <th className="px-2 py-1.5 text-right font-semibold text-slate-600">Volume</th>
+                  <th className="px-2 py-1.5 text-right font-semibold text-slate-600">Harga Satuan</th>
+                  <th className="px-2 py-1.5 text-left font-semibold text-slate-600">Kategori</th>
+                  <th className="px-2 py-1.5 text-left font-semibold text-slate-600">Kode AHSP</th>
+                  <th className="px-2 py-1.5 text-center font-semibold text-slate-600">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {importPreview.map((r, idx) => {
+                  const rowNum = idx + 2
+                  const rowErrors = importErrors.filter(e => e.row === rowNum)
+                  const hasError = rowErrors.length > 0
+                  return (
+                    <tr key={idx} className={`border-b border-slate-100 dark:border-slate-700 ${hasError ? 'bg-rose-50/40 dark:bg-rose-900/10' : 'hover:bg-slate-50/50'}`}>
+                      <td className="px-2 py-1 text-slate-400 font-mono">{rowNum}</td>
+                      <td className="px-2 py-1 max-w-[200px] truncate">{r.name || <span className="text-rose-500 italic">kosong</span>}</td>
+                      <td className="px-2 py-1 text-center">{r.unit || <span className="text-rose-500 italic">-</span>}</td>
+                      <td className="px-2 py-1 text-right font-mono">{r.volume}</td>
+                      <td className="px-2 py-1 text-right font-mono">{r.unit_price.toLocaleString('id-ID')}</td>
+                      <td className="px-2 py-1 text-slate-500">{r.category || '-'}</td>
+                      <td className="px-2 py-1 font-mono text-slate-400">{r.ahsp_code || '-'}</td>
+                      <td className="px-2 py-1 text-center">
+                        {hasError
+                          ? <span className="text-rose-600 font-semibold">✗ Skip</span>
+                          : <span className="text-emerald-600 font-semibold">✓</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </ScrollArea>
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button variant="ghost" size="sm" onClick={() => { setShowImportPreview(false); setImportPreview([]); setImportErrors([]) }}>
+              Batal
+            </Button>
+            <Button
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              onClick={handleConfirmImport}
+              disabled={importPreview.filter((_, i) => !importErrors.some(e => e.row === i + 2)).length === 0}
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Import {importPreview.filter((_, i) => !importErrors.some(e => e.row === i + 2)).length} baris valid
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <AlertDialog open={confirmScheduleOpen} onOpenChange={setConfirmScheduleOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -918,6 +1096,30 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
               Generate WBS
             </Button>
           )}
+
+          {/* Excel Import buttons */}
+          <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 text-emerald-700 border-emerald-200 hover:bg-emerald-50" onClick={handleDownloadTemplate}>
+            <Download className="h-3.5 w-3.5" />
+            Template
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5 text-xs h-8 text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+            disabled={isImporting}
+            onClick={() => importFileRef.current?.click()}
+          >
+            <Upload className="h-3.5 w-3.5" />
+            {isImporting ? 'Membaca...' : 'Import Excel'}
+          </Button>
+          {/* Hidden file input */}
+          <input
+            ref={importFileRef}
+            type="file"
+            accept=".xlsx,.xls"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleImportExcel(f) }}
+          />
 
           <Button size="sm" variant="outline" className="gap-2 text-xs h-8" onClick={handleAutoSchedule}>
             <CalendarClock className="h-3.5 w-3.5" />

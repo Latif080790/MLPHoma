@@ -100,6 +100,8 @@ export interface AHSPItem {
   creationMode?: 'sni' | 'custom' | 'historical'
   /** Source reference (e.g., SNI code or historical project ID) */
   sourceReference?: string
+  /** Version counter — incremented on every coefficient/price edit */
+  currentVersion?: number
 }
 
 /** AHSP Store State */

@@ -704,6 +704,16 @@ export function AHSPCatalog({
                           <div className="flex flex-col">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <span className="font-medium text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
+                              {/* Version badge */}
+                              {(item.currentVersion ?? 1) > 1 ? (
+                                <span className="inline-flex items-center px-1.5 py-0 rounded text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 leading-4 cursor-default" title={`Versi ${item.currentVersion} — telah diperbarui`}>
+                                  v{item.currentVersion}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-1.5 py-0 rounded text-xs font-medium bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 leading-4 cursor-default" title="Versi awal">
+                                  v1
+                                </span>
+                              )}
                               {hasZoneOverride && <Badge variant="secondary" className="h-4 px-1.5 text-xs uppercase tracking-wider">Adj Zona</Badge>}
                               {(() => {
                                 const useCount = ahspUsageMap.get(item.id) ?? 0
