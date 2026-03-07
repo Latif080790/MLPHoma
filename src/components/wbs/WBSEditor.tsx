@@ -204,23 +204,16 @@ export function WBSEditor({
             )}
           </div>
 
-          {/* Code field */}
-          <div className="space-y-2">
-            <Label htmlFor="code">WBS Code</Label>
-            <Input
-              id="code"
-              value={formData.code}
-              onChange={(e) => handleChange('code', e.target.value)}
-              placeholder="Auto-generated if empty"
-              className={errors.code ? 'border-red-500' : ''}
-              disabled={isSubmitting}
-            />
-            {errors.code && (
-              <p className="text-sm text-red-500">{errors.code}</p>
+          {/* Code display — auto-generated, never editable */}
+          <div className="space-y-1">
+            <Label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">WBS Code</Label>
+            {item?.code ? (
+              <div className="inline-flex items-center px-2.5 py-1 rounded bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800">
+                <span className="font-mono text-sm font-bold text-indigo-700 dark:text-indigo-300">{item.code}</span>
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-400 italic">Otomatis ditetapkan sesuai posisi hierarki</p>
             )}
-            <p className="text-xs text-neutral-500">
-              Leave empty to auto-generate based on hierarchy
-            </p>
           </div>
 
           {/* Description field */}
