@@ -6,13 +6,13 @@ import {
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import {
-  Calculator, CheckCircle2, ChevronDown, ChevronRight, History, Info, Layers, Lock,
+  Calculator, CheckCircle2, ChevronDown, ChevronRight, History, Info, Layers, Link2, Lock,
   LockKeyhole, MapPin, Plus, Save, Search, Settings2, Trash2, TrendingUp, X, Zap,
   Download, Upload, FileSpreadsheet, AlertTriangle
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Checkbox } from '../ui/checkbox'
-import { LoadingSpinner } from '../common/LoadingSpinner'
+import { LoadingSpinner as _LoadingSpinner } from '../common/LoadingSpinner'
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
 import { RABPriceDriftDashboard } from './RABPriceDriftDashboard'
@@ -65,6 +65,8 @@ import {
 } from '../ui/select'
 
 import { useWBSStore } from '../../store/wbsStore'
+import { useRabWbsLinkStore } from '../../store/rabWbsLinkStore'
+import { RABWbsAllocationPanel } from './RABWbsAllocationPanel'
 import { useUnsavedChanges } from '../../hooks/useUnsavedChanges'
 import type { WBSItem } from '../../types/wbs'
 type WBSImportItem = Omit<WBSItem, 'id' | 'projectId' | 'createdAt' | 'updatedAt'>
@@ -123,7 +125,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     zonePricesByZone,
     fetchZonePrices,
     zones,
-    loading
+    loading: _loading
   } = useAHSPStore()
 
   const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot } = useRabStore()
@@ -162,7 +164,20 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const currentZone = project?.zoneId ? zones.find(z => z.id === project.zoneId) : null
 
   // WBS Store
-  const { importWBS } = useWBSStore()
+  const { importWBS, itemsByProject: wbsItemsByProject } = useWBSStore()
+  const wbsItems = useMemo(
+    () => (wbsItemsByProject[projectId] || []).sort((a, b) => a.sortOrder - b.sortOrder),
+    [wbsItemsByProject, projectId]
+  )
+  const wbsMap = useMemo(() => {
+    const m = new Map<string, WBSItem>()
+    wbsItems.forEach((w) => m.set(w.id, w))
+    return m
+  }, [wbsItems])
+
+  // WBS↔RAB linking store
+  const { fetchLinks, addLink, linksByRabItem } = useRabWbsLinkStore()
+  useEffect(() => { if (projectId) fetchLinks(projectId) }, [projectId, fetchLinks])
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -178,6 +193,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const [showLockConfirm, setShowLockConfirm] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
   const [showDriftAnalysis, setShowDriftAnalysis] = useState(false)
+  const [allocationPanelItemId, setAllocationPanelItemId] = useState<string | null>(null)
   const [_showSaveScenario, setShowSaveScenario] = useState(false)
   const [scenarioName, setScenarioName] = useState('')
   const [selectedScenarioVersion, setSelectedScenarioVersion] = useState<number | null>(null)
@@ -314,7 +330,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       if (fatalRows.has(row)) return
       // Find AHSP item by code if provided
       const ahspItem = r.ahsp_code ? ahspItems.find(a => a.code === r.ahsp_code) : undefined
-      addItem(projectId, {
+      const newId = addItem(projectId, {
         name: r.name,
         unit: r.unit,
         volume: r.volume,
@@ -325,6 +341,10 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         item_code: r.ahsp_code || undefined,
         is_overhead: false,
       })
+      // Auto-link to active WBS node if filter is active
+      if (newId && filterWbsId) {
+        addLink(newId, filterWbsId)
+      }
       added++
     })
     setShowImportPreview(false)
@@ -587,7 +607,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       }
     }
 
-    addItem(projectId, {
+    const newId = addItem(projectId, {
       item_code: ahspItem.code,
       name: ahspItem.name,
       unit: ahspItem.unit,
@@ -604,6 +624,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       ahspItemId: ahspItem.id,
       markup_source: markupSource,
     } as Parameters<typeof addItem>[1])
+
+    // Auto-link to active WBS node if filter is active
+    if (newId && filterWbsId) {
+      addLink(newId, filterWbsId)
+    }
 
     setIsAddDialogOpen(false)
     toast.success(project?.zoneId ? 'Item added with Zone Price' : 'Item added from AHSP')
@@ -1684,6 +1709,25 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                             <div className="flex items-center gap-2">
                               <Input value={item.name || ''} onChange={e => updateItem(projectId, item.id, { name: e.target.value })} className="h-7 text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 font-bold px-2 shadow-none transition-all truncate" placeholder="Item Name" />
                               {(item as RABItem & { isDraft?: boolean }).isDraft && <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0 font-bold uppercase tracking-tight">Draft</Badge>}
+                              {(() => {
+                                const links = linksByRabItem[item.id] || []
+                                if (links.length === 0) return null
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={() => setAllocationPanelItemId(item.id)}
+                                    className="shrink-0 flex items-center gap-0.5 rounded bg-indigo-50 px-1.5 py-0.5 border border-indigo-100 hover:bg-indigo-100 transition-colors"
+                                    title={`${links.length} WBS node ter-link`}
+                                  >
+                                    <Link2 size={12} className="text-indigo-500" />
+                                    <span className="text-xs font-mono font-bold text-indigo-600">
+                                      {links.length === 1
+                                        ? (wbsMap.get(links[0].wbsItemId)?.code || '?')
+                                        : `${links.length}×`}
+                                    </span>
+                                  </button>
+                                )
+                              })()}
                             </div>
                             <Input value={(item.notes as string) || ''} onChange={e => updateItem(projectId, item.id, { notes: e.target.value })} className="h-5 text-xs text-slate-500 border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 px-2 shadow-none transition-all font-medium italic" placeholder="Brand / Spec..." />
                           </div>
@@ -1753,7 +1797,16 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                         </TableCell>}
                         {isColVisible('total') && <TableCell className="w-[144px] text-right font-mono text-xs font-black text-slate-900 py-2.5">{formatIDR(lineTotal)}</TableCell>}
                         {isColVisible('actions') && <TableCell className="w-[64px] py-2.5 text-center">
-                          <div className="flex justify-center">
+                          <div className="flex justify-center items-center gap-0.5">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                              title="Link ke WBS"
+                              onClick={() => setAllocationPanelItemId(item.id)}
+                            >
+                              <Link2 className="h-3.5 w-3.5" />
+                            </Button>
                             <Button size="icon" variant="ghost" className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-100 group-hover:opacity-100 transition-opacity" onClick={() => removeItem(projectId, item.id)}>
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -1869,6 +1922,16 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         projectId={projectId}
         open={showVersionHistory}
         onClose={() => setShowVersionHistory(false)}
+      />
+
+      {/* WBS Smart Allocation Panel */}
+      <RABWbsAllocationPanel
+        projectId={projectId}
+        rabItemId={allocationPanelItemId}
+        rabItemName={allocationPanelItemId ? (items.find(i => i.id === allocationPanelItemId)?.name || '') : ''}
+        rabItemTotal={allocationPanelItemId ? (() => { const i = items.find(x => x.id === allocationPanelItemId); return (i?.volume || 0) * (i?.unit_price || 0) })() : 0}
+        open={allocationPanelItemId !== null}
+        onClose={() => setAllocationPanelItemId(null)}
       />
     </div>
   )
