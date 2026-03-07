@@ -144,17 +144,25 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
           linksByRabItem: { ...s.linksByRabItem, [rabItemId]: rebalanced },
         }))
 
-        // Persist: upsert new link + update existing pcts
+        // Persist: insert new link + rebalance existing
         try {
-          // New link first (insert), then update existing
           const newRow: Partial<RabWbsLinkRow> = {
             rab_item_id: newLink.rabItemId,
             wbs_item_id: newLink.wbsItemId,
             allocation_pct: rebalanced.find((l) => l.wbsItemId === wbsItemId)?.allocationPct ?? equalPct,
           }
-          await supabase.from('rab_wbs_links').insert(newRow)
+          const { error: insertError } = await supabase.from('rab_wbs_links').insert(newRow)
 
-          // Update pcts on existing links
+          if (insertError) {
+            // Revert optimistic update — restore state before this addLink call
+            console.error('[rabWbsLinkStore] addLink insert failed:', insertError.message)
+            set((s) => ({
+              linksByRabItem: { ...s.linksByRabItem, [rabItemId]: existing },
+            }))
+            return
+          }
+
+          // Update allocation_pct on pre-existing links
           const existingUpdates = rebalanced.filter((l) => l.wbsItemId !== wbsItemId)
           for (const l of existingUpdates) {
             await supabase
@@ -164,10 +172,14 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
               .eq('wbs_item_id', l.wbsItemId)
           }
 
-          // Re-fetch to get real DB ids
+          // Sync real DB ids into store (guarded — won't wipe state if read fails)
           await refreshLinksForRabItem(rabItemId, set)
         } catch (err) {
+          // Revert optimistic update on unexpected error
           console.error('[rabWbsLinkStore] addLink error:', err)
+          set((s) => ({
+            linksByRabItem: { ...s.linksByRabItem, [rabItemId]: existing },
+          }))
         }
       },
 
@@ -327,18 +339,27 @@ function rebalanceLinks(links: RabWbsLink[]): RabWbsLink[] {
   }))
 }
 
-/** Re-fetch all links for one RAB item and update store (called after insert to get real DB ids) */
+/**
+ * Re-fetch links for one RAB item after insert to sync real DB ids.
+ * IMPORTANT: only updates state if DB returns rows — never wipes optimistic
+ * state with an empty array (which would happen if RLS blocked the read-back).
+ */
 async function refreshLinksForRabItem(
   rabItemId: string,
   set: (fn: (s: RabWbsLinkState) => Partial<RabWbsLinkState>) => void
 ) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('rab_wbs_links')
     .select('*')
     .eq('rab_item_id', rabItemId)
     .order('created_at', { ascending: true })
 
-  if (!data) return
+  if (error) {
+    console.warn('[rabWbsLinkStore] refreshLinksForRabItem read error:', error.message)
+    return
+  }
+  // Guard: never overwrite optimistic state with empty array
+  if (!data || data.length === 0) return
   const links = (data as RabWbsLinkRow[]).map(rowToLink)
   set((s) => ({
     linksByRabItem: { ...s.linksByRabItem, [rabItemId]: links },
