@@ -9,12 +9,13 @@ import { useRabStore } from '@/store/rabStore'
 import { useRapStore } from '@/store/rapStore'
 import { useAHSPStore } from '@/store/ahspStore'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { lazyRetry } from '@/lib/lazyRetry'
 
-const AHSP = React.lazy(() => import('@/pages/modules/AHSP/index'))
-const WBS = React.lazy(() => import('@/pages/modules/WBS'))
-const RAB = React.lazy(() => import('@/pages/modules/RAB'))
-const RAP = React.lazy(() => import('@/pages/modules/RAP'))
-const ResourcePlan = React.lazy(() => import('@/pages/modules/ResourcePlan'))
+const AHSP = lazyRetry(() => import('@/pages/modules/AHSP/index'))
+const WBS = lazyRetry(() => import('@/pages/modules/WBS'))
+const RAB = lazyRetry(() => import('@/pages/modules/RAB'))
+const RAP = lazyRetry(() => import('@/pages/modules/RAP'))
+const ResourcePlan = lazyRetry(() => import('@/pages/modules/ResourcePlan'))
 
 type CostingTab = 'ahsp' | 'wbs' | 'rab' | 'rap' | 'resource'
 

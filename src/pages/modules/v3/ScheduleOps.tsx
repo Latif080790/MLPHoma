@@ -6,16 +6,17 @@ import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical, Boxes } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import ModulePageState from '@/components/common/ModulePageState'
+import { lazyRetry } from '@/lib/lazyRetry'
 
-const WBS = React.lazy(() => import('../WBS'))
-const Timeline = React.lazy(() => import('../Timeline'))
-const CurvaS = React.lazy(() => import('../CurvaS'))
-const Progress = React.lazy(() => import('../Progress'))
-const RiskRegister = React.lazy(() => import('@/components/risk/RiskRegister'))
-const TimelineScenarioPanel = React.lazy(() => import('@/components/modules/TimelineScenarioPanel').then((m) => ({ default: m.TimelineScenarioPanel })))
-const ResourceUsageDialog = React.lazy(() => import('@/components/progress/ResourceUsageDialog').then((m) => ({ default: m.ResourceUsageDialog })))
-const DailyProgressBoard = React.lazy(() => import('@/components/progress/DailyProgressBoard').then((m) => ({ default: m.DailyProgressBoard })))
-const CriticalPathGantt = React.lazy(() => import('@/components/charts/CriticalPathGantt').then((m) => ({ default: m.CriticalPathGantt })))
+const WBS = lazyRetry(() => import('../WBS'))
+const Timeline = lazyRetry(() => import('../Timeline'))
+const CurvaS = lazyRetry(() => import('../CurvaS'))
+const Progress = lazyRetry(() => import('../Progress'))
+const RiskRegister = lazyRetry(() => import('@/components/risk/RiskRegister'))
+const TimelineScenarioPanel = lazyRetry(() => import('@/components/modules/TimelineScenarioPanel').then((m) => ({ default: m.TimelineScenarioPanel })))
+const ResourceUsageDialog = lazyRetry(() => import('@/components/progress/ResourceUsageDialog').then((m) => ({ default: m.ResourceUsageDialog })))
+const DailyProgressBoard = lazyRetry(() => import('@/components/progress/DailyProgressBoard').then((m) => ({ default: m.DailyProgressBoard })))
+const CriticalPathGantt = lazyRetry(() => import('@/components/charts/CriticalPathGantt').then((m) => ({ default: m.CriticalPathGantt })))
 
 function TabFallback() {
     return <div className="p-4 text-sm text-slate-500">Loading module...</div>
