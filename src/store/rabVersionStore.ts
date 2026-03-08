@@ -9,6 +9,7 @@ import type { RABVersion, RABChangeLog, RABVersionSnapshot, RABVersionComparison
 import { generateId } from '../lib/idGenerator'
 import { toast } from 'sonner'
 import { supabase } from '../lib/supabaseClient'
+import { useRabStore } from './rabStore'
 
 interface RABVersionState {
   versionsByProject: Record<string, RABVersion[]>
@@ -198,7 +199,14 @@ export const useRABVersionStore = create<RABVersionState>()(
             return
           }
 
-          // Create a restore version entry
+          // Actually restore items to RAB store
+          const snapshotItems = versionData.snapshot?.items
+          if (Array.isArray(snapshotItems) && snapshotItems.length > 0) {
+            const rabStore = useRabStore.getState()
+            rabStore.importItems(projectId, snapshotItems as Parameters<typeof rabStore.importItems>[1])
+          }
+
+          // Create a restore version entry for audit trail
           await get().createVersion(
             projectId,
             `Restored from version ${version}`,
@@ -215,7 +223,7 @@ export const useRABVersionStore = create<RABVersionState>()(
             versionData.snapshot
           )
 
-          toast.success(`Restored to version ${version}`)
+          toast.success(`Restored to version ${version} — ${Array.isArray(snapshotItems) ? snapshotItems.length : 0} items loaded`)
         },
 
         deleteVersion: (projectId, versionId) => {

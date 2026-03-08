@@ -1,19 +1,12 @@
 /**
  * ahspSnapshotService.ts
- * FASE 3.2: AHSP Price Snapshot
+ * FASE 3.2: AHSP Price Snapshot — RPC-based (SECURITY DEFINER)
  *
  * Purpose: When RAP is "locked in" (execution phase starts), the system takes a
  * snapshot of AHSP prices. This protects RAP cost baseline from future AHSP edits.
  *
- * Workflow:
- * 1. PM clicks "Lock RAP Baseline" → triggers snapshot
- * 2. System copies current AHSP base_price → rab_items.snapshot_price
- * 3. RAP calculations use snapshot_price instead of live AHSP price
- * 4. Future AHSP edits don't affect locked-in RAP costs
- * 5. Audit trail records the snapshot event
- *
- * Also supports: differential comparison (current price vs snapshot price)
- * to help PM understand price drift.
+ * All operations use SECURITY DEFINER RPC functions to bypass RLS.
+ * RPCs: rpc_take_rab_snapshot, rpc_has_rab_snapshot, rpc_get_price_drift
  */
 
 import { assertSupabase } from '../lib/supabaseClient'
@@ -44,61 +37,25 @@ export interface PriceDrift {
 export const ahspSnapshotService = {
 
     /**
-     * Take a snapshot of all AHSP-linked RAB item prices.
-     * Copies current AHSP base_price → rab_items.snapshot_price.
+     * Take a snapshot of all RAB item prices via SECURITY DEFINER RPC.
+     * The RPC loops all rab_items with unit_price > 0 and writes snapshot_price + base_price.
      */
     async takeSnapshot(projectId: string): Promise<SnapshotResult> {
         const client = assertSupabase()
 
-        // Get all RAB items that have AHSP links
-        const { data: rabItems, error } = await client
-            .from('rab_items')
-            .select(`
-                id,
-                name,
-                item_name,
-                ahsp_id,
-                volume,
-                unit_price,
-                ahsp_items ( base_price )
-            `)
-            .eq('project_id', projectId)
-            .not('ahsp_id', 'is', null)
+        const { data, error } = await client.rpc('rpc_take_rab_snapshot', {
+            p_project_id: projectId,
+        })
 
         if (error) {
-            console.warn('[ahspSnapshot] takeSnapshot fetch error:', error.message)
-            return { itemsSnapshotted: 0, totalBaselineValue: 0, timestamp: new Date().toISOString() }
+            console.error('[ahspSnapshot] takeSnapshot RPC error:', error.message)
+            throw new Error(`Snapshot gagal: ${error.message}`)
         }
 
-        const timestamp = new Date().toISOString()
-        let itemsSnapshotted = 0
-        let totalBaselineValue = 0
-        type RabSnapshotRow = { id: string; unit_price?: number; cost_material?: number; cost_labor?: number; cost_equipment?: number; cost_subcon?: number; ahsp_items?: { base_price?: number } | null; volume?: number }
-        for (const item of (rabItems || []) as RabSnapshotRow[]) {
-            const ahsp = item.ahsp_items
-            const basePrice = ahsp?.base_price || Number(item.unit_price) || 0
-
-            if (basePrice > 0) {
-                const { error: updateErr } = await client
-                    .from('rab_items')
-                    .update({
-                        snapshot_price: {
-                            total: basePrice,
-                            material: Number(item.cost_material || 0),
-                            labor: Number(item.cost_labor || 0),
-                            equipment: Number(item.cost_equipment || 0),
-                            subcon: Number(item.cost_subcon || 0),
-                            at: timestamp
-                        },
-                        base_price: basePrice,
-                    })
-                    .eq('id', item.id)
-
-                if (!updateErr) {
-                    itemsSnapshotted++
-                    totalBaselineValue += basePrice * Number(item.volume || 0)
-                }
-            }
+        const result: SnapshotResult = {
+            itemsSnapshotted: Number(data?.itemsSnapshotted ?? 0),
+            totalBaselineValue: Number(data?.totalBaselineValue ?? 0),
+            timestamp: String(data?.timestamp ?? new Date().toISOString()),
         }
 
         // Audit the snapshot
@@ -109,9 +66,9 @@ export const ahspSnapshotService = {
                 entityType: 'AHSP_SNAPSHOT',
                 entityId: projectId,
                 details: {
-                    itemsSnapshotted,
-                    totalBaselineValue,
-                    timestamp,
+                    itemsSnapshotted: result.itemsSnapshotted,
+                    totalBaselineValue: result.totalBaselineValue,
+                    timestamp: result.timestamp,
                 },
             })
         } catch (e) {
@@ -123,7 +80,7 @@ export const ahspSnapshotService = {
             await notificationService.notifyByRole(projectId, 'manager', {
                 type: 'SYSTEM',
                 title: 'AHSP Price Snapshot Taken',
-                message: `${itemsSnapshotted} item harga telah di-snapshot. Total baseline: Rp ${totalBaselineValue.toLocaleString('id-ID')}. Harga RAP terlindungi dari perubahan AHSP.`,
+                message: `${result.itemsSnapshotted} item harga telah di-snapshot. Total baseline: Rp ${result.totalBaselineValue.toLocaleString('id-ID')}. Harga RAP terlindungi dari perubahan AHSP.`,
                 severity: 'info',
                 projectId,
             })
@@ -131,77 +88,55 @@ export const ahspSnapshotService = {
             console.warn('Notification failed:', e)
         }
 
-        return { itemsSnapshotted, totalBaselineValue, timestamp }
+        return result
     },
 
     /**
-     * Check if a project has an active price snapshot
+     * Check if a project has an active price snapshot via RPC.
      */
     async hasSnapshot(projectId: string): Promise<boolean> {
         const client = assertSupabase()
-        const { count } = await client
-            .from('rab_items')
-            .select('*', { count: 'exact', head: true })
-            .eq('project_id', projectId)
-            .not('snapshot_price', 'is', null)
-            .gt('snapshot_price', 0)
+        const { data, error } = await client.rpc('rpc_has_rab_snapshot', {
+            p_project_id: projectId,
+        })
 
-        return (count || 0) > 0
+        if (error) {
+            console.warn('[ahspSnapshot] hasSnapshot RPC error:', error.message)
+            return false
+        }
+
+        return !!data
     },
 
     /**
-     * Get price drift analysis: compare snapshot_price vs current AHSP base_price.
-     * Shows where real market prices have diverged from locked-in baseline.
+     * Get price drift analysis via RPC.
+     * Compares snapshot_price vs current unit_price.
      */
     async getPriceDrift(projectId: string): Promise<PriceDrift[]> {
         const client = assertSupabase()
 
-        const { data: rabItems, error } = await client
-            .from('rab_items')
-            .select(`
-                id,
-                name,
-                item_name,
-                ahsp_id,
-                volume,
-                snapshot_price,
-                ahsp_items ( base_price )
-            `)
-            .eq('project_id', projectId)
-            .not('snapshot_price', 'is', null)
-            .gt('snapshot_price', 0)
+        const { data, error } = await client.rpc('rpc_get_price_drift', {
+            p_project_id: projectId,
+        })
 
         if (error) {
-            console.warn('[ahspSnapshot] getPriceDrift error:', error.message)
+            console.warn('[ahspSnapshot] getPriceDrift RPC error:', error.message)
             return []
         }
 
-        const drifts: PriceDrift[] = []
+        // RPC returns JSONB array — parse it
+        const items = Array.isArray(data) ? data : (typeof data === 'string' ? JSON.parse(data) : [])
 
-        type RabDriftRow = { id: string; name?: string; item_name?: string; volume?: number; snapshot_price?: { total?: number } | number | null; ahsp_items?: { base_price?: number } | null }
-        for (const item of (rabItems || []) as RabDriftRow[]) {
-            const ahsp = item.ahsp_items
-            const snapshot = item.snapshot_price
-            const snapshotPrice = typeof snapshot === 'object' && snapshot !== null ? Number((snapshot as { total?: number })?.total || 0) : Number(snapshot || 0)
-            const currentPrice = Number(ahsp?.base_price || 0)
-
-            if (snapshotPrice > 0 && currentPrice > 0 && Math.abs(snapshotPrice - currentPrice) > 0.01) {
-                const drift = currentPrice - snapshotPrice
-                const driftPct = (drift / snapshotPrice) * 100
-                const volume = Number(item.volume || 0)
-
-                drifts.push({
-                    rabItemId: item.id,
-                    itemName: item.name || item.item_name || 'Unknown',
-                    snapshotPrice,
-                    currentPrice,
-                    drift,
-                    driftPercentage: driftPct,
-                    volume,
-                    impactOnBudget: drift * volume,
-                })
-            }
-        }
+        const drifts: PriceDrift[] = items.map((item: Record<string, unknown>) => ({
+            rabItemId: String(item.rabItemId || ''),
+            itemName: String(item.itemName || 'Unknown'),
+            snapshotPrice: Number(item.snapshotPrice || 0),
+            currentPrice: Number(item.currentPrice || 0),
+            drift: Number(item.drift || 0),
+            driftPercentage: Number(item.driftPercentage || 0),
+            volume: Number(item.volume || 0),
+            impactOnBudget: Number(item.impactOnBudget || 0),
+        }))
 
         // Sort by absolute impact descending
         drifts.sort((a, b) => Math.abs(b.impactOnBudget) - Math.abs(a.impactOnBudget))

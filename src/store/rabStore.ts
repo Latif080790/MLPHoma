@@ -94,6 +94,7 @@ interface RabState {
   getDraftCount: (projectId: string) => number
   hasUnsaved: (projectId: string) => boolean
   takeSnapshot: (projectId: string) => Promise<void>
+  unlockBaseline: (projectId: string) => Promise<void>
   isLocked: (projectId: string) => boolean
   refreshDrift: (projectId: string) => Promise<void>
 }
@@ -464,17 +465,14 @@ export const useRabStore = create<RabState>((set, get) => {
       const { ahspSnapshotService } = await import('../services/ahspSnapshotService')
       const result = await ahspSnapshotService.takeSnapshot(projectId)
       if (result.itemsSnapshotted > 0) {
-        toast.success(`Snapshot taken: ${result.itemsSnapshotted} items baseline locked.`)
-        // G1 Fix: re-fetch items from Supabase so that snapshot_price is reflected in local
-        // state — this ensures isLocked() returns true after page reload.
+        // Re-fetch items via RPC to get updated snapshot_price in local state
         try {
           const { assertSupabase } = await import('../lib/supabaseClient')
           const client = assertSupabase()
-          const { data } = await client
-            .from('rab_items')
-            .select('*')
-            .eq('project_id', projectId)
-          if (data && data.length > 0) {
+          const { data } = await client.rpc('rpc_get_rab_items', {
+            p_project_id: projectId,
+          })
+          if (data && Array.isArray(data) && data.length > 0) {
             const currentItems = get().itemsByProject[projectId] || []
             const existingMap = new Map(currentItems.map(i => [i.id, i]))
             const refreshed: import('../types/rab').RABItem[] = data
@@ -492,9 +490,44 @@ export const useRabStore = create<RabState>((set, get) => {
           }
         } catch (refetchErr) {
           console.warn('[RAB] Failed to re-fetch after snapshot:', refetchErr)
-          // Fallback: trigger old sync so at minimum Supabase gets updated
-          const sync = get().syncProjectToSupabase
-          if (sync) sync(projectId)
+        }
+      } else {
+        throw new Error('Tidak ada item yang bisa di-snapshot. Pastikan RAB memiliki item dengan harga > 0.')
+      }
+    },
+    unlockBaseline: async (projectId: string) => {
+      const { assertSupabase } = await import('../lib/supabaseClient')
+      const client = assertSupabase()
+      const { data, error } = await client.rpc('rpc_unlock_rab_baseline', {
+        p_project_id: projectId,
+      })
+      if (error) {
+        throw new Error(`Gagal unlock baseline: ${error.message}`)
+      }
+      if ((data as Record<string, unknown>)?.itemsUnlocked) {
+        // Re-fetch items to clear snapshot_price in local state
+        try {
+          const { data: items } = await client.rpc('rpc_get_rab_items', {
+            p_project_id: projectId,
+          })
+          if (items && Array.isArray(items) && items.length > 0) {
+            const currentItems = get().itemsByProject[projectId] || []
+            const existingMap = new Map(currentItems.map(i => [i.id, i]))
+            const refreshed: import('../types/rab').RABItem[] = items
+              .filter((row: Record<string, unknown>) => typeof row.id === 'string')
+              .map((row: Record<string, unknown>) => ({
+                ...existingMap.get(row.id as string),
+                ...(row as Partial<import('../types/rab').RABItem>),
+                id: row.id as string,
+                snapshotPrice: undefined,
+              } as import('../types/rab').RABItem))
+            set((s) => ({
+              itemsByProject: { ...s.itemsByProject, [projectId]: refreshed }
+            }))
+            get().persist()
+          }
+        } catch (e) {
+          console.warn('[RAB] Failed to re-fetch after unlock:', e)
         }
       }
     },

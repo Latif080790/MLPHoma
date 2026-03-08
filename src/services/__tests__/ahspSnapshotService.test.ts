@@ -1,21 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-let tableResults: Record<string, any> = {}
-
-function makeChain(result: any) {
-  const c: any = {}
-  c.select = () => c
-  c.eq = () => c
-  c.not = () => c
-  c.gt = () => c
-  c.order = () => c
-  c.single = () => Promise.resolve(result)
-  c.then = (res: any) => Promise.resolve(result).then(res)
-  return c
-}
+let rpcResults: Record<string, any> = {}
 
 vi.mock('../../lib/supabaseClient', () => ({
-  assertSupabase: () => ({ from: (table: string) => makeChain(tableResults[table] ?? { data: null, error: null, count: 0 }) }),
+  assertSupabase: () => ({
+    rpc: (fnName: string, _params: any) => {
+      const result = rpcResults[fnName] ?? { data: null, error: null }
+      return Promise.resolve(result)
+    },
+  }),
 }))
 
 vi.mock('../auditService', () => ({
@@ -30,20 +23,41 @@ import { ahspSnapshotService } from '../ahspSnapshotService'
 
 describe('ahspSnapshotService', () => {
   beforeEach(() => {
-    tableResults = {}
+    rpcResults = {}
   })
 
-  it('detects snapshot presence from count', async () => {
-    tableResults.rab_items = { count: 2, data: null, error: null }
+  it('detects snapshot presence via RPC', async () => {
+    rpcResults.rpc_has_rab_snapshot = { data: true, error: null }
     const hasSnapshot = await ahspSnapshotService.hasSnapshot('p1')
     expect(hasSnapshot).toBe(true)
   })
 
-  it('calculates and sorts price drift by impact', async () => {
-    tableResults.rab_items = {
+  it('returns false when no snapshot exists', async () => {
+    rpcResults.rpc_has_rab_snapshot = { data: false, error: null }
+    const hasSnapshot = await ahspSnapshotService.hasSnapshot('p1')
+    expect(hasSnapshot).toBe(false)
+  })
+
+  it('takes snapshot via RPC and returns result', async () => {
+    rpcResults.rpc_take_rab_snapshot = {
+      data: { itemsSnapshotted: 5, totalBaselineValue: 1000000, timestamp: '2026-03-08T00:00:00Z' },
+      error: null,
+    }
+    const result = await ahspSnapshotService.takeSnapshot('p1')
+    expect(result.itemsSnapshotted).toBe(5)
+    expect(result.totalBaselineValue).toBe(1000000)
+  })
+
+  it('throws on snapshot RPC error', async () => {
+    rpcResults.rpc_take_rab_snapshot = { data: null, error: { message: 'DB error' } }
+    await expect(ahspSnapshotService.takeSnapshot('p1')).rejects.toThrow('Snapshot gagal')
+  })
+
+  it('gets price drift from RPC and sorts by impact', async () => {
+    rpcResults.rpc_get_price_drift = {
       data: [
-        { id: '1', name: 'Item A', volume: 10, snapshot_price: { total: 100 }, ahsp_items: { base_price: 150 } },
-        { id: '2', name: 'Item B', volume: 1, snapshot_price: { total: 200 }, ahsp_items: { base_price: 210 } },
+        { rabItemId: '1', itemName: 'A', snapshotPrice: 100, currentPrice: 150, drift: 50, driftPercentage: 50, volume: 10, impactOnBudget: 500 },
+        { rabItemId: '2', itemName: 'B', snapshotPrice: 200, currentPrice: 210, drift: 10, driftPercentage: 5, volume: 1, impactOnBudget: 10 },
       ],
       error: null,
     }

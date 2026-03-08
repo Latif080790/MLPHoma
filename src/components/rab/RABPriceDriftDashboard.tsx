@@ -76,7 +76,8 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
     const leakage: number = details.reduce((sum: number, d: DriftDetail) => sum + (d.potentialImpact > 0 ? d.potentialImpact : 0), 0)
     const savings: number = details.reduce((sum: number, d: DriftDetail) => sum + (d.potentialImpact < 0 ? Math.abs(d.potentialImpact) : 0), 0)
 
-    const driftPercentage = (totalDrift / details.reduce((sum: number, d: DriftDetail) => sum + (d.baselinePrice * d.volume), 0)) * 100
+    const baselineTotal = details.reduce((sum: number, d: DriftDetail) => sum + (d.baselinePrice * d.volume), 0)
+    const driftPercentage = baselineTotal > 0 ? (totalDrift / baselineTotal) * 100 : 0
 
     return (
         <div className="space-y-4">

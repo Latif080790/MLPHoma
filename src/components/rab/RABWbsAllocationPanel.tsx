@@ -61,7 +61,6 @@ export function RABWbsAllocationPanel({
     removeLink,
     updateAllocation,
     rebalanceEqually,
-    getAllocationSum,
   } = useRabWbsLinkStore()
 
   const { itemsByProject, fetchItems } = useWBSStore()
@@ -77,11 +76,22 @@ export function RABWbsAllocationPanel({
     }
   }, [open, projectId, itemsByProject, fetchItems])
 
+  // Build WBS map for orphan filtering
+  const wbsMap = useMemo(() => {
+    const m = new Map<string, (typeof wbsItems)[number]>()
+    wbsItems.forEach((w) => m.set(w.id, w))
+    return m
+  }, [wbsItems])
+
+  // Filter out orphan links (WBS items that were deleted but links remain)
   const links = useMemo(
-    () => (rabItemId ? (linksByRabItem[rabItemId] || []) : []),
-    [rabItemId, linksByRabItem]
+    () => {
+      const all = rabItemId ? (linksByRabItem[rabItemId] || []) : []
+      return all.filter(l => wbsMap.has(l.wbsItemId))
+    },
+    [rabItemId, linksByRabItem, wbsMap]
   )
-  const allocationSum = rabItemId ? getAllocationSum(rabItemId) : 0
+  const allocationSum = links.reduce((s, l) => s + l.allocationPct, 0)
   const isBalanced = Math.abs(allocationSum - 100) < 0.01 || links.length === 0
 
   // WBS picker state
@@ -92,7 +102,11 @@ export function RABWbsAllocationPanel({
     const linkedWbsIds = new Set(links.map((l) => l.wbsItemId))
     return wbsItems.filter(
       (w) =>
+        // Only show leaf nodes (not categories/parents that have children)
+        !wbsItems.some(child => child.parentId === w.id) &&
+        // Not already linked
         !linkedWbsIds.has(w.id) &&
+        // Search filter
         (pickerSearch === '' ||
           w.name.toLowerCase().includes(pickerSearch.toLowerCase()) ||
           (w.code || '').toLowerCase().includes(pickerSearch.toLowerCase()))
@@ -144,12 +158,6 @@ export function RABWbsAllocationPanel({
     await rebalanceEqually(rabItemId)
     setDraftPcts({})
   }
-
-  const wbsMap = useMemo(() => {
-    const m = new Map<string, (typeof wbsItems)[number]>()
-    wbsItems.forEach((w) => m.set(w.id, w))
-    return m
-  }, [wbsItems])
 
   return (
     <Sheet open={open} onOpenChange={(v) => { if (!v) onClose() }}>

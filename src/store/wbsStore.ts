@@ -361,6 +361,25 @@ export const useWBSStore = create<WBSStore>()(
 
       // Import WBS structure — async: deletes all existing DB rows first to prevent accumulation
       importWBS: async (projectId, items) => {
+        // Step 0: Clean up ALL junction links for this project's WBS items.
+        // Without this, regenerating WBS creates orphan links (old wbs_item_ids no longer exist).
+        const oldWbsItems = get().itemsByProject[projectId] || []
+        if (oldWbsItems.length > 0 && supabase) {
+          for (const wbs of oldWbsItems) {
+            try {
+              await supabase.rpc('rpc_unlink_wbs_node', { p_wbs_item_id: wbs.id })
+            } catch { /* best effort */ }
+          }
+          // Also clear local link state for these WBS items
+          const { linksByRabItem } = useRabWbsLinkStore.getState()
+          const oldWbsIds = new Set(oldWbsItems.map(w => w.id))
+          const cleaned: Record<string, import('../types/rabWbsLink').RabWbsLink[]> = {}
+          for (const [rabId, links] of Object.entries(linksByRabItem)) {
+            cleaned[rabId] = links.filter(l => !oldWbsIds.has(l.wbsItemId))
+          }
+          useRabWbsLinkStore.setState({ linksByRabItem: cleaned })
+        }
+
         // Step 1: Delete ALL existing WBS rows for this project from Supabase.
         // This prevents the accumulation bug where repeated "Generate WBS" clicks
         // produce new IDs on each call, so old rows are never overwritten by upsert.
