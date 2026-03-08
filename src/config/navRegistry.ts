@@ -37,6 +37,7 @@ export type NavComponentKey =
   | 'TKDNPage'
   | 'FeatureEditor'
   | 'Settings'
+  | 'FieldTasks'
 
 export interface NavRegistryItem {
   id: string
@@ -163,6 +164,22 @@ export const NAV_REGISTRY: NavRegistryItem[] = [
     inSidebar: true,
     inCommandPalette: true,
     componentKey: 'SupplyChain',
+  },
+  {
+    id: 'field-tasks',
+    path: '/field-tasks',
+    label: 'Field Tasks',
+    breadcrumbLabel: 'Daily Tasks',
+    description: 'Mobile daily task logging',
+    group: 'Project',
+    order: 75,
+    iconKey: 'ClipboardCheck',
+    colorClass: 'text-amber-500',
+    keywords: ['mobile', 'field', 'tasks', 'todo', 'progress'],
+    protected: true,
+    inSidebar: true,
+    inCommandPalette: true,
+    componentKey: 'FieldTasks',
   },
   {
     id: 'finance',

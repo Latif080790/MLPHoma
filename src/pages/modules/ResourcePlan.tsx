@@ -23,20 +23,28 @@ import { useProjectStore } from '@/store/projectStore'
 import { useRapStore } from '@/store/rapStore'
 import { useAHSPStore } from '@/store/ahspStore'
 import { useTimelineStore } from '@/store/timelineStore'
+import { useRabStore } from '@/store/rabStore'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { formatIDR } from '@/lib/utils'
+import { executeResourceLeveling } from '@/lib/resourceLeveler'
 import {
   computeResourceNeedsFromRAPWithTrace,
   computeResourceStatsFromRAP,
   computeArrivalScheduleWithTrace,
 } from '@/services/resourcePlanService'
 import type { ResourceNeedWithTrace } from '@/services/resourcePlanService'
-import type { ResourceType } from '@/types/ahsp'
+import type { ResourceType, AHSPItem } from '@/types/ahsp'
 import type { RapItem } from '@/services/rapService'
 
 // Stable fallback â€” never recreated, prevents Zustand infinite re-render
@@ -76,23 +84,50 @@ function subDays(dateStr: string, days: number): string {
   return d.toISOString().split('T')[0]
 }
 
+function getPeriodStartDate(key: string, periodType: 'day' | 'week' | 'month'): string {
+  if (periodType === 'day') return key;
+  if (periodType === 'month') return `${key}-01`;
+  if (periodType === 'week') {
+    const parts = key.split('-W');
+    if (parts.length === 2) {
+      const year = parseInt(parts[0], 10);
+      const week = parseInt(parts[1], 10);
+      const simple = new Date(Date.UTC(year, 0, 1 + (week - 1) * 7));
+      const dow = simple.getUTCDay();
+      const ISOweekStart = simple;
+      if (dow <= 4)
+        ISOweekStart.setUTCDate(simple.getUTCDate() - simple.getUTCDay() + 1);
+      else
+        ISOweekStart.setUTCDate(simple.getUTCDate() + 8 - simple.getUTCDay());
+      return ISOweekStart.toISOString().split('T')[0];
+    }
+  }
+  return new Date().toISOString().split('T')[0];
+}
+
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ResourcePlan() {
   const project = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = project?.id || ''
 
   const { items: allRapItems, fetchItems: fetchRapItems } = useRapStore()
+  const { itemsByProject } = useRabStore()
+  const rabItems = useMemo(() => itemsByProject[projectId] || [], [itemsByProject, projectId])
+
   const rapItems = useMemo(
     () => (projectId ? allRapItems.filter(i => i.project_id === projectId) : EMPTY_RAP),
     [allRapItems, projectId],
   )
   const { componentsByAHSP, resources, fetchComponentsBatch, ahspItems } = useAHSPStore()
-  const { getTasks } = useTimelineStore()
+  const { getTasks, updateTaskDates, fetchTasks } = useTimelineStore()
 
-  // â”€â”€ Load data â”€â”€
+  // ─── Load data ───
   useEffect(() => {
-    if (projectId) fetchRapItems(projectId)
-  }, [projectId, fetchRapItems])
+    if (projectId) {
+      fetchRapItems(projectId)
+      fetchTasks(projectId)
+    }
+  }, [projectId, fetchRapItems, fetchTasks])
 
   useEffect(() => {
     if (!rapItems.length) return
@@ -110,6 +145,13 @@ export default function ResourcePlan() {
   )
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
+  const [timePeriod, setTimePeriod] = useState<'day' | 'week' | 'month'>('week')
+
+  // ─── Auto-Leveling State ───
+  const [showLevelingDialog, setShowLevelingDialog] = useState(false)
+  const [levelingTarget, setLevelingTarget] = useState<ResourceType>('labor')
+  const [levelingMaxVolume, setLevelingMaxVolume] = useState<number>(5000000)
+  const [isLeveling, setIsLeveling] = useState(false)
 
   const toggleType = (t: ResourceType) => {
     setActiveTypes(prev => {
@@ -179,8 +221,8 @@ export default function ResourcePlan() {
   }, [getTasks, projectId])
 
   const arrivalSchedule = useMemo(
-    () => computeArrivalScheduleWithTrace(rapItems, componentsByAHSP, resources, taskByRabId),
-    [rapItems, componentsByAHSP, resources, taskByRabId],
+    () => computeArrivalScheduleWithTrace(rapItems, componentsByAHSP, resources, taskByRabId, timePeriod),
+    [rapItems, componentsByAHSP, resources, taskByRabId, timePeriod],
   )
 
   /** Number of RAP items that have a linked timeline task with start/end dates */
@@ -230,6 +272,47 @@ export default function ResourcePlan() {
     writeFile(wb, `resource-plan-${projectId}-${new Date().toISOString().split('T')[0]}.xlsx`)
   }
 
+  // ─── Handle Auto-Leveling ───
+  const handleAutoLevel = () => {
+    setIsLeveling(true)
+    setTimeout(() => {
+      try {
+        const tasks = getTasks(projectId)
+        const ahspMap = new Map<string, AHSPItem>()
+        ahspItems.forEach(a => { if (a.code) ahspMap.set(a.code, a) })
+
+        const result = executeResourceLeveling(
+          tasks,
+          rabItems,
+          ahspMap,
+          componentsByAHSP,
+          {
+            targetResourceType: levelingTarget,
+            maxDailyVolumeBase: levelingMaxVolume
+          }
+        )
+
+        if (result.shiftedCount > 0) {
+          result.updatedTasks.forEach(t => {
+            updateTaskDates(projectId, t.id, { startDate: t.newStartDate, endDate: t.newEndDate })
+          })
+          toast.success(`Berhasil! ${result.shiftedCount} tugas digeser untuk meratakan beban resource.`)
+        } else {
+          if (result.isFullyLeveled) {
+            toast.info('Beban resource saat ini sudah aman di bawah batas maksimal.')
+          } else {
+            toast.warning('Tidak dapat melakukan level resource lebih jauh tanpa memundurkan batas akhir proyek (Total Float habis).')
+          }
+        }
+      } catch (e: any) {
+        toast.error('Gagal melakukan auto-leveling', { description: e.message })
+      } finally {
+        setIsLeveling(false)
+        setShowLevelingDialog(false)
+      }
+    }, 500) // Small delay for UI spin
+  }
+
   // â”€â”€ Guards â”€â”€
   if (!project || !projectId) {
     return (
@@ -272,15 +355,26 @@ export default function ResourcePlan() {
         description={`Rekap volume & jadwal kebutuhan resource â€” ${project.name}`}
         accent="indigo"
         actions={
-          <Button
-            variant="outline" size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={handleExport}
-            disabled={filtered.length === 0}
-          >
-            <Download size={13} />
-            Export Excel
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline" size="sm"
+              className="h-8 gap-1.5 text-xs border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-800"
+              onClick={() => setShowLevelingDialog(true)}
+              disabled={filtered.length === 0}
+            >
+              <Wrench size={13} />
+              Auto-Level Resource
+            </Button>
+            <Button
+              variant="outline" size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={handleExport}
+              disabled={filtered.length === 0}
+            >
+              <Download size={13} />
+              Export Excel
+            </Button>
+          </div>
         }
       />
 
@@ -348,8 +442,8 @@ export default function ResourcePlan() {
               Jadwal Pendatangan Resource
               <span
                 className={`text-xs font-semibold px-1.5 py-0 rounded leading-4 ${linkedToTimeline === rapItems.length
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                   }`}
                 title={`${linkedToTimeline} dari ${rapItems.length} item RAP memiliki tanggal Timeline`}
               >
@@ -357,11 +451,31 @@ export default function ResourcePlan() {
               </span>
             </CardTitle>
             <div className="flex items-center gap-3">
+              <div className="flex bg-slate-100 dark:bg-slate-800 rounded p-0.5 text-[10px] font-semibold">
+                <button
+                  onClick={() => setTimePeriod('day')}
+                  className={`px-2 py-0.5 rounded-sm transition-colors ${timePeriod === 'day' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                >
+                  Harian
+                </button>
+                <button
+                  onClick={() => setTimePeriod('week')}
+                  className={`px-2 py-0.5 rounded-sm transition-colors ${timePeriod === 'week' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                >
+                  Mingguan
+                </button>
+                <button
+                  onClick={() => setTimePeriod('month')}
+                  className={`px-2 py-0.5 rounded-sm transition-colors ${timePeriod === 'month' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                >
+                  Bulanan
+                </button>
+              </div>
               <span className="flex items-center gap-1 text-xs text-slate-400">
                 <Clock size={11} />
-                JIT H-{JIT_BUFFER_DAYS} buffer Â· klik bulan untuk rincian
+                JIT H-{JIT_BUFFER_DAYS} buffer Â· klik bar untuk rincian
               </span>
-              <span className="text-xs text-slate-400">{arrivalSchedule.length} bln</span>
+              <span className="text-xs text-slate-400 font-mono">{arrivalSchedule.length} periode</span>
             </div>
           </CardHeader>
           <CardContent className="p-4">
@@ -491,9 +605,9 @@ export default function ResourcePlan() {
             <div className="px-4 py-2 border-t border-amber-100 dark:border-amber-900/30 bg-amber-50/50 dark:bg-amber-900/10 flex items-start gap-2">
               <Package size={12} className="mt-0.5 shrink-0 text-amber-600" />
               <p className="text-xs text-amber-700 dark:text-amber-400">
-                <strong>JIT:</strong> Material bulan {selectedMonthData.label} harus tiba paling lambat H-{JIT_BUFFER_DAYS} sebelum pekerjaan dimulai.{' '}
+                <strong>JIT:</strong> Material periode {selectedMonthData.label} harus tiba paling lambat H-{JIT_BUFFER_DAYS} sebelum pekerjaan dimulai.{' '}
                 <strong>Batas terbit PO:</strong>{' '}
-                {new Date(subDays(selectedMonthData.month + '-01', PO_LEAD_TIME_DAYS)).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {new Date(subDays(getPeriodStartDate(selectedMonthData.month, timePeriod), PO_LEAD_TIME_DAYS)).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                 {' '}(H-{PO_LEAD_TIME_DAYS} lead time pemesanan).
               </p>
             </div>
@@ -647,6 +761,57 @@ export default function ResourcePlan() {
           </CardContent>
         </Card>
       )}
+
+      {/* ─── Auto-Leveling Dialog ─── */}
+      <Dialog open={showLevelingDialog} onOpenChange={setShowLevelingDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-indigo-600" />
+              Auto-Resource Leveling
+            </DialogTitle>
+            <DialogDescription>
+              Geser jadwal (Start/End Date) tugas non-kritis secara otomatis menggunakan Total Float untuk menghindari penumpukan (over-allocation) kebutuhan resource harian.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Target Resource</Label>
+              <select
+                className="w-full p-2 text-sm border border-slate-200 rounded-md focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                value={levelingTarget}
+                onChange={(e) => setLevelingTarget(e.target.value as ResourceType)}
+              >
+                <option value="labor">Tenaga Kerja (Labor)</option>
+                <option value="equipment">Peralatan (Equipment)</option>
+                <option value="material">Material</option>
+                <option value="subcontractor">Subkontraktor</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Batas Maksumum Harian per Hari (Nilai Rp)</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-500">Rp</span>
+                <Input
+                  type="number"
+                  value={levelingMaxVolume}
+                  onChange={(e) => setLevelingMaxVolume(Number(e.target.value))}
+                  min={1000}
+                />
+              </div>
+              <p className="text-xs text-slate-500">
+                Jika pada satu hari alokasi <strong>{TYPE_LABEL[levelingTarget]}</strong> melebihi {formatIDR(levelingMaxVolume)}, sistem akan mencari tugas non-kritis dan menggesernya 1 hari tanpa memundurkan akhir proyek.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowLevelingDialog(false)} disabled={isLeveling}>Batal</Button>
+            <Button onClick={handleAutoLevel} disabled={isLeveling} className="bg-indigo-600 hover:bg-indigo-700">
+              {isLeveling ? 'Memproses Array...' : 'Mulai Auto-Level'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -314,6 +314,7 @@ export function computeArrivalScheduleWithTrace(
     componentsByAHSP: Record<string, AHSPComponent[]>,
     resources: Resource[],
     taskByRabId: Map<string, { start: string; end: string; wbsName?: string }>,
+    periodType: 'day' | 'week' | 'month' = 'month'
 ): ScheduleMonthEntry[] {
     const buckets = new Map<string, Omit<ScheduleMonthEntry, 'label'>>()
 
@@ -338,39 +339,68 @@ export function computeArrivalScheduleWithTrace(
             const startDate = new Date(task.start)
             const endDate = new Date(task.end)
             const diffMs = endDate.getTime() - startDate.getTime()
-            const totalMonths = Math.max(1, Math.ceil(diffMs / (30 * 86400000)))
-            const costPerMonth = totalCost / totalMonths
-            const volPerMonth = totalVolume / totalMonths
+            const totalDays = Math.max(1, Math.ceil(diffMs / 86400000))
 
-            for (let i = 0; i < totalMonths; i++) {
+            const costPerDay = totalCost / totalDays
+            const volPerDay = totalVolume / totalDays
+
+            for (let i = 0; i <= totalDays; i++) {
                 const d = new Date(startDate)
-                d.setMonth(d.getMonth() + i)
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+                d.setDate(d.getDate() + i)
+                if (d > endDate) break
+
+                let key = ''
+                if (periodType === 'day') {
+                    key = d.toISOString().split('T')[0]
+                } else if (periodType === 'week') {
+                    const firstDayOfYear = new Date(d.getFullYear(), 0, 1)
+                    const pastDaysOfYear = (d.getTime() - firstDayOfYear.getTime()) / 86400000
+                    const weekNum = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
+                    key = `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`
+                } else {
+                    key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+                }
 
                 if (!buckets.has(key)) {
                     buckets.set(key, { month: key, material: 0, labor: 0, equipment: 0, subcontractor: 0, total: 0, traces: [] })
                 }
                 const b = buckets.get(key)!
-                b[resource.type] = (b[resource.type] || 0) + costPerMonth
-                b.total += costPerMonth
-                b.traces.push({
-                    rapItemId: rapItem.id,
-                    rapItemName: rapItem.name || rapItem.id,
-                    wbsName: task.wbsName,
-                    resourceName: resource.name,
-                    resourceType: resource.type,
-                    unit: resource.unit,
-                    volumeContrib: volPerMonth,
-                    costContrib: costPerMonth,
-                })
+                b[resource.type] = (b[resource.type] || 0) + costPerDay
+                b.total += costPerDay
+
+                // Only add trace once per item per bucket to avoid trace explosion if spanning many days
+                let traceItem = b.traces.find(t => t.rapItemId === rapItem.id && t.resourceName === resource.name)
+                if (traceItem) {
+                    traceItem.costContrib += costPerDay
+                    traceItem.volumeContrib += volPerDay
+                } else {
+                    b.traces.push({
+                        rapItemId: rapItem.id,
+                        rapItemName: rapItem.name || rapItem.id,
+                        wbsName: task.wbsName,
+                        resourceName: resource.name,
+                        resourceType: resource.type,
+                        unit: resource.unit,
+                        volumeContrib: volPerDay,
+                        costContrib: costPerDay,
+                    })
+                }
             }
         }
     }
 
     return Array.from(buckets.entries())
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([key, b]) => ({
-            ...b,
-            label: new Date(key + '-01').toLocaleDateString('id-ID', { year: '2-digit', month: 'short' }),
-        }))
+        .map(([key, b]) => {
+            let label = key
+            if (periodType === 'month') {
+                label = new Date(key + '-01').toLocaleDateString('id-ID', { year: '2-digit', month: 'short' })
+            } else if (periodType === 'day') {
+                label = new Date(key).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+            }
+            return {
+                ...b,
+                label,
+            }
+        })
 }

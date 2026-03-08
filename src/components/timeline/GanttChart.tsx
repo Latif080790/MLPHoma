@@ -226,8 +226,8 @@ export default function GanttChart({
   )
   const leftColWidth = width < 640 ? 260 : width < 1024 ? 320 : 380
   // denser rows for Primavera P6 style
-  const rowHeight = 40
-  const barHeight = 20
+  const rowHeight = 32
+  const barHeight = 16
 
   /**
    * Date range and days
@@ -1202,8 +1202,8 @@ export default function GanttChart({
                 const isSelected = r.taskIndex === selectedIndex
 
                 const leftCellBase = `sticky left-0 z-10 flex items-center gap-2 px-3 text-sm border-b border-r ${isCritical
-                    ? 'bg-red-50/60 dark:bg-red-950/20 border-l-2 border-l-red-500'
-                    : 'bg-white/95 dark:bg-neutral-900/95'
+                  ? 'bg-red-50/60 dark:bg-red-950/20 border-l-2 border-l-red-500'
+                  : 'bg-white/95 dark:bg-neutral-900/95'
                   } ${isSelected ? 'ring-1 ring-sky-300 bg-sky-50 dark:bg-sky-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`
 
                 // keep bars slightly inset vertically so baseline can sit below
@@ -1384,82 +1384,6 @@ export default function GanttChart({
         <GanttLegend compact palette={{ primary: palette.primary, critical: palette.critical, progress: palette.progress }} />
       </div>
 
-      {/* Lightweight Analysis results */}
-      <div className="mt-3 rounded-lg border bg-white p-3 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 mx-4 mb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm font-semibold">Automated Perf Analysis</div>
-            <div className="text-xs text-neutral-500">Run capture to receive guidance and downloadable JSON.</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              className="rounded-md border px-2 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              onClick={async () => {
-                try {
-                  // start 10s analysis
-                  await runPerfAnalyze(10000, sampleMs)
-                  // open JSON already handled inside runPerfAnalyze
-                } catch (err) {
-                  // eslint-disable-next-line no-console
-                  console.error('Perf analyze failed', err)
-                }
-              }}
-            >
-              Run 10s Analysis
-            </button>
-            <button
-              className="rounded-md border px-2 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              onClick={() => {
-                if (!captureRef.current || !captureRef.current.length) return
-                const blob = new Blob([JSON.stringify(captureRef.current, null, 2)], { type: 'application/json' })
-                const url = URL.createObjectURL(blob)
-                const a = document.createElement('a')
-                a.href = url
-                a.download = `gantt-capture-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
-                a.click()
-                URL.revokeObjectURL(url)
-              }}
-            >
-              Export JSON
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-3 text-sm">
-          {captureRunning && <div className="text-neutral-600">Capturing metrics — interact with the chart (scroll/drag) to simulate real usage.</div>}
-          {!captureRunning && !captureRef.current.length && <div className="text-neutral-500">No analysis run yet.</div>}
-          {lastMetrics && (
-            <div className="mt-2 grid gap-2">
-              <div className="text-xs text-neutral-500">Last sample at: {new Date(lastMetrics.t).toISOString()}</div>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="rounded border p-2">
-                  <div className="text-xs text-neutral-500">Rendered rows</div>
-                  <div className="text-lg font-semibold">{lastMetrics.renderedRows}</div>
-                </div>
-                <div className="rounded border p-2">
-                  <div className="text-xs text-neutral-500">Rendered days</div>
-                  <div className="text-lg font-semibold">{lastMetrics.renderedDays}</div>
-                </div>
-                <div className="rounded border p-2">
-                  <div className="text-xs text-neutral-500">Connectors</div>
-                  <div className="text-lg font-semibold">{lastMetrics.connectors}</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {lastAnalysis && (
-            <div className="mt-3">
-              <div className="text-xs text-neutral-500">Analysis suggestions:</div>
-              <ul className="list-disc list-inside text-sm mt-1">
-                {(lastAnalysis.suggestions as string[] | undefined)?.map((s: string, i: number) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   )
 }
