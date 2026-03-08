@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react'
+import React, { Suspense, useState, useEffect } from 'react'
 import { Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench, ChevronRight } from 'lucide-react'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
@@ -118,6 +118,19 @@ export default function ProjectCosting() {
   const projects = useProjectStore(s => s.projects)
   const [activeTab, setActiveTab] = useState<CostingTab>('ahsp')
   const [srStatus, setSrStatus] = useState('AHSP tab opened.')
+
+  // Proactive fetching
+  const { fetchItems: fetchWbs, itemsByProject: wbsByProj } = useWBSStore()
+  const { fetchItems: fetchRab, itemsByProject: rabByProj } = useRabStore()
+  const { fetchItems: fetchRap } = useRapStore()
+
+  useEffect(() => {
+    if (activeProjectId) {
+      if (!wbsByProj[activeProjectId]) fetchWbs(activeProjectId).catch(console.error)
+      if (!rabByProj[activeProjectId]) fetchRab(activeProjectId).catch(console.error)
+      fetchRap(activeProjectId).catch(console.error)
+    }
+  }, [activeProjectId, fetchWbs, fetchRab, fetchRap])
 
   const activeProject = activeProjectId ? projects[activeProjectId] : null
 
