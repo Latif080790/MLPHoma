@@ -216,18 +216,18 @@ export default function GanttChart({
    */
   const palette = useMemo(
     () => ({
-      primary: '#0ea5a4',
-      critical: '#ef4444',
-      progress: '#16a34a',
+      primary: '#2563eb', // Blue for normal tasks (P6 style)
+      critical: '#ef4444', // Red for critical path
+      progress: 'rgba(0, 0, 0, 0.3)', // Dark overlay for progress
       neutral: '#94a3b8',
       bg: '#ffffff',
     }),
     [],
   )
-  const leftColWidth = width < 640 ? 240 : width < 1024 ? 300 : 340
-  // Increase row height to reduce tumpang tindih; ensure bars are centered
-  const rowHeight = width < 640 ? 64 : 72
-  const barHeight = 28
+  const leftColWidth = width < 640 ? 260 : width < 1024 ? 320 : 380
+  // denser rows for Primavera P6 style
+  const rowHeight = 40
+  const barHeight = 20
 
   /**
    * Date range and days
@@ -497,8 +497,8 @@ export default function GanttChart({
         const minIndex = Math.min(predEndIndex, succStartIndex)
         const maxIndex = Math.max(predEndIndex, succStartIndex)
         if (maxIndex < startDay || minIndex > endDay) return
-        const x1 = leftColWidth + (predEndIndex - startDay) * pxPerDay + 8
-        const x2 = leftColWidth + (succStartIndex - startDay) * pxPerDay - 6
+        const x1 = leftColWidth + (predEndIndex - startDay) * pxPerDay
+        const x2 = leftColWidth + (succStartIndex - startDay) * pxPerDay
         const y1 = predRow * rowHeight + rowHeight / 2
         const y2 = rIdx * rowHeight + rowHeight / 2
         local.push({ x1, y1, x2, y2 })
@@ -527,24 +527,40 @@ export default function GanttChart({
     ctx.resetTransform()
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.scale(dpr, dpr)
-    ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(148,163,184,0.6)'
-    ctx.fillStyle = 'rgba(148,163,184,0.75)'
-    ctx.lineJoin = 'round'
-    ctx.lineCap = 'round'
+    ctx.lineWidth = 1.5
+    ctx.strokeStyle = '#475569' // slate-600
+    ctx.fillStyle = '#475569'
+    ctx.lineJoin = 'miter'
+    ctx.lineCap = 'butt'
     for (const c of visibleConnectorCoords) {
-      const midX = c.x1 + (c.x2 - c.x1) * 0.6
+      // Orthogonal lines (P6 Style)
       ctx.beginPath()
       ctx.moveTo(c.x1, c.y1)
-      ctx.bezierCurveTo(c.x1 + 24, c.y1, midX - 24, c.y2, midX, c.y2)
-      ctx.lineTo(c.x2, c.y2)
+
+      if (c.x1 < c.x2) {
+        // Forward connection
+        const midX = c.x1 + 8
+        ctx.lineTo(midX, c.y1)
+        ctx.lineTo(midX, c.y2)
+        ctx.lineTo(c.x2, c.y2)
+      } else {
+        // Backward connection (overlap / negative lag)
+        const dropY = c.y1 + 12
+        ctx.lineTo(c.x1 + 8, c.y1)
+        ctx.lineTo(c.x1 + 8, dropY)
+        ctx.lineTo(c.x2 - 8, dropY)
+        ctx.lineTo(c.x2 - 8, c.y2)
+        ctx.lineTo(c.x2, c.y2)
+      }
       ctx.stroke()
+
+      // Right arrowhead
       const ax = c.x2
       const ay = c.y2
       ctx.beginPath()
-      ctx.moveTo(ax - 6, ay - 4)
+      ctx.moveTo(ax - 5, ay - 4)
       ctx.lineTo(ax, ay)
-      ctx.lineTo(ax - 6, ay + 4)
+      ctx.lineTo(ax - 5, ay + 4)
       ctx.fill()
     }
   }, [visibleConnectorCoords, startDay, endDay, pxPerDay, leftColWidth, rowHeight, effectiveRows.length])
@@ -1185,11 +1201,10 @@ export default function GanttChart({
                 const isCritical = criticalIds.has(t.id)
                 const isSelected = r.taskIndex === selectedIndex
 
-                const leftCellBase = `sticky left-0 z-10 flex items-center gap-3 px-4 text-sm border-b border-r ${
-                  isCritical
+                const leftCellBase = `sticky left-0 z-10 flex items-center gap-2 px-3 text-sm border-b border-r ${isCritical
                     ? 'bg-red-50/60 dark:bg-red-950/20 border-l-2 border-l-red-500'
                     : 'bg-white/95 dark:bg-neutral-900/95'
-                } ${isSelected ? 'ring-2 ring-sky-300' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`
+                  } ${isSelected ? 'ring-1 ring-sky-300 bg-sky-50 dark:bg-sky-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`
 
                 // keep bars slightly inset vertically so baseline can sit below
                 const barTop = (rowHeight - barHeight) / 2
@@ -1229,11 +1244,10 @@ export default function GanttChart({
                     title={`${t.startDate} → ${t.endDate} (${duration}d)`}
                   >
                     <div
-                      className="absolute left-0 top-0 h-full rounded-l-xl"
+                      className="absolute left-0 top-0 h-full rounded-l-sm"
                       style={{
                         width: `${Math.max(0, Math.min(100, t.progress ?? 0))}%`,
                         background: palette.progress,
-                        opacity: 0.95,
                       }}
                     />
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-2">

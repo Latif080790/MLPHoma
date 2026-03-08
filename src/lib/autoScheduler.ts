@@ -4,15 +4,12 @@
  * Logic for automatically generating a Schedule (WBS & Timeline) from RAB.
  * 
  * Logic Flow:
- * 1. Group RAB Items by AHSP Category -> Becomes WBS Level 1 (Summary Tasks).
- * 2. RAB Items -> Become WBS Level 2 (Leaf Tasks).
- * 3. Calculate Duration:
+ * 1. Calculate Duration:
  *    - Formula: (Volume * Total Labor Coefficient) / Assumed Team Size
- *    - If no labor data, default to 1 day per certain volume unit.
- * 4. Sequence:
- *    - Categories are sequenced one after another (Finish-to-Start).
- *    - Items within a category run in parallel (Start-Start) by default, 
- *      but user can adjust later in Gantt.
+ *    - Fallback: Max 14 days for pure material items to prevent 255-month bug.
+ * 2. True Auto-Scheduling Sequence:
+ *    - Tasks are sequenced Finish-to-Start (FS).
+ *    - Negative lag (fast-tracking) is applied automatically for overlaps.
  */
 
 import { RABItem } from '../store/rabStore'
@@ -30,31 +27,28 @@ function generateTaskId(): string {
 /**
  * Calculate rational duration based on AHSP analysis
  */
-function calculateDuration(
-  volume: number, 
+export function calculateDuration(
+  volume: number,
   components: AHSPComponent[]
 ): number {
   // 1. Find Labor components (OH - Orang Hari or Jam)
   const laborComps = components.filter(c => c.type === 'labor')
-  
+
   if (laborComps.length === 0) {
-    // Fallback: Estimate based on volume magnitude if no analysis
-    // e.g. 1 day for every 10 units, min 1 day
-    return Math.max(1, Math.ceil(volume / 10))
+    // BUG FIX (255-month): Cap fallback duration for pure material procurement
+    // Volume magnitude can be massive (e.g., 76,000 kg). 
+    // We assume non-labor materials can be procured in bulk over max 14 days limit.
+    let estimated = Math.ceil(volume / 50)
+    if (estimated > 14) estimated = 14
+    return Math.max(1, estimated)
   }
 
   // 2. Calculate Total Man-Days required
-  // Coefficient is usually OH (Orang Hari) per Unit Volume
-  // Total Man Days = Volume * Sum(Coefficients)
   const totalManDays = laborComps.reduce((sum, comp) => {
-    const coef = comp.coefficient
-    // Normalize units if necessary (assuming standard OH for now)
-    return sum + coef
+    return sum + comp.coefficient
   }, 0) * volume
 
   // 3. Calculate Duration
-  // Duration = Total Man Days / Team Size
-  // Increase team size for larger volumes to keep duration reasonable
   const dynamicTeamSize = Math.max(DEFAULT_TEAM_SIZE, Math.ceil(totalManDays / 30)) // Aim for max 30 days per task
   const duration = Math.ceil(totalManDays / dynamicTeamSize)
 
@@ -65,6 +59,7 @@ function calculateDuration(
  * Add days to a date string
  */
 function addDays(dateStr: string, days: number): string {
+  if (days === 0) return dateStr
   const date = new Date(dateStr)
   date.setDate(date.getDate() + days)
   return date.toISOString().split('T')[0]
@@ -81,63 +76,84 @@ export function generateScheduleFromRAB(
   componentsByAHSP: Record<string, AHSPComponent[]>
 ): TimelineTask[] {
   const tasks: TimelineTask[] = []
+
   let currentStartDate = projectStartDate
+  let previousTaskId: string | null = null
+  let previousTaskDuration = 0
 
   // 1. Group by Category (WBS Structure)
-  const byCategory: Record<string, RABItem[]> = {}
-  
+  const byCategory = new Map<string, RABItem[]>()
+
   rabItems.forEach(item => {
     const ahsp = ahspMap.get(item.item_code || item.code || '')
     const category = ahsp?.category || 'Uncategorized'
-    
-    if (!byCategory[category]) {
-      byCategory[category] = []
+
+    if (!byCategory.has(category)) {
+      byCategory.set(category, [])
     }
-    byCategory[category].push(item)
+    byCategory.get(category)!.push(item)
   })
 
-  // 2. Process each Category
-  Object.entries(byCategory).forEach(([_category, items]) => {
-    // Items within a category run in parallel (Start-Start) as documented
-    const categoryStartDate = currentStartDate
-    let maxCategoryEnd = currentStartDate
-    
-    items.forEach(item => {
+  // 2. Sequence Tasks (Finish-to-Start with Lag)
+  for (const [category, items] of byCategory.entries()) {
+    for (const item of items) {
       const ahsp = ahspMap.get(item.item_code || item.code || '')
       const components = ahsp ? (componentsByAHSP[ahsp.id] || []) : []
-      
-      const duration = calculateDuration(item.volume || 0, components)
-      
-      // All items in the same category start at the same date (parallel)
-      const endDate = addDays(categoryStartDate, duration - 1)
 
-      // Create Task with unique ID
+      const duration = calculateDuration(item.volume || 0, components)
+      const taskId = item.taskId || `task-${generateTaskId()}`
+
+      let startDate = currentStartDate
+      const dependencies: { id: string; predecessorId: string; successorId: string; type: 'FS'; lag: number }[] = []
+
+      if (previousTaskId) {
+        // True Auto-Scheduling: Finish-to-Start with a default lag for fast-tracking
+        // Overlap by 2 days (lag = -2) if tasks are long enough
+        let lag = -2
+        if (duration <= 2 || previousTaskDuration <= 2) lag = 0 // No overlap for short tasks
+
+        dependencies.push({
+          id: `dep-${generateTaskId()}`,
+          predecessorId: previousTaskId,
+          successorId: taskId,
+          type: 'FS',
+          lag
+        })
+
+        // Calculate logical Start Date based on predecessor End + Lag + 1
+        // (End Date of previous = currentStartDate + previousTaskDuration - 1)
+        startDate = addDays(currentStartDate, previousTaskDuration - 1 + lag + 1)
+
+        // Guard against negative drift before project start
+        if (startDate < projectStartDate) startDate = projectStartDate
+      }
+
+      const endDate = addDays(startDate, duration - 1)
+
       const task: TimelineTask = {
-        id: item.taskId || `task-${generateTaskId()}`, // Use unique ID
+        id: taskId,
         projectId,
         name: item.name || item.item_name || 'Untitled Task',
         description: `Generated from RAB Item: ${item.item_code}`,
-        startDate: categoryStartDate,
-        endDate: endDate,
-        duration: duration,
+        startDate,
+        endDate,
+        duration,
         progress: 0,
         status: 'not_started',
         priority: 'medium',
-        rabId: item.id, // Link back to RAB
+        rabId: item.id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        dependencies: [] // Initialize empty dependencies
+        dependencies
       }
 
       tasks.push(task)
 
-      // Track the longest task in this category
-      if (endDate > maxCategoryEnd) maxCategoryEnd = endDate
-    })
-
-    // Next category starts after the longest task in this category ends
-    currentStartDate = addDays(maxCategoryEnd, 1)
-  })
+      previousTaskId = taskId
+      currentStartDate = startDate
+      previousTaskDuration = duration
+    }
+  }
 
   return tasks
 }

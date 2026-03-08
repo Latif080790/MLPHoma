@@ -1,10 +1,11 @@
 /**
  * RABVersionHistory.tsx
  * Version history panel with comparison and restore functionality
+ * Redesigned for better readability and usability
  */
 
 import React, { useState, useEffect } from 'react'
-import { History, RotateCcw, GitCompare, Trash2, Check, X, ArrowRight, TrendingUp, TrendingDown } from 'lucide-react'
+import { History, RotateCcw, GitCompare, Trash2, Check, X, ArrowRight, TrendingUp, TrendingDown, Clock, User, Package, Coins } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
@@ -73,36 +74,42 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
     setVersions(history)
   }
 
-  const getChangeTypeColor = (type: RABVersion['changeType']) => {
+  const getChangeTypeStyle = (type: RABVersion['changeType']) => {
     switch (type) {
-      case 'create': return 'bg-green-100 text-green-800'
-      case 'update': return 'bg-blue-100 text-blue-800'
-      case 'delete': return 'bg-red-100 text-red-800'
-      case 'bulk_update': return 'bg-purple-100 text-purple-800'
-      case 'import': return 'bg-yellow-100 text-yellow-800'
-      case 'restore': return 'bg-cyan-100 text-cyan-800'
-      default: return 'bg-slate-100 text-slate-800'
+      case 'create': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+      case 'update': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+      case 'delete': return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 border-red-200 dark:border-red-800'
+      case 'bulk_update': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+      case 'import': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+      case 'restore': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800'
+      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
     }
   }
 
-  const getChangeTypeIcon = (type: RABVersion['changeType']) => {
-    switch (type) {
-      case 'restore': return <RotateCcw className="h-3 w-3" />
-      default: return null
-    }
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+  }
+
+  const formatTime = (dateStr: string) => {
+    const d = new Date(dateStr)
+    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
   }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col p-0">
-        <DialogHeader className="p-6 pb-4 border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="flex items-center gap-2 text-2xl">
-                <History className="h-6 w-6 text-blue-600" />
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
+        {/* ─── Header ─── */}
+        <DialogHeader className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 shrink-0">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <DialogTitle className="flex items-center gap-2.5 text-xl font-bold text-slate-900 dark:text-white">
+                <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/50 shrink-0">
+                  <History className="h-5 w-5" />
+                </div>
                 RAB Version History
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Track changes, compare versions, and restore previous states
               </DialogDescription>
             </div>
@@ -115,27 +122,30 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                 setCompareFrom(null)
                 setCompareTo(null)
               }}
+              className="shrink-0 gap-2 h-9"
             >
-              <GitCompare className="h-4 w-4 mr-2" />
+              <GitCompare className="h-4 w-4" />
               {compareMode ? 'Exit Compare' : 'Compare Versions'}
             </Button>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex gap-6 p-6">
-          {/* Version List */}
-          <div className="w-1/3 flex flex-col gap-4">
+        {/* ─── Body ─── */}
+        <div className="flex-1 overflow-hidden flex flex-col md:flex-row min-h-0">
+          {/* ─── Left: Version List ─── */}
+          <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50/50 dark:bg-slate-900/50">
+            {/* Compare selectors */}
             {compareMode && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Select Versions to Compare</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <label className="text-xs text-slate-500 mb-1 block">From Version</label>
+              <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-blue-50/50 dark:bg-blue-950/20">
+                <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">
+                  Select Versions to Compare
+                </p>
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block font-medium">From</label>
                     <Select value={compareFrom?.toString()} onValueChange={(v) => setCompareFrom(Number(v))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select version" />
+                      <SelectTrigger className="h-9 bg-white dark:bg-slate-800 text-sm">
+                        <SelectValue placeholder="v..." />
                       </SelectTrigger>
                       <SelectContent>
                         {versions.map(v => (
@@ -146,11 +156,12 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <label className="text-xs text-slate-500 mb-1 block">To Version</label>
+                  <ArrowRight className="h-4 w-4 text-slate-400 mb-2.5 shrink-0" />
+                  <div className="flex-1">
+                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block font-medium">To</label>
                     <Select value={compareTo?.toString()} onValueChange={(v) => setCompareTo(Number(v))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select version" />
+                      <SelectTrigger className="h-9 bg-white dark:bg-slate-800 text-sm">
+                        <SelectValue placeholder="v..." />
                       </SelectTrigger>
                       <SelectContent>
                         {versions.map(v => (
@@ -161,327 +172,365 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button 
-                    onClick={handleCompare} 
+                  <Button
+                    onClick={handleCompare}
                     disabled={!compareFrom || !compareTo || compareFrom === compareTo}
-                    className="w-full"
                     size="sm"
+                    className="h-9 px-4 shrink-0"
                   >
                     Compare
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             )}
 
-            <ScrollArea className="flex-1 rounded-lg border bg-slate-50 p-4">
-              <div className="space-y-2">
+            {/* Version cards list */}
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="p-3 space-y-2">
                 {versions.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400">
-                    <History className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                    <p className="text-sm">No version history yet</p>
+                  <div className="text-center py-12 text-slate-400 dark:text-slate-500">
+                    <History className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm font-medium">No version history yet</p>
+                    <p className="text-xs mt-1">Save a scenario to create first version</p>
                   </div>
                 ) : (
-                  versions.slice().reverse().map((version) => (
-                    <Card
-                      key={version.id}
-                      className={`cursor-pointer transition-all hover:shadow-md ${
-                        selectedVersion?.id === version.id ? 'ring-2 ring-blue-500' : ''
-                      }`}
-                      onClick={() => setSelectedVersion(version)}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="font-mono">
-                              v{version.version}
-                            </Badge>
-                            <Badge className={`text-xs ${getChangeTypeColor(version.changeType)}`}>
-                              {getChangeTypeIcon(version.changeType)}
-                              {version.changeType}
-                            </Badge>
-                          </div>
+                  versions.slice().reverse().map((version) => {
+                    const isSelected = selectedVersion?.id === version.id
+                    return (
+                      <button
+                        type="button"
+                        key={version.id}
+                        className={`w-full text-left rounded-xl border transition-all duration-150 p-4 ${isSelected
+                            ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-600 shadow-md shadow-blue-100 dark:shadow-blue-900/30 ring-1 ring-blue-300 dark:ring-blue-700'
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm'
+                          }`}
+                        onClick={() => setSelectedVersion(version)}
+                      >
+                        {/* Row 1: Version badge + change type + status */}
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <span className="inline-flex items-center justify-center h-7 min-w-[40px] rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black tracking-wide px-2 shrink-0">
+                            v{version.version}
+                          </span>
+                          <Badge className={`text-[10px] font-semibold uppercase tracking-wider border ${getChangeTypeStyle(version.changeType)}`}>
+                            {version.changeType.replace('_', ' ')}
+                          </Badge>
                           {version.status === 'published' && (
-                            <Badge variant="default" className="bg-green-600">
-                              <Check className="h-3 w-3 mr-1" />
+                            <Badge variant="default" className="ml-auto bg-emerald-600 text-[10px] gap-1 shrink-0">
+                              <Check className="h-2.5 w-2.5" />
                               Published
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm font-medium text-slate-900 mb-1">
+
+                        {/* Row 2: Description */}
+                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-snug mb-2 line-clamp-2">
                           {version.description}
                         </p>
-                        <p className="text-xs text-slate-500">
-                          {new Date(version.createdAt).toLocaleString()} • {version.createdByName}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2 text-xs text-slate-600">
-                          <span>{version.snapshot.totalItems} items</span>
-                          <span>•</span>
-                          <span>{formatIDR(version.snapshot.totalCost)}</span>
+
+                        {/* Row 3: Metadata */}
+                        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatDate(version.createdAt)}, {formatTime(version.createdAt)}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <User className="h-3 w-3" />
+                            {version.createdByName}
+                          </span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))
+
+                        {/* Row 4: Stats */}
+                        <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-700 text-xs">
+                          <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400 font-medium">
+                            <Package className="h-3 w-3" />
+                            {version.snapshot.totalItems} items
+                          </span>
+                          <span className="inline-flex items-center gap-1 font-mono font-bold text-slate-700 dark:text-slate-300">
+                            <Coins className="h-3 w-3" />
+                            {formatIDR(version.snapshot.totalCost)}
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  })
                 )}
               </div>
             </ScrollArea>
           </div>
 
-          {/* Version Details/Comparison */}
-          <div className="flex-1 flex flex-col">
+          {/* ─── Right: Details / Comparison ─── */}
+          <div className="flex-1 flex flex-col min-h-0 min-w-0">
             {comparison ? (
-              <Card className="flex-1 overflow-hidden flex flex-col">
-                <CardHeader className="border-b bg-slate-50">
-                  <CardTitle className="flex items-center gap-2">
-                    <GitCompare className="h-5 w-5" />
+              /* ─── Comparison View ─── */
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
+                  <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
+                    <GitCompare className="h-5 w-5 text-purple-600" />
                     Version Comparison
-                  </CardTitle>
-                  <div className="flex items-center gap-4 text-sm mt-2">
-                    <Badge variant="outline">v{compareFrom}</Badge>
+                  </h3>
+                  <div className="flex items-center gap-3 text-sm mt-2">
+                    <Badge variant="outline" className="font-mono font-bold">v{compareFrom}</Badge>
                     <ArrowRight className="h-4 w-4 text-slate-400" />
-                    <Badge variant="outline">v{compareTo}</Badge>
+                    <Badge variant="outline" className="font-mono font-bold">v{compareTo}</Badge>
                   </div>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-auto p-6">
-                  <div className="space-y-6">
-                    {/* Summary */}
-                    <div className="grid grid-cols-4 gap-4">
-                      <Card className="bg-green-50">
-                        <CardContent className="p-4">
-                          <div className="text-2xl font-bold text-green-700">
-                            {comparison.summary.itemsAdded}
-                          </div>
-                          <div className="text-xs text-green-600">Added</div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-red-50">
-                        <CardContent className="p-4">
-                          <div className="text-2xl font-bold text-red-700">
-                            {comparison.summary.itemsRemoved}
-                          </div>
-                          <div className="text-xs text-red-600">Removed</div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-blue-50">
-                        <CardContent className="p-4">
-                          <div className="text-2xl font-bold text-blue-700">
-                            {comparison.summary.itemsModified}
-                          </div>
-                          <div className="text-xs text-blue-600">Modified</div>
-                        </CardContent>
-                      </Card>
-                      <Card className={comparison.summary.costDifference >= 0 ? 'bg-orange-50' : 'bg-purple-50'}>
-                        <CardContent className="p-4">
-                          <div className={`text-2xl font-bold ${comparison.summary.costDifference >= 0 ? 'text-orange-700' : 'text-purple-700'} flex items-center gap-1`}>
-                            {comparison.summary.costDifference >= 0 ? (
-                              <TrendingUp className="h-5 w-5" />
-                            ) : (
-                              <TrendingDown className="h-5 w-5" />
-                            )}
-                            {formatIDR(Math.abs(comparison.summary.costDifference))}
-                          </div>
-                          <div className={`text-xs ${comparison.summary.costDifference >= 0 ? 'text-orange-600' : 'text-purple-600'}`}>
-                            Cost {comparison.summary.costDifference >= 0 ? 'Increase' : 'Decrease'}
-                          </div>
-                        </CardContent>
-                      </Card>
+                </div>
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="p-6 space-y-6">
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4">
+                        <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400">{comparison.summary.itemsAdded}</div>
+                        <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-500 mt-0.5">Added</div>
+                      </div>
+                      <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4">
+                        <div className="text-2xl font-black text-red-700 dark:text-red-400">{comparison.summary.itemsRemoved}</div>
+                        <div className="text-xs font-semibold text-red-600 dark:text-red-500 mt-0.5">Removed</div>
+                      </div>
+                      <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4">
+                        <div className="text-2xl font-black text-blue-700 dark:text-blue-400">{comparison.summary.itemsModified}</div>
+                        <div className="text-xs font-semibold text-blue-600 dark:text-blue-500 mt-0.5">Modified</div>
+                      </div>
+                      <div className={`rounded-xl border p-4 ${comparison.summary.costDifference >= 0
+                          ? 'border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/30'
+                          : 'border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/30'
+                        }`}>
+                        <div className={`text-lg font-black flex items-center gap-1 ${comparison.summary.costDifference >= 0 ? 'text-orange-700 dark:text-orange-400' : 'text-purple-700 dark:text-purple-400'
+                          }`}>
+                          {comparison.summary.costDifference >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                          {formatIDR(Math.abs(comparison.summary.costDifference))}
+                        </div>
+                        <div className={`text-xs font-semibold mt-0.5 ${comparison.summary.costDifference >= 0 ? 'text-orange-600 dark:text-orange-500' : 'text-purple-600 dark:text-purple-500'
+                          }`}>
+                          Cost {comparison.summary.costDifference >= 0 ? 'Increase' : 'Decrease'}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Changes Detail */}
+                    {/* Added Items */}
                     {comparison.added.length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
+                        <h4 className="font-bold text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-2 text-sm">
                           <Check className="h-4 w-4" />
                           Added Items ({comparison.added.length})
                         </h4>
-                        <div className="space-y-1 bg-green-50 p-4 rounded-lg">
+                        <div className="space-y-1.5 bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-900">
                           {comparison.added.map((item, idx) => {
                             const it = item as { item_code?: string; name?: string }
                             return (
-                            <div key={idx} className="text-sm flex items-center gap-2 text-green-800">
-                              <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
-                              <span className="font-mono text-xs">{it.item_code}</span>
-                              <span>{it.name}</span>
-                            </div>
+                              <div key={idx} className="text-sm flex items-center gap-2.5 text-emerald-800 dark:text-emerald-300">
+                                <div className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                                <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">{it.item_code}</span>
+                                <span className="truncate">{it.name}</span>
+                              </div>
                             )
                           })}
                         </div>
                       </div>
                     )}
 
+                    {/* Removed Items */}
                     {comparison.removed.length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
+                        <h4 className="font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2 text-sm">
                           <X className="h-4 w-4" />
                           Removed Items ({comparison.removed.length})
                         </h4>
-                        <div className="space-y-1 bg-red-50 p-4 rounded-lg">
+                        <div className="space-y-1.5 bg-red-50 dark:bg-red-950/20 p-4 rounded-xl border border-red-100 dark:border-red-900">
                           {comparison.removed.map((item, idx) => {
                             const it = item as { item_code?: string; name?: string }
                             return (
-                            <div key={idx} className="text-sm flex items-center gap-2 text-red-800">
-                              <div className="h-1.5 w-1.5 rounded-full bg-red-600" />
-                              <span className="font-mono text-xs">{it.item_code}</span>
-                              <span>{it.name}</span>
-                            </div>
+                              <div key={idx} className="text-sm flex items-center gap-2.5 text-red-800 dark:text-red-300">
+                                <div className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
+                                <span className="font-mono text-xs font-bold text-red-600 dark:text-red-400">{it.item_code}</span>
+                                <span className="truncate">{it.name}</span>
+                              </div>
                             )
                           })}
                         </div>
                       </div>
                     )}
 
+                    {/* Modified Items */}
                     {comparison.modified.length > 0 && (
                       <div>
-                        <h4 className="font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                        <h4 className="font-bold text-blue-700 dark:text-blue-400 mb-2 flex items-center gap-2 text-sm">
                           <GitCompare className="h-4 w-4" />
                           Modified Items ({comparison.modified.length})
                         </h4>
-                        <div className="space-y-3 bg-blue-50 p-4 rounded-lg">
+                        <div className="space-y-3 bg-blue-50 dark:bg-blue-950/20 p-4 rounded-xl border border-blue-100 dark:border-blue-900">
                           {comparison.modified.map((mod, idx) => {
                             const modItem = mod.item as { item_code?: string; name?: string }
                             return (
-                            <div key={idx} className="bg-white p-3 rounded border">
-                              <div className="text-sm font-medium text-blue-900 mb-2">
-                                {modItem.item_code} - {modItem.name}
+                              <div key={idx} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+                                <div className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
+                                  {modItem.item_code} — {modItem.name}
+                                </div>
+                                <div className="space-y-1.5 text-xs">
+                                  {mod.changes.map((change, cidx) => (
+                                    <div key={cidx} className="flex items-center gap-2 text-blue-700 dark:text-blue-300 flex-wrap">
+                                      <Badge variant="outline" className="text-[10px] font-bold uppercase">
+                                        {change.field}
+                                      </Badge>
+                                      <span className="line-through text-red-500 dark:text-red-400 font-mono">
+                                        {typeof change.oldValue === 'number' ? formatIDR(change.oldValue) : String(change.oldValue ?? '')}
+                                      </span>
+                                      <ArrowRight className="h-3 w-3 shrink-0" />
+                                      <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                                        {typeof change.newValue === 'number' ? formatIDR(change.newValue) : String(change.newValue ?? '')}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                              <div className="space-y-1 text-xs">
-                                {mod.changes.map((change, cidx) => (
-                                  <div key={cidx} className="flex items-center gap-2 text-blue-700">
-                                    <Badge variant="outline" className="text-xs">
-                                      {change.field}
-                                    </Badge>
-                                    <span className="line-through text-red-600">
-                                      {typeof change.oldValue === 'number' ? formatIDR(change.oldValue) : String(change.oldValue ?? '')}
-                                    </span>
-                                    <ArrowRight className="h-3 w-3" />
-                                    <span className="font-semibold text-green-600">
-                                      {typeof change.newValue === 'number' ? formatIDR(change.newValue) : String(change.newValue ?? '')}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
                             )
                           })}
                         </div>
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </ScrollArea>
+              </div>
             ) : selectedVersion ? (
-              <Card className="flex-1 overflow-hidden flex flex-col">
-                <CardHeader className="border-b bg-slate-50">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      Version {selectedVersion.version} Details
-                    </CardTitle>
+              /* ─── Version Detail View ─── */
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
+                  <div className="flex items-center justify-between gap-4">
+                    <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
+                      <span className="inline-flex items-center justify-center h-7 min-w-[40px] rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black px-2">
+                        v{selectedVersion.version}
+                      </span>
+                      Version Details
+                    </h3>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
+                        className="gap-2 h-8 text-xs"
                         onClick={() => setConfirmRestore(selectedVersion.version)}
                       >
-                        <RotateCcw className="h-4 w-4 mr-2" />
+                        <RotateCcw className="h-3.5 w-3.5" />
                         Restore
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
                         onClick={() => deleteVersion(projectId, selectedVersion.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="flex-1 overflow-auto p-6">
-                  <div className="space-y-6">
+                </div>
+                <ScrollArea className="flex-1 min-h-0">
+                  <div className="p-6 space-y-5">
+                    {/* Description */}
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-700 mb-2">Description</h4>
-                      <p className="text-slate-600">{selectedVersion.description}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Description</h4>
+                      <p className="text-sm text-slate-700 dark:text-slate-300">{selectedVersion.description}</p>
                     </div>
 
+                    {/* Metadata grid */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="text-sm font-semibold text-slate-700 mb-1">Created</h4>
-                        <p className="text-sm text-slate-600">
-                          {new Date(selectedVersion.createdAt).toLocaleString()}
+                      <div className="rounded-lg bg-slate-50 dark:bg-slate-800 p-3 border border-slate-100 dark:border-slate-700">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
+                          <Clock className="h-3 w-3" />
+                          Created
+                        </h4>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {formatDate(selectedVersion.createdAt)}, {formatTime(selectedVersion.createdAt)}
                         </p>
                       </div>
-                      <div>
-                        <h4 className="text-sm font-semibold text-slate-700 mb-1">Created By</h4>
-                        <p className="text-sm text-slate-600">{selectedVersion.createdByName}</p>
+                      <div className="rounded-lg bg-slate-50 dark:bg-slate-800 p-3 border border-slate-100 dark:border-slate-700">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
+                          <User className="h-3 w-3" />
+                          Author
+                        </h4>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{selectedVersion.createdByName}</p>
                       </div>
                     </div>
 
+                    {/* Snapshot */}
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-700 mb-2">Snapshot Summary</h4>
-                      <div className="bg-slate-50 p-4 rounded-lg space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Total Items:</span>
-                          <span className="font-semibold">{selectedVersion.snapshot.totalItems}</span>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Snapshot Summary</h4>
+                      <div className="rounded-xl bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-800 dark:to-blue-900/20 p-4 space-y-2.5 border border-slate-200 dark:border-slate-700">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
+                            <Package className="h-3.5 w-3.5" />
+                            Total Items
+                          </span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{selectedVersion.snapshot.totalItems}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-600">Total Cost:</span>
-                          <span className="font-semibold">{formatIDR(selectedVersion.snapshot.totalCost)}</span>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
+                            <Coins className="h-3.5 w-3.5" />
+                            Total Cost
+                          </span>
+                          <span className="font-bold font-mono text-slate-800 dark:text-slate-200">{formatIDR(selectedVersion.snapshot.totalCost)}</span>
                         </div>
                         {selectedVersion.snapshot.metadata.categories && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-slate-600">Categories:</span>
-                            <span className="font-semibold">{selectedVersion.snapshot.metadata.categories.length}</span>
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-slate-500 dark:text-slate-400 font-medium">Categories</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200">{selectedVersion.snapshot.metadata.categories.length}</span>
                           </div>
                         )}
                       </div>
                     </div>
 
+                    {/* Change log */}
                     {selectedVersion.changes.length > 0 && (
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-700 mb-2">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                           Changes ({selectedVersion.changes.length})
                         </h4>
-                        <ScrollArea className="h-64 bg-slate-50 rounded-lg p-4">
-                          <div className="space-y-2">
-                            {selectedVersion.changes.map((change, idx) => (
-                              <div key={idx} className="bg-white p-3 rounded border text-xs">
-                                <div className="font-semibold text-slate-900 mb-1">
-                                  {change.itemCode} - {change.itemName}
-                                </div>
-                                <div className="text-slate-600">{change.changeDescription}</div>
-                                <div className="flex items-center gap-2 mt-1 text-slate-500">
-                                  <Badge variant="outline" className="text-xs">{change.field}</Badge>
-                                  {change.oldValue !== undefined && (
-                                    <>
-                                      <span className="line-through">{String(change.oldValue ?? '')}</span>
-                                      <ArrowRight className="h-3 w-3" />
-                                      <span className="font-semibold">{String(change.newValue ?? '')}</span>
-                                    </>
-                                  )}
-                                </div>
+                        <div className="space-y-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 p-4 border border-slate-100 dark:border-slate-700 max-h-64 overflow-y-auto">
+                          {selectedVersion.changes.map((change, idx) => (
+                            <div key={idx} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 text-xs">
+                              <div className="font-semibold text-slate-900 dark:text-slate-200 mb-1 text-sm">
+                                {change.itemCode} — {change.itemName}
                               </div>
-                            ))}
-                          </div>
-                        </ScrollArea>
+                              <div className="text-slate-600 dark:text-slate-400 mb-1">{change.changeDescription}</div>
+                              <div className="flex items-center gap-2 text-slate-500 flex-wrap">
+                                <Badge variant="outline" className="text-[10px] font-bold uppercase">{change.field}</Badge>
+                                {change.oldValue !== undefined && (
+                                  <>
+                                    <span className="line-through font-mono text-red-500 dark:text-red-400">{String(change.oldValue ?? '')}</span>
+                                    <ArrowRight className="h-3 w-3 shrink-0" />
+                                    <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{String(change.newValue ?? '')}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </ScrollArea>
+              </div>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-400">
+              /* ─── Empty State ─── */
+              <div className="flex-1 flex items-center justify-center text-slate-400 dark:text-slate-500 bg-slate-50/30 dark:bg-slate-900/30">
                 <div className="text-center">
-                  <History className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                  <p>Select a version to view details</p>
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                    <History className="h-8 w-8 opacity-30" />
+                  </div>
+                  <p className="font-semibold text-slate-500 dark:text-slate-400">Select a version to view details</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Click on any version card on the left</p>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Restore Confirmation */}
+        {/* ─── Restore Confirmation Dialog (nested) ─── */}
         <Dialog open={confirmRestore !== null} onOpenChange={() => setConfirmRestore(null)}>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Restore Version {confirmRestore}?</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <RotateCcw className="h-5 w-5 text-blue-600" />
+                Restore Version {confirmRestore}?
+              </DialogTitle>
               <DialogDescription>
                 This will create a new version restoring the state from version {confirmRestore}.
                 Current data will not be lost.
@@ -491,8 +540,8 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
               <Button variant="ghost" onClick={() => setConfirmRestore(null)}>
                 Cancel
               </Button>
-              <Button onClick={() => confirmRestore && handleRestore(confirmRestore)}>
-                <RotateCcw className="h-4 w-4 mr-2" />
+              <Button onClick={() => confirmRestore && handleRestore(confirmRestore)} className="gap-2">
+                <RotateCcw className="h-4 w-4" />
                 Restore
               </Button>
             </DialogFooter>

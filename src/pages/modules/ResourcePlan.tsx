@@ -347,11 +347,10 @@ export default function ResourcePlan() {
               <CalendarDays size={15} className="text-indigo-500" />
               Jadwal Pendatangan Resource
               <span
-                className={`text-xs font-semibold px-1.5 py-0 rounded leading-4 ${
-                  linkedToTimeline === rapItems.length
+                className={`text-xs font-semibold px-1.5 py-0 rounded leading-4 ${linkedToTimeline === rapItems.length
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                     : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                }`}
+                  }`}
                 title={`${linkedToTimeline} dari ${rapItems.length} item RAP memiliki tanggal Timeline`}
               >
                 {linkedToTimeline}/{rapItems.length} terjadwal
@@ -366,38 +365,52 @@ export default function ResourcePlan() {
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            <div className="space-y-1.5">
-              {arrivalSchedule.map(m => (
-                <button
-                  key={m.month}
-                  className={`flex w-full items-center gap-3 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${selectedMonth === m.month ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}
-                  onClick={() => setSelectedMonth(prev => prev === m.month ? null : m.month)}
-                >
-                  <div className="w-16 shrink-0 text-right text-xs font-mono text-slate-500">{m.label}</div>
-                  <div className="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden flex">
-                    {TYPE_ORDER.map(type => {
-                      const val = (m as unknown as Record<string, number>)[type] || 0
-                      if (val <= 0) return null
-                      const pct = (val / maxMonthly) * 100
-                      return (
-                        <div
-                          key={type}
-                          className={`${TYPE_BAR_COLOR[type]} transition-all duration-300 h-full`}
-                          style={{ width: `${pct}%` }}
-                          title={`${TYPE_LABEL[type]}: ${formatIDR(val)}`}
-                        />
-                      )
-                    })}
-                  </div>
-                  <div className="w-28 shrink-0 text-right text-xs font-mono font-semibold text-slate-700 dark:text-slate-200">
-                    {formatIDR(m.total)}
-                  </div>
-                  <ChevronRight
-                    size={12}
-                    className={`shrink-0 text-slate-400 transition-transform ${selectedMonth === m.month ? 'rotate-90 text-indigo-500' : ''}`}
-                  />
-                </button>
-              ))}
+            <div className="mt-4 px-2 pb-10 overflow-x-auto">
+              <div className="flex items-end gap-1.5 h-48 border-b border-slate-200 dark:border-slate-800" style={{ minWidth: `${arrivalSchedule.length * 40}px` }}>
+                {arrivalSchedule.map(m => {
+                  const isSelected = selectedMonth === m.month
+                  return (
+                    <div
+                      key={m.month}
+                      className="flex-1 flex flex-col justify-end relative group cursor-pointer h-full hover:bg-slate-50 dark:hover:bg-slate-800/20"
+                      onClick={() => setSelectedMonth(prev => prev === m.month ? null : m.month)}
+                    >
+                      {/* Hover Tooltip (Totals) */}
+                      <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg">
+                        <div className="font-bold">{m.label}</div>
+                        <div>{formatIDR(m.total)}</div>
+                      </div>
+
+                      {/* Selection Outline */}
+                      {isSelected && <div className="absolute inset-0 border-2 border-indigo-400 rounded-sm pointer-events-none z-10" />}
+
+                      {/* Stacked Vertical Bars */}
+                      <div className="w-full flex flex-col justify-end h-full">
+                        {TYPE_ORDER.slice().reverse().map(type => { // Reverse so Material is at bottom (usually largest)
+                          const val = (m as unknown as Record<string, number>)[type] || 0
+                          if (val <= 0) return null
+                          const pct = (val / maxMonthly) * 100
+                          return (
+                            <div
+                              key={type}
+                              className={`${TYPE_BAR_COLOR[type]} w-full transition-all duration-300 relative border-b border-white/20`}
+                              style={{ height: `${pct}%` }}
+                              title={`${TYPE_LABEL[type]}: ${formatIDR(val)}`}
+                            />
+                          )
+                        })}
+                      </div>
+
+                      {/* X-axis Month Label */}
+                      <div
+                        className={`absolute top-full mt-2 left-1/2 text-[10px] font-mono whitespace-nowrap origin-top-left -rotate-45 ${isSelected ? 'font-bold text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}
+                      >
+                        {m.label}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
             {/* Legend */}
             <div className="flex items-center gap-4 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">

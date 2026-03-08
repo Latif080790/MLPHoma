@@ -4,7 +4,7 @@
  * Provides a clean layout and ensures all JSX tags are properly closed.
  */
 
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
@@ -24,14 +24,22 @@ const EMPTY_ARRAY: RABItem[] = []
 /** RAB module component */
 export default function RAB() {
   const syncProjectToSupabase = useRabStore(s => s.syncProjectToSupabase)
+  const fetchRabFromSupabase = useRabStore(s => s.fetchItems)
   // Use direct state selection to ensure stability
   const currentProject = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
-  const updateProject   = useProjectStore(s => s.updateProject)
+  const updateProject = useProjectStore(s => s.updateProject)
   const items = useRabStore(s => currentProject ? s.getItems(currentProject.id) : EMPTY_ARRAY)
   const isLocked = useRabStore(s => currentProject ? s.isLocked(currentProject.id) : false)
   const { zones, loading } = useAHSPStore()
   const [syncing, setSyncing] = React.useState(false)
   const [showSettings, setShowSettings] = React.useState(false)
+
+  // Fetch RAB items from Supabase on mount / project change
+  useEffect(() => {
+    if (currentProject?.id) {
+      fetchRabFromSupabase(currentProject.id)
+    }
+  }, [currentProject?.id, fetchRabFromSupabase])
 
   // Configurable rates — read from projectStore.meta.rabRates (reactive),
   // fallback to legacy localStorage key for backward compat.
@@ -87,10 +95,10 @@ export default function RAB() {
   const summary = useMemo(() => {
     const subtotal = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
     const overhead = subtotal * (overheadPct / 100)
-    const profit   = subtotal * (profitPct / 100)
-    const taxBase  = subtotal + overhead + profit
-    const tax      = taxBase * (taxRate / 100)
-    const total    = taxBase + tax
+    const profit = subtotal * (profitPct / 100)
+    const taxBase = subtotal + overhead + profit
+    const tax = taxBase * (taxRate / 100)
+    const total = taxBase + tax
     return { subtotal, overhead, profit, tax, total }
   }, [items, overheadPct, profitPct, taxRate])
 

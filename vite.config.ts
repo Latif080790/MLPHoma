@@ -29,7 +29,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,ico,png,svg}'],
         // Take control immediately when a new SW is installed — fixes stale chunk crashes after re-deploy
         skipWaiting: true,
         clientsClaim: true,
