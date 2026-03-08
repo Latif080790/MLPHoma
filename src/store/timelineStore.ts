@@ -109,6 +109,9 @@ export interface TimelineState {
 
   /** Load tasks from Supabase for a project (replaces local state) */
   fetchTasks: (projectId: string) => Promise<void>
+
+  /** Clear all tasks for a project (local + DB) */
+  clearTasks: (projectId: string) => Promise<void>
 }
 
 /**
@@ -388,6 +391,17 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
       set((s) => ({
         tasksByProject: { ...s.tasksByProject, [projectId]: tasks },
       }))
+    },
+
+    clearTasks: async (projectId: string) => {
+      if (!supabase) return
+      // Clear locally
+      set((s) => ({ tasksByProject: { ...s.tasksByProject, [projectId]: [] } }))
+      // Clear from DB
+      const { error } = await supabase.from('timeline_tasks').delete().eq('project_id', projectId)
+      if (error) {
+        console.error('Failed to clear timeline tasks in DB:', error.message)
+      }
     },
   }
 })

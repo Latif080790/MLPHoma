@@ -738,8 +738,17 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       wbsId: task.rabId ? rabToWbsMap.get(task.rabId) : undefined
     }))
 
-    // Update Timeline Store
-    setTasks(projectId, linkedTasks)
+    // 3. Clear existing tasks and import new ones (prevents duplication)
+    const tlState = useTimelineStore.getState()
+    if (tlState.clearTasks) {
+      await tlState.clearTasks(projectId)
+    }
+
+    if (tlState.importTasks) {
+      tlState.importTasks(projectId, linkedTasks)
+    } else {
+      setTasks(projectId, linkedTasks) // Fallback if importTasks isn't implemented
+    }
 
     // Update RAB items with new Task IDs
     linkedTasks.forEach(task => {

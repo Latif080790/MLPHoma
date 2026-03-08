@@ -26,6 +26,46 @@
 
 <body>
   <div id="app"></div>
+  <script>
+    // Chunk-load error recovery: catches stale-SW scenarios BEFORE bundled code runs.
+    // If a module script 404s (SW served old index.html with old chunk hashes),
+    // unregister all service workers and hard-reload once to get fresh index.html.
+    (function () {
+      var KEY = '__chunkReload';
+      window.addEventListener('error', function (e) {
+        var msg = e.message || '';
+        if (
+          msg.indexOf('Failed to fetch dynamically imported module') !== -1 ||
+          msg.indexOf('Importing a module script failed') !== -1 ||
+          msg.indexOf('Loading chunk') !== -1 ||
+          msg.indexOf('Loading CSS chunk') !== -1
+        ) {
+          if (!sessionStorage.getItem(KEY)) {
+            sessionStorage.setItem(KEY, '1');
+            // Unregister all service workers so next load gets fresh HTML
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function (regs) {
+                regs.forEach(function (r) { r.unregister(); });
+                // Also clear all caches
+                if ('caches' in window) {
+                  caches.keys().then(function (names) {
+                    names.forEach(function (name) { caches.delete(name); });
+                  });
+                }
+                window.location.reload();
+              });
+            } else {
+              window.location.reload();
+            }
+          }
+        }
+      }, true);
+      // Clear the reload flag on successful page load (chunks loaded fine)
+      window.addEventListener('load', function () {
+        sessionStorage.removeItem(KEY);
+      });
+    })();
+  </script>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

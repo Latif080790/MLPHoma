@@ -15,6 +15,7 @@
 import { create } from 'zustand'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
 import { syncDelete, syncRABItems } from '../lib/supabaseSyncService'
+import { fetchRabItems } from '../lib/supabaseClient'
 import { validate } from '../lib/validationMiddleware'
 import { rabItemInputSchema, rabItemUpdateSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
@@ -88,6 +89,8 @@ interface RabState {
   getHistory: (projectId: string) => { past: number; future: number }
   clearHistory: (projectId: string) => void
   syncProjectToSupabase?: (projectId: string) => Promise<void>
+  /** Fetch RAB items from Supabase and merge with localStorage */
+  fetchItems: (projectId: string) => Promise<void>
   // Draft mode functions
   markUnsaved: (projectId: string) => void
   publishDrafts: (projectId: string) => void
@@ -242,7 +245,7 @@ export const useRabStore = create<RabState>((set, get) => {
           }
           // Keep legacy aliases in sync with the canonical finalTotal
           merged.final_total = merged.finalTotal
-          merged.finalPrice  = merged.finalTotal
+          merged.finalPrice = merged.finalTotal
           return merged
         })
         return { itemsByProject: { ...s.itemsByProject, [projectId]: updated } }
@@ -388,6 +391,57 @@ export const useRabStore = create<RabState>((set, get) => {
       // Use batch sync for better performance
       syncRABItems(items, projectId)
       get().logAction({ projectId, action: 'syncProjectToSupabase', payload: { count: items.length } })
+    },
+
+    fetchItems: async (projectId: string) => {
+      try {
+        const { data, error } = await fetchRabItems(projectId)
+        if (error) {
+          console.warn('[RAB] Failed to fetch from Supabase:', error.message)
+          return
+        }
+        if (!data || !Array.isArray(data) || data.length === 0) return
+
+        // Map snake_case DB columns → RABItem fields
+        const supabaseItems: RABItem[] = data.map((row: Record<string, unknown>) => ({
+          id: row.id as string,
+          projectId: row.project_id as string,
+          item_code: row.ahsp_code as string | undefined,
+          code: row.ahsp_code as string | undefined,
+          name: row.name as string | undefined,
+          item_name: row.name as string | undefined,
+          unit: row.unit as string | undefined,
+          volume: Number(row.volume || 0),
+          unit_price: Number(row.unit_price || 0),
+          cost_material: Number(row.cost_material || 0),
+          cost_labor: Number(row.cost_labor || 0),
+          cost_equipment: Number(row.cost_equipment || 0),
+          cost_subcon: Number(row.cost_subcon || 0),
+          markup_percentage: Number(row.markup_percentage || 0),
+          weight_percentage: Number(row.weight_percentage || 0),
+          finalTotal: Number(row.final_total || 0),
+          final_total: Number(row.final_total || 0),
+          finalPrice: Number(row.final_total || 0),
+          snapshot_price: row.snapshot_price,
+          is_overhead: row.is_overhead as boolean | undefined,
+          createdAt: row.created_at as string | undefined,
+          updatedAt: row.updated_at as string | undefined,
+        }))
+
+        // Merge with existing localStorage items:
+        // Supabase items win for matching IDs; local-only items are preserved
+        const localItems = get().itemsByProject[projectId] || []
+        const supabaseIdSet = new Set(supabaseItems.map(i => i.id))
+        const localOnlyItems = localItems.filter(i => !supabaseIdSet.has(i.id))
+        const merged = [...supabaseItems, ...localOnlyItems]
+
+        set((s) => ({
+          itemsByProject: { ...s.itemsByProject, [projectId]: merged }
+        }))
+        get().persist()
+      } catch (err) {
+        console.warn('[RAB] fetchItems error:', err)
+      }
     },
 
     // Draft mode functions
