@@ -19,8 +19,9 @@ import ModulePageState from '@/components/common/ModulePageState'
 import { MiniSparkline } from '@/components/ui/MiniSparkline'
 
 import { useNavigate } from 'react-router-dom'
+import { lazyRetry } from '@/lib/lazyRetry'
 
-const CommandCenterCashflowChart = React.lazy(() => import('@/components/dashboard/CommandCenterCashflowChart'))
+const CommandCenterCashflowChart = lazyRetry(() => import('@/components/dashboard/CommandCenterCashflowChart'))
 
 export default function CommandCenter() {
     type PortfolioStats = Awaited<ReturnType<typeof dashboardService.getPortfolioStats>>
@@ -234,8 +235,8 @@ export default function CommandCenter() {
                                             height={22}
                                             color={
                                                 stats.phi.score >= 85 ? '#10b981'
-                                                : stats.phi.score >= 70 ? '#f59e0b'
-                                                : '#ef4444'
+                                                    : stats.phi.score >= 70 ? '#f59e0b'
+                                                        : '#ef4444'
                                             }
                                         />
                                     </div>
@@ -449,9 +450,9 @@ export default function CommandCenter() {
                         <div className="absolute inset-0 overflow-y-auto p-4 space-y-2.5 font-mono text-xs scrollbar-thin scrollbar-thumb-slate-700">
                             {stats?.activityFeed?.map((item, i) => {
                                 const avatarCfg =
-                                    item.type === 'RISK'      ? { bg: 'bg-red-600',   text: '!',  label: 'RISK'      } :
-                                    item.type === 'PO'        ? { bg: 'bg-blue-600',  text: '₱',  label: 'PO'        } :
-                                                                { bg: 'bg-emerald-600',text: '★',  label: 'MILESTONE' }
+                                    item.type === 'RISK' ? { bg: 'bg-red-600', text: '!', label: 'RISK' } :
+                                        item.type === 'PO' ? { bg: 'bg-blue-600', text: '₱', label: 'PO' } :
+                                            { bg: 'bg-emerald-600', text: '★', label: 'MILESTONE' }
                                 return (
                                     <div key={i} className="flex items-start gap-2.5 opacity-90 hover:opacity-100 transition-opacity group">
                                         {/* P1.1.2 avatar badge */}
@@ -462,11 +463,10 @@ export default function CommandCenter() {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-1.5">
                                                 <span className="text-slate-600">[{format(new Date(item.date), 'HH:mm')}]</span>
-                                                <span className={`text-xs uppercase font-bold tracking-wider px-1 py-0.5 rounded ${
-                                                    item.type === 'RISK' ? 'text-red-400 bg-red-400/10' :
-                                                    item.type === 'PO'   ? 'text-blue-400 bg-blue-400/10' :
-                                                                           'text-emerald-400 bg-emerald-400/10'
-                                                }`}>{item.type}</span>
+                                                <span className={`text-xs uppercase font-bold tracking-wider px-1 py-0.5 rounded ${item.type === 'RISK' ? 'text-red-400 bg-red-400/10' :
+                                                        item.type === 'PO' ? 'text-blue-400 bg-blue-400/10' :
+                                                            'text-emerald-400 bg-emerald-400/10'
+                                                    }`}>{item.type}</span>
                                             </div>
                                             <div className="text-slate-300 truncate mt-0.5">{item.message}</div>
                                         </div>

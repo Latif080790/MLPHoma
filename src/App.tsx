@@ -15,38 +15,38 @@ import { useAuthStore } from './store/authStore'
 import { useProjectStore } from './store/projectStore'
 import { NetworkProvider } from './providers/NetworkProvider'
 import { getProtectedRouteItems, type NavComponentKey } from './config/navRegistry'
+import { lazyRetry } from './lib/lazyRetry'
 
-// Lazy-loaded page components for optimal code splitting
-const ProjectManagement = React.lazy(() => import('./pages/modules/ProjectManagement'))
+// Lazy-loaded page components with auto-retry for stale chunk recovery
+const ProjectManagement = lazyRetry(() => import('./pages/modules/ProjectManagement'))
 
 // v3 Ultra Modules
-const CommandCenter = React.lazy(() => import('./pages/modules/v3/CommandCenter'))
-const ProjectCosting = React.lazy(() => import('@/pages/modules/ProjectCosting'))
-const ScheduleOps = React.lazy(() => import('./pages/modules/v3/ScheduleOps'))
-const SupplyChain = React.lazy(() => import('./pages/modules/v3/SupplyChain'))
-const Finance = React.lazy(() => import('./pages/modules/v3/Finance'))
-const ChangeManagement = React.lazy(() => import('./pages/modules/v3/ChangeManagement'))
-const Documents = React.lazy(() => import('./pages/modules/v3/Documents'))
-const Settings = React.lazy(() => import('./pages/modules/v3/Settings'))
-const HandoverWizard = React.lazy(() => import('./pages/modules/v3/HandoverWizard'))
-const ProjectOverview = React.lazy(() => import('./pages/modules/v3/ProjectOverview'))
-const CostForecastDashboard = React.lazy(() => import('./pages/modules/v3/CostForecastDashboard'))
-const PortfolioResources = React.lazy(() => import('./pages/modules/v3/PortfolioResources'))
-const PortfolioAnalytics = React.lazy(() => import('./pages/modules/v3/PortfolioAnalytics'))
-const StrategySimulation = React.lazy(() => import('./pages/modules/v3/StrategySimulation'))
-const TKDNPage = React.lazy(() => import('./pages/TKDNPage'))
-const FeatureEditor = React.lazy(() => import('./components/feature/FeatureEditor'))
-const GlobalCommandPalette = React.lazy(() => import('./components/common/GlobalCommandPalette'))
+const CommandCenter = lazyRetry(() => import('./pages/modules/v3/CommandCenter'))
+const ProjectCosting = lazyRetry(() => import('@/pages/modules/ProjectCosting'))
+const ScheduleOps = lazyRetry(() => import('./pages/modules/v3/ScheduleOps'))
+const SupplyChain = lazyRetry(() => import('./pages/modules/v3/SupplyChain'))
+const Finance = lazyRetry(() => import('./pages/modules/v3/Finance'))
+const ChangeManagement = lazyRetry(() => import('./pages/modules/v3/ChangeManagement'))
+const Documents = lazyRetry(() => import('./pages/modules/v3/Documents'))
+const Settings = lazyRetry(() => import('./pages/modules/v3/Settings'))
+const HandoverWizard = lazyRetry(() => import('./pages/modules/v3/HandoverWizard'))
+const ProjectOverview = lazyRetry(() => import('./pages/modules/v3/ProjectOverview'))
+const CostForecastDashboard = lazyRetry(() => import('./pages/modules/v3/CostForecastDashboard'))
+const PortfolioResources = lazyRetry(() => import('./pages/modules/v3/PortfolioResources'))
+const PortfolioAnalytics = lazyRetry(() => import('./pages/modules/v3/PortfolioAnalytics'))
+const StrategySimulation = lazyRetry(() => import('./pages/modules/v3/StrategySimulation'))
+const TKDNPage = lazyRetry(() => import('./pages/TKDNPage'))
+const FeatureEditor = lazyRetry(() => import('./components/feature/FeatureEditor'))
+const GlobalCommandPalette = lazyRetry(() => import('./components/common/GlobalCommandPalette'))
 
-// Legacy Modules (Keep for reference if needed, but routes will be replaced)
-const NotFound = React.lazy(() => import('./pages/NotFound'))
-
+// Legacy Modules
+const NotFound = lazyRetry(() => import('./pages/NotFound'))
 
 // Lazy-loaded auth pages
-const Login = React.lazy(() => import('./pages/auth/Login'))
-const Register = React.lazy(() => import('./pages/auth/Register'))
-const ForgotPassword = React.lazy(() => import('./pages/auth/ForgotPassword'))
-const ResetPassword = React.lazy(() => import('./pages/auth/ResetPassword'))
+const Login = lazyRetry(() => import('./pages/auth/Login'))
+const Register = lazyRetry(() => import('./pages/auth/Register'))
+const ForgotPassword = lazyRetry(() => import('./pages/auth/ForgotPassword'))
+const ResetPassword = lazyRetry(() => import('./pages/auth/ResetPassword'))
 
 const PROTECTED_COMPONENT_MAP: Record<NavComponentKey, React.LazyExoticComponent<React.ComponentType>> = {
   CommandCenter,

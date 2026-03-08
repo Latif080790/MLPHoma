@@ -32,8 +32,9 @@ import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
 import type { Project } from '@/store/projectStore'
+import { lazyRetry } from '@/lib/lazyRetry'
 
-const CurvaSChart = React.lazy(() => import('@/components/charts/CurvaSChart'))
+const CurvaSChart = lazyRetry(() => import('@/components/charts/CurvaSChart'))
 
 // ─── Helpers ───
 
@@ -544,10 +545,10 @@ export default function CostForecastDashboard() {
                                 <Badge
                                     variant="outline"
                                     className={`mt-2 text-xs ${evmData.forecasts.confidence === 'high'
-                                            ? 'border-emerald-500/40 text-emerald-400'
-                                            : evmData.forecasts.confidence === 'medium'
-                                                ? 'border-amber-500/40 text-amber-400'
-                                                : 'border-slate-500/40 text-slate-400'
+                                        ? 'border-emerald-500/40 text-emerald-400'
+                                        : evmData.forecasts.confidence === 'medium'
+                                            ? 'border-amber-500/40 text-amber-400'
+                                            : 'border-slate-500/40 text-slate-400'
                                         }`}
                                 >
                                     {evmData.forecasts.confidence.toUpperCase()} CONFIDENCE
