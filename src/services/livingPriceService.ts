@@ -31,15 +31,17 @@ export interface PriceComparison {
 export const livingPriceService = {
     /**
      * Fetch procurement history for a specific RAB item (matched by code or name)
+     * Note: po_items table may not exist yet — returns empty array gracefully
      */
     async getProcurementHistory(projectId: string, itemCode?: string, itemName?: string): Promise<HistoricalPrice[]> {
-        const client = assertSupabase()
+        if (!itemCode && !itemName) return []
 
-        // We search po_items that link to the same project
-        // Search by item_code or item_name
-        let query = client
-            .from('po_items')
-            .select(`
+        try {
+            const client = assertSupabase()
+
+            let query = client
+                .from('po_items')
+                .select(`
         unit_price,
         quantity,
         purchase_orders (
@@ -49,35 +51,38 @@ export const livingPriceService = {
           created_at
         )
       `)
-            .eq('purchase_orders.project_id', projectId)
+                .eq('purchase_orders.project_id', projectId)
 
-        if (itemCode) {
-            query = query.eq('item_code', itemCode)
-        } else if (itemName) {
-            query = query.eq('item_name', itemName)
-        } else {
-            return []
-        }
-
-        const { data, error } = await query.order('created_at', { foreignTable: 'purchase_orders', ascending: false }).limit(5)
-
-        if (error) {
-            console.error('[livingPriceService] fetch history error:', error)
-            return []
-        }
-
-        type PoItemWithPo = { unit_price?: number; quantity?: number; purchase_orders?: { id?: string; po_number?: string; vendor_name?: string; created_at?: string }[] | null }
-        return (data || []).map((row: PoItemWithPo) => {
-            const po = Array.isArray(row.purchase_orders) ? row.purchase_orders[0] : row.purchase_orders
-            return {
-                poId: po?.id || '',
-                poNumber: po?.po_number || '',
-                vendorName: po?.vendor_name || '',
-                date: po?.created_at || '',
-                unitPrice: Number(row.unit_price || 0),
-                quantity: Number(row.quantity || 0)
+            if (itemCode) {
+                query = query.eq('item_code', itemCode)
+            } else if (itemName) {
+                query = query.eq('item_name', itemName)
             }
-        })
+
+            const { data, error } = await query.order('created_at', { foreignTable: 'purchase_orders', ascending: false }).limit(5)
+
+            if (error) {
+                // Table may not exist — this is expected until procurement module is implemented
+                console.warn('[livingPriceService] po_items query skipped (table may not exist):', error.code)
+                return []
+            }
+
+            type PoItemWithPo = { unit_price?: number; quantity?: number; purchase_orders?: { id?: string; po_number?: string; vendor_name?: string; created_at?: string }[] | null }
+            return (data || []).map((row: PoItemWithPo) => {
+                const po = Array.isArray(row.purchase_orders) ? row.purchase_orders[0] : row.purchase_orders
+                return {
+                    poId: po?.id || '',
+                    poNumber: po?.po_number || '',
+                    vendorName: po?.vendor_name || '',
+                    date: po?.created_at || '',
+                    unitPrice: Number(row.unit_price || 0),
+                    quantity: Number(row.quantity || 0)
+                }
+            })
+        } catch {
+            // Gracefully handle missing table or network error
+            return []
+        }
     },
 
     /**
@@ -92,7 +97,7 @@ export const livingPriceService = {
         // 2. Fetch all RAB items to get more context
         const { data: rabItems } = await client
             .from('rab_items')
-            .select('id, item_code, name, unit, volume, snapshot_price, unit_price')
+            .select('id, ahsp_code, name, unit, volume, snapshot_price, unit_price')
             .eq('project_id', projectId)
 
         const analysis: PriceComparison[] = []
@@ -102,7 +107,7 @@ export const livingPriceService = {
 
             // Get the "Living Price" (Latest PO price)
             // Note: In a real enterprise app, we might pre-summarize this in a materialized view or cache
-            const history = await this.getProcurementHistory(projectId, item.item_code, item.name)
+            const history = await this.getProcurementHistory(projectId, item.ahsp_code, item.name)
             const livingPrice = history.length > 0 ? history[0].unitPrice : null
 
             const snapshot = item.snapshot_price as { total?: number } | number | null
@@ -110,7 +115,7 @@ export const livingPriceService = {
 
             analysis.push({
                 rabId: item.id,
-                itemCode: item.item_code || '',
+                itemCode: item.ahsp_code || '',
                 itemName: item.name || '',
                 volume: Number(item.volume || 0),
                 unit: item.unit || '',

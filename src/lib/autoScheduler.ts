@@ -21,6 +21,12 @@ import { AHSPItem, AHSPComponent } from '../types/ahsp'
 
 const DEFAULT_TEAM_SIZE = 3 // Assumed number of workers per task
 
+let _taskCounter = 0
+function generateTaskId(): string {
+  _taskCounter++
+  return `${Date.now()}-${_taskCounter}-${Math.random().toString(36).slice(2, 6)}`
+}
+
 /**
  * Calculate rational duration based on AHSP analysis
  */
@@ -92,16 +98,9 @@ export function generateScheduleFromRAB(
 
   // 2. Process each Category
   Object.entries(byCategory).forEach(([_category, items]) => {
-    // Skip summary task creation - items are processed directly
+    // Items within a category run in parallel (Start-Start) as documented
+    const categoryStartDate = currentStartDate
     let maxCategoryEnd = currentStartDate
-
-    // We don't add Summary Task to "tasks" array directly if the store doesn't support hierarchy yet,
-    // but for WBS logic, we treat these items as a group.
-    // For this implementation, we will sequence the ITEMS within the category.
-    
-    // Let's assume items in a category run somewhat sequentially or parallel.
-    // For "Rational" auto-schedule, let's stagger them slightly or run parallel.
-    // Strategy: Run them sequentially to be safe (Conservative Schedule).
     
     items.forEach(item => {
       const ahsp = ahspMap.get(item.item_code || item.code || '')
@@ -109,18 +108,16 @@ export function generateScheduleFromRAB(
       
       const duration = calculateDuration(item.volume || 0, components)
       
-      // Ensure task doesn't exceed project end date if possible, or warn?
-      // For now, just calculate forward.
-      
-      const endDate = addDays(currentStartDate, duration - 1)
+      // All items in the same category start at the same date (parallel)
+      const endDate = addDays(categoryStartDate, duration - 1)
 
-      // Create Task
+      // Create Task with unique ID
       const task: TimelineTask = {
-        id: item.taskId || `task-${item.id}`, // Use existing link or new ID
+        id: item.taskId || `task-${generateTaskId()}`, // Use unique ID
         projectId,
         name: item.name || item.item_name || 'Untitled Task',
         description: `Generated from RAB Item: ${item.item_code}`,
-        startDate: currentStartDate,
+        startDate: categoryStartDate,
         endDate: endDate,
         duration: duration,
         progress: 0,
@@ -134,14 +131,12 @@ export function generateScheduleFromRAB(
 
       tasks.push(task)
 
-      // Update pointers
-      // Sequential flow: Next task starts when this one ends
-      currentStartDate = addDays(endDate, 1) 
+      // Track the longest task in this category
       if (endDate > maxCategoryEnd) maxCategoryEnd = endDate
     })
 
-    // Add a small buffer between categories?
-    // currentStartDate is already set to next day after last item
+    // Next category starts after the longest task in this category ends
+    currentStartDate = addDays(maxCategoryEnd, 1)
   })
 
   return tasks

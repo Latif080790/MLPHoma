@@ -128,7 +128,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     loading: _loading
   } = useAHSPStore()
 
-  const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot } = useRabStore()
+  const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot, unlockBaseline } = useRabStore()
   const [activeTab, setActiveTab] = useState<'direct' | 'overhead'>('direct')
   // Task 25: Search filter for RAB items
   const [tableSearchQuery, setTableSearchQuery] = useState('')
@@ -179,11 +179,21 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const { fetchLinks, addLink, linksByRabItem } = useRabWbsLinkStore()
   useEffect(() => { if (projectId) fetchLinks(projectId) }, [projectId, fetchLinks])
 
+  // Filter out orphan links (WBS items that no longer exist) for badge display
+  const validLinksByRabItem = useMemo(() => {
+    const result: Record<string, typeof linksByRabItem[string]> = {}
+    for (const [rabId, links] of Object.entries(linksByRabItem)) {
+      result[rabId] = links.filter(l => wbsMap.has(l.wbsItemId))
+    }
+    return result
+  }, [linksByRabItem, wbsMap])
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedUnit, setSelectedUnit] = useState<string>('all')
   const [confirmScheduleOpen, setConfirmScheduleOpen] = useState(false)
+  const [confirmWBSOpen, setConfirmWBSOpen] = useState(false)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const [showVersionHistory, setShowVersionHistory] = useState(false)
@@ -192,11 +202,14 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const [visibleColumns, setVisibleColumns] = useState<Set<ColumnKey>>(loadColumnPrefs)
   const [showLockConfirm, setShowLockConfirm] = useState(false)
   const [isLocking, setIsLocking] = useState(false)
+  const [showUnlockConfirm, setShowUnlockConfirm] = useState(false)
+  const [isUnlocking, setIsUnlocking] = useState(false)
   const [showDriftAnalysis, setShowDriftAnalysis] = useState(false)
   const [allocationPanelItemId, setAllocationPanelItemId] = useState<string | null>(null)
-  const [_showSaveScenario, setShowSaveScenario] = useState(false)
+  const [showSaveScenario, setShowSaveScenario] = useState(false)
   const [scenarioName, setScenarioName] = useState('')
   const [selectedScenarioVersion, setSelectedScenarioVersion] = useState<number | null>(null)
+  const [scenarioViewItems, setScenarioViewItems] = useState<typeof items | null>(null)
 
   // ─── Excel Import state ───
   interface ImportRow { name: string; unit: string; volume: number; unit_price: number; category: string; ahsp_code: string }
@@ -220,16 +233,16 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     fetchVersions(projectId)
   }, [projectId, fetchVersions])
 
-  const _handleSaveScenario = async () => {
+  const handleSaveScenario = async () => {
     if (!scenarioName.trim()) {
       toast.error('Please enter a scenario name')
       return
     }
 
     const snapshot = {
-      items,
+      items: items.map(i => ({ ...i })),
       totalItems: items.length,
-      totalCost: items.reduce((sum, i) => sum + (Number(i.total_price) || 0), 0),
+      totalCost: items.reduce((sum, i) => sum + ((i.volume || 0) * (i.unit_price || 0)), 0),
       metadata: {
         createdAt: new Date().toISOString(),
         categories: Array.from(new Set(items.map(i => i.category).filter(Boolean))) as string[]
@@ -247,18 +260,23 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
 
     setShowSaveScenario(false)
     setScenarioName('')
+    toast.success(`Scenario "${scenarioName}" saved successfully`)
   }
 
   const handleSwitchScenario = (version: number | null) => {
     if (version === null) {
       setSelectedScenarioVersion(null)
+      setScenarioViewItems(null)
       return
     }
 
     const ver = (versionsByProject[projectId] || []).find(v => v.version === version)
     if (ver) {
       setSelectedScenarioVersion(version)
-      toast.info(`Switched to scenario: ${ver.description}`)
+      // Load snapshot items into view
+      const snapshotItems = (ver.snapshot?.items || []) as typeof items
+      setScenarioViewItems(snapshotItems)
+      toast.info(`Viewing scenario: ${ver.description} (read-only)`)
     }
   }
 
@@ -323,6 +341,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   }
 
   const handleConfirmImport = () => {
+    // Check lock upfront before iterating items
+    if (projectLocked) {
+      toast.error('RAB terkunci (baseline aktif). Unlock terlebih dahulu untuk import data.')
+      return
+    }
     const fatalRows = new Set(importErrors.map(e => e.row))
     let added = 0
     importPreview.forEach((r, idx) => {
@@ -642,7 +665,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     setConfirmScheduleOpen(true)
   }
 
-  const executeAutoSchedule = () => {
+  const executeAutoSchedule = async () => {
     // Index AHSP items
     const ahspMap = new Map(ahspItems.map(i => [i.code, i]))
 
@@ -691,12 +714,13 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       })
     })
 
-    // Import WBS
-    void importWBS(projectId, wbsItems as WBSImportItem[])
+    // Import WBS (await to ensure persistence before linking)
+    await importWBS(projectId, wbsItems as WBSImportItem[])
 
-    // Link each RAB item back to its WBS node
+    // Link each RAB item back to its WBS node (both legacy wbsId + junction table)
     rabToWbsMap.forEach((wbsId, rabItemId) => {
       updateItem(projectId, rabItemId, { wbsId })
+      addLink(rabItemId, wbsId)
     })
 
     // 2. Generate Timeline Tasks
@@ -733,6 +757,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       toast.error('No Direct Cost items to generate WBS from')
       return
     }
+    setConfirmWBSOpen(true)
+  }
+
+  const executeGenerateWBS = async () => {
+    setConfirmWBSOpen(false)
 
     const wbsItems: (WBSImportItem & { id: string })[] = []
 
@@ -774,13 +803,18 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       })
     })
 
-    // Import (async — clears old DB rows first, then upserts)
-    void importWBS(projectId, wbsItems as WBSImportItem[])
+    // Import (async — await it before linking)
+    await importWBS(projectId, wbsItems as WBSImportItem[])
 
-    // Link each RAB item back to its new WBS node
+    // Link each RAB item back to its new WBS node (both legacy wbsId + junction table)
     rabToWbsMap.forEach((wbsId, rabItemId) => {
       updateItem(projectId, rabItemId, { wbsId })
+      // Also create junction link (100% allocation for 1:1 mapping)
+      addLink(rabItemId, wbsId)
     })
+
+    // Refresh links from DB to sync UI
+    setTimeout(() => fetchLinks(projectId), 1500)
 
     toast.success(`Generated ${wbsItems.length} WBS nodes from RAB`)
   }
@@ -791,7 +825,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const totalEquip = items.reduce((sum, i) => sum + ((i.volume || 0) * (i.cost_equipment || 0)), 0)
   const totalSubcon = items.reduce((sum, i) => sum + ((i.volume || 0) * (i.cost_subcon || 0)), 0)
 
-  const paretoItems = useMemo(() => calculatePareto(items), [items])
+  // When viewing a scenario, display scenario items (read-only) instead of live items
+  const displayItems = scenarioViewItems ?? items
+  const isScenarioView = selectedScenarioVersion !== null && scenarioViewItems !== null
+
+  const paretoItems = useMemo(() => calculatePareto(displayItems), [displayItems])
   const paretoMap = useMemo(() => new Map(paretoItems.map(i => [i.id, i.paretoClass])), [paretoItems])
 
   const handleLockBaseline = async () => {
@@ -799,8 +837,34 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     try {
       await takeSnapshot(projectId)
       setShowLockConfirm(false)
+      toast.success('Baseline berhasil di-lock! Semua harga telah di-snapshot sebagai patokan baseline.', {
+        duration: 5000,
+        icon: '🔒',
+      })
+    } catch (err) {
+      console.error('[LockBaseline] error:', err)
+      const msg = err instanceof Error ? err.message : 'Gagal lock baseline. Silakan coba lagi.'
+      toast.error(msg, { duration: 6000 })
     } finally {
       setIsLocking(false)
+    }
+  }
+
+  const handleUnlockBaseline = async () => {
+    setIsUnlocking(true)
+    try {
+      await unlockBaseline(projectId)
+      setShowUnlockConfirm(false)
+      toast.success('Baseline berhasil di-unlock! Harga sekarang bisa diedit kembali.', {
+        duration: 5000,
+        icon: '🔓',
+      })
+    } catch (err) {
+      console.error('[UnlockBaseline] error:', err)
+      const msg = err instanceof Error ? err.message : 'Gagal unlock baseline.'
+      toast.error(msg, { duration: 6000 })
+    } finally {
+      setIsUnlocking(false)
     }
   }
 
@@ -900,6 +964,22 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         </AlertDialogContent>
       </AlertDialog>
 
+      <AlertDialog open={confirmWBSOpen} onOpenChange={setConfirmWBSOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Generate WBS from RAB items?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will replace the existing WBS structure with a new hierarchy generated from the current {items.length} RAB items grouped by category.
+              Existing WBS data will be overwritten.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={executeGenerateWBS}>Generate WBS</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={confirmBulkDelete} onOpenChange={setConfirmBulkDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -966,6 +1046,88 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={showUnlockConfirm} onOpenChange={setShowUnlockConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <LockKeyhole className="h-5 w-5 text-green-600" />
+              Unlock RAB Baseline?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Ini akan menghapus snapshot harga baseline. Harga RAB akan bisa diedit kembali.
+              Anda bisa lock ulang kapan saja setelah selesai edit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUnlocking}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUnlockBaseline}
+              disabled={isUnlocking}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isUnlocking ? 'Unlocking...' : 'Unlock Baseline'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Save Scenario Dialog */}
+      <Dialog open={showSaveScenario} onOpenChange={setShowSaveScenario}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-blue-600" />
+              Save RAB Scenario
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-slate-500">
+              Save the current RAB state as a named scenario for comparison or rollback later.
+            </p>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Scenario Name</label>
+              <input
+                type="text"
+                className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g. Budget Optimistic, Cost Reduction v2"
+                value={scenarioName}
+                onChange={(e) => setScenarioName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSaveScenario() }}
+              />
+            </div>
+            <div className="text-xs text-slate-400">
+              {items.length} items • Total: {formatIDR(items.reduce((sum, i) => sum + ((i.volume || 0) * (i.unit_price || 0)), 0))}
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={() => { setShowSaveScenario(false); setScenarioName('') }}>Cancel</Button>
+            <Button size="sm" onClick={handleSaveScenario} disabled={!scenarioName.trim()}>
+              Save Scenario
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Scenario View Banner */}
+      {selectedScenarioVersion !== null && scenarioViewItems && (
+        <Card className="border-purple-200 bg-purple-50/30">
+          <CardContent className="p-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm">
+              <Layers className="h-4 w-4 text-purple-600" />
+              <span className="font-medium text-purple-800">
+                Viewing Scenario v{selectedScenarioVersion} (read-only)
+              </span>
+              <Badge variant="outline" className="text-xs text-purple-600 border-purple-300">
+                {scenarioViewItems.length} items
+              </Badge>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => handleSwitchScenario(null)} className="text-xs">
+              Back to Live RAB
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {showDriftAnalysis && (
         <Card className="border-blue-200 bg-blue-50/20">
@@ -1172,9 +1334,9 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
           ) : (
             <Button
               size="sm"
-              variant="ghost"
-              disabled
-              className="gap-2 text-xs h-8 opacity-50"
+              variant="outline"
+              className="gap-2 text-xs h-8 text-green-600 border-green-200 hover:bg-green-50"
+              onClick={() => setShowUnlockConfirm(true)}
             >
               <LockKeyhole className="h-3.5 w-3.5" />
               Locked
@@ -1710,7 +1872,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                               <Input value={item.name || ''} onChange={e => updateItem(projectId, item.id, { name: e.target.value })} className="h-7 text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 font-bold px-2 shadow-none transition-all truncate" placeholder="Item Name" />
                               {(item as RABItem & { isDraft?: boolean }).isDraft && <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-yellow-50 text-yellow-700 border-yellow-300 shrink-0 font-bold uppercase tracking-tight">Draft</Badge>}
                               {(() => {
-                                const links = linksByRabItem[item.id] || []
+                                const links = validLinksByRabItem[item.id] || []
                                 if (links.length === 0) return null
                                 return (
                                   <button
