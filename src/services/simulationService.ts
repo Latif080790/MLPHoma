@@ -1,5 +1,5 @@
-
 import { dashboardService } from './dashboardService'
+import { assertSupabase } from '../lib/supabaseClient'
 
 export interface SimulationScenario {
     projectId: string
@@ -50,5 +50,53 @@ export const simulationService = {
                 ? 'Strategy Warning: Proposed reallocations cause significant schedule drag. Consider overtime for projects A & B.'
                 : 'Strategy Stable: Changes are within acceptable variance thresholds.'
         }
+    },
+
+    /**
+     * saveSimulation
+     */
+    async saveSimulation(projectId: string, name: string, params: any, result: SimulationResult) {
+        const client = assertSupabase()
+        const { data, error } = await client
+            .from('strategy_simulations')
+            .insert({
+                project_id: projectId,
+                name,
+                params,
+                result
+            })
+            .select()
+            .single()
+
+        if (error) throw error
+        return data
+    },
+
+    /**
+     * listSimulations
+     */
+    async listSimulations(projectId: string) {
+        const client = assertSupabase()
+        const { data, error } = await client
+            .from('strategy_simulations')
+            .select('*')
+            .eq('project_id', projectId)
+            .order('created_at', { ascending: false })
+
+        if (error) throw error
+        return data || []
+    },
+
+    /**
+     * deleteSimulation
+     */
+    async deleteSimulation(id: string) {
+        const client = assertSupabase()
+        const { error } = await client
+            .from('strategy_simulations')
+            .delete()
+            .eq('id', id)
+
+        if (error) throw error
     }
 }

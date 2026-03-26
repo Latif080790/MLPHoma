@@ -1,23 +1,72 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
-import { BrainCircuit, Play, RotateCcw, TrendingDown, TrendingUp, AlertCircle } from 'lucide-react'
+import { 
+    BrainCircuit, 
+    Play, 
+    RotateCcw, 
+    TrendingDown, 
+    TrendingUp, 
+    AlertCircle, 
+    Save, 
+    History, 
+    Trash2, 
+    ExternalLink,
+    Search,
+    RefreshCw
+} from 'lucide-react'
 import { simulationService, SimulationResult } from '@/services/simulationService'
 import { toast } from 'sonner'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
+import { useProjectStore } from '@/store/projectStore'
+import { Label } from '@/components/ui/label'
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogFooter,
+    DialogDescription
+} from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { format } from 'date-fns'
 
 export default function StrategySimulation() {
     const { handleAsync } = useErrorHandler()
+    const activeProjectId = useProjectStore(s => s.activeProjectId) || 'global'
+    
     const [delay, setDelay] = useState(0)
     const [resourceShift, setResourceShift] = useState(0)
     const [result, setResult] = useState<SimulationResult | null>(null)
     const [simulating, setSimulating] = useState(false)
     const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
+    
+    // Persistence state
+    const [savedSims, setSavedSims] = useState<any[]>([])
+    const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false)
+    const [scenarioName, setScenarioName] = useState('')
+    const [loadingHistory, setLoadingHistory] = useState(false)
+
+    const loadHistory = useCallback(async () => {
+        setLoadingHistory(true)
+        try {
+            const data = await simulationService.listSimulations(activeProjectId)
+            setSavedSims(data)
+        } catch (err) {
+            console.error("Failed to load history", err)
+        } finally {
+            setLoadingHistory(false)
+        }
+    }, [activeProjectId])
+
+    useEffect(() => {
+        loadHistory()
+    }, [loadHistory])
 
     const updateDelay = (next: number) => {
         const safe = Math.max(0, Math.min(90, Math.round(next)))
@@ -35,7 +84,7 @@ export default function StrategySimulation() {
         setPageError(null)
         const res = await handleAsync(async () => {
             return simulationService.simulatePortfolioImpact([{
-                projectId: 'global',
+                projectId: activeProjectId,
                 shiftDays: delay,
                 resourceChange: -resourceShift / 100
             }])
@@ -51,6 +100,41 @@ export default function StrategySimulation() {
         }
 
         setSimulating(false)
+    }
+
+    const handleSaveScenario = async () => {
+        if (!scenarioName.trim() || !result) return
+        
+        const ok = await handleAsync(async () => {
+            await simulationService.saveSimulation(activeProjectId, scenarioName, { delay, resourceShift }, result)
+            return true
+        }, 'data.save_failed')
+
+        if (ok) {
+            toast.success("Scenario saved to history")
+            setIsSaveDialogOpen(false)
+            setScenarioName('')
+            loadHistory()
+        }
+    }
+
+    const handleDeleteScenario = async (id: string) => {
+        const ok = await handleAsync(async () => {
+            await simulationService.deleteSimulation(id)
+            return true
+        }, 'data.delete_failed')
+
+        if (ok) {
+            toast.success("Scenario removed")
+            loadHistory()
+        }
+    }
+
+    const loadScenario = (sim: any) => {
+        setDelay(sim.params.delay || 0)
+        setResourceShift(sim.params.resourceShift || 0)
+        setResult(sim.result)
+        toast.info(`Loaded: ${sim.name}`)
     }
 
     const reset = () => {
@@ -69,19 +153,32 @@ export default function StrategySimulation() {
                 title="Strategic Simulation Sandbox"
                 description="Model the ripple effects of timeline shifts and resource reallocations on portfolio health."
                 accent="amber"
+                actions={
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="bg-white border-amber-200 text-amber-700 hover:bg-amber-50"
+                        onClick={() => setIsSaveDialogOpen(true)}
+                        disabled={!result}
+                    >
+                        <Save size={14} className="mr-2" /> Save Scenario
+                    </Button>
+                }
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* CONTROLS */}
-                <Card className="lg:col-span-1 border-slate-200 dark:border-slate-800">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-bold uppercase tracking-wider">Simulation Parameters</CardTitle>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* CONTROLS (4 cols) */}
+                <Card className="lg:col-span-4 border-slate-200 dark:border-slate-800 shadow-sm">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                             Interactive Modeling
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-8">
-                        <div className="space-y-4">
+                        <div className="space-y-4 bg-slate-50/50 dark:bg-neutral-900/30 p-4 rounded-xl border border-slate-100 dark:border-neutral-800">
                             <div className="flex justify-between items-center">
-                                <label className="text-xs font-medium text-slate-500 uppercase">Average Project Delay</label>
-                                <Badge variant="secondary" className="font-mono">{delay} Days</Badge>
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Upstream Delay</label>
+                                <Badge variant="secondary" className="font-mono bg-white border shadow-sm">{delay} Days</Badge>
                             </div>
                             <Slider
                                 value={[delay]}
@@ -91,39 +188,17 @@ export default function StrategySimulation() {
                                 className="w-full"
                             />
                             <div className="grid grid-cols-[auto,1fr,auto] gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => updateDelay(delay - 1)}
-                                    aria-label="Decrease delay by 1 day"
-                                >
-                                    -
-                                </Button>
-                                <Input
-                                    type="number"
-                                    min={0}
-                                    max={90}
-                                    step={1}
-                                    value={delay}
-                                    onChange={(e) => updateDelay(Number(e.target.value || 0))}
-                                    aria-label="Average project delay in days"
-                                />
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => updateDelay(delay + 1)}
-                                    aria-label="Increase delay by 1 day"
-                                >
-                                    +
-                                </Button>
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateDelay(delay - 1)}>-</Button>
+                                <Input type="number" value={delay} onChange={(e) => updateDelay(Number(e.target.value || 0))} className="h-8 text-center font-mono text-xs border-none bg-white shadow-inner" />
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateDelay(delay + 1)}>+</Button>
                             </div>
-                            <p className="text-xs text-slate-400 italic">Simulates upstream delays (permits, logistical bottlenecks)</p>
+                            <p className="text-[10px] text-slate-400 italic font-medium leading-tight">Simulates permit lags or material procurement bottlenecks.</p>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 bg-slate-50/50 dark:bg-neutral-900/30 p-4 rounded-xl border border-slate-100 dark:border-neutral-800">
                             <div className="flex justify-between items-center">
-                                <label className="text-xs font-medium text-slate-500 uppercase">Labor Reallocation</label>
-                                <Badge variant="secondary" className="font-mono">-{resourceShift}%</Badge>
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Labor Capacity</label>
+                                <Badge variant="outline" className="font-mono bg-red-50 text-red-600 border-red-200">-{resourceShift}%</Badge>
                             </div>
                             <Slider
                                 value={[resourceShift]}
@@ -133,115 +208,213 @@ export default function StrategySimulation() {
                                 className="w-full"
                             />
                             <div className="grid grid-cols-[auto,1fr,auto] gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => updateResourceShift(resourceShift - 1)}
-                                    aria-label="Decrease labor reallocation by 1 percent"
-                                >
-                                    -
-                                </Button>
-                                <Input
-                                    type="number"
-                                    min={0}
-                                    max={50}
-                                    step={1}
-                                    value={resourceShift}
-                                    onChange={(e) => updateResourceShift(Number(e.target.value || 0))}
-                                    aria-label="Labor reallocation percentage"
-                                />
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => updateResourceShift(resourceShift + 1)}
-                                    aria-label="Increase labor reallocation by 1 percent"
-                                >
-                                    +
-                                </Button>
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateResourceShift(resourceShift - 1)}>-</Button>
+                                <Input type="number" value={resourceShift} onChange={(e) => updateResourceShift(Number(e.target.value || 0))} className="h-8 text-center font-mono text-xs border-none bg-white shadow-inner" />
+                                <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateResourceShift(resourceShift + 1)}>+</Button>
                             </div>
-                            <p className="text-xs text-slate-400 italic">Simulates shifting labor to other emergency projects</p>
+                            <p className="text-[10px] text-slate-400 italic font-medium leading-tight">Simulates shifting labor to other emergency priority sites.</p>
                         </div>
 
-                        <div className="pt-4 flex gap-2">
+                        <div className="pt-2 flex gap-2">
                             <Button
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-10 shadow-md transition-all hover:scale-[1.02]"
                                 onClick={runSimulation}
                                 disabled={simulating}
-                                aria-busy={simulating}
                             >
-                                {simulating ? "Calculating..." : <><Play size={14} className="mr-2" /> Run Forecast</>}
+                                {simulating ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Play size={14} className="mr-2 fill-white" />}
+                                {simulating ? "Calculating..." : "Run Forecast"}
                             </Button>
-                            <Button variant="outline" size="icon" onClick={reset}>
+                            <Button variant="outline" size="icon" className="h-10 w-10 border-slate-200" onClick={reset}>
                                 <RotateCcw size={14} />
                             </Button>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* RESULTS */}
-                <Card className="lg:col-span-2 border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/10">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-bold uppercase tracking-wider">Simulated Portfolio Impact</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-full flex flex-col items-center justify-center min-h-[300px]">
-                        {simulating && !result ? (
-                            <div className="text-center space-y-2 py-12">
-                                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto text-blue-500 animate-pulse">
-                                    <BrainCircuit size={32} />
-                                </div>
-                                <h3 className="text-slate-600 dark:text-slate-300 font-medium">Running simulation...</h3>
-                                <p className="text-xs text-slate-400">Calculating portfolio impact forecast.</p>
-                            </div>
-                        ) : pageError && !result ? (
-                            <div className="w-full max-w-md rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/20 p-4 text-center space-y-3">
-                                <h3 className="text-sm font-semibold text-red-700 dark:text-red-300">Simulation failed</h3>
-                                <p className="text-xs text-red-600/90 dark:text-red-300/90">{pageError}</p>
-                                <Button size="sm" variant="outline" onClick={runSimulation}>Try Again</Button>
-                            </div>
-                        ) : !result ? (
-                            <div className="text-center space-y-2 py-12">
-                                <div className="w-16 h-16 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-400">
-                                    <BrainCircuit size={32} />
-                                </div>
-                                <h3 className="text-slate-500 font-medium">No active simulation</h3>
-                                <p className="text-xs text-slate-400">Adjust parameters and run the forecast to see results.</p>
-                            </div>
-                        ) : (
-                            <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                                        <div className="text-xs text-slate-500 uppercase mb-1">Schedule Impact (Avg SPI)</div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-2xl font-mono font-bold text-slate-400">{result.originalAvgSpi.toFixed(2)}</span>
-                                            <TrendingDown className="text-red-500" size={16} />
-                                            <span className="text-2xl font-mono font-bold text-red-500">{result.simulatedAvgSpi.toFixed(2)}</span>
-                                        </div>
+                {/* RESULTS (8 cols) */}
+                <div className="lg:col-span-8 space-y-6">
+                    <Card className="border-slate-200 dark:border-slate-800 bg-white shadow-sm overflow-hidden">
+                        <CardHeader className="border-b bg-slate-50/50">
+                            <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center justify-between">
+                                Simulated Portfolio Impact
+                                {result && (
+                                    <Badge variant={result.impactSeverity === 'HIGH' ? 'destructive' : result.impactSeverity === 'LOW' ? 'secondary' : 'outline'} className="font-black">
+                                       Risk: {result.impactSeverity}
+                                    </Badge>
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="flex flex-col items-center justify-center min-h-[340px] p-6">
+                            {simulating && !result ? (
+                                <div className="text-center space-y-4 animate-pulse">
+                                    <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mx-auto text-indigo-500">
+                                        <BrainCircuit size={40} />
                                     </div>
-                                    <div className="p-4 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
-                                        <div className="text-xs text-slate-500 uppercase mb-1">Liquidity Impact (Weekly Cashflow)</div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-2xl font-mono font-bold text-slate-400">{Math.round(result.originalCashflow)}M</span>
-                                            <TrendingUp className="text-emerald-500" size={16} />
-                                            <span className="text-2xl font-mono font-bold text-emerald-500">{Math.round(result.simulatedCashflow)}M</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className={`p-4 rounded-lg flex gap-4 ${result.impactSeverity === 'HIGH' ? 'bg-red-50 border border-red-100 text-red-700' :
-                                        result.impactSeverity === 'LOW' ? 'bg-amber-50 border border-amber-100 text-amber-700' :
-                                            'bg-emerald-50 border border-emerald-100 text-emerald-700'
-                                    }`}>
-                                    <AlertCircle className="mt-0.5 shrink-0" size={18} />
                                     <div className="space-y-1">
-                                        <div className="font-bold text-sm uppercase">Executive Recommendation</div>
-                                        <p className="text-xs leading-relaxed">{result.recommendation}</p>
+                                        <h3 className="text-slate-700 dark:text-slate-300 font-bold">Heuristic Engine Computing...</h3>
+                                        <p className="text-xs text-slate-400">Re-shaping portfolio curves based on new parameters.</p>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            ) : pageError && !result ? (
+                                <div className="w-full max-w-sm rounded-2xl border-2 border-red-100 bg-red-50/50 p-8 text-center space-y-4">
+                                    <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto text-red-600">
+                                        <AlertCircle size={24} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="font-bold text-red-700">Calculation Error</h3>
+                                        <p className="text-xs text-red-600/80">{pageError}</p>
+                                    </div>
+                                    <Button size="sm" variant="outline" className="bg-white border-red-200 text-red-700" onClick={runSimulation}>Retry Calculation</Button>
+                                </div>
+                            ) : !result ? (
+                                <div className="text-center space-y-4 py-12 opacity-60">
+                                    <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                                        <History size={40} />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h3 className="text-slate-500 font-bold text-lg leading-none">Sandbox Idle</h3>
+                                        <p className="text-sm text-slate-400 max-w-[240px]">Adjust parameters and run a forecast to visualize potential project ripple effects.</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="p-6 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-1 shadow-inner group transition-all hover:bg-white hover:shadow-md">
+                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingDown size={12} /> Schedule Impact (Avg SPI)</div>
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-3xl font-mono font-black text-slate-300 line-through decoration-slate-400/30">{result.originalAvgSpi.toFixed(2)}</span>
+                                                <span className="text-4xl font-mono font-black text-red-600 drop-shadow-sm">{result.simulatedAvgSpi.toFixed(2)}</span>
+                                            </div>
+                                            <div className="mt-2 h-1.5 w-full max-w-[120px] bg-slate-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: `${result.simulatedAvgSpi * 100}%` }} />
+                                            </div>
+                                        </div>
+                                        <div className="p-6 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-1 shadow-inner group transition-all hover:bg-white hover:shadow-md">
+                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingUp size={12} /> Liquidity Gap (M)</div>
+                                            <div className="flex items-center gap-4">
+                                                <span className="text-3xl font-mono font-black text-slate-300 line-through decoration-slate-400/30">{Math.round(result.originalCashflow)}M</span>
+                                                <span className="text-4xl font-mono font-black text-emerald-600 drop-shadow-sm">{Math.round(result.simulatedCashflow)}M</span>
+                                            </div>
+                                            <div className="mt-2 h-1.5 w-full max-w-[120px] bg-slate-200 rounded-full overflow-hidden">
+                                                <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${(result.simulatedCashflow / result.originalCashflow) * 100}%` }} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className={`p-6 rounded-2xl flex gap-4 shadow-sm border-l-[6px] ${
+                                        result.impactSeverity === 'HIGH' ? 'bg-red-50/80 border-red-500 text-red-900' :
+                                        result.impactSeverity === 'LOW' ? 'bg-amber-50/80 border-amber-500 text-amber-900' :
+                                        'bg-emerald-50/80 border-emerald-500 text-emerald-900'
+                                    }`}>
+                                        <div className={`p-2 rounded-full h-fit mt-1 shrink-0 ${
+                                            result.impactSeverity === 'HIGH' ? 'bg-red-100 text-red-600' :
+                                            result.impactSeverity === 'LOW' ? 'bg-amber-100 text-amber-600' :
+                                            'bg-emerald-100 text-emerald-600'
+                                        }`}>
+                                            <BrainCircuit size={20} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <div className="font-black text-xs uppercase tracking-widest opacity-60">Engine Recommendation</div>
+                                            <p className="text-sm font-semibold leading-relaxed leading-tight">{result.recommendation}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* HISTORY PANEL */}
+                    <Card className="border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden max-h-[300px]">
+                        <CardHeader className="pb-3 flex-shrink-0 border-b">
+                            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center justify-between">
+                                Simulation History
+                                <History size={12} />
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0 overflow-hidden flex-1">
+                            {loadingHistory ? (
+                                <div className="p-8 text-center text-xs text-slate-400">Loading history...</div>
+                            ) : savedSims.length === 0 ? (
+                                <div className="p-8 text-center text-xs text-slate-400 font-medium italic">No saved scenarios. Save a simulation to compare later.</div>
+                            ) : (
+                                <ScrollArea className="h-full">
+                                    <div className="divide-y divide-slate-100 dark:divide-neutral-800">
+                                        {savedSims.map((sim) => (
+                                            <div key={sim.id} className="group flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                        <span className="font-bold text-sm text-slate-800 truncate">{sim.name}</span>
+                                                        <Badge variant="outline" className="text-[9px] px-1 h-3.5 border-slate-200 text-slate-500 font-mono">
+                                                            {sim.result.impactSeverity}
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium">
+                                                        <span>{format(new Date(sim.created_at), 'dd MMM HH:mm')}</span>
+                                                        <span>•</span>
+                                                        <span>Delay: {sim.params.delay}d</span>
+                                                        <span>•</span>
+                                                        <span>Labor: -{sim.params.resourceShift}%</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600 hover:bg-indigo-50" onClick={() => loadScenario(sim)} title="Load into sandbox">
+                                                        <Play size={14} className="fill-indigo-600" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50" onClick={() => handleDeleteScenario(sim.id)} title="Delete">
+                                                        <Trash2 size={14} />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </ScrollArea>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
+
+            {/* SAVE DIALOG */}
+            <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                             Save Scenario
+                        </DialogTitle>
+                        <DialogDescription>
+                            Name this simulation to archive it in the portfolio history.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="scen-name" className="text-xs font-bold uppercase tracking-wider text-slate-500">Scenario Name</Label>
+                            <Input 
+                                id="scen-name" 
+                                placeholder="e.g., Q3 Delay + Labor Shortage" 
+                                value={scenarioName}
+                                onChange={e => setScenarioName(e.target.value)}
+                                className="h-10"
+                            />
+                        </div>
+                        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+                            <div className="flex justify-between text-[11px] font-bold">
+                                <span>SIMULATED SPI:</span>
+                                <span className="text-red-600 font-mono">{result?.simulatedAvgSpi.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-[11px] font-bold">
+                                <span>CASHFLOW IMPACT:</span>
+                                <span className="text-emerald-600 font-mono">{result ? Math.round(result.simulatedCashflow) : 0}M</span>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsSaveDialogOpen(false)}>Cancel</Button>
+                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" disabled={!scenarioName.trim()} onClick={handleSaveScenario}>
+                            Archive Simulation
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

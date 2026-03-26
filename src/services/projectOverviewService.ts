@@ -24,6 +24,7 @@ export interface ProjectKPIs {
   committedCost: number
   remainingBudget: number
   progressPercent: number
+  tkdnScore: number
 }
 
 export interface TaskSummary {
@@ -102,7 +103,11 @@ export const projectOverviewService = {
       ? Math.round(tasks.reduce((s: number, t: ProgressRow) => s + (t.progress || 0), 0) / tasks.length)
       : 0
 
-    return { rabTotal, rapTotal, actualCost, committedCost, remainingBudget, progressPercent }
+    // Fetch TKDN Score via RPC
+    const { data: tkdnData } = await client.rpc('rpc_compute_project_tkdn', { p_project_id: projectId })
+    const tkdnScore = (tkdnData as any)?.tkdn_score || 0
+
+    return { rabTotal, rapTotal, actualCost, committedCost, remainingBudget, progressPercent, tkdnScore }
   },
 
   /**

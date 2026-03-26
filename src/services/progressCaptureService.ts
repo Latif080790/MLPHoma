@@ -12,6 +12,7 @@ import { useTimelineStore, type TimelineTask } from '../store/timelineStore'
 import { generateId } from '../lib/idGenerator'
 import { auditService } from './auditService'
 import { useAuthStore } from '../store/authStore'
+import { syncProgressLog } from '../lib/supabaseSyncService'
 
 // ─── Types ───
 
@@ -38,6 +39,12 @@ export interface ProgressEntry {
     /** Coordinate from browser geolocation (if available) */
     latitude?: number
     longitude?: number
+    /** New Phase 3 Metadata */
+    metadata?: {
+        photoExif?: any[]
+        geofenceVerified?: boolean
+        [key: string]: any
+    }
 }
 
 export interface DailyReport {
@@ -156,6 +163,20 @@ export const progressCaptureService = {
                 weather: entry.weather,
                 crewCount: entry.crewCount,
             },
+        })
+
+        // Sync to Supabase (with built-in offline queue handled by syncProgressLog)
+        syncProgressLog({
+            id: fullEntry.id,
+            projectId: entry.projectId,
+            date: new Date().toISOString().split('T')[0],
+            progress: entry.progressAfter,
+            actualCost: 0, // Placeholder, will be linked to Finance module soon
+            notes: entry.notes,
+            volume: 1, // Default volume for simple task progress
+            photoUrl: '', // Will be updated after photo upload implementation
+            gpsCoords: entry.latitude ? { latitude: entry.latitude, longitude: entry.longitude } : null,
+            weather: entry.weather,
         })
 
         return fullEntry

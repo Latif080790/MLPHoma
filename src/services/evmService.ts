@@ -7,9 +7,20 @@
  * Used by: curvaSStore, dashboardService, CostForecastDashboard
  */
 
-import type { PerformanceMetrics, CurvaSAnalysis } from '../types/curvaS'
+import type { CurvaSAnalysis } from '../types/curvaS'
 
-// ─── Core EVM Calculation ───
+export interface PerformanceMetrics {
+    spi: number
+    cpi: number
+    earnedValue: number
+    plannedValue: number
+    actualCost: number
+    sv: number
+    cv: number
+    eac: number
+    etc: number
+    vac: number
+}
 
 export interface EVMInput {
     /** Total project budget (BAC = Budget at Completion) */

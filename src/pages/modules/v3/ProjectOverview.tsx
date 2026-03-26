@@ -135,6 +135,16 @@ function KPISection({ kpis }: { kpis: ProjectKPIs }) {
         kpis.progressPercent >= 50 ? 'border-t-sky-500' : 'border-t-slate-400',
       bar: kpis.progressPercent,
     },
+    {
+      label: 'Local Content',
+      value: `${kpis.tkdnScore}%`,
+      sub: 'TKDN Compliance',
+      icon: Truck,
+      accent:
+        kpis.tkdnScore >= 40 ? 'border-t-emerald-500' :
+        kpis.tkdnScore >= 25 ? 'border-t-amber-500' : 'border-t-red-400',
+      bar: kpis.tkdnScore,
+    },
   ]
 
   return (

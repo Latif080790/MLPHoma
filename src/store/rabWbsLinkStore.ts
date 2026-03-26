@@ -333,3 +333,29 @@ function rebalanceLinks(links: RabWbsLink[]): RabWbsLink[] {
       : equalPct,
   }))
 }
+
+// ─── Event Bus Subscriptions ────────────────────────────────────────────────
+// These subscriptions replace the direct wbsStore → rabWbsLinkStore coupling.
+// wbsStore now emits events, and this store reacts to them independently.
+
+import { eventBus } from '../lib/eventBus'
+
+// When WBS items are deleted, auto-unlink all RAB items pointing to them
+eventBus.on('wbs:deleted', ({ wbsItemIds }) => {
+  for (const wbsItemId of wbsItemIds) {
+    void useRabWbsLinkStore.getState().unlinkByWbsId(wbsItemId)
+  }
+})
+
+// When WBS items are re-imported, clean up local link state for old items
+eventBus.on('wbs:imported', ({ oldWbsItemIds }) => {
+  if (oldWbsItemIds.length === 0) return
+  const oldWbsIdSet = new Set(oldWbsItemIds)
+  const { linksByRabItem } = useRabWbsLinkStore.getState()
+  const cleaned: Record<string, RabWbsLink[]> = {}
+  for (const [rabId, links] of Object.entries(linksByRabItem)) {
+    cleaned[rabId] = links.filter(l => !oldWbsIdSet.has(l.wbsItemId))
+  }
+  useRabWbsLinkStore.setState({ linksByRabItem: cleaned })
+})
+

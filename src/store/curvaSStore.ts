@@ -18,7 +18,6 @@ import { notify as toast } from '@/lib/toast'
 import { validate, mergeErrorMessages } from '@/lib/validationMiddleware'
 import {
   curvaSDataPointInputSchema,
-  curvaSBaselineConfigSchema,
   curvaSScenarioSchema,
 } from '@/lib/validationSchemas'
 import {
@@ -60,7 +59,6 @@ interface CurvaSState {
   savedScenarios: Record<string, SavedScenario[]>
 
   // Actions
-  generateBaseline: (projectId: string, totalBudget: number, startDate: string, endDate: string) => void
   analyzeProject: (projectId: string) => void
   addDataPoint: (projectId: string, point: CurvaSDataPoint) => void
   setPlannedFromRap: (
@@ -89,23 +87,7 @@ function toDate(d: string): Date {
   return new Date(d + 'T00:00:00')
 }
 
-function generateMonthlyDates(start: string, end: string): string[] {
-  const s = toDate(start)
-  const e = toDate(end)
-  const result: string[] = []
-  const cur = new Date(s)
-  cur.setDate(1)
-  while (cur <= e) {
-    const y = cur.getFullYear()
-    const m = String(cur.getMonth() + 1).padStart(2, '0')
-    const d = new Date(y, cur.getMonth() + 1, 0).getDate()
-    result.push(`${y}-${m}-${String(d).padStart(2, '0')}`)
-    cur.setMonth(cur.getMonth() + 1)
-  }
-  if (result.length === 0) result.push(start)
-  if (result[result.length - 1] !== end) result[result.length - 1] = end
-  return result
-}
+
 
 function isSamePoints(a: CurvaSDataPoint[], b: CurvaSDataPoint[]): boolean {
   if (a === b) return true
@@ -215,68 +197,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
   // Saved scenarios storage (per project)
   savedScenarios: {},
 
-  generateBaseline: (projectId, totalBudget, startDate, endDate) => {
-    if (!projectId) return
 
-    // Validate baseline config
-    const validation = validate(curvaSBaselineConfigSchema, {
-      projectId,
-      totalBudget,
-      startDate,
-      endDate,
-    })
-    if (!validation.success) {
-      toast.error('Baseline Validation Error', mergeErrorMessages(validation.errors))
-      return
-    }
-
-    const dates = generateMonthlyDates(startDate, endDate)
-    const nowIso = new Date().toISOString()
-
-    // S-Curve logic: P(t) = t - (1/2pi)*sin(2pi*t)
-    // This creates a smooth slow-fast-slow distribution
-    const newPoints: CurvaSDataPoint[] = dates.map((d, idx) => {
-      const t = idx / (dates.length - 1 || 1)
-      const sFactor = t - Math.sin(2 * Math.PI * t) / (2 * Math.PI)
-      const accProgress = sFactor * 100
-      const accCost = sFactor * totalBudget
-
-      return {
-        id: pointId(projectId, d),
-        projectId,
-        date: d,
-        plannedProgress: Number(accProgress.toFixed(2)),
-        actualProgress: 0,
-        plannedCost: Math.round(accCost),
-        actualCost: 0,
-        createdAt: nowIso,
-        updatedAt: nowIso,
-      }
-    })
-    const prevPoints = get().dataPoints[projectId] || EMPTY_POINTS
-    const pointsUnchanged = isSamePoints(prevPoints, newPoints)
-    const prevCfg = get().configs[projectId]
-    const totalDuration =
-      (toDate(endDate).getTime() - toDate(startDate).getTime()) / (1000 * 60 * 60 * 24)
-    const cfgUnchanged =
-      !!prevCfg &&
-      prevCfg.totalBudget === totalBudget &&
-      prevCfg.totalDuration === totalDuration &&
-      (prevCfg.progressMethod || 'even') === 'even'
-    if (pointsUnchanged && cfgUnchanged) return
-    set((state) => ({
-      dataPoints: {
-        ...state.dataPoints,
-        [projectId]: pointsUnchanged ? prevPoints : newPoints,
-      },
-      configs: {
-        ...state.configs,
-        [projectId]: { totalBudget, totalDuration, progressMethod: 'even' },
-      },
-    }))
-
-    toast.success('Baseline generated successfully', `${newPoints.length} data points created`)
-  },
 
   analyzeProject: (projectId) => {
     const points = get().dataPoints[projectId] || EMPTY_POINTS

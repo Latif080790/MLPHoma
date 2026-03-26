@@ -8,6 +8,7 @@ import { create } from 'zustand'
 import { financeService } from '../services/financeService'
 import { Invoice, ClientClaim, FinanceTransaction, InvoiceStatus, ClaimStatus } from '../types/finance'
 import { toast } from 'sonner'
+import { eventBus } from '../lib/eventBus'
 
 export interface AgingBucket {
   current: Invoice[]
@@ -272,3 +273,15 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     }
   }
 }))
+
+// Subscriptions
+eventBus.on('po:approved', ({ projectId }) => {
+  if (projectId) {
+    // Small delay to allow Postgres trigger to finish inserting the invoice
+    setTimeout(() => {
+        useFinanceStore.getState().fetchInvoices(projectId)
+    }, 500)
+  }
+})
+
+export default useFinanceStore

@@ -17,6 +17,7 @@ import {
 import { MaterialRequest, PurchaseOrder, InventoryTransaction, MrStatus, PoStatus, PoItem } from '../types/supply-chain'
 import { generateId } from '../lib/idGenerator'
 import { checkBudgetAvailability, commitBudget, CheckableItem } from './budgetGuardService'
+import { eventBus } from '../lib/eventBus'
 
 // Local augmented row types for Supabase join results
 type MrRowWithJoin = MaterialRequestRow & { wbs_items?: { name?: string; code?: string } | null }
@@ -201,6 +202,12 @@ export const supplyChainService = {
         if (status === 'APPROVED' && approverId) {
             updates.approved_by = approverId
             updates.approved_at = new Date().toISOString()
+            
+            // Emit Event for Finance Sync (Server trigger handles the DB, we just notify the UI)
+            const { data: po } = await assertSupabase().from('purchase_orders').select('project_id').eq('id', id).single()
+            if (po?.project_id) {
+                eventBus.emit('po:approved', { projectId: po.project_id, poId: id })
+            }
         }
 
         // Handle Rejection / Cancellation — rollback committed_cost

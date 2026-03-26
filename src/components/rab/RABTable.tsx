@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useEffect, useRef } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
   Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow
@@ -1920,8 +1920,27 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                             {item.unit || '-'}
                           </Badge>
                         </TableCell>}
-                        {isColVisible('tkdn') && <TableCell className="w-[80px] py-2.5">
-                          <Input type="number" placeholder="0" value={(item.tkdn_percent as number | undefined) || ''} onChange={e => updateItem(projectId, item.id, { tkdn_percent: parseFloat(e.target.value) || 0 })} className="h-7 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none text-slate-500" />
+                        {isColVisible('tkdn') && <TableCell className="w-[124px] py-2.5">
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <button
+                              type="button"
+                              onClick={() => updateItem(projectId, item.id, { is_domestic: !item.is_domestic })}
+                              className={`h-6 px-1.5 rounded text-[10px] font-black transition-all ${item.is_domestic !== false ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}
+                              title={item.is_domestic !== false ? 'Domestic Content' : 'Imported Content'}
+                            >
+                              {item.is_domestic !== false ? 'DOM' : 'IMP'}
+                            </button>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              placeholder="0"
+                              value={item.tkdn_percentage ?? (item.is_domestic !== false ? 100 : 0)}
+                              onChange={e => updateItem(projectId, item.id, { tkdn_percentage: parseFloat(e.target.value) || 0 })}
+                              className="h-7 w-14 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none text-slate-500 px-1"
+                            />
+                            <span className="text-[10px] text-slate-400 font-mono">%</span>
+                          </div>
                         </TableCell>}
                         {isColVisible('cost_material') && <TableCell className="w-[110px] bg-blue-50/10 py-2.5 border-l-2 border-blue-100">
                           <Input type="number" disabled={projectLocked || !!item.snapshot_price} className="h-7 text-right font-mono text-xs bg-transparent border-transparent hover:bg-white focus:bg-white hover:border-blue-200 focus:border-blue-500 shadow-none text-blue-700 disabled:opacity-50" value={item.cost_material || 0} onChange={(e) => handleSplitCostChange(item.id, 'cost_material', e.target.value)} />
