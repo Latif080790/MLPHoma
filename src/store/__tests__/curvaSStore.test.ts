@@ -43,97 +43,6 @@ describe('curvaSStore', () => {
     vi.clearAllMocks()
   })
 
-  describe('generateBaseline', () => {
-    it('should generate baseline with monthly data points', () => {
-      useCurvaSStore.getState().generateBaseline(
-        projectId,
-        1000000, // 1M budget
-        '2024-01-01',
-        '2024-06-30'
-      )
-
-      const dataPoints = useCurvaSStore.getState().getDataPoints(projectId)
-      
-      expect(dataPoints.length).toBeGreaterThan(0)
-      expect(dataPoints[0].projectId).toBe(projectId)
-      expect(dataPoints[0].plannedProgress).toBeGreaterThanOrEqual(0)
-      expect(dataPoints[0].plannedCost).toBeGreaterThanOrEqual(0)
-      expect(dataPoints.some((p) => p.plannedCost > 0)).toBe(true)
-    })
-
-    it('should distribute budget evenly across periods', () => {
-      useCurvaSStore.getState().generateBaseline(
-        projectId,
-        1000000,
-        '2024-01-01',
-        '2024-12-31'
-      )
-
-      const dataPoints = useCurvaSStore.getState().getDataPoints(projectId)
-      const config = useCurvaSStore.getState().configs[projectId]
-      
-      expect(config.totalBudget).toBe(1000000)
-      expect(config.progressMethod).toBe('even')
-      
-      // Last point should reach 100% and full budget
-      const lastPoint = dataPoints[dataPoints.length - 1]
-      expect(lastPoint.plannedProgress).toBe(100)
-      expect(lastPoint.plannedCost).toBe(1000000)
-    })
-
-    it('should validate baseline configuration', () => {
-      // Invalid: negative budget
-      useCurvaSStore.getState().generateBaseline(
-        projectId,
-        -1000,
-        '2024-01-01',
-        '2024-12-31'
-      )
-
-      expect(toast.notify.error).toHaveBeenCalled()
-      
-      const dataPoints = useCurvaSStore.getState().getDataPoints(projectId)
-      expect(dataPoints).toHaveLength(0)
-    })
-
-    it('should show success toast after generation', () => {
-      useCurvaSStore.getState().generateBaseline(
-        projectId,
-        1000000,
-        '2024-01-01',
-        '2024-06-30'
-      )
-
-      expect(toast.notify.success).toHaveBeenCalled()
-    })
-
-    it('should not regenerate if data is unchanged', () => {
-      // Generate baseline first time
-      useCurvaSStore.getState().generateBaseline(
-        projectId,
-        1000000,
-        '2024-01-01',
-        '2024-06-30'
-      )
-
-      const dataPoints1 = useCurvaSStore.getState().getDataPoints(projectId)
-      
-      vi.clearAllMocks()
-
-      // Generate again with same params
-      useCurvaSStore.getState().generateBaseline(
-        projectId,
-        1000000,
-        '2024-01-01',
-        '2024-06-30'
-      )
-
-      const dataPoints2 = useCurvaSStore.getState().getDataPoints(projectId)
-      
-      // Should return same reference (idempotent)
-      expect(dataPoints1).toBe(dataPoints2)
-    })
-  })
 
   describe('addDataPoint', () => {
     it('should add a data point', () => {
@@ -195,11 +104,10 @@ describe('curvaSStore', () => {
   describe('analyzeProject', () => {
     it('should compute SPI/CPI analysis', () => {
       // Generate baseline first
-      useCurvaSStore.getState().generateBaseline(
+      useCurvaSStore.getState().setPlannedFromRap(
         projectId,
-        1000000,
-        '2024-01-01',
-        '2024-06-30'
+        [{ period: '2024-01-31', planned: 1000000 }],
+        1000000
       )
 
       // Add actual progress
@@ -225,11 +133,10 @@ describe('curvaSStore', () => {
     })
 
     it('should sync analysis to Supabase when analysis is valid', () => {
-      useCurvaSStore.getState().generateBaseline(
+      useCurvaSStore.getState().setPlannedFromRap(
         projectId,
-        1000000,
-        '2024-01-01',
-        '2024-06-30'
+        [{ period: '2024-01-31', planned: 1000000 }],
+        1000000
       )
 
       vi.clearAllMocks()
@@ -318,11 +225,10 @@ describe('curvaSStore', () => {
 
   describe('getDataPoints', () => {
     it('should return data points for a project', () => {
-      useCurvaSStore.getState().generateBaseline(
+      useCurvaSStore.getState().setPlannedFromRap(
         projectId,
-        1000000,
-        '2024-01-01',
-        '2024-06-30'
+        [{ period: '2024-01-31', planned: 1000000 }],
+        1000000
       )
 
       const dataPoints = useCurvaSStore.getState().getDataPoints(projectId)
@@ -339,11 +245,10 @@ describe('curvaSStore', () => {
     })
 
     it('should return stable reference when data unchanged', () => {
-      useCurvaSStore.getState().generateBaseline(
+      useCurvaSStore.getState().setPlannedFromRap(
         projectId,
-        1000000,
-        '2024-01-01',
-        '2024-06-30'
+        [{ period: '2024-01-31', planned: 1000000 }],
+        1000000
       )
 
       const dataPoints1 = useCurvaSStore.getState().getDataPoints(projectId)

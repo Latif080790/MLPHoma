@@ -8,105 +8,105 @@
  * - This is intentionally lightweight: later we'll connect it to persistent store & an editor UI.
  */
 
-import React, { useMemo, useState } from 'react'
-import { Download, RefreshCw } from 'lucide-react'
+import React, { useEffect, useMemo } from 'react'
+import { Download, RefreshCw, Zap, ShieldCheck } from 'lucide-react'
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { Button } from '../../components/ui/button'
 import { useProjectStore } from '../../store/projectStore'
-import { generateDefaultFeatureConfig } from '../../lib/featureDefaults'
-import type { FeatureConfig } from '../../config/features'
+import { useFeatureConfigStore } from '../../store/featureConfigStore'
+import { FeatureModulesEditor } from '../../components/project/FeatureModulesEditor'
+import { Badge } from '../../components/ui/badge'
 
-/**
- * downloadJSON
- *
- * Utility to download an object as a JSON file.
- *
- * @param data - object to be serialized
- * @param filename - filename for the download
- */
-function downloadJSON(data: unknown, filename = 'feature-config.json') {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-/**
- * FeatureSettings
- *
- * Page component that displays current (generated) feature config for the active project.
- *
- * Note: Currently this component uses in-memory defaults. Next step: persist to store/backend.
- */
 export default function FeatureSettings(): JSX.Element {
-  // Defensive read of active project
   const activeProjectId = useProjectStore(s => s.activeProjectId)
   const activeProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
   const projectId = activeProject?.id || ''
 
-  // Generate a default config for preview if project exists
-  const defaultConfig = useMemo<FeatureConfig | null>(() => {
-    if (!projectId) return null
-    return generateDefaultFeatureConfig(projectId)
-  }, [projectId])
+  const { configs, loading, fetchConfig, updateConfig, resetToDefaults } = useFeatureConfigStore()
+  const config = projectId ? configs[projectId] : null
 
-  // Local editable snapshot (readonly JSON viewer for now)
-  const [configSnapshot, setConfigSnapshot] = useState<FeatureConfig | null>(defaultConfig)
+  useEffect(() => {
+    if (projectId && !config) {
+      fetchConfig(projectId)
+    }
+  }, [projectId, config, fetchConfig])
 
-  // Reset to defaults handler
-  const handleResetToDefaults = () => {
+  const handleResetToDefaults = async () => {
     if (!projectId) return
-    const def = generateDefaultFeatureConfig(projectId)
-    setConfigSnapshot(def)
+    await resetToDefaults(projectId)
   }
 
-  // Export JSON handler
   const handleExport = () => {
-    if (configSnapshot) downloadJSON(configSnapshot, `feature-config-${projectId}.json`)
+    if (config) {
+      const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `feature-config-${projectId}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    }
   }
 
   if (!projectId) {
     return (
       <div className="space-y-6">
-        <ModuleHeader title="Feature Settings" description="Project feature configuration (admin preview)" />
-        <div className="rounded-xl border p-6 text-center dark:border-neutral-800">
-          <p className="text-neutral-600 dark:text-neutral-300">Select a project to view or manage feature configuration.</p>
+        <ModuleHeader title="Feature Settings" description="Project feature configuration (admin)" />
+        <div className="rounded-2xl border-2 border-dashed p-12 text-center bg-slate-50/50 dark:bg-neutral-900/30 border-slate-200 dark:border-neutral-800">
+          <div className="max-w-xs mx-auto space-y-4">
+            <div className="h-12 w-12 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto text-slate-400">
+              <ShieldCheck size={24} />
+            </div>
+            <p className="text-slate-600 dark:text-neutral-300 font-medium">Select a project to manage enterprise feature flags and module policies.</p>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col">
       <ModuleHeader
         title="Feature Settings"
-        description="Preview and export per-project feature configuration. Use this as the single source of feature flags and module policies."
+        description="Enterprise-grade modularity control. Configure guards, automation, and specific module behaviors for this project."
         actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="bg-transparent" size="sm" onClick={handleResetToDefaults}>
-              <RefreshCw className="mr-2" />
+          <div className="flex items-center gap-3">
+            <Badge variant="outline" className="h-8 px-3 bg-indigo-50 text-indigo-700 border-indigo-200 gap-1.5 font-bold uppercase tracking-wider">
+              <Zap size={12} className="fill-indigo-500 text-indigo-500" /> Managed Mode
+            </Badge>
+
+            <Button variant="outline" className="h-9 bg-white border-slate-200" size="sm" onClick={handleResetToDefaults}>
+              <RefreshCw className="mr-2 h-4 w-4" />
               Reset to Defaults
             </Button>
 
-            <Button variant="outline" className="bg-transparent" size="sm" onClick={handleExport}>
-              <Download className="mr-2" />
-              Export JSON
+            <Button variant="outline" className="h-9 bg-white border-slate-200" size="sm" onClick={handleExport}>
+              <Download className="mr-2 h-4 w-4" />
+              Export Config
             </Button>
           </div>
         }
       />
 
-      <div className="mt-4">
-        <div className="rounded-lg border p-4 bg-white dark:bg-black dark:border-neutral-800">
-          <h3 className="mb-2 text-sm font-medium">Configuration JSON (read-only preview)</h3>
-          <pre className="max-h-[60vh] overflow-auto text-xs leading-snug">
-            {configSnapshot ? JSON.stringify(configSnapshot, null, 2) : 'No configuration available.'}
-          </pre>
-        </div>
+      <div className="flex-1 overflow-hidden">
+        {loading && !config ? (
+          <div className="h-full w-full flex items-center justify-center">
+            <div className="flex flex-col items-center gap-2">
+              <RefreshCw className="h-8 w-8 text-indigo-500 animate-spin" />
+              <p className="text-sm font-medium text-slate-500">Synchronizing configuration...</p>
+            </div>
+          </div>
+        ) : config ? (
+          <FeatureModulesEditor 
+            config={config} 
+            onUpdate={(updates) => updateConfig(projectId, updates)} 
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center text-slate-400">
+            Failed to load configuration.
+          </div>
+        )}
       </div>
     </div>
   )
-}
+}

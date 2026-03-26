@@ -369,16 +369,19 @@ export const dashboardService = {
         avgPhi: number // Phase 13
         globalAlertCounts: { CRITICAL: number; MODERATE: number; MINOR: number }
         topGlobalRisks: { id: string; description: string; score: number; projectName: string }[]
+        alerts: { id: string; name: string; spi: number; cpi: number; eac: number; isRedAlert: boolean }[]
     }> {
         if (!supabase) return {
             totalProjects: 0, totalBudget: 0, utilizedBudget: 0, avgCpi: 1, avgSpi: 1, avgPhi: 100,
-            globalAlertCounts: { CRITICAL: 0, MODERATE: 0, MINOR: 0 }, topGlobalRisks: []
+            globalAlertCounts: { CRITICAL: 0, MODERATE: 0, MINOR: 0 }, topGlobalRisks: [],
+            alerts: []
         }
 
         const { data: projects } = await supabase.from('projects').select('id, name')
         if (!projects) return {
             totalProjects: 0, totalBudget: 0, utilizedBudget: 0, avgCpi: 1, avgSpi: 1, avgPhi: 100,
-            globalAlertCounts: { CRITICAL: 0, MODERATE: 0, MINOR: 0 }, topGlobalRisks: []
+            globalAlertCounts: { CRITICAL: 0, MODERATE: 0, MINOR: 0 }, topGlobalRisks: [],
+            alerts: []
         }
 
         let totalBudget = 0
@@ -388,6 +391,7 @@ export const dashboardService = {
         let phiSum = 0
         let projectsWithData = 0
         const globalAlerts = { CRITICAL: 0, MODERATE: 0, MINOR: 0 }
+        const redAlertsList: { id: string; name: string; spi: number; cpi: number; eac: number; isRedAlert: boolean }[] = []
 
         // Aggregate stats per project
         await Promise.all(projects.map(async (p) => {
@@ -399,6 +403,18 @@ export const dashboardService = {
                 spiSum += stats.spi
                 phiSum += stats.phi?.score || 0
                 projectsWithData++
+
+                // Check for Red Alert status
+                if (stats.spi < 0.9) {
+                    redAlertsList.push({
+                        id: p.id,
+                        name: p.name,
+                        spi: stats.spi,
+                        cpi: stats.cpi || 1,
+                        eac: stats.totalBudget / (stats.cpi || 1),
+                        isRedAlert: true
+                    })
+                }
             }
             globalAlerts.CRITICAL += stats.alertCounts.CRITICAL
             globalAlerts.MODERATE += stats.alertCounts.MODERATE
@@ -428,7 +444,8 @@ export const dashboardService = {
             avgSpi: projectsWithData > 0 ? spiSum / projectsWithData : 1,
             avgPhi: projectsWithData > 0 ? phiSum / projectsWithData : 100,
             globalAlertCounts: globalAlerts,
-            topGlobalRisks
+            topGlobalRisks,
+            alerts: redAlertsList
         }
     }
 }

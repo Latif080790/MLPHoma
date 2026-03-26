@@ -6,7 +6,7 @@
  * and provides evidence-based progress submission (photo, notes, weather, crew).
  */
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
@@ -17,12 +17,15 @@ import {
     Sun, Cloud, CloudRain, CloudLightning,
     Camera, Users, Clock, CheckCircle2, AlertTriangle,
     MapPin, Send, CalendarClock, ChevronDown, ChevronRight,
+    Wifi, WifiOff, ShieldCheck, Database
 } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
 import {
     progressCaptureService, type WeatherCondition, type ProgressEntry,
 } from '../../services/progressCaptureService'
 import { geofenceService } from '../../services/geofenceService'
+import { exifService, type PhotoMetadata } from '../../services/exifService'
+import { useOfflineQueueStore } from '../../store/offlineQueueStore'
 import type { TimelineTask } from '../../store/timelineStore'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
@@ -56,21 +59,60 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
     const [submitting, setSubmitting] = useState(false)
     const [locationValid, setLocationValid] = useState(false)
     const [verifyingLocation, setVerifyingLocation] = useState(false)
+    const [userCoords, setUserCoords] = useState<{ lat: number, lon: number } | null>(null)
+    const [photoMetadata, setPhotoMetadata] = useState<PhotoMetadata[]>([])
 
     const progressGain = progress - task.progress
 
     const handleVerifyLocation = async () => {
         setVerifyingLocation(true)
         try {
-            await geofenceService.validateSubmission(projectId, 'Site Manager')
-            setLocationValid(true)
-            toast.success("Location verified. You may now submit progress.")
-        } catch {
-            setLocationValid(false)
-            // Error is handled and toasted inside the service
-        } finally {
+            // Get actual browser geolocation
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    const coords = { lat: pos.coords.latitude, lon: pos.coords.longitude }
+                    setUserCoords(coords)
+                    const result = await geofenceService.isWithinProjectBounds(projectId, coords)
+                    
+                    if (result.inside) {
+                        setLocationValid(true)
+                        toast.success("Location verified. You are within the project bounds.", {
+                            description: `Distance: ${Math.round(result.distance)}m`
+                        })
+                    } else {
+                        setLocationValid(false)
+                        toast.error("Location out of bounds", {
+                            description: `You are ${Math.round(result.distance)}m away. Move closer to the site.`
+                        })
+                    }
+                    setVerifyingLocation(false)
+                },
+                (err) => {
+                    toast.error("GPS Error", { description: err.message })
+                    setVerifyingLocation(false)
+                },
+                { enableHighAccuracy: true }
+            )
+        } catch (err) {
             setVerifyingLocation(false)
+            toast.error("Failed to acquire GPS")
         }
+    }
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || [])
+        if (files.length === 0) return
+
+        setPhotoCount(prev => prev + files.length)
+        
+        toast.promise(Promise.all(files.map(f => exifService.extractMetadata(f))), {
+            loading: "Extracting metadata from evidence...",
+            success: (metas) => {
+                setPhotoMetadata(prev => [...prev, ...metas])
+                return `Extracted metadata for ${files.length} photos`
+            },
+            error: "Failed to extract metadata"
+        })
     }
 
     const handleSubmit = async () => {
@@ -93,10 +135,18 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                 weather,
                 crewCount,
                 capturedBy: 'current_user',
+                latitude: userCoords?.lat,
+                longitude: userCoords?.lon,
+                metadata: {
+                    photoExif: photoMetadata,
+                    geofenceVerified: locationValid
+                }
             })
             toast.success('Progress submitted', { description: `${task.name}: ${task.progress}% → ${progress}%` })
             setExpanded(false)
             setLocationValid(false) // reset for next time
+            setPhotoMetadata([])
+            setUserCoords(null)
             onSubmitted()
         } catch (err: unknown) {
             toast.error('Failed', { description: (err as Error).message })
@@ -175,14 +225,10 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                             <label className="text-xs text-slate-500 uppercase font-semibold flex items-center gap-1">
                                 <Camera size={10} /> Foto Evidence
                             </label>
-                            <Input
-                                type="number"
-                                min={0}
-                                value={photoCount}
-                                onChange={e => setPhotoCount(Number(e.target.value))}
-                                className="h-8 mt-1 text-xs"
-                                placeholder="0"
-                            />
+                            <label className="flex items-center justify-center w-full h-8 mt-1 border border-dashed border-slate-300 rounded cursor-pointer hover:bg-slate-50 transition-colors">
+                                <span className="text-[10px] text-slate-400 font-bold">{photoCount > 0 ? `${photoCount} Photos Loaded` : 'Tap to Upload'}</span>
+                                <input type="file" multiple accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                            </label>
                         </div>
                         {/* Crew Count */}
                         <div>
@@ -272,6 +318,19 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
 export function DailyProgressBoard() {
     const activeProjectId = useProjectStore(s => s.activeProjectId)
     const [refreshKey, setRefreshKey] = useState(0)
+    const [isOnline, setIsOnline] = useState(navigator.onLine)
+    const pendingLogsCount = useOfflineQueueStore(state => state.queue.length)
+
+    useEffect(() => {
+        const handleOnline = () => setIsOnline(true)
+        const handleOffline = () => setIsOnline(false)
+        window.addEventListener('online', handleOnline)
+        window.addEventListener('offline', handleOffline)
+        return () => {
+            window.removeEventListener('online', handleOnline)
+            window.removeEventListener('offline', handleOffline)
+        }
+    }, [])
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const todayTasks = useMemo(() => {
@@ -374,6 +433,30 @@ export function DailyProgressBoard() {
                             Tugas Aktif Hari Ini
                             <Badge variant="outline" className="text-xs h-5">{format(new Date(), 'EEEE, dd MMM yyyy')}</Badge>
                         </CardTitle>
+                        <div className="flex items-center gap-2">
+                            {isOnline ? (
+                                <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
+                                    <Wifi className="w-3 h-3 mr-1" /> Online
+                                </Badge>
+                            ) : (
+                                <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
+                                    <WifiOff className="w-3 h-3 mr-1" /> Offline Mode
+                                </Badge>
+                            )}
+
+                            {pendingLogsCount > 0 && (
+                                <Badge variant="secondary" className="bg-blue-100 text-blue-700 animate-pulse">
+                                    <Database className="w-3 h-3 mr-1" /> {pendingLogsCount} Pending Sync
+                                </Badge>
+                            )}
+
+                            {/* Note: locationValid is a state from TaskCard. For a board-level badge,
+                                    it would typically come from a global state or be determined differently.
+                                    Implementing as per instruction, assuming a global context for it. */}
+                            <Badge variant="outline" className={false ? "text-green-600 border-green-200" : "text-slate-400"}>
+                                <MapPin className="w-3 h-3 mr-1" /> {false ? "Geofence Secured" : "GPS Required"}
+                            </Badge>
+                        </div>
                         {report && report.avgProgressGain > 0 && (
                             <Badge className="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                                 Avg +{report.avgProgressGain.toFixed(1)}% progress

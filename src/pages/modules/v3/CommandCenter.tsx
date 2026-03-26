@@ -15,6 +15,7 @@ import { MRPAlertPanel } from '@/components/supply/MRPAlertPanel'
 import { AuditLogViewer } from '@/components/audit/AuditLogViewer'
 import { ApprovalQueueWidget } from '@/components/dashboard/ApprovalQueueWidget'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
+import GovernanceWatchPanel from '@/components/dashboard/GovernanceWatchPanel'
 import ModulePageState from '@/components/common/ModulePageState'
 import { MiniSparkline } from '@/components/ui/MiniSparkline'
 
@@ -301,36 +302,28 @@ export default function CommandCenter() {
                     </CardContent>
                 </Card>
 
-                {/* B. SAFETY / RISKS (Alert Block) */}
-                <Card className={`md:col-span-1 border-l-4 shadow-sm ${(isPortfolioMode ? portfolioStats?.globalAlertCounts?.CRITICAL || 0 : stats?.criticalRisks || 0) > 0
-                    ? 'border-l-red-500 bg-red-50/50 dark:bg-red-950/10'
-                    : 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/10'
-                    }`}>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center justify-between text-slate-600 dark:text-slate-400">
-                            <span>{isPortfolioMode ? 'Global Risks' : 'Risk Radar'}</span>
-                            {(isPortfolioMode ? portfolioStats?.globalAlertCounts?.CRITICAL || 0 : stats?.criticalRisks || 0) > 0 ? <AlertTriangle size={16} className="text-red-500" /> : <ShieldCheck size={16} className="text-emerald-500" />}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-slate-900 dark:text-white">
-                            {isPortfolioMode ? portfolioStats?.globalAlertCounts?.CRITICAL || 0 : stats?.criticalRisks || 0}
-                        </div>
-                        <div className="mt-2 space-y-1">
-                            {isPortfolioMode ? (
-                                portfolioStats?.topGlobalRisks?.slice(0, 3).map((risk, i: number) => {
-                                    const dotColor = risk.score >= 18 ? 'bg-red-500' : risk.score >= 12 ? 'bg-amber-500' : 'bg-yellow-500'
-                                    const textColor = risk.score >= 18 ? 'text-red-600 dark:text-red-400' : risk.score >= 12 ? 'text-amber-600 dark:text-amber-400' : 'text-yellow-600 dark:text-yellow-400'
-                                    return (
-                                        <div key={i} className={`text-xs ${textColor} font-medium flex items-center gap-1`}>
-                                            <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${dotColor}`} />
-                                            <span className="truncate">[{risk.projectName}] {risk.description}</span>
-                                            <span className="font-mono text-slate-400 ml-auto shrink-0 pl-1">{risk.score}</span>
-                                        </div>
-                                    )
-                                })
-                            ) : (
-                                stats?.topRisks?.slice(0, 2).map((risk, i) => {
+                {/* B. SAFETY / RISKS (Alert Block) / GOVERNANCE WATCH */}
+                {isPortfolioMode ? (
+                    <div className="md:col-span-1">
+                        <GovernanceWatchPanel alerts={portfolioStats?.alerts || []} />
+                    </div>
+                ) : (
+                    <Card className={`md:col-span-1 border-l-4 shadow-sm ${(isPortfolioMode ? portfolioStats?.globalAlertCounts?.CRITICAL || 0 : stats?.criticalRisks || 0) > 0
+                        ? 'border-l-red-500 bg-red-50/50 dark:bg-red-950/10'
+                        : 'border-l-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/10'
+                        }`}>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium flex items-center justify-between text-slate-600 dark:text-slate-400">
+                                <span>Risk Radar</span>
+                                {stats?.criticalRisks || 0 > 0 ? <AlertTriangle size={16} className="text-red-500" /> : <ShieldCheck size={16} className="text-emerald-500" />}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-slate-900 dark:text-white">
+                                {stats?.criticalRisks || 0}
+                            </div>
+                            <div className="mt-2 space-y-1">
+                                {stats?.topRisks?.slice(0, 2).map((risk, i) => {
                                     const dotColor = risk.score >= 18 ? 'bg-red-500' : risk.score >= 12 ? 'bg-amber-500' : 'bg-yellow-500'
                                     const textColor = risk.score >= 18 ? 'text-red-600 dark:text-red-400' : risk.score >= 12 ? 'text-amber-600 dark:text-amber-400' : 'text-yellow-600 dark:text-yellow-400'
                                     return (
@@ -340,14 +333,14 @@ export default function CommandCenter() {
                                             <span className="font-mono text-slate-400 ml-auto shrink-0 pl-1">{risk.score}</span>
                                         </div>
                                     )
-                                })
-                            )}
-                            {((isPortfolioMode ? !portfolioStats?.topGlobalRisks?.length : !stats?.topRisks?.length)) && (
-                                <p className="text-xs text-slate-500">No open critical risks.</p>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                                })}
+                                {!stats?.topRisks?.length && (
+                                    <p className="text-xs text-slate-500">No open critical risks.</p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* C. SCHEDULE ALERTS */}
                 <Card className="md:col-span-1 shadow-sm border-slate-200 dark:border-slate-800">

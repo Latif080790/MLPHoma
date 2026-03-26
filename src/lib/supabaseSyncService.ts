@@ -13,6 +13,7 @@
 
 import { supabase } from './supabaseClient'
 import { toast } from 'sonner'
+import { get, set, del } from 'idb-keyval'
 
 /**
  * Sync operation types
@@ -54,7 +55,8 @@ class SyncQueueManager {
   private processing: boolean = false
   private maxRetries: number = 3
   private retryDelay: number = 1000 // Base delay in ms
-  private maxQueueSize: number = 30 // Maximum queue size to prevent quota exceeded
+  private maxQueueSize: number = 2000 // Significantly increased for IndexedDB
+  private failedTaskCount: number = 0 // Cached synchronous failed count
 
   /**
    * Add task to sync queue
@@ -237,86 +239,86 @@ class SyncQueueManager {
   }
 
   /**
-   * Save queue to localStorage for persistence
+   * Save queue to IndexedDB for persistence
    */
   private saveQueue() {
     try {
-      // Limit queue size before saving to prevent quota exceeded
+      // Limit queue size before saving, though IDB handles much more than localStorage
       if (this.queue.length > this.maxQueueSize) {
         console.warn(`Queue too large (${this.queue.length}), keeping only last ${this.maxQueueSize} tasks`)
         this.queue = this.queue.slice(-this.maxQueueSize)
       }
-      localStorage.setItem('supabase-sync-queue', JSON.stringify(this.queue))
+      set('supabase-sync-queue', this.queue).catch(error => {
+        console.error('Failed to save sync queue to IndexedDB:', error)
+      })
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        console.error('LocalStorage quota exceeded, clearing sync queue')
-        // Clear the queue to prevent infinite loop
-        this.queue = []
-        try {
-          // Clear all sync-related storage
-          localStorage.removeItem('supabase-sync-queue')
-          localStorage.removeItem('supabase-sync-failed-queue')
-          localStorage.removeItem('supabase-failed-queue')
-          // Clear old RAB storage that might be large
-          const keys = Object.keys(localStorage)
-          keys.forEach(key => {
-            if (key.includes('mlphoma:rab:') || key.includes('import-presets')) {
-              try {
-                localStorage.removeItem(key)
-              } catch (e) {
-                console.error(`Failed to remove ${key}:`, e)
-              }
-            }
-          })
-        } catch (e) {
-          console.error('Failed to clear storage:', e)
-        }
-        toast.error('Penyimpanan penuh. Data sementara dibersihkan. Silakan refresh halaman dan import dengan ukuran lebih kecil (max 1000 items per import).')
-      } else {
-        console.error('Failed to save sync queue:', error)
-      }
+      console.error('Critical error triggering idb-keyval set:', error)
     }
   }
 
   /**
-   * Load queue from localStorage
+   * Load queue from IndexedDB (with localStorage migration fallback)
    */
-  loadQueue() {
+  async loadQueue() {
     try {
-      const saved = localStorage.getItem('supabase-sync-queue')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        this.queue = (Array.isArray(parsed) ? parsed : []).map((task: SyncTask) => ({
-          ...task,
-          correlationId: task.correlationId || this.generateCorrelationId(),
-        }))
-        // Limit loaded queue size
-        if (this.queue.length > this.maxQueueSize) {
-          console.warn(`Loaded queue too large (${this.queue.length}), keeping only last ${this.maxQueueSize} tasks`)
-          this.queue = this.queue.slice(-this.maxQueueSize)
+      // 1. Check legacy localStorage for pending tasks to prevent data loss
+      const legacyQueueStr = localStorage.getItem('supabase-sync-queue')
+      if (legacyQueueStr && legacyQueueStr !== '[]') {
+        try {
+          const legacyParsed = JSON.parse(legacyQueueStr)
+          this.queue = (Array.isArray(legacyParsed) ? legacyParsed : []).map((task: SyncTask) => ({
+            ...task,
+            correlationId: task.correlationId || this.generateCorrelationId(),
+          }))
+          console.warn('Migrated legacy sync queue from localStorage.', this.queue.length, 'items found.')
+          this.saveQueue()
+          localStorage.removeItem('supabase-sync-queue')
+        } catch (e) {
+          console.error('Failed parsing legacy queue', e)
         }
-        if (this.queue.length > 0) {
-          this.processQueue()
+      } else {
+        // 2. Load from IndexedDB
+        const saved = await get<SyncTask[]>('supabase-sync-queue')
+        if (saved) {
+          this.queue = (Array.isArray(saved) ? saved : []).map((task: SyncTask) => ({
+            ...task,
+            correlationId: task.correlationId || this.generateCorrelationId(),
+          }))
         }
+      }
+
+      // Migrate failed queue if it exists
+      const legacyFailedStr = localStorage.getItem('supabase-failed-queue')
+      if (legacyFailedStr && legacyFailedStr !== '[]') {
+         try {
+           const failed = JSON.parse(legacyFailedStr)
+           await set('supabase-failed-queue', failed)
+           this.failedTaskCount = failed.length
+           localStorage.removeItem('supabase-failed-queue')
+           localStorage.removeItem('supabase-sync-failed-queue')
+         } catch (e) {
+           console.error('Failed parsing legacy failed queue', e)
+         }
+      } else {
+         const modernFailed = await get<SyncTask[]>('supabase-failed-queue')
+         this.failedTaskCount = modernFailed ? modernFailed.length : 0
+      }
+
+      if (this.queue.length > 0) {
+        this.processQueue()
       }
     } catch (error) {
       console.error('Failed to load sync queue:', error)
-      // Clear corrupted data
-      try {
-        localStorage.removeItem('supabase-sync-queue')
-      } catch (e) {
-        console.error('Failed to clear corrupted queue:', e)
-      }
+      // Do not clear corrupted data aggressively yet, let IDB handle it naturally
     }
   }
 
   /**
-   * Clear processed tasks to free up space
+   * Clear processed tasks to free up memory (IDB handles deep storage)
    */
   private clearProcessedTasks() {
-    // Keep only tasks that are being actively processed (first 10)
-    if (this.queue.length > 10) {
-      this.queue = this.queue.slice(0, 10)
+    if (this.queue.length > 500) {
+      this.queue = this.queue.slice(0, 500)
       this.saveQueue()
     }
   }
@@ -324,48 +326,52 @@ class SyncQueueManager {
   /**
    * Save failed task for manual retry
    */
-  private saveToFailedQueue(task: SyncTask) {
+  private async saveToFailedQueue(task: SyncTask) {
     try {
-      const failed = JSON.parse(localStorage.getItem('supabase-failed-queue') || '[]')
+      const failed = await get<SyncTask[]>('supabase-failed-queue') || []
       failed.push(task)
-      localStorage.setItem('supabase-failed-queue', JSON.stringify(failed))
+      await set('supabase-failed-queue', failed)
+      this.failedTaskCount = failed.length
     } catch (error) {
       console.error('Failed to save to failed queue:', error)
     }
   }
 
   /**
-   * Get failed tasks count
+   * Get failed tasks count (Synchronous via memory cache)
    */
   getFailedCount(): number {
-    try {
-      const failed = JSON.parse(localStorage.getItem('supabase-failed-queue') || '[]')
-      return failed.length
-    } catch {
-      return 0
-    }
+    return this.failedTaskCount
   }
 
   /**
    * Clear failed queue
    */
-  clearFailedQueue() {
-    localStorage.removeItem('supabase-failed-queue')
+  async clearFailedQueue() {
+    try {
+      await del('supabase-failed-queue')
+      this.failedTaskCount = 0
+    } catch (err) {
+      console.error('Failed to clear failed queue:', err)
+    }
   }
 
   /**
    * Retry all failed tasks
    */
-  retryFailedTasks() {
+  async retryFailedTasks() {
     try {
-      const failed = JSON.parse(localStorage.getItem('supabase-failed-queue') || '[]')
+      const failed = await get<SyncTask[]>('supabase-failed-queue') || []
+      
       failed.forEach((task: SyncTask) => {
         task.retryCount = 0 // Reset retry count
         this.queue.push(task)
       })
+      
       this.clearFailedQueue()
       this.saveQueue()
       this.processQueue()
+      
       toast.success(`Retrying ${failed.length} failed tasks`)
     } catch (error) {
       console.error('Failed to retry failed tasks:', error)
@@ -749,6 +755,8 @@ export function syncRABItems(items: any[], projectId: string): string {
       markup_percentage: item.markup_percentage || 0,
       weight_percentage: item.weight_percentage || 0,
       final_total: item.final_total || item.finalTotal || item.finalPrice,
+      is_domestic: item.is_domestic ?? true,
+      tkdn_percentage: item.tkdn_percentage ?? 100,
       created_at: item.createdAt || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })),

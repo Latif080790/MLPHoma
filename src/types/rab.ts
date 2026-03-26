@@ -40,6 +40,9 @@ export interface RABItem {
   cost_subcon?: number
   markup_percentage?: number
   weight_percentage?: number
+  /** TKDN / Local Content (v3 Enterprise) */
+  is_domestic?: boolean
+  tkdn_percentage?: number
   /** Optional WBS link */
   wbsId?: string
   /** Optional Timeline Task link */

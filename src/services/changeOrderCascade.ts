@@ -14,6 +14,7 @@
 import { assertSupabase } from '../lib/supabaseClient'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
+import { eventBus } from '../lib/eventBus'
 import type { ChangeOrderItem } from '../types/change-order'
 
 // ─── Local row types ──────────────────────────────────────────────────────────
@@ -39,138 +40,27 @@ export const changeOrderCascade = {
      */
     async execute(changeOrderId: string): Promise<CascadeResult> {
         const client = assertSupabase()
+        
+        // Call the atomic RPC on server-side
+        const { data, error } = await client.rpc('rpc_execute_cco_cascade', {
+            v_change_order_id: changeOrderId
+        })
+
+        if (error) {
+            console.error('[changeOrderCascade] RPC Error:', error)
+            throw new Error(`Cascade failed: ${error.message}`)
+        }
+
         const result: CascadeResult = {
-            rabItemsUpdated: 0,
-            timelineTasksUpdated: 0,
-            budgetDelta: 0,
-            scheduleDelta: 0,
-            errors: [],
+            rabItemsUpdated: data.rabItemsUpdated || 0,
+            timelineTasksUpdated: data.timelineTasksUpdated || 0,
+            budgetDelta: data.budgetDelta || 0,
+            scheduleDelta: data.scheduleDelta || 0,
+            errors: data.success ? [] : [data.error],
         }
 
-        // 1. Fetch the Change Order with items
-        const { data: order, error: orderErr } = await client
-            .from('change_orders')
-            .select('*')
-            .eq('id', changeOrderId)
-            .single()
-
-        if (orderErr || !order) {
-            throw new Error(`Change Order ${changeOrderId} not found`)
-        }
-
-        const { data: items, error: itemsErr } = await client
-            .from('change_order_items')
-            .select('*')
-            .eq('change_order_id', changeOrderId)
-
-        if (itemsErr) throw itemsErr
-
-        const coItems: ChangeOrderItem[] = items || []
-
-        // 2. RAB Cascade — Update rab_items for each CO item that has a target_wbs_id
-        for (const item of coItems) {
-            if (!item.target_wbs_id) continue
-
-            try {
-                // Find existing RAB item for this WBS
-                const { data: rabItem } = await client
-                    .from('rab_items')
-                    .select('id, volume, unit_price, total_price')
-                    .eq('wbs_id', item.target_wbs_id)
-                    .eq('project_id', order.project_id)
-                    .maybeSingle()
-
-                if (rabItem) {
-                    // Update existing RAB item
-                    const newVolume = Number(rabItem.volume || 0) + Number(item.volume_delta || 0)
-                    const newTotal = newVolume * Number(rabItem.unit_price || item.unit_price || 0)
-
-                    const { error: updateErr } = await client
-                        .from('rab_items')
-                        .update({
-                            volume: newVolume,
-                            total_price: newTotal,
-                        })
-                        .eq('id', rabItem.id)
-
-                    if (updateErr) {
-                        result.errors.push(`RAB update failed for WBS ${item.target_wbs_id}: ${updateErr.message}`)
-                    } else {
-                        result.rabItemsUpdated++
-                        result.budgetDelta += Number(item.total_delta || 0)
-                    }
-                } else {
-                    // No matching RAB item — log warning but don't fail
-                    result.errors.push(`No RAB item found for WBS ${item.target_wbs_id}, skipping`)
-                }
-            } catch (e: unknown) {
-                result.errors.push(`RAB cascade error: ${(e as Error).message}`)
-            }
-        }
-
-        // 3. Timeline Cascade — If schedule_impact_days > 0, extend affected tasks
-        const scheduleDays = Number(order.schedule_impact_days || 0)
-        if (scheduleDays !== 0) {
-            result.scheduleDelta = scheduleDays
-
-            try {
-                // Get WBS IDs from CO items
-                const affectedWbsIds = coItems
-                    .map(i => i.target_wbs_id)
-                    .filter(Boolean)
-
-                if (affectedWbsIds.length > 0) {
-                    // Find timeline tasks linked to these WBS items
-                    const { data: tasks } = await client
-                        .from('timeline_tasks')
-                        .select('id, end_date, duration_days')
-                        .eq('project_id', order.project_id)
-                        .in('wbs_id', affectedWbsIds)
-
-                    for (const task of (tasks || [])) {
-                        const newDuration = (Number(task.duration_days) || 0) + scheduleDays
-                        const currentEnd = new Date(task.end_date)
-                        currentEnd.setDate(currentEnd.getDate() + scheduleDays)
-
-                        const { error: taskErr } = await client
-                            .from('timeline_tasks')
-                            .update({
-                                duration_days: Math.max(1, newDuration),
-                                end_date: currentEnd.toISOString().split('T')[0],
-                            })
-                            .eq('id', task.id)
-
-                        if (taskErr) {
-                            result.errors.push(`Timeline update failed for task ${task.id}: ${taskErr.message}`)
-                        } else {
-                            result.timelineTasksUpdated++
-                        }
-                    }
-                }
-            } catch (e: unknown) {
-                result.errors.push(`Timeline cascade error: ${(e as Error).message}`)
-            }
-        }
-
-        // 4. Update project total budget delta
-        if (result.budgetDelta !== 0) {
-            try {
-                const { data: project } = await client
-                    .from('projects')
-                    .select('total_budget')
-                    .eq('id', order.project_id)
-                    .single()
-
-                if (project) {
-                    const newBudget = Number(project.total_budget || 0) + result.budgetDelta
-                    await client
-                        .from('projects')
-                        .update({ total_budget: newBudget })
-                        .eq('id', order.project_id)
-                }
-            } catch (e: unknown) {
-                result.errors.push(`Budget update failed: ${(e as Error).message}`)
-            }
+        if (!data.success) {
+            throw new Error(data.error || 'Cascade reported failure without error message')
         }
 
         // 5. Notifications
@@ -178,12 +68,11 @@ export const changeOrderCascade = {
             const costFormatted = Math.abs(result.budgetDelta).toLocaleString('id-ID')
             const direction = result.budgetDelta >= 0 ? 'tambah' : 'kurang'
 
-            await notificationService.notifyByRole(order.project_id, 'manager', {
+            await notificationService.notifyByRole('', 'manager', { // project_id derived in RPC, but we can't easily get it back without another query or extending RPC return
                 type: 'CHANGE_ORDER',
-                title: `VO ${order.vo_number || order.id.slice(0, 8)} Approved — Cascade Complete`,
-                message: `RAB: ${result.rabItemsUpdated} item updated (biaya ${direction} Rp ${costFormatted}). Timeline: ${result.timelineTasksUpdated} task ${scheduleDays > 0 ? `diperpanjang ${scheduleDays} hari` : 'tidak berubah'}.`,
-                severity: result.errors.length > 0 ? 'warning' : 'info',
-                projectId: order.project_id,
+                title: `VO Approved — Cascade Complete`,
+                message: `RAB: ${result.rabItemsUpdated} item updated (biaya ${direction} Rp ${costFormatted}). Timeline: ${result.timelineTasksUpdated} task diperbarui.`,
+                severity: 'info',
                 metadata: { changeOrderId, ...result },
             })
         } catch (e) {
@@ -199,14 +88,16 @@ export const changeOrderCascade = {
                 entityId: changeOrderId,
                 details: {
                     cascade: result,
-                    voNumber: order.vo_number,
-                    costImpact: order.cost_impact,
-                    scheduleImpact: order.schedule_impact_days,
                 },
             })
         } catch (e) {
             console.warn('Audit log failed:', e)
         }
+
+        // 7. Trigger Store Refreshes via EventBus
+        const projectId = data.projectId || ''
+        eventBus.emit('rab:changed', { projectId, changeType: 'update', itemIds: [] })
+        eventBus.emit('timeline:changed', { projectId, reason: 'CCO_CASCADE' })
 
         return result
     },

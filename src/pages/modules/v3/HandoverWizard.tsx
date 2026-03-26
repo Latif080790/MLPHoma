@@ -21,6 +21,7 @@ import ModulePageState from '@/components/common/ModulePageState'
 import { Skeleton } from '@/components/common/LoadingSkeleton'
 
 import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
+import { prerequisiteCheckService, HandoverReadiness } from '@/services/prerequisiteCheckService'
 
 export default function HandoverWizard() {
     type InventoryItem = HandoverSummary['inventory'][number]
@@ -38,6 +39,8 @@ export default function HandoverWizard() {
     const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
     const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
+    const [readiness, setReadiness] = useState<HandoverReadiness | null>(null)
+    const [checkingReadiness, setCheckingReadiness] = useState(false)
 
     useEffect(() => {
         if (!projectId) {
@@ -63,6 +66,14 @@ export default function HandoverWizard() {
                 setSummary(result.s)
                 setOutstanding(result.o)
                 setSrStatus('Handover metrics loaded.')
+                
+                // Perform readiness check
+                setCheckingReadiness(true)
+                const readyResult = await prerequisiteCheckService.checkHandoverReady(projectId)
+                if (!cancelled) {
+                    setReadiness(readyResult)
+                    setCheckingReadiness(false)
+                }
             }
 
             if (!result && !cancelled) {
@@ -304,6 +315,30 @@ export default function HandoverWizard() {
                                         </Button>
                                     </div>
 
+                                    {readiness && !readiness.isReady && (
+                                        <div className="p-4 border rounded-lg bg-red-50 border-red-200 space-y-2">
+                                            <div className="flex items-center gap-2 text-red-800 font-semibold">
+                                                <AlertTriangle className="w-5 h-5" />
+                                                Compliance Blockers Detected
+                                            </div>
+                                            <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+                                                {readiness.reasons.map((reason, idx) => (
+                                                    <li key={idx}>{reason}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {readiness && readiness.isReady && (
+                                        <div className="p-4 border rounded-lg bg-green-50 border-green-200">
+                                            <div className="flex items-center gap-2 text-green-800 font-semibold">
+                                                <Check className="w-5 h-5" />
+                                                Handover Compliance Met
+                                            </div>
+                                            <p className="text-sm text-green-700">All physical and financial prerequisites have been verified.</p>
+                                        </div>
+                                    )}
+
                                     <div className="pt-6 border-t">
                                         <h3 className="font-medium text-red-600 mb-2">Danger Zone</h3>
                                         <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
@@ -315,14 +350,14 @@ export default function HandoverWizard() {
                                                 <Button
                                                     variant="destructive"
                                                     onClick={() => setConfirmArchiveOpen(true)}
-                                                    disabled={outstanding.length > 0}
+                                                    disabled={outstanding.length > 0 || !readiness?.isReady || checkingReadiness}
                                                 >
-                                                    Archive Project
+                                                    {checkingReadiness ? 'Checking...' : 'Archive Project'}
                                                 </Button>
                                             </PermissionGuard>
-                                            {outstanding.length > 0 && (
+                                            {(outstanding.length > 0 || !readiness?.isReady) && (
                                                 <p className="text-xs text-red-500 mt-1">
-                                                    Resolve all issues to archive
+                                                    Resolve all compliance issues to archive
                                                 </p>
                                             )}
 

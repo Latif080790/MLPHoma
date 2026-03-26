@@ -27,6 +27,7 @@ import {
   moduleConfigUpdateSchema,
 } from '@/lib/validationSchemas'
 import { syncFeatureConfig, syncFeatureSnapshot } from '@/lib/supabaseSyncService'
+import { get as idbGet, set as idbSet } from 'idb-keyval'
 
 /**
  * Shape of a saved snapshot/version for a project's feature config.
@@ -67,8 +68,7 @@ interface FeatureStoreState {
 }
 
 /**
- * LocalStorage key helpers
- * @param projectId - project identifier
+ * IndexedDB key helpers
  */
 function storageKey(projectId: string) {
   return `featureConfig:${projectId}`
@@ -136,40 +136,46 @@ function logFeatureConfigAudit(
 }
 
 /**
- * Safe parse from localStorage
- * @param projectId - project identifier
- * @returns FeatureConfig | null
+ * Synchronous read from localStorage (for instant hydration on first load)
  */
-function readFromStorage(projectId: string): FeatureConfig | null {
+function readFromLocalStorage(projectId: string): FeatureConfig | null {
   try {
     const raw = localStorage.getItem(storageKey(projectId))
     if (!raw) return null
     const parsed = JSON.parse(raw) as FeatureConfig
-    // run migration if needed
     return migrateConfig(parsed)
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('featureStore: failed to read from storage', e)
+  } catch {
     return null
   }
 }
 
 /**
- * Safe write to localStorage
- * @param projectId - project identifier
- * @param cfg - feature config
+ * Read from storage: tries localStorage sync (for instant hydration),
+ * then kicks off async IDB migration/read behind the scenes.
  */
-function writeToStorage(projectId: string, cfg: FeatureConfig) {
-  try {
-    localStorage.setItem(storageKey(projectId), JSON.stringify(cfg))
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('featureStore: failed to write to storage', e)
+function readFromStorage(projectId: string): FeatureConfig | null {
+  // Sync read for immediate UI
+  const legacy = readFromLocalStorage(projectId)
+  if (legacy) {
+    // Migrate to IndexedDB in background
+    void idbSet(storageKey(projectId), legacy).then(() => {
+      localStorage.removeItem(storageKey(projectId))
+    })
   }
+  return legacy
 }
 
 /**
- * Snapshots read/write helpers
+ * Write to IndexedDB (fire-and-forget async)
+ */
+function writeToStorage(projectId: string, cfg: FeatureConfig) {
+  void idbSet(storageKey(projectId), cfg).catch((e) => {
+    console.warn('featureStore: failed to write config to IndexedDB', e)
+  })
+}
+
+/**
+ * Snapshots: synchronous read from localStorage + async IDB migration
  */
 function readSnapshotsFromStorage(projectId: string): FeatureSnapshot[] {
   try {
@@ -177,20 +183,23 @@ function readSnapshotsFromStorage(projectId: string): FeatureSnapshot[] {
     if (!raw) return []
     const parsed = JSON.parse(raw) as unknown
     if (!Array.isArray(parsed)) return []
-    return parsed.filter((snapshot) => isValidSnapshotShape(snapshot, projectId))
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('featureStore: failed to read snapshots', e)
+    const valid = parsed.filter((snapshot) => isValidSnapshotShape(snapshot, projectId))
+    // Migrate to IndexedDB
+    if (valid.length > 0) {
+      void idbSet(snapshotsKey(projectId), valid).then(() => {
+        localStorage.removeItem(snapshotsKey(projectId))
+      })
+    }
+    return valid
+  } catch {
     return []
   }
 }
+
 function writeSnapshotsToStorage(projectId: string, snaps: FeatureSnapshot[]) {
-  try {
-    localStorage.setItem(snapshotsKey(projectId), JSON.stringify(snaps))
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.warn('featureStore: failed to write snapshots', e)
-  }
+  void idbSet(snapshotsKey(projectId), snaps).catch((e) => {
+    console.warn('featureStore: failed to write snapshots to IndexedDB', e)
+  })
 }
 
 /**

@@ -163,34 +163,6 @@ export default function CashFlow(): JSX.Element {
     }
   }, [projectId, getRapPlan, setPlannedFromRap, analyzeCurva, projectBudget])
 
-  /**
-   * handleGenerateBaseline
-   *
-   * Membuat baseline sederhana (hari ini -> +6 bulan) dan memicu analisis.
-   */
-  const handleGenerateBaseline = useCallback(() => {
-    if (!projectId) return
-    const start = new Date()
-    const end = new Date()
-    end.setMonth(end.getMonth() + 6)
-
-    // Gunakan getState() untuk menghindari subscription di komponen
-    useCurvaSStore.getState().generateBaseline(
-      projectId,
-      projectBudget || 0,
-      start.toISOString().split('T')[0],
-      end.toISOString().split('T')[0]
-    )
-
-    setTimeout(() => {
-      try {
-        analyzeCurva(projectId)
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn('Analyze failed after baseline generation', e)
-      }
-    }, 0)
-  }, [projectId, projectBudget, analyzeCurva])
 
   /**
    * handleExportCSV
@@ -245,10 +217,6 @@ export default function CashFlow(): JSX.Element {
               Import from RAP
             </Button>
 
-            <Button variant="outline" size="sm" className="bg-transparent" onClick={handleGenerateBaseline}>
-              <RefreshCw className="mr-2" />
-              Generate Baseline
-            </Button>
 
             <Button size="sm" onClick={handleExportCSV}>
               Export CSV

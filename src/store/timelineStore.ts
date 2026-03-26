@@ -15,6 +15,7 @@ import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/validationSchemas'
 import { syncTimelineTask, syncDelete, syncTimelineTasks } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
+import { eventBus } from '../lib/eventBus'
 import type { TimelineProgressEvidence } from '../types/progressEvidence'
 import { supabase } from '../lib/supabaseClient'
 
@@ -406,4 +407,12 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
   }
 })
 
-export default useTimelineStore
+
+// Subscriptions
+eventBus.on('timeline:changed', ({ projectId }) => {
+  if (projectId) {
+    useTimelineStore.getState().fetchTasks(projectId)
+  }
+})
+
+export default useTimelineStore

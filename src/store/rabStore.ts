@@ -20,6 +20,8 @@ import { validate } from '../lib/validationMiddleware'
 import { rabItemInputSchema, rabItemUpdateSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
 import { generateId } from '../lib/idGenerator'
+import { get as idbGet, set as idbSet } from 'idb-keyval'
+import { eventBus } from '../lib/eventBus'
 import type { RABItem } from '../types/rab'
 
 // Re-export RABItem for backward compatibility
@@ -106,16 +108,51 @@ const STORAGE_KEY = 'rabStore:v2'
 const EMPTY_ITEMS: RABItem[] = []
 
 /**
- * Helper load from localStorage
+ * Helper: load legacy data from localStorage (for one-time migration)
  */
-function loadPersisted(): { itemsByProject: Record<string, RABItem[]>; audit: AuditEntry[] } | null {
+function loadLegacyLocalStorage(): { itemsByProject: Record<string, RABItem[]>; audit: AuditEntry[] } | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     return JSON.parse(raw)
   } catch (e) {
-    console.warn('Failed to parse persisted rabStore', e)
+    console.warn('Failed to parse legacy rabStore localStorage', e)
     return null
+  }
+}
+
+/**
+ * Async: load persisted data from IndexedDB, falling back to localStorage
+ */
+async function loadPersistedAsync(): Promise<{ itemsByProject: Record<string, RABItem[]>; audit: AuditEntry[] } | null> {
+  try {
+    // Try IndexedDB first
+    const idbData = await idbGet<{ itemsByProject: Record<string, RABItem[]>; audit: AuditEntry[] }>(STORAGE_KEY)
+    if (idbData) return idbData
+
+    // Migrate from localStorage if present
+    const legacy = loadLegacyLocalStorage()
+    if (legacy) {
+      console.info('[RAB] Migrating persistence from localStorage → IndexedDB')
+      await idbSet(STORAGE_KEY, legacy)
+      localStorage.removeItem(STORAGE_KEY) // Clean up
+      return legacy
+    }
+    return null
+  } catch (e) {
+    console.warn('Failed to load rabStore from IndexedDB', e)
+    return loadLegacyLocalStorage() // Fallback
+  }
+}
+
+/**
+ * Async: persist current state to IndexedDB (fire-and-forget)
+ */
+async function persistToIDB(state: { itemsByProject: Record<string, RABItem[]>; audit: AuditEntry[] }) {
+  try {
+    await idbSet(STORAGE_KEY, { itemsByProject: state.itemsByProject, audit: state.audit })
+  } catch (e) {
+    console.warn('Failed to persist rabStore to IndexedDB', e)
   }
 }
 
@@ -132,8 +169,16 @@ export const useRabStore = create<RabState>((set, get) => {
     (src) => src || EMPTY_ITEMS
   )
 
-  // initialize from storage if available
-  const persisted = loadPersisted()
+  // Synchronous initial load from localStorage (for instant hydration)
+  // Then async IDB load will overwrite if newer data exists
+  const legacyData = loadLegacyLocalStorage()
+
+  // Kick off async IndexedDB hydration
+  loadPersistedAsync().then((data) => {
+    if (data) {
+      set({ itemsByProject: data.itemsByProject, audit: data.audit || [] })
+    }
+  })
 
   /**
    * snapshotForHistory
@@ -153,10 +198,10 @@ export const useRabStore = create<RabState>((set, get) => {
   }
 
   return {
-    itemsByProject: persisted?.itemsByProject || {},
+    itemsByProject: legacyData?.itemsByProject || {},
     historyByProject: {},
     futureByProject: {},
-    audit: persisted?.audit || [],
+    audit: legacyData?.audit || [],
     hasUnsavedChanges: {},
     autoSaveTimers: {},
     priceDrift: {},
@@ -212,6 +257,8 @@ export const useRabStore = create<RabState>((set, get) => {
       get().logAction({ projectId, action: 'addItem', payload: newItem })
       get().markUnsaved(projectId)
       get().persist()
+      // Emit event for downstream subscribers
+      eventBus.emit('rab:changed', { projectId, changeType: 'add', itemIds: [id] })
       // Don't sync drafts to Supabase immediately
       return id
     },
@@ -253,6 +300,8 @@ export const useRabStore = create<RabState>((set, get) => {
       get().logAction({ projectId, action: 'updateItem', payload: { id, updates } })
       get().markUnsaved(projectId)
       get().persist()
+      // Emit event for downstream subscribers (drift detection)
+      eventBus.emit('rab:changed', { projectId, changeType: 'update', itemIds: [id] })
       // Don't sync drafts to Supabase immediately
     },
 
@@ -281,6 +330,8 @@ export const useRabStore = create<RabState>((set, get) => {
       get().persist()
       // Use batch sync for better performance
       syncRABItems(normalized, projectId)
+      // Emit event for downstream subscribers
+      eventBus.emit('rab:changed', { projectId, changeType: 'import', itemIds: normalized.map(i => i.id) })
     },
 
     clearProject: (projectId) => {
@@ -311,6 +362,8 @@ export const useRabStore = create<RabState>((set, get) => {
       get().logAction({ projectId, action: 'removeItem', payload: { id } })
       get().persist()
       syncDelete('rab_items', id)
+      // Emit event for downstream subscribers
+      eventBus.emit('rab:changed', { projectId, changeType: 'remove', itemIds: [id] })
     },
 
     undo: (projectId) => {
@@ -359,19 +412,17 @@ export const useRabStore = create<RabState>((set, get) => {
     },
 
     persist: () => {
-      try {
-        const payload = { itemsByProject: get().itemsByProject, audit: get().audit }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-      } catch (e) {
-        console.warn('Failed to persist rabStore', e)
-      }
+      // Fire-and-forget async persist to IndexedDB
+      void persistToIDB({ itemsByProject: get().itemsByProject, audit: get().audit })
     },
 
     loadFromStorage: () => {
-      const p = loadPersisted()
-      if (p) {
-        set({ itemsByProject: p.itemsByProject, audit: p.audit || [] })
-      }
+      // Async load from IndexedDB
+      void loadPersistedAsync().then((p) => {
+        if (p) {
+          set({ itemsByProject: p.itemsByProject, audit: p.audit || [] })
+        }
+      })
     },
 
     getHistory: (projectId: string) => {
@@ -608,4 +659,14 @@ export const useRabStore = create<RabState>((set, get) => {
   }
 })
 
-export default useRabStore
+
+// Subscriptions
+eventBus.on('rab:changed', ({ projectId, changeType }) => {
+  if (changeType === 'update' || changeType === 'import' || changeType === 'remove') {
+    if (projectId) {
+      useRabStore.getState().fetchItems(projectId)
+    }
+  }
+})
+
+export default useRabStore

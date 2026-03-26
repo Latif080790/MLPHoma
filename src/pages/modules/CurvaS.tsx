@@ -53,7 +53,7 @@ export default function CurvaSPage() {
   const analysis = useCurvaSStore((s) => (projectId ? s.analyses[projectId] || null : null))
   const config = useCurvaSStore((s) => (projectId ? s.configs[projectId] || null : null))
 
-  const generateBaseline = useCurvaSStore((s) => s.generateBaseline)
+
   const analyzeProject = useCurvaSStore((s) => s.analyzeProject)
   const setPlannedFromRap = useCurvaSStore((s) => s.setPlannedFromRap)
 
@@ -73,19 +73,6 @@ export default function CurvaSPage() {
   const [denseMode, setDenseMode] = useState(false)
 
   // Handlers
-  /**
-   * Create an even-distributed baseline from today to +6 months.
-   * After baseline is set, run analysis once (scheduled) to avoid same-tick update loops.
-   */
-  const handleGenerateBaseline = () => {
-    if (!projectId) return
-    const start = new Date()
-    const end = new Date()
-    end.setMonth(end.getMonth() + 6) // default 6 months
-    generateBaseline(projectId, projectBudget || 0, formatDate(start), formatDate(end))
-    // Schedule analysis after state settles to avoid chained passive updates
-    setTimeout(() => analyzeProject(projectId), 0)
-  }
 
   /** Run analysis on demand */
   const handleAnalyze = () => {
@@ -156,7 +143,7 @@ export default function CurvaSPage() {
         <ModuleHeader
           icon={<LineChart size={18} />}
           title="Curva-S"
-          description="Generate and analyze S-Curve from RAP or baseline."
+          description="Analyze S-Curve from unified schedule."
         />
         <div className="rounded-xl border p-6 text-center dark:border-neutral-800">
           <p className="text-neutral-600 dark:text-neutral-300">Please select a project to view Curva-S.</p>
@@ -195,10 +182,6 @@ export default function CurvaSPage() {
               <RefreshCw size={16} className="mr-2" />
               Analyze
             </Button>
-            <Button size="sm" onClick={() => handleGenerateBaseline()}>
-              <Play size={16} className="mr-2" />
-              Generate Baseline
-            </Button>
           </div>
         }
       />
@@ -208,7 +191,7 @@ export default function CurvaSPage() {
         <Alert className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            No baseline found. Click &quot;Import from RAP&quot; to load planned curve from RAP schedule, or use &quot;Generate Baseline&quot;.
+            No baseline found. Click &quot;Sync Unified Schedule&quot; to compute the S-Curve from Timeline and RAB integration.
           </AlertDescription>
         </Alert>
       )}

@@ -13,7 +13,7 @@ import { wbsItemInputSchema, wbsItemUpdateSchema } from '../lib/validationSchema
 import { syncWBSItem, syncDelete, syncWBSItems } from '../lib/supabaseSyncService'
 import { generateId } from '../lib/idGenerator'
 import { supabase } from '../lib/supabaseClient'
-import { useRabWbsLinkStore } from './rabWbsLinkStore'
+import { eventBus } from '../lib/eventBus'
 
 /**
  * Sort items by hierarchy and order
@@ -213,9 +213,9 @@ export const useWBSStore = create<WBSStore>()(
         // Sync deletions + re-sync remaining items (codes of siblings changed)
         toDeleteIds.forEach(itemId => {
           syncDelete('wbs_items', itemId)
-          // Auto-unlink all RAB items that pointed to this WBS node
-          useRabWbsLinkStore.getState().unlinkByWbsId(itemId)
         })
+        // Emit event for downstream subscribers (rabWbsLinkStore) to clean up links
+        eventBus.emit('wbs:deleted', { projectId, wbsItemIds: toDeleteIds })
         const remaining = get().itemsByProject[projectId] || []
         if (remaining.length > 0) syncWBSItems(remaining, projectId)
       },
@@ -370,14 +370,12 @@ export const useWBSStore = create<WBSStore>()(
               await supabase.rpc('rpc_unlink_wbs_node', { p_wbs_item_id: wbs.id })
             } catch { /* best effort */ }
           }
-          // Also clear local link state for these WBS items
-          const { linksByRabItem } = useRabWbsLinkStore.getState()
-          const oldWbsIds = new Set(oldWbsItems.map(w => w.id))
-          const cleaned: Record<string, import('../types/rabWbsLink').RabWbsLink[]> = {}
-          for (const [rabId, links] of Object.entries(linksByRabItem)) {
-            cleaned[rabId] = links.filter(l => !oldWbsIds.has(l.wbsItemId))
-          }
-          useRabWbsLinkStore.setState({ linksByRabItem: cleaned })
+          // Emit event for downstream subscribers to clean up local link state
+          eventBus.emit('wbs:imported', {
+            projectId,
+            oldWbsItemIds: oldWbsItems.map(w => w.id),
+            newWbsItemIds: [], // will be filled after import
+          })
         }
 
         // Step 1: Delete ALL existing WBS rows for this project from Supabase.

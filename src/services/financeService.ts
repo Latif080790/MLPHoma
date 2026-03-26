@@ -10,7 +10,7 @@ export const financeService = {
     async getInvoices(projectId: string): Promise<Invoice[]> {
         const client = assertSupabase()
         const { data, error } = await client
-            .from('invoices')
+            .from('finance_invoices')
             .select('*')
             .eq('project_id', projectId)
             .order('due_date', { ascending: true })
@@ -27,7 +27,7 @@ export const financeService = {
         const id = generateId()
 
         const { data, error } = await client
-            .from('invoices')
+            .from('finance_invoices')
             .insert({
                 id,
                 ...invoice
@@ -55,7 +55,7 @@ export const financeService = {
     async updateInvoiceStatus(id: string, status: string) {
         const client = assertSupabase()
         const { error } = await client
-            .from('invoices')
+            .from('finance_invoices')
             .update({ status })
             .eq('id', id)
 
@@ -66,7 +66,7 @@ export const financeService = {
     async getClaims(projectId: string): Promise<ClientClaim[]> {
         const client = assertSupabase()
         const { data, error } = await client
-            .from('client_claims')
+            .from('finance_claims')
             .select('*')
             .eq('project_id', projectId)
             .order('period_end', { ascending: false })
@@ -83,7 +83,7 @@ export const financeService = {
         const id = generateId()
 
         const { data, error } = await client
-            .from('client_claims')
+            .from('finance_claims')
             .insert({
                 id,
                 ...claim
@@ -139,7 +139,7 @@ export const financeService = {
         // Get invoice details for audit log
         const client = assertSupabase()
         const { data: invoice } = await client
-            .from('invoices')
+            .from('finance_invoices')
             .select('*')
             .eq('id', invoiceId)
             .single()
@@ -180,13 +180,13 @@ export const financeService = {
         
         // Get claim details for audit log
         const { data: claim } = await client
-            .from('client_claims')
+            .from('finance_claims')
             .select('*')
             .eq('id', id)
             .single()
         
         const { error } = await client
-            .from('client_claims')
+            .from('finance_claims')
             .update({ status })
             .eq('id', id)
 
@@ -226,7 +226,7 @@ export const financeService = {
     async updateInvoice(id: string, data: Partial<Invoice>) {
         const client = assertSupabase()
         const { error } = await client
-            .from('invoices')
+            .from('finance_invoices')
             .update(data)
             .eq('id', id)
 

@@ -33,6 +33,7 @@ import { toast } from 'sonner'
 import ModulePageState from '@/components/common/ModulePageState'
 import ModuleListToolbar from '@/components/common/ModuleListToolbar'
 import { Skeleton } from '@/components/common/LoadingSkeleton'
+import PortfolioHeatmap from '@/components/analytics/PortfolioHeatmap'
 
 const HEALTH_FILTERS = [
     { value: 'all', label: 'All Health' },
@@ -531,6 +532,21 @@ export default function PortfolioAnalytics() {
                             </CardContent>
                         </Card>
                     ))}
+                </div>
+            )}
+
+            {/* Portfolio Heatmap (Phase 5 Governance) */}
+            {!bootstrapping && (
+                <div className="mt-4">
+                    <PortfolioHeatmap 
+                        projects={data.map(p => ({
+                            id: p.projectId,
+                            name: p.projectName,
+                            spi: p.stats?.spi || 1,
+                            cpi: p.stats?.cpi || 1,
+                            budget: p.budget || p.stats?.totalBudget || 0
+                        }))} 
+                    />
                 </div>
             )}
 

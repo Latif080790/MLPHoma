@@ -216,9 +216,9 @@ export default function GanttChart({
    */
   const palette = useMemo(
     () => ({
-      primary: '#2563eb', // Blue for normal tasks (P6 style)
-      critical: '#ef4444', // Red for critical path
-      progress: 'rgba(0, 0, 0, 0.3)', // Dark overlay for progress
+      primary: '#4f46e5', // Indigo 600 (Sleek modern)
+      critical: '#e11d48', // Rose 600 (Vibrant critical)
+      progress: 'rgba(255, 255, 255, 0.25)', // Lighter progress overlay for contrast
       neutral: '#94a3b8',
       bg: '#ffffff',
     }),
@@ -527,30 +527,26 @@ export default function GanttChart({
     ctx.resetTransform()
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.scale(dpr, dpr)
-    ctx.lineWidth = 1.5
-    ctx.strokeStyle = '#475569' // slate-600
-    ctx.fillStyle = '#475569'
-    ctx.lineJoin = 'miter'
-    ctx.lineCap = 'butt'
+    ctx.lineWidth = 2
+    ctx.strokeStyle = '#94a3b8' // slate-400
+    ctx.fillStyle = '#94a3b8'
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
     for (const c of visibleConnectorCoords) {
-      // Orthogonal lines (P6 Style)
+      // Modern smooth bezier curves
       ctx.beginPath()
       ctx.moveTo(c.x1, c.y1)
 
       if (c.x1 < c.x2) {
-        // Forward connection
-        const midX = c.x1 + 8
-        ctx.lineTo(midX, c.y1)
-        ctx.lineTo(midX, c.y2)
-        ctx.lineTo(c.x2, c.y2)
+        // Forward connection: fluid bezier curve
+        const dist = Math.max(20, (c.x2 - c.x1) / 2.5)
+        ctx.bezierCurveTo(c.x1 + dist, c.y1, c.x2 - dist, c.y2, c.x2, c.y2)
       } else {
-        // Backward connection (overlap / negative lag)
-        const dropY = c.y1 + 12
-        ctx.lineTo(c.x1 + 8, c.y1)
-        ctx.lineTo(c.x1 + 8, dropY)
-        ctx.lineTo(c.x2 - 8, dropY)
-        ctx.lineTo(c.x2 - 8, c.y2)
-        ctx.lineTo(c.x2, c.y2)
+        // Backward connection: stepped drops with rounded corners via bezier
+        const dropY = c.y1 + 16
+        ctx.bezierCurveTo(c.x1 + 12, c.y1, c.x1 + 12, dropY, c.x1 + 12, dropY)
+        ctx.lineTo(c.x2 - 12, dropY)
+        ctx.bezierCurveTo(c.x2 - 12, dropY, c.x2 - 12, c.y2, c.x2, c.y2)
       }
       ctx.stroke()
 
@@ -965,93 +961,81 @@ export default function GanttChart({
    * Render
    * ------------------------- */
   return (
-    <div className="rounded-lg border bg-white/60 dark:bg-neutral-900/60 dark:border-neutral-800 shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b bg-white/80 dark:bg-neutral-900/80">
+      <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-indigo-50/80 via-white to-rose-50/60 dark:from-neutral-800/80 dark:via-neutral-900 dark:to-neutral-800/80">
         <div>
-          <div className="text-base font-semibold">Project Schedule</div>
-          <div className="text-xs text-neutral-500">Tiles + canvas connectors · Perf mode available</div>
+          <div className="text-base font-bold tracking-tight text-neutral-800 dark:text-neutral-100">Project Schedule</div>
+          <div className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">Virtualized Gantt · Canvas Connectors · CPM Engine</div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             title="Export PNG"
-            className="inline-flex items-center gap-2 rounded-md border px-2 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm"
             onClick={exportPNG}
           >
-            <ImageIcon className="h-4 w-4" />
+            <ImageIcon className="h-3.5 w-3.5" />
             PNG
           </button>
           <button
             title="Export PDF (A4)"
-            className="inline-flex items-center gap-2 rounded-md border px-2 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm"
             onClick={exportPDF}
           >
-            <FileText className="h-4 w-4" />
+            <FileText className="h-3.5 w-3.5" />
             PDF
           </button>
 
           <button
             title="Start profiling capture (5s)"
-            className={`inline-flex items-center gap-2 rounded-md border px-2 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 ${captureRunning ? 'bg-yellow-50' : ''}`}
+            className={`inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm ${captureRunning ? 'ring-2 ring-amber-300 bg-amber-50 dark:bg-amber-900/30' : ''}`}
             onClick={() => {
               if (!captureRunning) startCapture(5000, sampleMs)
             }}
           >
-            <Activity className="h-4 w-4" />
-            {captureRunning ? 'Capturing…' : 'Start capture'}
+            <Activity className="h-3.5 w-3.5" />
+            {captureRunning ? 'Capturing…' : 'Capture'}
           </button>
 
-          <div className="hidden md:flex">
+          <div className="hidden md:flex ml-1">
             <GanttLegend compact={width < 900} palette={{ primary: palette.primary, critical: palette.critical, progress: palette.progress }} />
           </div>
         </div>
       </div>
 
       {/* Performance controls + grouping */}
-      <div className="px-4 py-3 border-b bg-white/80 dark:bg-neutral-900/80 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={performanceMode} onChange={(e) => setPerformanceMode(e.target.checked)} className="h-4 w-4 accent-blue-600" />
-            <span className="text-sm">Performance Mode</span>
+      <div className="px-5 py-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/60 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
+            <input type="checkbox" checked={performanceMode} onChange={(e) => setPerformanceMode(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
+            Perf Mode
           </label>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <span className="text-xs text-neutral-500">Tile days</span>
-            <input
-              type="number"
-              className="w-20 rounded border px-2 py-1 text-sm"
-              value={tileSizeDays}
-              onChange={(e) => setTileSizeDays(Math.max(10, Number(e.target.value)))}
-            />
+          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
+            <input type="checkbox" checked={groupByWBS} onChange={(e) => setGroupByWBS(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
+            Group WBS
           </label>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <span className="text-xs text-neutral-500">Connector rows</span>
-            <input
-              type="number"
-              className="w-20 rounded border px-2 py-1 text-sm"
-              value={connectorRowThreshold}
-              onChange={(e) => setConnectorRowThreshold(Math.max(1, Number(e.target.value)))}
-            />
+          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
+            <input type="checkbox" checked={disableShadows} onChange={(e) => setDisableShadows(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
+            No Shadows
           </label>
-
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={groupByWBS} onChange={(e) => setGroupByWBS(e.target.checked)} className="h-4 w-4 accent-blue-600" />
-            <span className="text-sm">Group by WBS</span>
+          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
+            <input type="checkbox" checked={disableTooltipsWhileInteracting} onChange={(e) => setDisableTooltipsWhileInteracting(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
+            No Scroll Tips
           </label>
         </div>
 
-        <div className="flex items-center gap-3">
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={disableShadows} onChange={(e) => setDisableShadows(e.target.checked)} className="h-4 w-4 accent-blue-600" />
-            <span className="text-sm">Disable shadows</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <label className="inline-flex items-center gap-1 text-[11px] text-neutral-400">
+            Tile
+            <input type="number" className="w-14 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-[11px] text-center" value={tileSizeDays} onChange={(e) => setTileSizeDays(Math.max(10, Number(e.target.value)))} />
           </label>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={disableTooltipsWhileInteracting} onChange={(e) => setDisableTooltipsWhileInteracting(e.target.checked)} className="h-4 w-4 accent-blue-600" />
-            <span className="text-sm">Disable tooltips while interacting</span>
+          <label className="inline-flex items-center gap-1 text-[11px] text-neutral-400">
+            Conn
+            <input type="number" className="w-14 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-[11px] text-center" value={connectorRowThreshold} onChange={(e) => setConnectorRowThreshold(Math.max(1, Number(e.target.value)))} />
           </label>
-
           <button
-            className="rounded-md border px-2 py-1 text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800"
+            className="rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1 text-[11px] font-medium text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm"
             onClick={async () => {
               try {
                 await runPerfAnalyze(8000, sampleMs)
@@ -1061,7 +1045,7 @@ export default function GanttChart({
               }
             }}
           >
-            Run Analysis (8s)
+            Analyze (8s)
           </button>
         </div>
       </div>
@@ -1070,23 +1054,25 @@ export default function GanttChart({
       <div ref={containerRef} className="relative overflow-auto outline-none" style={{ height }} onKeyDown={handleKeyDown} tabIndex={0} role="region" aria-label="Gantt chart">
         <div ref={exportRef} style={{ width: (endDay - startDay) * pxPerDay + leftColWidth }}>
           {/* Sticky headers */}
-          <div className="sticky top-0 z-30 backdrop-blur bg-white/70 dark:bg-neutral-900/70">
-            <div className="flex items-center border-b" style={{ height: 44 }}>
-              <div className="flex items-center justify-start px-4 border-r text-sm text-neutral-600 dark:text-neutral-300" style={{ width: leftColWidth }}>
-                Tasks
+          <div className="sticky top-0 z-30 backdrop-blur-lg bg-white/90 dark:bg-neutral-900/90 shadow-sm">
+            {/* Month row */}
+            <div className="flex items-center border-b border-neutral-200 dark:border-neutral-700" style={{ height: 36 }}>
+              <div className="flex items-center justify-start px-4 border-r border-neutral-200 dark:border-neutral-700 text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500" style={{ width: leftColWidth }}>
+                Activity
               </div>
               <div className="relative" style={{ width: (endDay - startDay) * pxPerDay }}>
                 {monthSpans.map((m, i) => (
-                  <div key={i} className="absolute top-0 h-9 px-2 text-xs text-neutral-600 dark:text-neutral-300 flex items-center" style={{ left: (m.startIndex - startDay) * pxPerDay, width: m.width }}>
+                  <div key={i} className="absolute top-0 h-full px-3 text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center border-r border-neutral-100 dark:border-neutral-800" style={{ left: (m.startIndex - startDay) * pxPerDay, width: m.width }}>
                     <div className="truncate">{m.label}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex items-center border-b" style={{ height: 36 }}>
-              <div className="flex items-center px-4 border-r text-[12px] text-neutral-500" style={{ width: leftColWidth }}>
-                ID / Title
+            {/* Day/Week row */}
+            <div className="flex items-center border-b border-neutral-200 dark:border-neutral-700" style={{ height: 28 }}>
+              <div className="flex items-center px-4 border-r border-neutral-200 dark:border-neutral-700 text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider" style={{ width: leftColWidth }}>
+                Duration
               </div>
 
               <div className="relative" style={{ width: (endDay - startDay) * pxPerDay }}>
@@ -1146,7 +1132,7 @@ export default function GanttChart({
               const _globalIdx = startDay + _i
               const dow = parseISODate(d).getUTCDay()
               if (dow === 0 || dow === 6) {
-                return <div key={`wk-${d}`} className="absolute top-0 h-full pointer-events-none" style={{ left: leftColWidth + _i * pxPerDay, width: pxPerDay, background: 'linear-gradient(90deg, rgba(148,163,184,0.03), rgba(148,163,184,0.01))' }} />
+                return <div key={`wk-${d}`} className="absolute top-0 h-full pointer-events-none" style={{ left: leftColWidth + _i * pxPerDay, width: pxPerDay, background: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(148,163,184,0.04) 3px, rgba(148,163,184,0.04) 6px)' }} />
               }
               return null
             })}
@@ -1174,18 +1160,18 @@ export default function GanttChart({
                   return (
                     <div key={`group-${r.groupId}`} role="row" style={{ height: rowHeight }} className="relative">
                       <div
-                        className={`sticky left-0 z-10 flex items-center gap-3 px-4 text-sm bg-white/95 dark:bg-neutral-900/95 border-b border-r hover:bg-neutral-50 dark:hover:bg-neutral-800/60`}
+                        className={`sticky left-0 z-10 flex items-center gap-2 px-4 text-sm bg-gradient-to-r from-indigo-50/70 to-transparent dark:from-indigo-950/20 dark:to-transparent border-b border-r border-neutral-200 dark:border-neutral-700 hover:from-indigo-100/80 dark:hover:from-indigo-900/30`}
                         style={{ top: 0, width: leftColWidth }}
                       >
                         <button
-                          className="mr-2 rounded px-2 py-1 text-xs border"
+                          className="flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors"
                           onClick={() => setCollapsedGroups((s) => ({ ...s, [r.groupId]: !s[r.groupId] }))}
                         >
-                          {collapsed ? '+' : '−'}
+                          {collapsed ? '▶' : '▼'}
                         </button>
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-medium">{r.label}</div>
-                          <div className="text-[12px] text-neutral-500">{r.count} items</div>
+                          <div className="truncate text-[12px] font-bold text-neutral-700 dark:text-neutral-200 uppercase tracking-wide">{r.label}</div>
+                          <div className="text-[10px] text-neutral-400">{r.count} items</div>
                         </div>
                       </div>
                     </div>
@@ -1195,63 +1181,76 @@ export default function GanttChart({
                 // task row
                 const t = tasks[r.taskIndex]
                 const startIndex = Math.max(0, days.indexOf(t.startDate))
-                const duration = Math.max(1, t.duration || inclusiveDays(t.startDate, t.endDate))
+                // Exact duration logic (allow 0 for milestones)
+                const rawDuration = t.duration ?? inclusiveDays(t.startDate, t.endDate)
+                const isMilestone = rawDuration <= 1 && t.startDate === t.endDate
+                const duration = Math.max(1, rawDuration)
                 const leftPx = (startIndex - startDay) * pxPerDay + leftColWidth
                 const widthPx = duration * pxPerDay
                 const isCritical = criticalIds.has(t.id)
                 const isSelected = r.taskIndex === selectedIndex
 
                 const leftCellBase = `sticky left-0 z-10 flex items-center gap-2 px-3 text-sm border-b border-r ${isCritical
-                  ? 'bg-red-50/60 dark:bg-red-950/20 border-l-2 border-l-red-500'
+                  ? 'bg-rose-50/60 dark:bg-rose-950/20 border-l-2 border-l-rose-500'
                   : 'bg-white/95 dark:bg-neutral-900/95'
                   } ${isSelected ? 'ring-1 ring-sky-300 bg-sky-50 dark:bg-sky-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`
 
-                // keep bars slightly inset vertically so baseline can sit below
                 const barTop = (rowHeight - barHeight) / 2
+                
+                // Aesthetic Premium Bar Styles
                 const barStyle = {
                   left: Math.max(leftColWidth + 4, leftPx),
                   width: Math.max(6, widthPx - 4),
                   top: barTop,
                   height: barHeight,
-                  background: isCritical ? (disableShadows ? palette.critical : `linear-gradient(90deg, ${palette.critical}CC, ${palette.critical})`) : (disableShadows ? palette.primary : `linear-gradient(90deg, ${palette.primary}CC, ${palette.primary})`),
-                  borderColor: isCritical ? `${palette.critical}99` : `${palette.primary}99`,
-                  boxShadow: disableShadows ? 'none' : isCritical ? '0 6px 18px rgba(239,68,68,0.12)' : '0 4px 12px rgba(14,165,164,0.08)',
+                  background: isCritical ? (disableShadows ? palette.critical : `linear-gradient(180deg, ${palette.critical}, #be123c)`) : (disableShadows ? palette.primary : `linear-gradient(180deg, ${palette.primary}, #4338ca)`),
+                  borderColor: isCritical ? '#9f1239' : '#3730a3',
+                  boxShadow: disableShadows ? 'none' : isCritical ? 'inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 6px rgba(225,29,72,0.3)' : 'inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 6px rgba(79,70,229,0.3)',
                 } as React.CSSProperties
 
                 const dimmed = highlightCriticalOnly && !isCritical ? 'opacity-30 saturate-50' : ''
-
                 const shouldUseTooltip = showCpmTooltip && !isInteracting && !(disableTooltipsWhileInteracting && isInteracting)
 
-                const barNode = (
+                // Render Milestone (Diamond) or Standard Task Bar
+                const barNode = isMilestone ? (
+                  <div
+                    id={`gantt-bar-${t.id}`}
+                    role="gridcell"
+                    aria-label={`${t.name} Milestone at ${t.startDate}`}
+                    tabIndex={0}
+                    className={`absolute flex items-center justify-center transition-none cursor-pointer hover:scale-110 ${dimmed}`}
+                    style={{ left: Math.max(leftColWidth + 4, leftPx - barHeight / 2), top: barTop, width: barHeight, height: barHeight, zIndex: 5 }}
+                    onMouseDown={(e) => { e.preventDefault(); startDrag(t.id, e.clientX, t.startDate) }}
+                    onClick={() => { setSelectedIndex(r.taskIndex); onTaskClick?.(t.id) }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') onTaskEdit?.(t.id) }}
+                    title={`${t.startDate} (Milestone)`}
+                  >
+                    <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-md" style={{ fill: isCritical ? palette.critical : palette.primary }}>
+                      <path d="M12 2L22 12L12 22L2 12L12 2Z" />
+                    </svg>
+                  </div>
+                ) : (
                   <div
                     id={`gantt-bar-${t.id}`}
                     role="gridcell"
                     aria-label={`${t.name} ${t.startDate} to ${t.endDate}`}
                     tabIndex={0}
-                    className={`absolute rounded-xl border transition-none ${dimmed}`}
+                    className={`absolute rounded border transition-none cursor-pointer ${dimmed}`}
                     style={barStyle}
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                      startDrag(t.id, e.clientX, t.startDate)
-                    }}
-                    onClick={() => {
-                      setSelectedIndex(r.taskIndex)
-                      onTaskClick?.(t.id)
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') onTaskEdit?.(t.id)
-                    }}
+                    onMouseDown={(e) => { e.preventDefault(); startDrag(t.id, e.clientX, t.startDate) }}
+                    onClick={() => { setSelectedIndex(r.taskIndex); onTaskClick?.(t.id) }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') onTaskEdit?.(t.id) }}
                     title={`${t.startDate} → ${t.endDate} (${duration}d)`}
                   >
                     <div
-                      className="absolute left-0 top-0 h-full rounded-l-sm"
+                      className="absolute left-0 top-0 h-full rounded-l-[3px]"
                       style={{
                         width: `${Math.max(0, Math.min(100, t.progress ?? 0))}%`,
                         background: palette.progress,
                       }}
                     />
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-2">
-                      <span className="text-[12px] font-semibold text-white truncate">{Math.round(t.progress ?? 0)}%</span>
+                      <span className="text-[10px] font-bold text-white drop-shadow-sm truncate">{Math.round(t.progress ?? 0)}%</span>
                     </div>
                   </div>
                 )
@@ -1270,16 +1269,16 @@ export default function GanttChart({
                           }}
                           tabIndex={0}
                         >
-                          <span className={`h-2.5 w-2.5 rounded-full ${statusColor(t.status)} ring-2 ring-white shrink-0`} />
+                          <span className={`h-2 w-2 rounded-full ${statusColor(t.status)} ring-1 ring-white/80 shrink-0`} />
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium">{t.name}</div>
+                            <div className="truncate text-[12px] font-semibold text-neutral-700 dark:text-neutral-200 leading-tight">{t.name}</div>
                             {t.assignedResources && t.assignedResources.length > 0 && (
-                              <div className="text-xs text-blue-600 dark:text-blue-400 font-medium truncate mt-0.5">
+                              <div className="text-[10px] text-indigo-500 dark:text-indigo-400 font-medium truncate">
                                 {t.assignedResources.join(', ')}
                               </div>
                             )}
-                            <div className="text-[12px] text-neutral-500 truncate mt-0.5" style={{ maxWidth: leftColWidth - 80 }}>
-                              {t.id.slice(0, 10)} • {t.startDate} → {t.endDate}
+                            <div className="text-[10px] text-neutral-400 truncate" style={{ maxWidth: leftColWidth - 60 }}>
+                              {isMilestone ? '◆ ' : ''}{t.startDate}{!isMilestone ? ` → ${t.endDate}` : ''}
                             </div>
                           </div>
                         </div>
