@@ -1,51 +1,113 @@
-import { assertSupabase } from '../lib/supabaseClient'
+import { supabase } from '../lib/supabaseClient'
+import { syncTimelineTask, syncTimelineTasks, syncDelete } from '../lib/supabaseSyncService'
+import type { TimelineTask } from '../store/timelineStore'
+import type { TimelineProgressEvidence } from '../types/progressEvidence'
+
+/**
+ * timelineService.ts
+ * 
+ * Service layer for Timeline/Gantt operations.
+ * Separates data access from state management.
+ */
 
 export const timelineService = {
-    async updateTaskProgress(id: string, progress: number) {
-        const client = assertSupabase()
+  /**
+   * Fetch all tasks for a project
+   */
+  async fetchTasks(projectId: string): Promise<TimelineTask[]> {
+    if (!supabase) throw new Error('Supabase not initialized')
 
-        const { data, error } = await client
-            .from('wbs_items')
-            .update({
-                progress: progress,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', id)
-            .select()
+    const { data, error } = await supabase
+      .from('timeline_tasks')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('start_date', { ascending: true })
 
-        if (error) throw error
-        return data
-    },
+    if (error) throw new Error(error.message)
 
-    async uploadProgressPhoto(file: File, path: string) {
-        const client = assertSupabase()
-
-        // 1. Upload to Supabase Storage
-        // Generate a clean file name
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-        const filePath = `${path}/${fileName}`
-
-        // Ensure bucket exists or use a common public one
-        const bucketName = 'project-evidence'
-
-        const { error: uploadError } = await client.storage
-            .from(bucketName)
-            .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false
-            })
-
-        if (uploadError) {
-            // Handle "Bucket not found" error gracefully if possible, but throwing is correct for now
-            throw new Error(`Upload failed: ${uploadError.message}. Ensure '${bucketName}' bucket exists.`)
-        }
-
-        // 2. Get Public URL
-        const { data } = client.storage
-            .from(bucketName)
-            .getPublicUrl(filePath)
-
-        return data.publicUrl
+    type TaskRow = {
+      id: string; 
+      project_id: string; 
+      name: string; 
+      description?: string
+      start_date: string; 
+      end_date: string; 
+      duration: number; 
+      progress: number
+      status: string; 
+      priority: string; 
+      wbs_id?: string; 
+      rab_id?: string
+      dependencies?: string | null; 
+      assigned_resources?: string[]
+      baseline_start_date?: string; 
+      baseline_end_date?: string
+      created_at: string; 
+      updated_at: string
+      progress_evidence?: TimelineProgressEvidence
     }
+
+    return ((data || []) as TaskRow[]).map((row) => ({
+      id: row.id,
+      projectId: row.project_id,
+      name: row.name,
+      description: row.description,
+      startDate: row.start_date,
+      endDate: row.end_date,
+      duration: row.duration,
+      progress: Number(row.progress ?? 0),
+      progressEvidence: row.progress_evidence,
+      status: (row.status as TimelineTask['status']) || 'not_started',
+      priority: (row.priority as TimelineTask['priority']) || 'medium',
+      wbsId: row.wbs_id,
+      rabId: row.rab_id,
+      dependencies: (() => {
+        try { 
+          return typeof row.dependencies === 'string' ? JSON.parse(row.dependencies) : (row.dependencies ?? []) 
+        } catch { 
+          return [] 
+        }
+      })(),
+      assignedResources: row.assigned_resources ?? [],
+      baselineStartDate: row.baseline_start_date,
+      baselineEndDate: row.baseline_end_date,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }))
+  },
+
+  /**
+   * Clear all tasks for a project from Supabase
+   */
+  async clearTasks(projectId: string): Promise<void> {
+    if (!supabase) throw new Error('Supabase not initialized')
+    
+    const { error } = await supabase
+      .from('timeline_tasks')
+      .delete()
+      .eq('project_id', projectId)
+
+    if (error) throw new Error(error.message)
+  },
+
+  /**
+   * Single task sync wrapper
+   */
+  syncTask(task: TimelineTask): void {
+    syncTimelineTask(task)
+  },
+
+  /**
+   * Multiple tasks sync wrapper
+   */
+  syncTasks(tasks: TimelineTask[], projectId: string): void {
+    syncTimelineTasks(tasks, projectId)
+  },
+
+  /**
+   * Delete task sync wrapper
+   */
+  syncDelete(id: string): void {
+    syncDelete('timeline_tasks', id)
+  }
 }

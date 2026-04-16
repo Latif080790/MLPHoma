@@ -10,9 +10,8 @@ import { notify as toast } from '../lib/toast'
 import type { WBSStore, WBSItem } from '../types/wbs'
 import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { wbsItemInputSchema, wbsItemUpdateSchema } from '../lib/validationSchemas'
-import { syncWBSItem, syncDelete, syncWBSItems } from '../lib/supabaseSyncService'
+import { wbsService } from '../services/wbsService'
 import { generateId } from '../lib/idGenerator'
-import { supabase } from '../lib/supabaseClient'
 import { eventBus } from '../lib/eventBus'
 
 /**
@@ -108,7 +107,7 @@ export const useWBSStore = create<WBSStore>()(
 
         // Sync ALL project items so every code change (siblings included) persists
         const allItems = get().itemsByProject[projectId] || []
-        syncWBSItems(allItems, projectId)
+        wbsService.syncItems(allItems, projectId)
       },
 
       // Update WBS item
@@ -162,36 +161,59 @@ export const useWBSStore = create<WBSStore>()(
 
         // Sync to Supabase
         if (updatedItem) {
-          syncWBSItem(updatedItem)
+          wbsService.syncItem(updatedItem)
         }
       },
 
-      // Delete WBS item (and children)
+      // Delete WBS item (and children) — with referential integrity guard
       deleteItem: (projectId, id) => {
         const toDeleteIds: string[] = []
+        const currentItems = get().itemsByProject[projectId] || []
+
+        // ── Phase 4: Referential Integrity Guard ────────────────────────────
+        // Before deleting, check if timeline tasks reference any of these WBS items
+        const toDelete = new Set<string>([id])
+        let added = true
+        while (added) {
+          added = false
+          currentItems.forEach(item => {
+            if (item.parentId && toDelete.has(item.parentId)) {
+              if (!toDelete.has(item.id)) {
+                toDelete.add(item.id)
+                added = true
+              }
+            }
+          })
+        }
+
+        // Check timeline for linked tasks (dynamic import to avoid circular deps)
+        import('./timelineStore').then(module => {
+          const timelineState = module.useTimelineStore.getState()
+          const allTasks = timelineState.tasksByProject[projectId] || []
+          const linkedTasks = allTasks.filter(
+            (t: { wbsId?: string; name: string }) => t.wbsId && toDelete.has(t.wbsId)
+          )
+
+          if (linkedTasks.length > 0) {
+            const taskNames = linkedTasks.slice(0, 3).map((t: { name: string }) => t.name).join(', ')
+            const extra = linkedTasks.length > 3 ? ` dan ${linkedTasks.length - 3} lainnya` : ''
+            toast.warning(
+              `WBS terhubung ke ${linkedTasks.length} task pada Timeline`,
+              `Task: ${taskNames}${extra}. Task-task ini akan menjadi "WBS Unlinked" setelah penghapusan.`
+            )
+          }
+        }).catch(() => {
+          // Store not available
+        })
+        // ── End Guard ─────────────────────────────────────────────────────────
 
         set((state) => {
-          const currentItems = state.itemsByProject[projectId] || []
-
-          // Find all descendants
-          const toDelete = new Set<string>([id])
-          let added = true
-          while (added) {
-            added = false
-            currentItems.forEach(item => {
-              if (item.parentId && toDelete.has(item.parentId)) {
-                if (!toDelete.has(item.id)) {
-                  toDelete.add(item.id)
-                  added = true
-                }
-              }
-            })
-          }
+          const items = state.itemsByProject[projectId] || []
 
           toDeleteIds.push(...toDelete)
 
           // Remove items
-          const updatedItems = currentItems.filter(item => !toDelete.has(item.id))
+          const updatedItems = items.filter(item => !toDelete.has(item.id))
 
           // Regenerate codes
           const finalItems = generateCodesForProject(updatedItems)
@@ -212,13 +234,14 @@ export const useWBSStore = create<WBSStore>()(
 
         // Sync deletions + re-sync remaining items (codes of siblings changed)
         toDeleteIds.forEach(itemId => {
-          syncDelete('wbs_items', itemId)
+          wbsService.syncDelete(itemId)
         })
         // Emit event for downstream subscribers (rabWbsLinkStore) to clean up links
         eventBus.emit('wbs:deleted', { projectId, wbsItemIds: toDeleteIds })
         const remaining = get().itemsByProject[projectId] || []
-        if (remaining.length > 0) syncWBSItems(remaining, projectId)
+        if (remaining.length > 0) wbsService.syncItems(remaining, projectId)
       },
+
 
       // Move item (drag & drop)
       moveItem: (projectId, itemId, newParentId, newIndex) => {
@@ -295,7 +318,7 @@ export const useWBSStore = create<WBSStore>()(
 
         // Sync all items — codes and sortOrders for multiple rows changed
         const movedItems = get().itemsByProject[projectId] || []
-        syncWBSItems(movedItems, projectId)
+        wbsService.syncItems(movedItems, projectId)
       },
 
       // Toggle item expansion
@@ -341,7 +364,7 @@ export const useWBSStore = create<WBSStore>()(
 
         // Sync reordered items — sortOrders and codes changed
         const reorderedItems = get().itemsByProject[projectId] || []
-        syncWBSItems(reorderedItems, projectId)
+        wbsService.syncItems(reorderedItems, projectId)
       },
 
       // Generate WBS codes
@@ -361,53 +384,50 @@ export const useWBSStore = create<WBSStore>()(
 
       // Import WBS structure — async: deletes all existing DB rows first to prevent accumulation
       importWBS: async (projectId, items) => {
-        // Step 0: Clean up ALL junction links for this project's WBS items.
-        // Without this, regenerating WBS creates orphan links (old wbs_item_ids no longer exist).
-        const oldWbsItems = get().itemsByProject[projectId] || []
-        if (oldWbsItems.length > 0 && supabase) {
-          for (const wbs of oldWbsItems) {
-            try {
-              await supabase.rpc('rpc_unlink_wbs_node', { p_wbs_item_id: wbs.id })
-            } catch { /* best effort */ }
+        set({ loading: true, error: null })
+        try {
+          // Step 0: Clean up ALL junction links for this project's WBS items.
+          const oldWbsItems = get().itemsByProject[projectId] || []
+          if (oldWbsItems.length > 0) {
+            for (const wbs of oldWbsItems) {
+              await wbsService.unlinkWBSNode(wbs.id).catch(() => {})
+            }
+            // Emit event for downstream subscribers to clean up local link state
+            eventBus.emit('wbs:imported', {
+              projectId,
+              oldWbsItemIds: oldWbsItems.map(w => w.id),
+              newWbsItemIds: [], // will be filled after import
+            })
           }
-          // Emit event for downstream subscribers to clean up local link state
-          eventBus.emit('wbs:imported', {
+
+          // Step 1: Delete ALL existing WBS rows for this project from Supabase.
+          await wbsService.clearProjectWBS(projectId)
+
+          const now = new Date().toISOString()
+          const newItems: WBSItem[] = items.map((item, index) => ({
+            ...item,
+            id: (item as WBSItem & { id?: string }).id || generateId('wbs'),
             projectId,
-            oldWbsItemIds: oldWbsItems.map(w => w.id),
-            newWbsItemIds: [], // will be filled after import
-          })
-        }
+            createdAt: now,
+            updatedAt: now,
+            sortOrder: item.sortOrder ?? index,
+          }))
 
-        // Step 1: Delete ALL existing WBS rows for this project from Supabase.
-        // This prevents the accumulation bug where repeated "Generate WBS" clicks
-        // produce new IDs on each call, so old rows are never overwritten by upsert.
-        if (supabase) {
-          await supabase.from('wbs_items').delete().eq('project_id', projectId)
-        }
-
-        const now = new Date().toISOString()
-        const newItems: WBSItem[] = items.map((item, index) => ({
-          ...item,
-          id: (item as WBSItem & { id?: string }).id || generateId('wbs'),
-          projectId,
-          createdAt: now,
-          updatedAt: now,
-          sortOrder: item.sortOrder ?? index,
-        }))
-
-        set((state) => {
           const finalItems = generateCodesForProject(newItems)
-          return {
+          set((state) => ({
             itemsByProject: {
               ...state.itemsByProject,
               [projectId]: finalItems,
             },
-          }
-        })
+            loading: false,
+          }))
 
-        // Step 2: Batch-upsert the new items to Supabase
-        const finalItems = get().itemsByProject[projectId] || []
-        syncWBSItems(finalItems, projectId)
+          // Step 2: Batch-upsert the new items to Supabase
+          wbsService.syncItems(finalItems, projectId)
+        } catch (error) {
+          set({ loading: false, error: (error as Error).message })
+          toast.error('Import failed', (error as Error).message)
+        }
       },
 
       // Export WBS structure
@@ -435,38 +455,18 @@ export const useWBSStore = create<WBSStore>()(
 
       // Load WBS items from Supabase
       fetchItems: async (projectId: string) => {
-        if (!supabase) return
         set({ loading: true, error: null })
-        const { data, error } = await supabase
-          .from('wbs_items')
-          .select('*')
-          .eq('project_id', projectId)
-          .order('sort_order', { ascending: true })
-        if (error) {
-          set({ loading: false, error: error.message })
-          toast.error('Failed to load WBS', error.message)
-          return
+        try {
+          const items = await wbsService.fetchItems(projectId)
+          const finalItems = generateCodesForProject(items)
+          set((state) => ({
+            itemsByProject: { ...state.itemsByProject, [projectId]: finalItems },
+            loading: false,
+          }))
+        } catch (error) {
+          set({ loading: false, error: (error as Error).message })
+          toast.error('Failed to load WBS', (error as Error).message)
         }
-        type WBSRow = { id: string; project_id: string; code: string; name: string; description?: string; level: number; parent_id: string | null; sort_order: number; qc_status?: string; progress?: number; created_at: string; updated_at: string }
-        const items: WBSItem[] = ((data || []) as WBSRow[]).map((row) => ({
-          id: row.id,
-          projectId: row.project_id,
-          code: row.code || '',
-          name: row.name,
-          description: row.description,
-          level: row.level ?? 1,
-          parentId: row.parent_id ?? null,
-          sortOrder: row.sort_order ?? 0,
-          qc_status: (row.qc_status as WBSItem['qc_status']) ?? 'NOT_REQUIRED',
-          progress: row.progress ?? 0,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        }))
-        const finalItems = generateCodesForProject(items)
-        set((state) => ({
-          itemsByProject: { ...state.itemsByProject, [projectId]: finalItems },
-          loading: false,
-        }))
       },
 
       // Clear project WBS

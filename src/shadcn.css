@@ -84,7 +84,7 @@
   --accent: 217.2 32.6% 17.5%;
   --accent-foreground: 210 40% 98%;
 
-  --destructive: 0 62.8% 30.6%;
+  --destructive: 0 72% 50%;
   --destructive-foreground: 210 40% 98%;
 
   --border: 217.2 32.6% 17.5%;
@@ -169,8 +169,13 @@
 }
 
 .control-compact {
-  @apply h-8 text-xs;
+  @apply h-8 md:h-8 text-xs;
 }
+
+.touch-safe {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+}
+
 
 /* Custom Scrollbar for Bento Grids */
 ::-webkit-scrollbar {

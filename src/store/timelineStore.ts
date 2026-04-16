@@ -13,11 +13,9 @@ import { toast } from 'sonner'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
 import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/validationSchemas'
-import { syncTimelineTask, syncDelete, syncTimelineTasks } from '../lib/supabaseSyncService'
+import { timelineService } from '../services/timelineService'
 import { generateId } from '../lib/idGenerator'
 import { eventBus } from '../lib/eventBus'
-import type { TimelineProgressEvidence } from '../types/progressEvidence'
-import { supabase } from '../lib/supabaseClient'
 
 /**
  * Task status
@@ -79,6 +77,10 @@ export interface TimelineTask {
 export interface TimelineState {
   /** Tasks grouped by projectId */
   tasksByProject: Record<string, TimelineTask[]>
+  
+  /** UI State */
+  loading: boolean
+  error: string | null
 
   /** Get tasks for project (sorted) */
   getTasks: (projectId: string) => TimelineTask[]
@@ -113,6 +115,9 @@ export interface TimelineState {
 
   /** Clear all tasks for a project (local + DB) */
   clearTasks: (projectId: string) => Promise<void>
+
+  /** Sync cost data from RAB items into linked timeline tasks */
+  syncTaskCostsFromRAB: () => void
 }
 
 /**
@@ -185,6 +190,8 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
 
   return {
     tasksByProject: {},
+    loading: false,
+    error: null,
 
     getTasks: (projectId: string) => {
       return getTasksCached(projectId)
@@ -246,7 +253,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
       })
 
       // Sync to Supabase
-      syncTimelineTask(task)
+      timelineService.syncTask(task)
 
       return id
     },
@@ -276,7 +283,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
 
       // Sync to Supabase
       if (updatedTask) {
-        syncTimelineTask(updatedTask)
+        timelineService.syncTask(updatedTask)
       }
     },
 
@@ -294,7 +301,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
       })
 
       // Sync deletion to Supabase
-      syncDelete('timeline_tasks', id)
+      timelineService.syncDelete(id)
     },
 
     setBaseline: (projectId, overwrite = true) => {
@@ -342,67 +349,94 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
       })
 
       // Sync to Supabase using batch
-      syncTimelineTasks(newTasks, projectId)
+      timelineService.syncTasks(newTasks, projectId)
+      
+      set({ loading: false })
     },
 
     fetchTasks: async (projectId: string) => {
-      if (!supabase) return
-      const { data, error } = await supabase
-        .from('timeline_tasks')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('start_date', { ascending: true })
-      if (error) {
-        toast.error('Failed to load timeline tasks', { description: error.message })
-        return
+      set({ loading: true, error: null })
+      try {
+        const tasks = await timelineService.fetchTasks(projectId)
+        set((s) => ({
+          tasksByProject: { ...s.tasksByProject, [projectId]: tasks },
+          loading: false,
+        }))
+      } catch (error) {
+        const errorMsg = (error as Error).message
+        set({ loading: false, error: errorMsg })
+        toast.error('Failed to load timeline tasks', { description: errorMsg })
       }
-      type TaskRow = {
-        id: string; project_id: string; name: string; description?: string
-        start_date: string; end_date: string; duration: number; progress: number
-        status: string; priority: string; wbs_id?: string; rab_id?: string
-        dependencies?: string | null; assigned_resources?: string[]
-        baseline_start_date?: string; baseline_end_date?: string
-        created_at: string; updated_at: string
-        progress_evidence?: TimelineProgressEvidence
-      }
-      const tasks: TimelineTask[] = ((data || []) as TaskRow[]).map((row) => ({
-        id: row.id,
-        projectId: row.project_id,
-        name: row.name,
-        description: row.description,
-        startDate: row.start_date,
-        endDate: row.end_date,
-        duration: row.duration ?? inclusiveDays(row.start_date, row.end_date),
-        progress: Number(row.progress ?? 0),
-        progressEvidence: row.progress_evidence,
-        status: (row.status as TimelineTask['status']) || 'not_started',
-        priority: (row.priority as TimelineTask['priority']) || 'medium',
-        wbsId: row.wbs_id,
-        rabId: row.rab_id,
-        dependencies: (() => {
-          try { return typeof row.dependencies === 'string' ? JSON.parse(row.dependencies) : (row.dependencies ?? []) }
-          catch { return [] }
-        })(),
-        assignedResources: row.assigned_resources ?? [],
-        baselineStartDate: row.baseline_start_date,
-        baselineEndDate: row.baseline_end_date,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
-      }))
-      set((s) => ({
-        tasksByProject: { ...s.tasksByProject, [projectId]: tasks },
-      }))
     },
 
     clearTasks: async (projectId: string) => {
-      if (!supabase) return
-      // Clear locally
-      set((s) => ({ tasksByProject: { ...s.tasksByProject, [projectId]: [] } }))
-      // Clear from DB
-      const { error } = await supabase.from('timeline_tasks').delete().eq('project_id', projectId)
-      if (error) {
-        console.error('Failed to clear timeline tasks in DB:', error.message)
+      set({ loading: true, error: null })
+      try {
+        // Clear locally
+        set((s) => ({ tasksByProject: { ...s.tasksByProject, [projectId]: [] } }))
+        // Clear from DB
+        await timelineService.clearTasks(projectId)
+        set({ loading: false })
+      } catch (error) {
+        const errorMsg = (error as Error).message
+        set({ loading: false, error: errorMsg })
+        console.error('Failed to clear timeline tasks in DB:', errorMsg)
       }
+    },
+    syncTaskCostsFromRAB: () => {
+      // Dynamic import to avoid circular dependency
+      Promise.all([
+        import('./rabStore'),
+        import('./projectStore')
+      ]).then(([rabModule, projectModule]) => {
+        const useRabStore = rabModule.useRabStore
+        const useProjectStore = projectModule.useProjectStore
+        
+        const activeProjectId = useProjectStore.getState().activeProjectId
+        if (!activeProjectId) return
+
+        const rabItems = useRabStore.getState().getItems(activeProjectId)
+        if (!rabItems || !rabItems.length) return
+
+        const tasks = get().tasksByProject[activeProjectId] || []
+        if (!tasks.length) return
+
+        // Build lookup: rabId → cost data
+        const rabMap = new Map<string, { unitPrice: number; volume: number; total: number }>()
+        rabItems.forEach((item: import('../types/rab').RABItem) => {
+          rabMap.set(item.id, {
+            unitPrice: item.unit_price || 0,
+            volume: item.volume || 0,
+            total: (item.unit_price || 0) * (item.volume || 0),
+          })
+        })
+
+        let changed = false
+        const updated = tasks.map(task => {
+          if (!task.rabId) return task
+          const rab = rabMap.get(task.rabId)
+          if (!rab) return task
+
+          const costTag = `[RAB:${rab.total}]`
+          if (task.description?.includes(costTag)) return task
+
+          changed = true
+          const cleanDesc = (task.description || '').replace(/\[RAB:\d+\.?\d*\]/g, '').trim()
+          return {
+            ...task,
+            description: cleanDesc ? `${cleanDesc} ${costTag}` : costTag,
+            updatedAt: new Date().toISOString(),
+          }
+        })
+
+        if (changed) {
+          set((s) => ({
+            tasksByProject: { ...s.tasksByProject, [activeProjectId]: updated },
+          }))
+        }
+      }).catch(() => {
+        // Stores not yet available — skip
+      })
     },
   }
 })
