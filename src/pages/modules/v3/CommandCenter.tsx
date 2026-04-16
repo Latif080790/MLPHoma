@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Activity, AlertTriangle, DollarSign, Clock, Layout, ShieldCheck, Zap } from 'lucide-react'
+import { Activity, AlertTriangle, DollarSign, Clock, Layout, ShieldCheck, Zap, FileDown } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { dashboardService, DashboardStats } from '@/services/dashboardService'
 import { format } from 'date-fns'
@@ -10,17 +10,18 @@ import { toast } from 'sonner'
 import { ApprovalInbox } from '@/components/dashboard/ApprovalInbox'
 import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
 import { GenerateReportDialog } from '@/components/dashboard/GenerateReportDialog'
-import { FileDown } from 'lucide-react'
 import { MRPAlertPanel } from '@/components/supply/MRPAlertPanel'
 import { AuditLogViewer } from '@/components/audit/AuditLogViewer'
 import { ApprovalQueueWidget } from '@/components/dashboard/ApprovalQueueWidget'
-import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import GovernanceWatchPanel from '@/components/dashboard/GovernanceWatchPanel'
 import ModulePageState from '@/components/common/ModulePageState'
 import { MiniSparkline } from '@/components/ui/MiniSparkline'
-
 import { useNavigate } from 'react-router-dom'
 import { lazyRetry } from '@/lib/lazyRetry'
+
+// ── Enterprise Pattern Imports ──────────────────────────────────────────────
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, ModeSwitch, SummaryStrip, WorkspaceHeader, AlertStrip } from '@/components/patterns'
 
 const CommandCenterCashflowChart = lazyRetry(() => import('@/components/dashboard/CommandCenterCashflowChart'))
 
@@ -110,14 +111,105 @@ export default function CommandCenter() {
         )
     }
 
+    // ── Build health items for context bar ───────────────────────────────────
+    const healthItems = stats ? [
+        {
+            label: 'PHI',
+            level: ((stats.phi?.score ?? 0) >= 85 ? 'good' : (stats.phi?.score ?? 0) >= 70 ? 'warning' : 'critical') as 'good' | 'warning' | 'critical',
+            value: `${stats.phi?.score ?? 0}`,
+        },
+        {
+            label: 'CPI',
+            level: ((stats.cpi ?? 1) >= 1 ? 'good' : 'critical') as 'good' | 'warning' | 'critical',
+            value: (stats.cpi ?? 1).toFixed(2),
+        },
+        {
+            label: 'SPI',
+            level: ((stats.spi ?? 1) >= 1 ? 'good' : 'critical') as 'good' | 'warning' | 'critical',
+            value: (stats.spi ?? 1).toFixed(2),
+        },
+    ] : []
+
+    // ── SummaryStrip metrics ─────────────────────────────────────────────────
+    const summaryItems = isPortfolioMode
+        ? [
+            { label: 'Projects', value: portfolioStats?.totalProjects || 0, status: 'neutral' as const },
+            { label: 'Avg PHI', value: Math.round(portfolioStats?.avgPhi || 0), status: ((portfolioStats?.avgPhi ?? 0) >= 85 ? 'success' : (portfolioStats?.avgPhi ?? 0) >= 70 ? 'warning' : 'danger') as 'success' | 'warning' | 'danger' },
+            { label: 'Avg CPI', value: (portfolioStats?.avgCpi || 0).toFixed(2), status: ((portfolioStats?.avgCpi ?? 1) >= 1 ? 'success' : 'danger') as 'success' | 'danger' },
+            { label: 'Avg SPI', value: (portfolioStats?.avgSpi || 0).toFixed(2), status: ((portfolioStats?.avgSpi ?? 1) >= 1 ? 'success' : 'danger') as 'success' | 'danger' },
+            { label: 'Total Budget', value: `Rp ${((portfolioStats?.totalBudget || 0) / 1e9).toFixed(1)}B`, status: 'neutral' as const },
+        ]
+        : stats ? [
+            { label: 'PHI', value: stats.phi?.score || 0, status: ((stats.phi?.score ?? 0) >= 85 ? 'success' : (stats.phi?.score ?? 0) >= 70 ? 'warning' : 'danger') as 'success' | 'warning' | 'danger' },
+            { label: 'CPI', value: (stats.cpi || 0).toFixed(2), status: ((stats.cpi ?? 1) >= 1 ? 'success' : 'danger') as 'success' | 'danger' },
+            { label: 'SPI', value: (stats.spi || 0).toFixed(2), status: ((stats.spi ?? 1) >= 1 ? 'success' : 'danger') as 'success' | 'danger' },
+            { label: 'Critical', value: stats.alertCounts?.CRITICAL || 0, status: ((stats.alertCounts?.CRITICAL || 0) > 0 ? 'danger' : 'success') as 'danger' | 'success' },
+            { label: 'Risks', value: stats.criticalRisks || 0, status: ((stats.criticalRisks || 0) > 0 ? 'warning' : 'success') as 'warning' | 'success' },
+        ] : []
+
+    const criticalCount = isPortfolioMode ? (portfolioStats?.globalAlertCounts?.CRITICAL || 0) : (stats?.alertCounts?.CRITICAL || 0)
+
     return (
-        <div className="space-y-4">
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={isPortfolioMode ? 'All Projects' : (activeProject?.name || 'Active Project')}
+                    packageName={isPortfolioMode ? 'Portfolio Mode' : undefined}
+                    versionLabel="v3.2.0"
+                    syncStatus="synced"
+                    healthItems={isPortfolioMode ? [] : healthItems}
+                    actions={[
+                        ...(!isPortfolioMode && activeProject && stats ? [{
+                            label: 'Export',
+                            icon: <FileDown className="h-3 w-3" />,
+                            onClick: () => { /* handled by GenerateReportDialog */ },
+                        }] : []),
+                    ]}
+                />
+            }
+            navigation={
+                <ModeSwitch
+                    options={[
+                        { value: 'project', label: 'Project', icon: <Layout className="h-3.5 w-3.5" /> },
+                        { value: 'portfolio', label: 'Portfolio', icon: <Activity className="h-3.5 w-3.5" /> },
+                    ]}
+                    value={isPortfolioMode ? 'portfolio' : 'project'}
+                    onChange={(v) => {
+                        setIsPortfolioMode(v === 'portfolio')
+                        setSrStatus(v === 'portfolio' ? 'Switched to portfolio mode.' : 'Switched to project mode.')
+                    }}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Command Center"
+                    subtitle={isPortfolioMode ? 'Consolidated portfolio telemetry' : `${activeProject?.name || 'Project'} — operational overview`}
+                    primaryAction={!isPortfolioMode && activeProject && stats ? {
+                        label: 'Analyze Impact',
+                        icon: <Zap className="h-3.5 w-3.5" />,
+                        onClick: () => navigate('/strategy-simulation'),
+                    } : undefined}
+                    secondaryActions={!isPortfolioMode && activeProject && stats ? [{
+                        label: 'Export Report',
+                        icon: <FileDown className="h-3.5 w-3.5" />,
+                        onClick: () => { /* handled by GenerateReportDialog */ },
+                    }] : []}
+                />
+            }
+            summary={
+                summaryItems.length > 0 ? <SummaryStrip items={summaryItems} variant="chips" /> : undefined
+            }
+            alert={
+                criticalCount > 0 ? (
+                    <AlertStrip
+                        severity="danger"
+                        message={`${criticalCount} critical alert${criticalCount > 1 ? 's' : ''} require immediate attention`}
+                        action={{ label: 'View Risks', onClick: () => navigate('/change-management') }}
+                    />
+                ) : undefined
+            }
+        >
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<Layout size={18} />}
-                title="Command Center"
-                description="Project telemetry and operational overview."
-            />
             {/* 1. HUD HEADER: Ticker & Status */}
             <div className="flex flex-col gap-2 bg-slate-950 text-white p-3 rounded-lg border border-slate-800 shadow-lg">
                 <div className="flex items-center justify-between">
@@ -500,7 +592,7 @@ export default function CommandCenter() {
 
 
             </div>
-        </div>
+        </PageShell>
     )
 }
 

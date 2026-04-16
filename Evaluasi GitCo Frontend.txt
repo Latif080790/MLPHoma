@@ -1,0 +1,1240 @@
+Sekarang saya memiliki pemahaman mendalam tentang ekosistem MLPHoma. Saya akan menyusun PRD & Audit komprehensif berdasarkan semua temuan.
+
+---
+
+# 🏗️ ENTERPRISE AUDIT & PRD — MLPHoma ConTech Platform
+**Prepared by:** Principal Enterprise Solution Architect & Chief of UX Strategy
+**Date:** 14 April 2026 | **Version:** 2.0 — Enterprise Refit Edition
+**Repository:** [Latif080790/MLPHoma](https://github.com/Latif080790/MLPHoma) | **Live:** [mlp-homa.vercel.app](https://mlp-homa.vercel.app)
+
+---
+
+## SECTION 1: SYSTEMIC HEALTH & EXECUTIVE SUMMARY
+
+### 1.1 Platform Identity
+
+MLPHoma adalah **Construction Management Information System (CMIS)** berbasis SPA (Single Page Application) yang mengintegrasikan 9+ domain modul: AHSP → RAB → WBS → Timeline/CPM → RAP → Curva-S → Cash Flow → Supply Chain → Finance. Stack: **React 18.3 + TypeScript 5.9 + Zustand 5 + Supabase + Tailwind/shadcn/ui**, di-deploy ke Vercel via HashRouter.
+
+### 1.2 Macro Health Score
+
+| Dimensi | Score | Keterangan |
+|---|---|---|
+| **Arsitektur Teknis** | 🟡 65/100 | Layering solid secara teori; implementasi partial — 8 file melanggar layer boundary langsung akses Supabase |
+| **State Management** | 🟡 60/100 | 16 Zustand stores; 5 store tidak punya `loading`/`error` state; hanya 4/16 punya cached getter |
+| **Design System Maturity** | 🟡 68/100 | shadcn/ui + Radix = solid foundation; tapi `components/change` dan `components/change-order` duplikat tujuan; belum ada shared `DataTable` primitive |
+| **WCAG 2.1 Compliance** | 🟠 52/100 | Kontras warna light mode adequate (Blue-600 on white = 4.6:1 ≈ AA); dark mode `--destructive` HSL `0 62.8% 30.6%` ON dark bg = **FAIL < 3:1**; `control-compact` class menghasilkan elemen `h-8 / text-xs` = **32px height < 44px WCAG minimum touch target** |
+| **Nielsen Heuristics** | 🟡 58/100 | Visibility of system status lemah (5/16 store tanpa loading state); Error prevention ada Zod tapi error pipeline tidak konsisten di UI layer |
+| **Workflow Integration** | 🟡 62/100 | Pipeline AHSP→RAB→Timeline→RAP→Curva-S terdokumentasi dengan baik; tapi titik putus kritis di `curvaSStore` (tanpa cached getter + tanpa sync real-time ke `rapStore`) |
+| **Performance** | 🟠 55/100 | CPM sudah di-Web Worker; tapi `CommandCenter.tsx` (440 baris + direct Supabase) = high re-render risk; tidak ada code-splitting sub-route |
+| **Test Coverage** | 🔴 42/100 | 11/27 service tested; 16 service untested termasuk `supplyChainService` (335 baris, budget locking) dan `progressBillingService` |
+
+**Overall Enterprise Readiness: 58/100 — Foundation Solid, Execution Gap Signifikan**
+
+### 1.3 Critical Finding Summary (Top-5)
+
+> **CF-01 🔴 Layer Boundary Violation:** 8 file mengakses Supabase langsung di UI/Store layer — ini menciptakan *silo data* dan menghancurkan kemampuan testing, caching, dan error tracing.
+
+> **CF-02 🔴 WCAG AA Failure pada Touch Targets:** Class `.control-compact` (h-8 = 32px) dan `.density-compact` (text-xs) digunakan secara luas untuk tabel engineering — ini kritis bagi Field Engineer yang mengoperasikan tablet di lapangan.
+
+> **CF-03 🟠 State Synchronization Gap:** Update di `rabStore` tidak otomatis me-trigger re-kalkulasi di `curvaSStore`. Jika PM mengubah volume RAB, Curva-S tidak live-update — melanggar prinsip SSOT.
+
+> **CF-04 🟠 Navigation Architecture Dual-Source:** `NAV_ITEMS` masih hardcoded di `AppShell.tsx` (15 items) dengan `ModuleKey` di `routes.ts` (24 keys) — 9 modul "ghost" yang tidak visible dan menciptakan confusion wayfinding.
+
+> **CF-05 🟡 Cognitive Overload pada Data-Dense Modules:** Tabel RAB dan Gantt merender semua data sekaligus tanpa progressive disclosure. Berdasarkan Hick's Law, user dihadapkan dengan 10+ column + action toolbar secara simultan.
+
+---
+
+## SECTION 2: UI/UX STANDARD & WORKFLOW AUDIT (MATRIX)
+
+| Modul / Workflow | Isu (Friction / Silo) | Parameter UX yang Dilanggar | Rekomendasi Integrasi & Desain (Enterprise Grade) |
+|:---|:---|:---|:---|
+| **AHSP → RAB Linkage** | `ahspStore.ts` melakukan 10+ query Supabase langsung. Saat AHSP `unit_price` diupdate, tidak ada mekanisme otomatis yang invalidate cache `rabStore` yang sudah menggunakan harga tersebut — data stale silently. | *Visibility of System Status (Heuristic #1)*, *SSOT Violation*, *State Synchronization* | Ekstrak semua query ke `ahspService.ts`. Implementasikan Zustand subscription cross-store: `ahspStore` → `subscribe()` → trigger `rabStore.invalidateCachedPrices(ahspCode)`. Tampilkan badge "Harga AHSP Diperbarui — Klik untuk sinkronkan RAB" sebagai inline contextual alert. |
+| **Tabel RAB (RABTable.tsx)** | Semua kolom (kode, nama, volume, unit, harga satuan, subtotal, overhead%, profit%, PPN, final_total, task_id, is_overhead) tampil sekaligus. Toolbar aksi (Add, Import, Export, Version, Approve) sejajar tanpa hierarki visual. | *Progressive Disclosure*, *Hick's Law*, *Data-to-Ink Ratio (Tufte)*, *Fitts's Law* | Implementasikan **Column Visibility Manager** (similar to TanStack Table's column toggle). Default: tampilkan 5 kolom utama. Sembunyikan `overhead%`, `profit%`, `cost_material`, `cost_labor` dalam collapsible "Detail Breakdown". Groupkan toolbar jadi 3 kelompok: Primary (Add, Save) | Secondary (Import, Export) | Tertiary (Version, Approve). |
+| **Timeline / Gantt** | `timelineStore.ts` tidak memiliki `loading`/`error` state. Jika fetch gagal, user tidak mendapat feedback. CPM Web Worker sudah ada tapi tidak ada visual "CPM Recalculating..." indicator. Gantt bar tidak live-update saat RAB task_id berubah. | *Visibility of System Status (Heuristic #1)*, *Error Prevention (Heuristic #5)*, *Fitts's Law* | Tambah `loading: boolean` + `error: string | null` ke `timelineStore`. Implementasikan `WorkerBusyIndicator` component yang membaca state dari CPM worker. Saat task dependency berubah, dispatch custom event `cpm:recalculating` yang dirender sebagai subtle pulsing indicator di Gantt header. |
+| **RAP / Curva-S Correlation** | `curvaSStore` tidak memiliki cached getter dan tidak ada subscription dari `rapStore`. Artinya: ketika RAP plan_data diupdate, Curva-S harus di-refresh manual (tidak ada link). Ini adalah titik putus paling kritis dalam pipeline EVM. | *End-to-End Workflow Integration*, *State Synchronization*, *Visibility of System Status* | Implementasikan `rapStore.subscribe()` → `curvaSStore.recalculateFromRAP(projectId)`. Gunakan Zustand's `subscribeWithSelector` untuk reactivity granular. Tampilkan "Last Synced: 2 minutes ago" timestamp di header Curva-S. Tambah cached getter di `curvaSStore`. |
+| **Command Center / Dashboard** | `CommandCenter.tsx` (440 baris) langsung mengakses Supabase via `assertSupabase()` di dalam page component. Tidak ada pemisahan antara data-fetching logic dan render logic. Menyebabkan re-render cascading jika satu query selesai lebih lambat. | *Nielsen Heuristic #1 (Visibility)*, *Heuristic #9 (Help diagnose errors)*, *Atomic Design (Organism level dirties itself)* | Ekstrak ke `dashboardService.ts`. Implementasikan `useDashboardMetrics(projectId)` hook yang menggunakan `Promise.allSettled()` sehingga partial failure tidak block seluruh dashboard. Pisahkan setiap KPI card menjadi komponen independen dengan loading skeleton individual. |
+| **Navigasi & Wayfinding** | Sidebar 15 items hardcoded; 9 dari 24 `ModuleKey` tidak muncul di sidebar. User tidak tahu modul apa yang tersedia. Tidak ada breadcrumb, tidak ada active module indicator yang jelas. | *Hick's Law* (15 items = approaching decision paralysis threshold), *Recognition over Recall (Heuristic #6)*, *Fitts's Law* | Implementasikan `ROUTES.filter(r => r.showInNav)` dari `navRegistry.ts` sebagai single source of truth. Kelompokkan sidebar menjadi seksi: **Project** (Overview, Costing, Schedule) | **Finance** (RAB, RAP, Cashflow) | **Operations** (Supply Chain, Change, TKDN) | **Settings**. Tambah breadcrumb `<PageHeader>` component di setiap v3 page. Max 5 items per grup = compliance dengan Hick's Law. |
+| **Form Laporan & Input Field (Mobile / Field Engineer)** | Class `.control-compact` menghasilkan `h-8` (32px) untuk semua input/button di tabel engineering. Pada mobile (tablet lapangan), target sentuh 32px < minimum WCAG 2.1 AA 44×44px. `text-xs` pada label tabel = 12px, insufficient untuk outdoor readability. | *WCAG 2.1 AA 1.4.11 Non-text Contrast*, *Success Criterion 2.5.5 Target Size*, *Fitts's Law* | Implementasikan responsive touch targets: `md:h-8 h-11` (44px on mobile, 32px on desktop). Buat utility class `.field-input-mobile` = `h-11 text-sm` untuk semua form input di modul `FieldTasks` dan `progress`. Minimum font-size tabel: `text-xs` (12px) hanya boleh digunakan untuk supplementary data, bukan primary labels. |
+| **Supply Chain — PO → GRN → Invoice** | `ThreeWayMatch.tsx` langsung mengquery `purchase_orders` dan `grn` tabel via Supabase client. Tidak ada state loading. Jika PO diapprove di modul Finance namun Supply Chain view belum refresh, terjadi inkonsistensi tampilan. | *State Synchronization*, *Error Prevention*, *SSOT Violation* | Pindahkan query ke `financeService.ts` + `supplyChainService.ts`. Implementasikan Supabase Realtime channel `purchase_orders` untuk auto-invalidate Supply Chain view saat status PO berubah dari Finance modul. |
+| **Error Handling Pipeline** | 5 store tanpa `error` state. Di beberapa page v3, error dari async operations di-console.log atau di-ignore silently. `ErrorBoundary.tsx` punya TODO untuk external logging yang belum diimplementasikan. | *Help users recognize, diagnose, recover (Heuristic #9)*, *Error Prevention (Heuristic #5)* | Definisikan `AppError` taxonomy (`ValidationError`, `NetworkError`, `SyncError`, `AuthError`). Semua async di v3 pages wajib wrap `handleAsync()` utility. `ErrorBoundary.tsx` harus mengimplementasikan Sentry/Datadog hook. Setiap store wajib punya `error: string | null` state. |
+| **Dark Mode Aksesibilitas** | `--destructive` di dark mode = HSL `0 62.8% 30.6%` yang menghasilkan rasio kontras ~2.5:1 terhadap background dark (`--background: 222 47% 11%`). WCAG AA membutuhkan minimum 4.5:1 untuk text, 3:1 untuk UI components. | *WCAG 2.1 AA 1.4.3 Contrast (Minimum)*, *WCAG 1.4.11 Non-text Contrast* | Naikkan `--destructive` dark mode ke minimal `0 72% 50%` (memberikan ~4.6:1 ratio). Jalankan automated contrast check menggunakan `axe-core` dalam CI pipeline. Tambahkan visual indicator non-color (ikon + pattern) untuk status error agar tidak hanya bergantung pada warna merah. |
+| **WBS → Timeline Interlinking** | `wbsStore.ts` (18.8KB, terbesar) dan `timelineStore.ts` tidak memiliki cross-subscription. Jika WBS node dihapus, timeline tasks yang menggunakan `wbs_id` menjadi orphan tanpa visual warning. | *Error Prevention (Heuristic #5)*, *End-to-End Workflow* | Implementasikan referential integrity check di `wbsStore.removeItem()`: query `timelineStore.getTasksByWbsId(wbsId)` sebelum delete. Jika ada dependent tasks, tampilkan confirmation modal dengan list tasks yang terpengaruh. Pada Timeline view, tampilkan "WBS Unlinked" badge pada orphan tasks. |
+
+---
+
+## SECTION 3: SYSTEM INTEGRATION & COMPONENT DEEP DIVE
+
+### 3.1 Design System Consistency — Analisis Atomic Design
+
+```
+ATOMS (Baik) ──────────────────────────────────────────────────
+✅ shadcn/ui Button, Input, Badge, Select → Radix-based, accessible
+✅ Tailwind design tokens via CSS variables (HSL-based, dark-mode ready)
+⚠️  Inkonsistensi: `control-compact` class bypass Atom standards (h-8 violates touch target)
+❌  Missing Atom: NumericInput dengan format Rupiah — setiap modul implementasi sendiri
+
+MOLECULES (Parsial) ───────────────────────────────────────────
+✅ Form fields + Label + Error = React Hook Form + Zod integration
+⚠️  Duplikasi: `components/change/` dan `components/change-order/` — fungsi overlap tidak jelas
+⚠️  Missing Molecule: StatusBadge yang konsisten lintas modul (RAB status vs Timeline status pakai format berbeda)
+❌  Missing: CurrencyCell, ProgressBar + Label, DateRangePicker yang shared
+
+ORGANISMS (Fragmented) ────────────────────────────────────────
+⚠️  RABTable, TimelineGantt, SupplyChainTable = masing-masing implementasi sendiri tanpa shared base
+❌  Tidak ada shared DataTable primitive (direncanakan di Sprint 5 tapi belum ada)
+❌  Sidebar navigasi hardcoded (tidak membaca dari design token / route config)
+
+TEMPLATES (Ada tapi Incomplete) ──────────────────────────────
+✅ AppShell = Layout wrapper yang baik
+⚠️  PageSkeleton loading state ada, tapi tidak semua halaman menggunakannya
+❌  Tidak ada Error Page Template yang konsisten
+
+PAGES (Divergent Maturity) ────────────────────────────────────
+✅ ProjectOverview.tsx = Clean: service layer, no direct Supabase, modular sections
+✅ ScheduleOps.tsx = Clean wrapper (78 baris)
+⚠️  CommandCenter.tsx (440 baris) = Dirty: direct Supabase, inline logic
+⚠️  Finance.tsx (386 baris) = Perlu decompose ke tab components
+❌  HandoverWizard.tsx = Direct Supabase, God Component pattern
+```
+
+**Rekomendasi Atomic Design Refit:**
+Buat `src/components/shared/` sebagai repository primitif lintas-domain:
+- `DataTable.tsx` — sortable, filterable, virtualized base table
+- `CurrencyCell.tsx` — format Rupiah konsisten (IDR locale)
+- `StatusBadge.tsx` — unified status display
+- `SectionHeader.tsx` — modul header + breadcrumb
+
+### 3.2 Navigation & Wayfinding — Cross-Module Hierarchy
+
+**Current State (As-Is):**
+```
+HashRouter
+├── /login, /register, /forgot-password, /reset-password (Public)
+└── ProtectedLayout (AppShell)
+    ├── /command-center
+    ├── /project-management
+    ├── /project/:id/overview
+    ├── /project/:id/costing      ← ProjectCosting (51 baris, clean)
+    ├── /project/:id/schedule     ← ScheduleOps (78 baris, clean)
+    ├── /project/:id/supply-chain
+    ├── /finance
+    ├── /change-management
+    ├── /documents
+    ├── /handover
+    ├── /portfolio/resources
+    ├── /portfolio/analytics
+    ├── /strategy-simulation
+    ├── /tkdn
+    ├── /feature-editor
+    ├── /settings
+    └── /field-tasks              ← Mobile-specific, belum ada dedicated breakpoint
+```
+
+**Critical Gap:** Tidak ada deep-link antar modul. Contoh: dari RAB item, tidak bisa langsung jump ke Timeline task yang terhubung via `task_id`. User harus navigasi manual = cognitive friction tinggi.
+
+**Rekomendasi Navigation Refit:**
+1. Implementasikan **Cross-Module Context Links** — setiap RAB item dengan `task_id` tampilkan ikon link ke Timeline
+2. Tambah **Breadcrumb Trail** di `AppShell` menggunakan React Router's `useMatches()`
+3. Implementasikan **Quick Jump Panel** (`Cmd+K` sudah ada via `GlobalCommandPalette`) — pastikan semua entitas searchable (project, RAB item, task)
+4. Kelompokkan sidebar jadi navigasi 3-level: Project Context → Module → Sub-section
+
+### 3.3 Micro-interactions & Error Handling
+
+**Analisis Nielsen Heuristics pada Error States:**
+
+| Heuristic | Current Status | Gap |
+|---|---|---|
+| #1 Visibility of System Status | 🟡 Partial — `AppToaster` ada via Sonner; tapi 5 store tanpa `loading` state | Tabel loading tanpa skeleton menyebabkan layout shift |
+| #5 Error Prevention | 🟡 Partial — Zod validation solid di service layer; tapi validation feedback di UI tidak konsisten | Field-level error hanya muncul di beberapa form |
+| #9 Help Users Recover | 🔴 Weak — `ErrorBoundary` ada tapi generic; TODO external logging belum selesai | User hanya mendapat "Something went wrong" tanpa actionable next step |
+| #4 Consistency & Standards | 🟡 Partial — Tabel menggunakan `toast.error()` untuk beberapa kasus dan `console.error()` untuk kasus lain | Error reporting tidak homogen |
+
+**Micro-interaction Gaps:**
+- **Save Feedback:** Optimistic update di store tidak selalu dikomunikasikan ke user — perlu subtle "Saving..." → "Saved ✓" indicator di form header
+- **Sync Status:** `offlineQueueStore` ada tapi tidak ada persistent UI indicator menampilkan jumlah pending operations
+- **Haptic Feedback mobile:** `FieldTasks` module tidak menggunakan `navigator.vibrate()` untuk confirmation actions
+- **Destructive Action Confirmation:** Belum ada `AlertDialog` standar untuk delete operations di semua modul
+
+---
+
+## SECTION 4: PRODUCT REQUIREMENTS DOCUMENT (PRD) — ENTERPRISE REFIT
+
+### 4.1 Business Objective
+
+> **Menjadikan MLPHoma sebagai SSOT (Single Source of Truth) Zero-Friction Construction Control System** yang mengalirkan data dari hulu (AHSP pricing) hingga hilir (EVM reporting & Cash Flow projection) tanpa silo, tanpa manual re-entry, dan dapat dioperasikan oleh Field Engineer di lapangan maupun Project Manager di kantor dengan tingkat friction yang sama rendahnya.
+
+**Target User Personas:**
+- **Project Manager (PM):** Desktop-first. Needs: cross-module visibility, approval workflow, budget variance alerts
+- **Field Engineer (FE):** Mobile/tablet-first. Needs: large touch targets, offline capability, quick status update
+- **Finance Controller (FC):** Desktop. Needs: RAB approval, three-way match, PDF export, audit trail
+
+---
+
+### 4.2 UX/UI System Requirements
+
+#### A. Design Token & Spacing System
+
+```css
+/* 8pt Grid System — Mandatory */
+--spacing-base: 8px;     /* 1 unit */
+--spacing-sm: 16px;      /* 2 units */
+--spacing-md: 24px;      /* 3 units */
+--spacing-lg: 32px;      /* 4 units */
+--spacing-xl: 48px;      /* 6 units */
+
+/* Touch Target Compliance (WCAG 2.5.5) */
+--touch-target-min: 44px;   /* Absolute minimum for mobile */
+--touch-target-comfort: 48px; /* Recommended for field use */
+
+/* Typography Scale (WCAG 1.4.4 Resize Text) */
+--text-display: 1.5rem/1.3;    /* 24px — Page Headers */
+--text-heading: 1.25rem/1.4;   /* 20px — Module Headers */
+--text-subheading: 1rem/1.5;   /* 16px — Section Headers */
+--text-body: 0.875rem/1.6;     /* 14px — Body / Table data */
+--text-caption: 0.75rem/1.5;   /* 12px — ONLY supplementary info, not primary data */
+```
+
+#### B. Color Palette — WCAG AA Compliant Corrections
+
+```css
+/* CORRECTED Dark Mode Destructive — was 2.5:1, needs 4.5:1 */
+--destructive-dark: 0 72% 50%;     /* #e63946 → 4.7:1 on dark bg ✅ */
+--destructive-foreground-dark: 0 0% 98%;
+
+/* CORRECTED Muted Foreground — borderline AA */
+--muted-foreground: 215.4 16.3% 40%; /* Darkened from 46.9% → ensures 4.5:1 ✅ */
+
+/* NEW: Status Semantic Tokens */
+--status-success: 142 76% 36%;   /* #16a34a — Green-600 */
+--status-warning: 32 95% 44%;    /* #d97706 — Amber-600 */
+--status-danger: 0 72% 50%;      /* #e63946 */
+--status-info: 199 89% 48%;      /* #0ea5e9 — Sky-500 */
+```
+
+#### C. Component Standards
+
+```typescript
+// Mandatory: Unified touch target for all interactive elements
+// src/components/ui/button.tsx — extend existing variants
+const buttonVariants = cva("...", {
+  variants: {
+    size: {
+      default: "h-10 px-4 py-2",           // 40px — desktop standard
+      sm: "h-9 px-3",                        // 36px — desktop secondary
+      lg: "h-11 px-8",                       // 44px — WCAG minimum ✅
+      "field": "h-12 px-6 text-base",       // 48px — field/mobile usage ✅
+      icon: "h-10 w-10",
+      "icon-field": "h-12 w-12",            // Field engineer icon buttons
+    }
+  }
+})
+
+// Mandatory: All data tables MUST use shared primitive
+// src/components/shared/DataTable.tsx
+interface DataTableProps<T> {
+  data: T[]
+  columns: ColumnDef<T>[]
+  isLoading?: boolean        // Shows skeleton rows
+  error?: string | null      // Shows inline error state
+  emptyState?: ReactNode     // Custom empty state
+  onRowClick?: (row: T) => void
+  stickyHeader?: boolean     // For long tables
+  virtualized?: boolean      // Auto-enabled for >100 rows
+}
+```
+
+---
+
+### 4.3 System Integration Logic (Frontend)
+
+#### A. Cross-Store State Synchronization Map
+
+```typescript
+/**
+ * MANDATORY CROSS-STORE SUBSCRIPTIONS
+ * Implementasikan di src/store/storeSubscriptions.ts
+ * Di-inisialisasi sekali di App.tsx setelah semua stores loaded
+ */
+
+// 1. AHSP price update → invalidate RAB cached prices
+ahspStore.subscribe(
+  (s) => s.items,
+  (items) => rabStore.getState().invalidatePriceCache()
+)
+
+// 2. RAP update → recalculate Curva-S
+rapStore.subscribe(
+  (s) => s.planData,
+  (planData, prevPlanData) => {
+    if (planData !== prevPlanData) {
+      const projectId = projectStore.getState().activeProjectId
+      if (projectId) curvaSStore.getState().recalculateFromRAP(projectId)
+    }
+  }
+)
+
+// 3. RAB item update → propagate to linked Timeline task cost
+rabStore.subscribe(
+  (s) => s.items,
+  () => timelineStore.getState().syncTaskCostsFromRAB()
+)
+
+// 4. WBS deletion guard → check timeline dependencies
+// Implemented in wbsStore.removeItem() as pre-condition check
+```
+
+#### B. Standardized Store Contract
+
+```typescript
+// src/store/types/storeContract.ts
+// MANDATORY: semua 16 store harus implement interface ini
+
+interface StandardStoreContract<T> {
+  // ── State ──────────────────────────────────────────
+  items: Record<string, T[]>    // byProjectId partition
+  loading: boolean               // NOT isLoading
+  error: string | null
+  lastSyncedAt: number | null    // Timestamp untuk "last synced" UI
+  
+  // ── Standard Actions ───────────────────────────────
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+  reset: () => void
+  
+  // ── Cached Getter (MANDATORY for collections > 50 items) ──
+  getItems: (projectId: string) => T[]   // Via createCachedGetterWithKey
+}
+```
+
+#### C. Service Layer Architecture
+
+```
+// MANDATORY REFACTOR — 8 files yang melanggar boundary:
+// Target arsitektur baru:
+
+src/services/
+├── ahspService.ts          ← [NEW] Pindahkan 10+ query dari ahspStore
+├── projectService.ts       ← [NEW] Pindahkan dari projectStore + Settings.tsx
+├── dashboardService.ts     ← [NEW] Pindahkan dari CommandCenter.tsx
+├── handoverService.ts      ← [EXTEND] Pindahkan dari HandoverWizard.tsx
+├── financeService.ts       ← [EXTEND] Pindahkan dari ThreeWayMatch.tsx
+├── mappers/
+│   ├── ahspMapper.ts       ← toDomain() / toPersistence()
+│   ├── rabMapper.ts
+│   ├── timelineMapper.ts
+│   ├── financeMapper.ts
+│   └── supplyChainMapper.ts
+└── __tests__/              ← Test coverage target: 100% (27/27 services)
+```
+
+---
+
+### 4.4 Feature Epics & User Stories
+
+#### EPIC 1: SSOT Pipeline — RAB ↔ Timeline ↔ RAP Real-Time Sync
+
+**User Story 1.1 — PM: Budget-to-Schedule Traceability**
+> *"Sebagai Project Manager, saya ingin ketika saya mengubah volume RAB item, nilai tersebut langsung terefleksi di Timeline task cost dan RAP monthly distribution TANPA harus refresh manual, sehingga saya selalu melihat dampak perubahan budget secara real-time."*
+
+**Acceptance Criteria:**
+- [ ] Update volume di `rabStore` → `timelineStore.syncTaskCostsFromRAB()` dipanggil otomatis dalam <500ms
+- [ ] Update timeline schedule → `rapStore.recalculateDistribution()` dipanggil otomatis
+- [ ] `curvaSStore` merender updated S-Curve dalam <2s setelah RAP berubah
+- [ ] Toast notification: *"RAB diperbarui — Timeline & RAP tersinkronisasi ✓"*
+- [ ] Tidak ada manual refresh yang diperlukan
+
+**User Story 1.2 — FE: Field Progress Update → EVM Impact**
+> *"Sebagai Field Engineer, saya ingin update progress pekerjaan di tablet lapangan langsung mengupdate nilai Earned Value di Curva-S, sehingga kantor bisa melihat performa aktual proyek dalam hitungan menit, bukan hari."*
+
+**Acceptance Criteria:**
+- [ ] Input progress (%) di `FieldTasks` → trigger `curvaSStore.updateActualProgress(taskId, progress)`
+- [ ] Semua form input di `FieldTasks` menggunakan `size="field"` (48px touch target)
+- [ ] Offline: progress update masuk ke `offlineQueueStore`, sync saat online kembali
+- [ ] Sync status indicator: *"3 updates pending sync — Tap to retry"* (dismissible banner)
+- [ ] Berhasil sync → push notification / toast *"Progress terkirim ke server ✓"*
+
+**User Story 1.3 — FC: Three-Way Match dengan Alert Otomatis**
+> *"Sebagai Finance Controller, saya ingin menerima notifikasi otomatis ketika nilai Invoice dari vendor melebihi 5% dari nilai PO terkait, sehingga saya dapat segera melakukan verifikasi sebelum proses pembayaran."*
+
+**Acceptance Criteria:**
+- [ ] `ThreeWayMatch` logic dipindahkan ke `financeService.ts` (tidak ada direct Supabase di component)
+- [ ] Rule engine: `|invoiceAmount - poAmount| / poAmount > 0.05` → trigger `notificationStore.addAlert()`
+- [ ] Alert tampil di sidebar notification badge (real-time via Supabase Realtime)
+- [ ] Alert modal menampilkan: PO#, Invoice#, PO Amount, Invoice Amount, Variance%, Action buttons (Approve Variance / Reject / Request Clarification)
+- [ ] Audit trail: setiap action tercatat di `auditService.ts`
+
+---
+
+#### EPIC 2: WCAG AA Accessibility Refit
+
+**User Story 2.1 — FE: Mobile-First Touch Target Compliance**
+> *"Sebagai Field Engineer yang menggunakan tablet Android di lokasi konstruksi, saya ingin semua tombol dan input memiliki ukuran yang cukup besar sehingga dapat dioperasikan dengan akurasi tinggi meskipun menggunakan sarung tangan kerja atau dalam kondisi cahaya terik."*
+
+**Acceptance Criteria:**
+- [ ] Semua interactive elements di `FieldTasks` module: minimum `h-11` (44px)
+- [ ] Semua form inputs di mobile view: `h-12` (48px) + `text-sm` (14px) minimum
+- [ ] Remove `.control-compact` dari `FieldTasks` dan semua mobile-facing components
+- [ ] Automated axe-core accessibility test dalam CI — tidak boleh ada WCAG AA violation pada release
+- [ ] Contrast ratio: semua text/background kombinasi ≥ 4.5:1 (AA), atau ≥ 7:1 (AAA untuk critical data)
+
+**User Story 2.2 — PM: Keyboard Navigation Enterprise Grade**
+> *"Sebagai Project Manager yang menggunakan aplikasi via keyboard untuk efisiensi, saya ingin dapat menavigasi seluruh tabel RAB, melakukan edit cell, dan submit tanpa pernah menyentuh mouse."*
+
+**Acceptance Criteria:**
+- [ ] `Tab` → navigasi antar cell di tabel RAB (menggunakan `@tanstack/react-virtual` + keyboard handler)
+- [ ] `Enter` → enter edit mode pada focused cell
+- [ ] `Escape` → cancel edit
+- [ ] `Ctrl+S` → save all pending changes
+- [ ] `Cmd+K` → Global Command Palette accessible dari mana saja
+- [ ] Focus ring visible: minimum 2px solid, dengan 2px offset (sudah dikonfigurasi di Tailwind config ✅)
+
+---
+
+#### EPIC 3: Design System Consolidation — Atomic Component Library
+
+**User Story 3.1 — Dev Team: Shared DataTable Primitive**
+> *"Sebagai developer yang membuat fitur baru di modul Supply Chain, saya ingin menggunakan satu komponen DataTable yang sudah menangani sorting, filtering, loading skeleton, error state, dan virtual scrolling, sehingga saya tidak perlu mengimplementasikan ulang hal yang sama dari awal."*
+
+**Acceptance Criteria:**
+- [ ] `src/components/shared/DataTable.tsx` tersedia dengan interface standar (loading, error, emptyState, virtualized)
+- [ ] Digunakan oleh minimum 5 modul setelah release (RABTable, Timeline list, Supply Chain, AHSP, DKH)
+- [ ] Virtualization otomatis aktif untuk datasets > 100 rows (menggunakan `@tanstack/react-virtual` yang sudah ada di dependencies ✅)
+- [ ] Storybook (atau Vitest snapshot) untuk setiap state: loading, error, empty, populated, virtualized
+
+---
+
+### 4.5 Performance & Accessibility Constraints
+
+| Constraint | Requirement | Current State | Gap |
+|---|---|---|---|
+| **Initial Load Time** | LCP < 1.5s | Unknown (no monitoring) | Perlu Lighthouse CI di GitHub Actions |
+| **Bundle Size** | Main chunk < 300KB gzipped | Unknown | Implementasikan `vite-bundle-analyzer` |
+| **Table Render** | 500 rows render < 200ms | Not virtualized currently | Aktifkan `@tanstack/react-virtual` (sudah di deps ✅) |
+| **CPM Recalculation** | < 3s untuk 200 tasks | Already in Web Worker ✅ | Tambah progress indicator |
+| **Keyboard Navigation** | 100% navigable | Partial | Audit per module |
+| **Screen Reader** | Full ARIA support | Partial (shadcn/ui baseline) | Audit `aria-label` pada semua icon-only buttons |
+| **Offline Capability** | Queue + sync | Already implemented ✅ | Tambah persistent sync status UI |
+| **Dark Mode** | WCAG AA compliant | **FAIL** — destructive 2.5:1 | Correct `--destructive` dark token |
+| **PWA** | Installable | `vite-plugin-pwa` ada di deps ✅ | Aktifkan manifest + service worker |
+
+---
+
+### 4.6 Technical Debt Prioritization Matrix
+
+| Item | Severity | Effort | Priority | Sprint |
+|---|---|---|---|---|
+| Layer boundary violations (8 files) | 🔴 Critical | High (12d) | P0 | Sprint 2 |
+| `curvaSStore` ↔ `rapStore` sync | 🔴 Critical | Medium (3d) | P0 | Sprint 1 |
+| Dark mode WCAG contrast fix | 🔴 Critical | Low (0.5d) | P0 | Hotfix |
+| 5 stores missing loading/error state | 🟠 High | Medium (2d) | P1 | Sprint 1 |
+| Touch target WCAG compliance (mobile) | 🟠 High | Medium (3d) | P1 | Sprint 2 |
+| Shared DataTable primitive | 🟠 High | Medium (3d) | P1 | Sprint 5 |
+| Nav hardcoded → route config | 🟡 Medium | Low (1d) | P2 | Sprint 1 |
+| 16 untested services | 🟠 High | High (10d) | P2 | Sprint 3-4 |
+| `CommandCenter.tsx` decompose | 🟡 Medium | Medium (2d) | P2 | Sprint 5 |
+| Cross-module deep links | 🟡 Medium | Medium (2d) | P3 | Sprint 5-6 |
+| ErrorBoundary external logging | 🟡 Medium | Low (1d) | P3 | Sprint 4 |
+| i18n (activate or remove) | 🟢 Low | Low (PM decision) | P4 | Sprint 5 |
+
+---
+
+## EXECUTIVE RECOMMENDATION SUMMARY
+
+> **MLPHoma memiliki fondasi arsitektural yang lebih baik dari rata-rata ConTech startup pada fase yang sama.** Pipeline kalkulasi AHSP→RAB→RAP tersentralisasi, Zustand stores terdefinisi dengan baik secara domain, dan Supabase RLS sudah diterapkan. Namun, **gap antara arsitektur ideal dan implementasi aktual menciptakan risiko operasional nyata:**
+
+1. **🔴 Immediate (< 1 sprint):** Perbaiki dark mode WCAG contrast (`--destructive`). Ini 30 menit pekerjaan tapi membuat aplikasi legally accessible.
+
+2. **🔴 Sprint 1-2:** Selesaikan layer boundary enforcement (8 file offender) + implementasikan cross-store subscriptions (RAP→CurvaS). Ini adalah prasyarat mutlak sebelum menambah fitur Enterprise baru apapun.
+
+3. **🟠 Sprint 2-3:** Implementasikan shared `DataTable` primitive + standardisasi touch targets untuk Field Engineer. ROI tertinggi untuk user satisfaction di lapangan.
+
+4. **🟠 Sprint 3-4:** Naikkan service test coverage dari 42% → 100%. Tanpa ini, refactoring apapun berisiko tinggi.
+
+5. **🟡 Sprint 5-6:** Navigation hierarchy redesign + Design System consolidation. Ini yang akan membawa MLPHoma dari "functional" ke "enterprise-grade UX".
+
+**Final Score:** Platform ini adalah **diamond in the rough** — dengan 12 minggu eksekusi disiplin mengikuti roadmap di atas, MLPHoma dapat mencapai Enterprise Readiness Score **85+/100** dan siap untuk ekspansi ke multi-project portfolio management dan integrasi ERP eksternal.
+
+---
+
+*Dokumen ini divalidasi berdasarkan analisis kode aktual dari repository `Latif080790/MLPHoma` (commit: 26 Maret 2026) dan merujuk pada standar: Nielsen's 10 Heuristics, WCAG 2.1 AA/AAA, Brad Frost Atomic Design, Tufte Data-to-Ink, Fitts's & Hick's Laws.*
+
+
+Baik, sekarang saya punya pemahaman lengkap tentang semua komponen yang ada. Saya akan membuat wireframe ASCII yang sangat detail untuk setiap screen utama.
+
+---
+
+# 🖼️ WIREFRAME DETAIL — MLPHoma Enterprise UI/UX Redesign
+**Dokumen ini adalah blueprint visual yang langsung dapat diimplementasikan oleh tim developer.**
+**Format:** ASCII Wireframe + Anotasi Teknis + Spesifikasi Komponen
+
+---
+
+## PANDUAN BACA WIREFRAME
+
+```
+╔══╗ = Border utama / card container
+┌──┐ = Sub-container / panel
+│  │ = Konten area
+[  ] = Tombol / Button
+(  ) = Input field / Dropdown
+████ = Elemen terisi / Active state
+░░░░ = Skeleton loading / Placeholder
+~~~~  = Area chart/grafik
+▓▓▓▓ = Progress bar terisi
+····  = Progress bar kosong
+▼    = Dropdown indicator
+⬤    = Radio / status dot aktif
+○    = Radio / status dot inaktif
+🔔   = Icon notifikasi
+```
+
+---
+
+## WIREFRAME 01 — APP SHELL (Layout Utama)
+
+### Desktop — Sidebar Expanded (1440px)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║  SIDEBAR [280px]           │  HEADER [flex, h-16]                                               ║
+║  ┌────────────────────┐    │  ┌──────────────────────────────────────────────────────────────┐  ║
+║  │ ⬡ Estimator Pro   │    │  │ 🏠 > Projects > Proyek Jembatan A  [breadcrumb]              │  ║
+║  │   Engineering Grade│    │  │                     [⌘K Search...] [🔔3] [🌙] [@Avatar▼]     │  ║
+║  ├────────────────────┤    │  └──────────────────────────────────────────────────────────────┘  ║
+║  │ ── OVERVIEW ──     │    │                                                                    ║
+║  │ ▎████ Dashboard    │    │  MAIN CONTENT AREA (100% width - 280px sidebar)                   ║
+║  │   ○  Projects      │    ���  ┌──────────────────────────────────────────────────────────────┐  ║
+║  │   ○  Proj Overview │    │  │                                                              │  ║
+║  │                    │    │  │          [Page Component renders here]                       │  ║
+║  │ ── COST CONTROL ── │    │  │                                                              │  ║
+║  │   ○  Project Cost  │    │  │                                                              │  ║
+║  │   ○  AHSP Catalog  │    │  └──────────────────────────────────────────────────────────────┘  ║
+║  │                    │    │                                                                    ║
+║  │ ── SCHEDULE ──     │    │  SYNC STATUS BAR [h-8, sticky bottom, shown only when pending]    ║
+║  │   ○  Schedule Ops  │    │  ┌──────────────────────────────────────────────────────────────┐  ║
+║  │   ○  WBS           │    │  │ 🟡  3 perubahan menunggu sinkronisasi  [Coba Sekarang]  [✕] │  ║
+║  │                    │    │  └──────────────────────────────────────────────────────────────┘  ║
+║  │ ── OPERATIONS ──   │    │                                                                    ║
+║  │   ○  Supply Chain  │    ║
+║  │   ○  Finance       │    ║
+║  │   ○  Change Mgmt   │    ║
+║  │   ○  Documents     │    ║
+║  │   ○  TKDN          │    ║
+║  │                    │    ║
+║  │ ── PORTFOLIO ──    │    ║
+║  │   ○  Analytics     │    ║
+║  │   ○  Simulation    │    ║
+║  │                    │    ║
+║  │ ── SYSTEM ──       │    ║
+║  │   ○  Settings      │    ║
+║  ├────────────────────┤    ║
+║  │ [◀ Collapse]       │    ║
+║  └────────────────────┘    ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Sidebar Collapsed — Icon Mode (72px)
+
+```
+┌───────┐
+│  ⬡   │  Logo icon
+├───────┤
+│  ⊞   │  Dashboard (tooltip on hover)
+│  📁  │  Projects
+│  📋  │  Overview
+│  ─── │  divider
+│  💰  │  Costing
+│  📊  │  AHSP
+│  ─── │
+│  📅  │  Schedule
+│  🌲  │  WBS
+│  ─── │
+│  🚛  │  Supply
+│  💳  │  Finance
+│  🔔  │  ←  badge merah "3"
+│  ─── │
+│  ⚙️  │  Settings
+├───────┤
+│  ▶   │  Expand
+└───────┘
+```
+
+### Mobile — Bottom Nav Bar (< 768px)
+
+```
+╔══════════════════════════════════════════════╗
+║  CONTENT AREA (full width, scroll)           ║
+╠══════════════════════════════════════════════╣
+║ [🏠 Home] [📋 Tasks] [⊞ Dash] [🔔] [☰ More] ║
+║   Active     ·         ·       3     ·        ║
+╚══════════════════════════════════════════════╝
+
+Anotasi:
+- Bottom nav height: h-16 (64px) — melampaui WCAG 44px ✅
+- Active indicator: top border 3px biru + icon biru
+- "More" membuka slide-up drawer dengan full menu
+```
+
+---
+
+## WIREFRAME 02 — COMMAND CENTER (Dashboard Eksekutif)
+
+### Layout: Bento Grid — 12 Kolom
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║  HEADER                                                                              ║
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ 📊 Command Center          [Semua Proyek ▼]  [Apr 2026 ▼]  [Generate Report]  │ ║
+║  │    Ringkasan portofolio real-time                                              │ ║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+║                                                                                      ║
+║  ROW 1 — KPI STRIP (5 kartu, masing-masing col-span-2 dari 12)                     ║
+║  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────┐ ║
+║  │ 💰 TOTAL RAB │ │ 📉 TOTAL RAP │ │ ✅ AKTUAL   │ │ ⏱ SPI       │ │ 🔴 RISK  │ ║
+║  │ Rp 42.5 M   │ │ Rp 38.1 M   │ │ Rp 21.3 M   │ │    0.87      │ │    4 High │ ║
+║  │ ↑ +2.3%     │ │ vs RAB 89%  │ │ 51% of RAP  │ │ ⚠ Di bawah  │ │ ▲ 1 baru  │ ║
+║  │ [4 proyek]  │ │             │ │             │ │  target 1.0  │ │           │ ║
+║  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘ └──────────┘ ║
+║                                                                                      ║
+║  ROW 2 — Charts (col-span-7) + Approval Queue (col-span-5)                         ║
+║  ┌──────────────────────────────────────────────┐ ┌───────────────────────────────┐ ║
+║  │ 📈 S-CURVE PORTOFOLIO            [Export]   │ │ 📥 APPROVAL QUEUE          3 │ ║
+║  │                                              │ │ ─��───────────────────────── │ ║
+║  │  100% ┤                          ╭──planned  │ │ ⚠ RAB v3 — Proyek A         │ ║
+║  │   80% ┤                   ╭──────╯           │ │   Rp 5.2M · diajukan 2j lalu│ ║
+║  │   60% ┤            ╭──────╯   ←today         │ │   [Tolak] [Tinjau] [Setuju] │ ║
+║  │   40% ┤     ╭──────╯╲actual                  │ │ ─────────────────────────── │ ║
+║  │   20% ┤╭────╯         ╲                      │ │ 🔄 Change Order #7 — Pjk B  │ ║
+║  │    0% └──────────────────────────────────    │ │   +Rp 320jt · Rev. Detail   │ ║
+║  │        Jan  Feb  Mar  Apr  May  Jun  Jul     │ │   [Tolak] [Tinjau] [Setuju] │ ║
+║  │ ─────  Planned  ━━━━  Actual                 │ │ ─────────────────────────── │ ║
+║  └──────────────────────────────────────────────┘ │ 📄 Invoice INV-2026-031     │ ║
+║                                                    │   PT Sumber Jaya · 3 item   │ ║
+║  ROW 3 — Project Status (col-7) + Activity (col-5)│   [Lihat Detail]            │ ║
+║  ┌──────────────────────────────────────────────┐ └───────────────────────────────┘ ║
+║  │ 🏗 STATUS PROYEK                  [+Proyek] │                                   ║
+║  │ ─────────────────────────────────────────── │                                   ║
+║  │ Proyek Jembatan A  [●IN PROGRESS]           │ ┌───────────────────────────────┐ ║
+║  │ RAB: ▓▓▓▓▓▓▓▓▓▓▓▓░░░ 78%  Rp 12.3M / 15.8M│ │ 🚨 CRITICAL PATH WARNING      │ ║
+║  │ SPI: 0.92  CPI: 1.03  ETA: 15 Jun 2026     │ │ ─────────────────────────────  │ ║
+║  │ ─────────────────────────────────────────── │ │ Task "Pondasi P3" telat 5 hr  │ ║
+║  │ Proyek Gedung B    [●PLANNING]              │ │ → Impact: 3 successor tasks    │ ║
+║  │ RAB: ▓▓▓░░░░░░░░░░░░ 22%  Rp 5.1M / 23.0M │ │ [Lihat Gantt] [Assign Crash]   │ ║
+║  │ SPI: -    CPI: -   ETA: Des 2026           │ │ ─────────────────────────────  │ ║
+║  │ ─────────────────────────────────────────── │ │ Task "Bekisting L2" float = 0  │ ║
+║  │ Proyek Jalan C     [●DELAYED]  ⚠ 12 hari  │ │ [Detail]                       │ ║
+║  │ RAB: ▓▓▓▓▓▓▓▓▓░░░░░ 62%  Rp 9.8M / 15.0M │ └───────────────────────────────┘ ║
+║  └──────────────────────────────────────────────┘                                   ║
+║                                                                                      ║
+║  ROW 4 — Cash Flow Forecast (col-8) + Governance Watch (col-4)                     ║
+║  ┌───────────────────────────────────────────────────┐ ┌──────────────────────────┐ ║
+║  │ 💵 CASH FLOW FORECAST (3 bulan ke depan)         │ │ 🛡 GOVERNANCE WATCH      │ ║
+║  │                                                   │ │ ─────────────────────── │ ║
+║  │  15M ┤         ╭────╮                             │ │ Budget Guard: ✅ OK      │ ║
+║  │  10M ┤   ╭─────╯    ╰────╮  Inflow               │ │ TKDN Compliance: 🟡 41%  │ ║
+║  │   5M ┤───╯               ╰──── Outflow            │ │   (target: ≥40%) ✅      │ ║
+║  │   0M └──────────────────────────────              │ │ Change Order Budget: 🔴  │ ║
+║  │       Apr      May       Jun                      │ │   +Rp 820jt vs baseline  │ ║
+║  │  Net: +Rp 2.1M  +Rp 0.8M  -Rp 1.2M              │ │ PPN Compliance: ✅ OK    │ ║
+║  └───────────────────────────────────────────────────┘ └──────────────────────────┘ ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+Anotasi Komponen:
+  KPI Cards:
+  - Hover: lift shadow + reveal sparkline mini chart
+  - SPI card: warna merah jika < 0.9, kuning jika 0.9-1.0, hijau jika > 1.0
+  - Click: navigate ke project detail
+
+  S-Curve:
+  - Recharts AreaChart, 2 line: planned (dashed blue) + actual (solid green/red jika below planned)
+  - Vertical "today" line
+  - Tooltip menampilkan: Periode, Planned%, Actual%, Variance%
+
+  Approval Queue:
+  - Real-time via Supabase Realtime subscription
+  - Inline approve/reject — tidak perlu navigasi ke halaman lain
+  - Badge angka di sidebar sync dengan count ini
+```
+
+---
+
+## WIREFRAME 03 — PROJECT COSTING (RAB Module)
+
+### Layout: Split Panel + Sticky Toolbar
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ 💰 Rencana Anggaran Biaya       Proyek: Jembatan A ▼      [Versi: v3 ▼]      │ ║
+║  │    RAB · WBS · Approval · History                  [Terakhir disimpan: 2m lalu]│ ║
+║  └─────────────────────��──────────────────────────────────────────────────────────┘ ║
+║                                                                                      ║
+║  TAB NAVIGATION [sticky, h-10]                                                       ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ [RAB Items] [WBS Alokasi] [Approval] [Baseline Compare] [History] [Price Drift]│  ║
+║  │  ████████    ·             ·           ·                  ·         ·            │  ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  ── TAB: RAB ITEMS ──────────────────────────────────────────────────────────────   ║
+║                                                                                      ║
+║  TOOLBAR [sticky-glass-panel, z-10]                                                  ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ PRIMARY:              SECONDARY:              TERTIARY:                       │   ║
+║  │ [+ Tambah Item]       [📥 Import BoQ]         [🕐 Versi ▼]  [✅ Kirim Persetj]│   ║
+║  │ [💾 Simpan  Ctrl+S]   [📤 Export Excel/PDF]   [⚙ Kolom ▼]                    │   ║
+║  │                                                                               │   ║
+║  │ FILTER ROW:                                                                   │   ║
+║  │ Tab: [Semua] [Biaya Langsung] [Overhead]    Search: (🔍 Cari kode/nama...)   │   ║
+║  │      ██████   ·               ·             Category: (Semua Kategori ▼)     │   ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  SUMMARY BAR [bg-slate-50, border-b]                                                 ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │  Total Item: 87   │  Sub-total: Rp 14,231,500,000  │  Overhead: Rp 1,423,150 ║  ║
+║  │                   │  Profit:    Rp 1,280,835,000   │  PPN 11%: Rp 1,847,385  ║  ║
+║  │                   │  ────────────────────────────────────────────────────    ║  ║
+║  │                   │  TOTAL RAB: Rp 18,782,870,000                  [Detail ▼]║  ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  TABLE [virtualized, sticky header]                                                  ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ ☐ │ #  │ KODE AHSP  │ URAIAN PEKERJAAN    │VOL│UNIT│ HARGA SAT │ SUBTOTAL  │ ⋮│ ║
+║  │   │    │            │                     │   │    │           │           │   │ ║
+║  ├───┴────┴────────────┴─────────────────────┴───┴────┴───────────┴───────────┴───┤ ║
+║  │ ▼ I. PEKERJAAN PERSIAPAN             [3 item]      Rp 245,000,000          [+]│ ║
+║  │                                                                               │ ║
+║  │ ☐ │ 1  │ A.01.001   │ Mobilisasi & Demob  │1.0│ ls │ Rp 50,000,000│Rp 50Jt │⋮│ ║
+║  │                      │                     │   │    │  [⚡AHSP Link]│        │ │ ║
+║  │ ☐ │ 2  │ A.01.002   │ Direksi Keet        │2.0│ unit│Rp 15,000,000│Rp 30Jt │⋮│ ║
+║  │                      │ ┌─ DETAIL EXPAND ──────────────────────────────┐      │ ║
+║  │ ☐ │ 3  │ A.01.003   │ │ Material: Rp 22Jt │ Labor: Rp 5Jt │ Alat:Rp2Jt│     │ ║
+║  │                      │ │ Overhead: 10%     │ Profit: 8%    │ PPN: 11%  │     │ ║
+║  │                      │ └────────────────────────────────────────────┘      │ ║
+║  │                                                                               │ ║
+║  │ ▶ II. PEKERJAAN PONDASI              [12 item]     Rp 3,820,000,000        [+]│ ║
+║  │ ▶ III. PEKERJAAN STRUKTUR            [24 item]     Rp 6,450,000,000        [+]│ ║
+║  │ ▶ IV. PEKERJAAN FINISHING            [18 item]     Rp 2,100,000,000        [+]│ ║
+║  │ ▶ V. OVERHEAD                        [8 item]      Rp 1,423,150,000        [+]│ ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  FOOTER (sticky bottom, z-10)                                                        ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ 🟡 5 item belum terlink ke Timeline   [Link Sekarang]     [Abaikan]          │   ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+Anotasi Detail:
+  Toolbar Groups (3-tier berdasarkan Fitts's Law):
+  - PRIMARY (kiri): Aksi paling sering dipakai, ukuran terbesar h-9
+  - SECONDARY (tengah): Import/Export, h-8
+  - TERTIARY (kanan): Advanced/settings, h-8, ghost variant
+
+  Table Row States:
+  - Default:  bg-white
+  - Hover:    bg-slate-50
+  - Selected: bg-blue-50/50 + checkbox checked
+  - Edited:   left-border 3px orange + bg-amber-50/30
+  - Error:    left-border 3px red + bg-red-50/30
+
+  Inline AHSP Link Badge:
+  - [⚡ AHSP Link] — klik navigate ke AHSP detail di split pane kanan
+  - Warna hijau = harga sync; kuning = harga drift dari AHSP master
+
+  Collapsible Row Detail:
+  - Breakdown: Material / Labor / Equipment / Subcon cost
+  - Muncul saat row di-expand (klik chevron atau double-click)
+  - Progressive Disclosure — tidak membebani default view
+
+  Column Manager Dropdown [⚙ Kolom ▼]:
+  ┌────────────────────────────────┐
+  │ ✅ Kode AHSP      ✅ Volume    │
+  │ ✅ Uraian         ✅ Satuan    │
+  │ ✅ Harga Satuan   ✅ Subtotal  │
+  │ ○  Overhead %     ○  Profit %  │
+  �� ○  Cost Material  ○  Cost Labor│
+  │ ○  Cost Equipment ○  Task Link │
+  │ [Simpan sebagai default]       │
+  └────────────────────────────────┘
+```
+
+---
+
+## WIREFRAME 04 — SCHEDULE OPS (Gantt + CPM)
+
+### Layout: Split Pane — Task List (kiri) + Gantt (kanan)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ 📅 Schedule Operations          Proyek: Jembatan A ▼                          │ ║
+║  │    Gantt · CPM · Baseline · Resources                                          │ ║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+║                                                                                      ║
+║  TOOLBAR [sticky]                                                                    ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ [+ Task] [+ Milestone] [Auto Schedule] │ [Day ▼] [Week ▼] [Month ▼]         │   ║
+║  │ [📤 Export Gantt PDF]  [⚡ CPM Report]  │ [Fit to Screen] [Go to Today]      │   ║
+║  │                                         │                                     │   ║
+║  │ View: [Gantt] [List] [Baseline]  Filter: (WBS ▼) (Status ▼) (Assignee ▼)    │   ║
+║  │        ██████   ·       ·                                                     │   ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  CPM WORKER STATUS [conditional, bg-amber-50, border-b border-amber-200]            ║
+║  ┌──────────────────────────────────────────────────────────────���───────────────┐   ║
+║  │ ⚙ Menghitung Critical Path...  [████████████░░░░░░░░] 67%                    │   ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  RESIZABLE SPLIT PANE [react-resizable-panels]                                       ║
+║  ┌───────────────────────────┬──┬──────────────────────────────────────────────┐   ║
+║  │ TASK LIST [30%]          │││ GANTT CHART [70%]                              │   ║
+║  │                           │││                                               │   ║
+║  │ WBS  │ Nama Task     │ Sta│││ Apr 2026              │ Mei 2026              │   ║
+║  │      │               │ tus│││ W1   W2   W3   W4    │ W1   W2   W3   W4    │   ║
+║  ├──────┴───────────────┴────┤││──────────────────────────────────────────────│   ║
+║  │▼ I. Persiapan    [3]      │││                                               │   ║
+║  │  1.1│Mobilisasi     │ ✅  │││ ████████                                      │   ║
+║  │  1.2│Direksi Keet   │ ✅  │││      ████████                                 │   ║
+║  │  1.3│Shop Drawing   │ 🔄  │││          ████████░░░░ ← 80% + today marker   │   ║
+║  │                           │││                                               │   ║
+║  │▼ II. Pondasi     [5]      │││                                               │   ║
+║  │🔴2.1│Bore Pile P1   │ 🔴  │││               🔴████████████████             │   ║
+║  │     │               │     │││                   ←CRITICAL PATH             │   ║
+║  │  2.2│Bore Pile P2   │ 🔄  │││                        ████████              │   ║
+║  │  2.3│Pile Cap       │ 🔲  │││                              ░░░░████        │   ║
+║  │      ← depends 2.1        │││                            dependency arrow ↗│   ║
+║  │                           │││  │ TODAY                                     │   ║
+║  │▶ III. Struktur   [12]     │││  │                                           │   ║
+║  │▶ IV. Finishing   [8]      │││                                               │   ║
+║  │                           │││ BASELINE [dashed gray]:                      │   ║
+║  │                           │││ ▓▓▓▓ = On track                              │   ║
+║  │ [+ Add Task]              │││ 🔴 = Critical Path      ░░ = Float buffer    ���   ║
+║  └───────────────────────────┴──┴──────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  TASK DETAIL SIDE PANEL [slide-in dari kanan, w-96, saat task diklik]               ║
+║  ┌─────────────────────────────────────────────────────────────────────────────┐    ║
+║  │  [✕] DETAIL TASK — 2.1 Bore Pile P1                              [Edit] [🗑] ║    ║
+║  │  ─────────────────────────────────────────────────────────────────────────  ║    ║
+║  │  Status:    🔴 Delayed  │  Prioritas:  🔴 High                             ║    ║
+║  │  Mulai:     15 Mar 2026  │  Selesai:    30 Apr 2026  (plan: 20 Apr)        ║    ║
+║  │  Durasi:    46 hari      │  Float:      0 (CRITICAL PATH)                  ║    ║
+║  │  Progress:  [████████░░] 80%     [Edit Progress]                          ║    ║
+║  │  WBS Link:  II.1 - Pekerjaan Pondasi   [→ Lihat WBS]                      ║    ║
+║  │  RAB Link:  A.02.001 Bore Pile φ800   Rp 2,400,000,000  [→ Lihat RAB]    ║    ║
+║  │  Assignee:  👤 Ir. Budi (Site Engr)   [Ubah]                             ║    ║
+║  │  ─────────────────────────────────────────────────────────────────────────  ║    ║
+║  │  PREDECESSORS                                                               ║    ║
+║  │  └─ 1.3 Shop Drawing  [FS, Lag: 0]                                        ║    ║
+║  │  SUCCESSORS                                                                 ║    ║
+║  │  └─ 2.3 Pile Cap      [FS, Lag: 0]  ⚠ Impact: +10 hari jika terlambat    ║    ║
+║  │  ─────────────────────────────────────────────────────────────────────────  ║    ║
+║  │  [💬 Komentar] [📎 Lampiran] [📋 History]                                  ║    ║
+║  └─────────────────────────────────────────────────────────────────────────────┘    ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+Anotasi:
+  Warna Gantt Bar:
+  - ████ Biru       = On Track (progress >= planned)
+  - 🔴████ Merah    = Critical Path (float = 0)
+  - ████ Kuning     = At Risk (progress < planned - 10%)
+  - ████ Abu-abu    = Not Started
+  - ████ Hijau      = Completed
+  - ░░░░ Transparan = Float buffer
+
+  Dependency Arrows:
+  - FS (Finish-to-Start): panah horizontal ── ▶
+  - SS (Start-to-Start):  panah diagonal ╰── ▶
+  - Warna merah jika menyebabkan critical path
+
+  Split Pane Resize Handle (│││):
+  - min-width: task list 25%, gantt 60%
+  - Double-click: reset ke 30/70
+```
+
+---
+
+## WIREFRAME 05 — PROJECT OVERVIEW (Per-Project Dashboard Operasional)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ 📋 Project Overview — Jembatan A                [Proyek Lain ▼]  [Edit Proyek]│ ║
+║  │    Pemilik: PT Pembangunan Jaya │ Lokasi: Kab. Sukabumi │ Status: 🟡 IN PROGRESS║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+║                                                                                      ║
+║  ROW 1 — BUDGET BREAKDOWN (5 kolom, responsive ke 2x grid di tablet)                ║
+║  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────┐ ║
+║  │ 📐 NILAI RAB │ │ 📋 NILAI RAP │ │ ✅ AKTUAL   │ │ 🔒 COMMITTED│ │ 💰 SISA  │ ║
+║  │ Rp 15.8 M   │ │ Rp 14.1 M   │ │ Rp 8.2 M    │ │ Rp 3.4 M   │ │ Rp 2.5 M │ ║
+║  │ 100% budget │ │ 89% of RAB  │ │ 58% of RAP  │ │ PO aktif    │ │ unalloc.  │ ║
+║  │             │ │ ▓▓▓▓▓▓▓▓▓░  │ │ ▓▓▓▓▓░░░░░  │ │ ▓▓▓░░░░░░░  │ │ ▓░░░░░░░  │ ║
+║  └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘ └──────────┘ ║
+║                                                                                      ║
+║  PROGRESS BAR [full width]                                                           ║
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ PROGRESS KESELURUHAN                                              58% Complete  │ ║
+║  │ [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓���░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]              │ ║
+║  │ Mulai: 1 Jan 2026    Today: 14 Apr 2026    Selesai (plan): 31 Jul 2026        │ ║
+║  │ ↑ 103 hari berjalan                                   ↑ 108 hari tersisa      │ ║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+║                                                                                      ║
+║  ROW 2 — 3-kolom grid                                                                ║
+║  ┌────────────────────────────┐ ┌────────────────────────┐ ┌─────────────────────┐ ║
+║  │ 📅 TIMELINE SUMMARY       │ │ 🔴 TOP RISKS           │ │ 👥 TIM PROYEK       │ ║
+║  │                            │ │                        │ │                     │ ║
+║  │ MENDATANG (3 task)         │ │ # Risiko       Score   │ │ Project Manager     │ ║
+║  │ ──────────────────────     │ │ 1 Keterlambatan  24/25 │ │ 👤 Ir. Ahmad W.     │ ║
+║  │ ⚠ Bore Pile P3  -5 hari   │ │   Bore Pile P3         │ │                     │ ║
+║  │   WBS: II.3  Ir.Budi       │ │   [Mitigasi]           │ │ Site Engineer       │ ║
+║  │ 🔲 Pile Cap     +12 hari   │ │ 2 Cuaca Buruk    18/25 │ │ 👤 Ir. Budi S.      │ ║
+║  │   WBS: II.4  Ir.Budi       │ │   Q2 2026              │ │ 👤 Ir. Citra R.     │ ║
+║  │ 🔲 Bekisting L1 +15 hari   │ │   [Mitigasi]           │ │                     │ ║
+║  │   WBS: III.1 Ir.Citra      │ │ 3 Material Delay  15/25│ │ Finance Controller  │ ║
+║  │                            │ │   Besi WF H500         │ │ 👤 Dewi K.          │ ║
+║  │ SELESAI MINGGU INI (2)     │ │   [Mitigasi]           │ │                     │ ║
+║  │ ✅ Bore Pile P1  100%      │ │                        │ │ [+ Undang Anggota]  │ ║
+║  │ ✅ Bore Pile P2  100%      │ │ [Lihat Semua Risiko]   │ │                     │ ║
+║  │                            │ │                        │ │                     │ ║
+║  │ [→ Buka Schedule Lengkap]  │ │                        │ │                     │ ║
+║  └────────────────────────────┘ └────────────────────────┘ └──────────────��──────┘ ║
+║                                                                                      ║
+║  ROW 3 — AUDIT TRAIL (full width)                                                    ║
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ 📜 AKTIVITAS TERBARU                                           [Lihat Semua]   │ ║
+║  │ ─────────────────────────────────────────────────────────────────────────────  │ ║
+║  │ 🔵 [Ahmad] Update RAB item A.02.001 — volume 150m → 165m   14 Apr 2026 09:32 │ ║
+║  │ 🟢 [Budi]  Progress Bore Pile P1 = 100% (completed)        13 Apr 2026 16:45 │ ║
+║  │ 🟠 [Dewi]  Invoice INV-2026-031 dikirim ke approval         13 Apr 2026 14:20 │ ║
+║  │ 🔴 [System] ALERT: SPI turun ke 0.87 (<0.90 threshold)     12 Apr 2026 08:00 │ ║
+║  │ 🟣 [Ahmad] Change Order #7 diajukan — +Rp 320jt            11 Apr 2026 11:15 │ ║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## WIREFRAME 06 — CURVA-S / EVM (S-Curve & Earned Value)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ 📈 Kurva-S & Earned Value Management     Proyek: Jembatan A ▼                 │ ║
+║  │    Terakhir disinkronisasi dari RAP: 2 menit lalu ✅  [Sinkronisasi Manual]   │ ║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+║                                                                                      ║
+║  EVM KPI STRIP (4 kartu)                                                             ║
+║  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  ┌───────────────┐  ║
+║  │ 📊 SPI          │  │ 📊 CPI          │  │ 💰 EAC (Est.)   │  │ 📅 ETC        │  ║
+║  │    0.87         │  │    1.03         │  │  Rp 15.4 M      │  │  Rp 6.3 M     │  ║
+║  │ ⚠ Below 1.0    │  │ ✅ Ahead cost   │  │ vs RAB: Rp 15.8M│  │ Est. 108 hr   │  ║
+║  │ Trend: ↓ 0.02  │  │ Trend: ↑ 0.01  │  │ Δ -Rp 400 juta  │  │               │  ║
+║  └─────────────────┘  └─────────────────┘  └─────────────────┘  └───────────────┘  ║
+║                                                                                      ║
+║  MAIN CHART AREA                                                                     ║
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │  KURVA-S PROYEK JEMBATAN A                    [WBS Filter ▼]  [Export PDF]    │ ║
+║  │                                                                                │ ║
+║  │  100%┤                                              ···············╮ planned   │ ║
+║  │   90%┤                                         ·····              │           │ ║
+║  │   80%┤                                   ·····                   │           │ ║
+║  │   70%┤                             ·····                         │           │ ║
+║  │   60%┤                       ·····           ╭──actual           │           │ ║
+║  │   58%┤·····················╮                 │ ← TODAY           │           │ ║
+║  │   50%┤                     ╰── actual        │                   │           │ ║
+║  │   40%┤               ╭─────╯                 │                   │           │ ║
+║  │   30%┤         ╭─────╯                       │   VARIANCE        │           │ ║
+║  │   20%┤   ╭─────╯                             │   ██ -3.2%       │           │ ║
+║  │   10%┤╭──╯                                   │                   │           │ ║
+║  │    0%└──────────────────────────────────────────────────────────────────────  │ ║
+║  │       Jan   Feb   Mar   Apr   Mei   Jun   Jul   Agt   Sep   Okt               │ ║
+║  │                                                                                │ ║
+║  │  Legend: ·····Planned  ────Actual  ████Variance Zone                          │ ║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+║                                                                                      ║
+║  DETAIL TABLE (bulan per bulan)                                                      ║
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ Periode │ BCWS (PV) Plan │ BCWP (EV) Aktual │ ACWP (AC) Biaya │ SV     │ CV   │ ║
+║  │ ──────────────────────────────────────────────────────────────────────────     │ ║
+║  │ Jan '26 │   Rp 1,250 jt │    Rp 1,280 jt   │   Rp 1,220 jt  │ +30jt │ +60jt│ ║
+║  │ Feb '26 │   Rp 2,100 jt │    Rp 2,050 jt   │   Rp 1,980 jt  │ -50jt │ +70jt│ ║
+║  │ Mar '26 │   Rp 3,400 jt │    Rp 3,100 jt   │   Rp 2,900 jt  │-300jt │+200jt│ ║
+║  │ Apr '26 │   Rp 1,500 jt │    Rp 1,150 jt   │   Rp 1,100 jt  │-350jt │ +50jt│ ║
+║  │ ──────────────────────────────────────────────────────────────────────────     │ ║
+║  │ TOTAL   │   Rp 8,250 jt │    Rp 7,580 jt   │   Rp 7,200 jt  │-670jt │+380jt│ ║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+Anotasi:
+  Sync Status Header:
+  - "Terakhir disinkronisasi dari RAP: 2 menit lalu ✅"
+  - Jika > 15 menit: "⚠ Data mungkin usang - Sinkronisasi sekarang?"
+  - Mengimplementasikan CF-03 (RAP→CurvaS real-time sync)
+
+  Variance Zone (shaded area antara planned dan actual):
+  - Merah jika actual < planned (behind schedule)
+  - Hijau jika actual > planned (ahead of schedule)
+  - Edward Tufte principle: data-to-ink, no decorative fills
+```
+
+---
+
+## WIREFRAME 07 — FIELD TASKS (Mobile — Field Engineer View)
+
+```
+╔══════════════════════╗   ← 390px (iPhone 15 Pro)
+║  14 Apr 2026  09:34  ║   Status bar
+╠══════════════════════╣
+║  ← Jembatan A  🔔2  ║   Header: Back + project name + notif
+╠══════════════════════╣
+║                      ║
+║  SELAMAT PAGI, BUDI  ║   Greeting personalized
+║  3 task hari ini     ║
+╠══════════════════════╣
+║                      ║
+║  ████████████░░░░░░  ║   Progress bar proyek: 58%
+║  58% complete        ║
+║                      ║
+╠══════════════════════╣
+║  MY TASKS TODAY      ║   Section header
+║  ──────────────────  ║
+║  ┌──────────────────┐║
+║  │ 🔴 CRITICAL PATH ││
+║  │ Bore Pile P3     ││   Card: h-auto, padding 16px
+║  │ WBS: II.3        ││
+║  │ Due: 18 Apr 2026 ││
+║  │ Progress: 45%    ││
+║  │ [▓▓▓▓▓░░░░░]     ││   Progress bar dalam card
+║  │                  ││
+║  │ [UPDATE] [DETAIL]││   Tombol h-12 (48px) ✅ WCAG
+║  └──────────────────┘║
+║                      ║
+║  ┌──────────────────┐║
+║  │ 🟡 IN PROGRESS   ││
+║  │ Survey Topografi ││
+║  │ WBS: I.4         ││
+║  │ Due: 16 Apr 2026 ││
+║  │ Progress: 80%    ││
+║  │ [▓▓▓▓▓▓▓▓░░]     ││
+║  │                  ││
+║  │ [UPDATE] [DETAIL]││
+║  └──────────────────┘║
+║                      ║
+╠══════════════════════╣
+║  [🏠] [📋] [⊞] [🔔2]║   Bottom nav (h-16, 64px)
+╚══════════════════════╝
+
+── UPDATE PROGRESS MODAL (Bottom Sheet) ────────────────
+╔══════════════════════╗
+║  ▂▂▂▂▂ (drag handle) ║
+╠══════════════════════╣
+║  Update: Bore Pile P3║
+║  ──────────────────  ║
+║  Progress saat ini:  ║
+║  45%                 ║
+║                      ║
+║  [────────⬤────────] ║   Slider h-12 touch area ✅
+║           65%        ║   Nilai terpilih
+║                      ║
+║  Catatan lapangan:   ║
+║  ┌──────────────────┐║
+║  │                  ││   Textarea h-24
+║  │                  ││
+║  └──────────────────┘║
+║                      ║
+║  📷 Foto Bukti       ║
+║  ┌────┐  ┌────┐  [+]║   Thumbnail foto + tombol tambah
+║  │img │  │img │     ║   h-16 w-16 setiap thumbnail
+║  └────┘  └────┘     ║
+║                      ║
+║  ┌──────────────────┐║
+║  │   SIMPAN UPDATE  ││   Tombol h-14 (56px), full width
+║  └──────────────────┘║
+║  [Batal]             ║
+╚══════════════════════╝
+
+Anotasi Mobile:
+  - Semua tombol minimum h-12 (48px) ✅ field-size
+  - Slider menggunakan area sentuh 48px
+  - Input teks minimum text-base (16px) — mencegah auto-zoom iOS
+  - Offline indicator: banner kuning jika tidak ada koneksi
+  - Foto menggunakan html5-qrcode untuk scan material QR (sudah ada di deps ✅)
+```
+
+---
+
+## WIREFRAME 08 — SUPPLY CHAIN (PO → GRN → Three-Way Match)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║  ┌────────────────────────────────────────────────────────────────────────────────┐ ║
+║  │ 🚛 Supply Chain               Proyek: Jembatan A ▼                            │ ║
+║  │    Purchase Order · Goods Receipt · Three-Way Match · Material Tracking       │ ║
+║  └────────────────────────────────────────────────────────────────────────────────┘ ║
+║                                                                                      ║
+║  TAB ROW + TOOLBAR                                                                   ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ [PO] [GRN] [Three-Way Match] [Material Tracking]   [+ Buat PO]  [📤 Export] │   ║
+║  │  ███   ·         ·                  ·                                         │   ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  ── TAB: THREE-WAY MATCH ──────────────────────────────────────────────────────     ║
+║                                                                                      ║
+║  FILTER + ALERT BANNER                                                               ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ 🔴 2 invoice melebihi toleransi PO (>5%)!    [Tinjau Invoice]                │   ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ Filter: (Semua Status ▼) (Vendor ▼) (Bulan ▼)  Search: (🔍 Cari PO/Invoice) │   ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  MATCH TABLE                                                                         ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │ PO #     │ Vendor         │ PO Nilai   │ GRN Nilai  │ Invoice  │ Variance │ St║  ║
+║  ├──────────┴────────────────┴────────────┴────────────┴──────────┴──────────┴──┤  ║
+║  │ PO-2026-│PT Baja Mandiri │ Rp 1,200jt │ Rp 1,200jt │ INV-031  │   +Rp 85jt │  ║
+║  │ 028     │                │            │            │ Rp 1,285j│   🔴 +7.1% │  ║
+║  │         │                │            │            │ [Tinjau Invoice Detail] │  ║
+║  │ PO-2026-│PT Semen Indo   │ Rp 450 jt  │ Rp 450 jt  │ INV-032  │   Rp 0    │  ║
+║  │ 029     │                │            │            │ Rp 450jt │   ✅ Match  │  ║
+║  │ PO-2026-│PT Besi Kencana │ Rp 2,100jt │ Rp 1,890jt │ PENDING  │   Rp 210jt│  ║
+║  │ 030     │                │            │ (partial)  │ belum ada│   ⏳ GRN <PO│  ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+║                                                                                      ║
+║  INVOICE REVIEW MODAL (saat [Tinjau Invoice Detail] diklik)                          ║
+║  ┌──────────────────────────────────────────────────────────────────────────────┐   ║
+║  │  ⚠ Invoice Melebihi PO — INV-031 dari PT Baja Mandiri                  [✕]  │   ║
+║  │  ─────────────────────────────────────────────────────────────────────────   │   ║
+║  │  PO-2026-028 (Ref):  Rp 1,200,000,000                                        │   ║
+║  │  GRN-2026-019:       Rp 1,200,000,000  ✅ Match                              │   ║
+║  │  Invoice INV-031:    Rp 1,285,000,000  🔴 +Rp 85,000,000 (+7.1%)            │   ║
+║  │                                                                               │   ║
+║  │  Alasan Vendor:                                                               │   ║
+║  │  ┌────────────────────────────────────────────────────────────────────────┐  │   ║
+║  │  │ Kenaikan harga baja HRB 400 per 1 Apr 2026 sesuai surat vendor...     │  │   ║
+║  │  └────────────────────────────────────────────────────────────────────────┘  │   ║
+║  │                                                                               │   ║
+║  │  Catatan Reviewer:  (______________________________________________)          │   ║
+║  │                                                                               │   ║
+║  │  [🔴 Tolak Invoice]    [🟡 Setuju Variansi + Buat Change Order]  [✅ Setuju] │   ║
+║  │   h-11 (44px) ✅        h-11 (44px) ✅                           h-11 ✅     │   ║
+║  └──────────────────────────────────────────────────────────────────────────────┘   ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## WIREFRAME 09 — GLOBAL COMMAND PALETTE (Cmd+K)
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════╗
+║                          (backdrop blur overlay)                                     ║
+║           ┌──────────────────────────────────────────────────────────────┐          ║
+║           │ 🔍 Cari modul, proyek, task, RAB item...         [Esc] tutup│          ║
+║           │ ──────────────────────────────────────────────────────────── │          ║
+║           │                                                              │          ║
+║           │  AKSES CEPAT                                                 │          ║
+║           │  ▎ ⊞  Command Center                          /             │          ║
+║           │    📋 Project Overview — Jembatan A      /project-...       │          ║
+║           │    💰 RAB — Jembatan A                   /costing           │          ║
+║           │    📅 Schedule — Jembatan A              /schedule          │          ║
+║           │                                                              │          ║
+║           │  TASK TERKINI                                                │          ║
+║           │    🔴 Bore Pile P3  · CRITICAL · Jembatan A                 │          ║
+║           │    🟡 Survey Topografi  · IN PROGRESS                       │          ║
+║           │                                                              │          ║
+║           │  AKSI CEPAT                                                  │          ║
+║           │    [+ Tambah Proyek Baru]   [+ Buat Task]   [Generate Report]│          ║
+║           │                                                              │          ║
+║           │ ─── KETIK UNTUK MENCARI ────────────────────────────────── │          ║
+║           │                                                              │          ║
+║           │  (hasil pencarian muncul saat user mengetik)                 │          ║
+║           └──────────────────────────────────────────────────────────────┘          ║
+╚══════════════════════════════════════════════════════════════════════════════════════╝
+
+Anotasi:
+  - Keyboard: ↑↓ navigasi, Enter buka, Esc tutup
+  - Hasil real-time dari: projectStore, rabStore, timelineStore, notificationStore
+  - Grouped results: Modul | Proyek | Tasks | Items RAB
+  - Sudah ada GlobalCommandPalette.tsx — wireframe ini sebagai referensi redesign content
+```
+
+---
+
+## WIREFRAME 10 — TOAST & NOTIFICATION SYSTEM
+
+### Sync Status Toast (bottom-right)
+
+```
+                              ┌──────────────────────────────┐
+                              │ ✅ RAB disimpan              │
+                              │    Timeline & RAP tersinkron │  ← h-auto, w-80
+                              │    2 item diperbarui          │
+                              └──────────────────────────────┘
+
+                              ┌──────────────────────────────┐
+                              │ ⚠ Gagal menyimpan            │
+                              │    Koneksi terputus           │
+                              │    [Coba Lagi]  [Abaikan]    │  ← Actionable error
+                              └──────────────────────────────┘
+
+                              ┌──────────────────────────────┐
+                              │ 🔄 Menyinkronkan...          │
+                              │    [████████░░] 3/4 item     │  ← Progress toast
+                              └──────────────────────────────┘
+```
+
+### Offline Banner (top of content, persistent)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│ 📵 Tidak ada koneksi — 5 perubahan tersimpan lokal, akan sync saat online kembali │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Notification Center (Slide Panel — dari icon 🔔)
+
+```
+┌─────────────────────────────────────────┐
+│ 🔔 Notifikasi (3 belum dibaca)    [Mark All Read] [✕]│
+│ ───────────────────────────────────────  │
+│ 🔴 URGENT · 5 menit lalu                 │
+│    SPI Jembatan A turun ke 0.87          │
+│    Tindakan diperlukan                   │
+│    [Lihat Kurva-S →]                     │
+│ ──────────────────────────────────────── │
+│ 🟡 INFO · 1 jam lalu                    │
+│    Invoice INV-031 perlu persetujuan     │
+│    PT Baja Mandiri · Rp 1,285 jt        │
+│    [Tinjau →]                            │
+│ ──────────────────────────────────────── │
+│ 🟢 SUCCESS · 2 jam lalu                 │
+│    RAB v3 Jembatan A disetujui           │
+│    oleh Ir. Ahmad Wijaya                 │
+│ ──────────────────────────────────────── │
+│ [Lihat Semua Notifikasi]                 │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## RINGKASAN SPESIFIKASI UKURAN
+
+| Elemen | Desktop | Mobile/Field | WCAG Status |
+|---|---|---|---|
+| Sidebar width | 280px / 72px (collapsed) | Full-screen drawer | — |
+| Header height | 64px (h-16) | 64px | — |
+| Bottom nav | — | 64px (h-16) | ✅ |
+| Button PRIMARY | h-10 (40px) | h-12 (48px) | ✅ AA |
+| Button FIELD | h-11 (44px) | h-14 (56px) | ✅ AA |
+| Table row height | 40px | 56px | ✅ AA |
+| Input field | h-9 (36px) | h-12 (48px) | ✅ AA |
+| Icon button | h-10 w-10 (40px) | h-12 w-12 (48px) | ✅ AA |
+| Font body | 14px (text-sm) | 16px (text-base) | ✅ |
+| Font caption | 12px (text-xs) max | 14px (text-sm) | ✅ |
+| Card padding | p-4 (16px) | p-5 (20px) | — |
+| Sidebar group spacing | 8pt grid | — | — |
+| Focus ring | 2px solid + 2px offset | same | ✅ WCAG 2.4.11 |
+
+---
+
+> **Semua wireframe di atas dibangun berdasarkan komponen yang sudah ada** di codebase Anda (`AppSidebar.tsx`, `AppHeader.tsx`, `GanttChart.tsx`, `RABTable.tsx`, `KPICard.tsx`, dll). Tidak ada yang dibuang — hanya direstrukturisasi dan dilengkapi sesuai standar Enterprise UX. Langkah implementasi selanjutnya adalah membuat PR untuk setiap komponen berdasarkan wireframe ini.

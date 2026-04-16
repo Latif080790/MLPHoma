@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { ModuleHeader } from '@/components/modules/ModuleHeader'
+// Enterprise patterns
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkspaceHeader } from '@/components/patterns'
 import { 
     BrainCircuit, 
     Play, 
@@ -146,25 +148,33 @@ export default function StrategySimulation() {
     }
 
     return (
-        <div className="space-y-6">
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={useProjectStore.getState().projects[activeProjectId]?.name || 'Portfolio'}
+                    syncStatus="synced"
+                    healthItems={result ? [
+                        {
+                            label: 'Risk',
+                            level: result.impactSeverity === 'HIGH' ? 'critical' : result.impactSeverity === 'LOW' ? 'warning' : 'good',
+                            value: result.impactSeverity,
+                        },
+                    ] : []}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Strategic Simulation Sandbox"
+                    subtitle="Model the ripple effects of timeline shifts and resource reallocations on portfolio health"
+                    primaryAction={{
+                        label: 'Save Scenario',
+                        icon: <Save className="h-3.5 w-3.5" />,
+                        onClick: () => setIsSaveDialogOpen(true),
+                    }}
+                />
+            }
+        >
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<BrainCircuit size={18} />}
-                title="Strategic Simulation Sandbox"
-                description="Model the ripple effects of timeline shifts and resource reallocations on portfolio health."
-                accent="amber"
-                actions={
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="bg-white border-amber-200 text-amber-700 hover:bg-amber-50"
-                        onClick={() => setIsSaveDialogOpen(true)}
-                        disabled={!result}
-                    >
-                        <Save size={14} className="mr-2" /> Save Scenario
-                    </Button>
-                }
-            />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* CONTROLS (4 cols) */}
@@ -415,6 +425,6 @@ export default function StrategySimulation() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </PageShell>
     )
 }

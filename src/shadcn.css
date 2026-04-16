@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* MLPHoma Design Token System v1.0 */
+@import './styles/tokens.css';
+
 :root {
   /* Google Stitch: Slate-50 */
   --background: 210 40% 98%;
