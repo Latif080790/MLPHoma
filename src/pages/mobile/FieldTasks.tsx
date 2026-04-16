@@ -143,17 +143,18 @@ export default function FieldTasks() {
             <div className="flex bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shrink-0">
                 <button
                     onClick={() => setActiveTab('todo')}
-                    className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'todo' ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 min-h-[48px] py-3 text-sm font-bold transition-colors border-b-2 ${activeTab === 'todo' ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                 >
                     To Do ({tasks.filter(t => (t.progress || 0) < 100).length})
                 </button>
                 <button
                     onClick={() => setActiveTab('completed')}
-                    className={`flex-1 py-3 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'completed' ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 min-h-[48px] py-3 text-sm font-bold transition-colors border-b-2 ${activeTab === 'completed' ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
                 >
                     Completed ({tasks.filter(t => (t.progress || 0) >= 100).length})
                 </button>
             </div>
+
 
             {/* Task List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24">
@@ -206,27 +207,27 @@ export default function FieldTasks() {
                     </DialogHeader>
 
                     <div className="p-4 flex-1 overflow-y-auto space-y-5">
-                        {/* Progress Slider / Input */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Physical Progress (%)</label>
-                            <div className="flex items-center gap-3">
+                        <div className="space-y-3">
+                            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Physical Progress (%)</label>
+                            <div className="flex items-center gap-4">
                                 <input
                                     type="range"
                                     min="0"
                                     max="100"
-                                    className="flex-1 accent-indigo-600"
+                                    className="flex-1 h-10 accent-indigo-600"
                                     value={progressVal}
                                     onChange={(e) => setProgressVal(Number(e.target.value))}
                                 />
                                 <Input
                                     type="number"
-                                    className="w-20 text-center font-bold"
+                                    className="w-24 h-11 text-center font-bold text-lg"
                                     value={progressVal}
                                     onChange={(e) => setProgressVal(Number(e.target.value))}
                                     min={0} max={100}
                                 />
                             </div>
                         </div>
+
 
                         {/* Evidence: Photo */}
                         <div className="space-y-2">
@@ -259,21 +260,23 @@ export default function FieldTasks() {
                         </div>
 
                         {/* Evidence: GPS */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700 flex justify-between">
+                        <div className="space-y-3">
+                            <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex justify-between">
                                 <span>GPS Location Pin</span>
                                 {gpsCoords && <Check className="text-emerald-500" size={16} />}
                             </label>
                             <Button
                                 variant={gpsCoords ? 'outline' : 'default'}
-                                className={`w-full gap-2 ${gpsCoords ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
+                                size="xl"
+                                className={`w-full gap-2 text-base ${gpsCoords ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
                                 onClick={captureGps}
                                 disabled={gpsLoading}
                             >
-                                <MapPin size={16} />
+                                <MapPin size={18} />
                                 {gpsLoading ? 'Acquiring GPS...' : gpsCoords ? `Verified: ${gpsCoords.latitude.toFixed(4)}, ${gpsCoords.longitude.toFixed(4)}` : 'Tag Current Location'}
                             </Button>
                         </div>
+
 
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-slate-700">Notes (Optional)</label>
@@ -288,11 +291,12 @@ export default function FieldTasks() {
                     </div>
 
                     <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t shrink-0 flex gap-3">
-                        <Button variant="outline" className="flex-1" onClick={() => setSelectedTask(null)}>Cancel</Button>
-                        <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={handleSubmit}>
+                        <Button variant="outline" size="touch" className="flex-1" onClick={() => setSelectedTask(null)}>Cancel</Button>
+                        <Button size="touch" className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={handleSubmit}>
                             Submit Log
                         </Button>
                     </div>
+
                 </DialogContent>
             </Dialog>
         </div>

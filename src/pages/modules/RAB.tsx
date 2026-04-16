@@ -18,6 +18,7 @@ import { formatIDR } from '@/lib/utils'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import { CardSkeleton } from '@/components/common/LoadingSkeleton'
 import type { RABItem } from '@/types/rab'
+import { PriceDriftBanner } from '@/components/rab/PriceDriftBanner'
 
 const EMPTY_ARRAY: RABItem[] = []
 
@@ -235,6 +236,9 @@ export default function RAB() {
             </span>
           </div>
         )}
+
+        {/* Price Drift Banner */}
+        <PriceDriftBanner projectId={currentProject.id} isLocked={isLocked} />
 
         {/* Zone Badge */}
         {currentZone && (

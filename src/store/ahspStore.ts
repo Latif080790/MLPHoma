@@ -4,7 +4,7 @@
  */
 
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { devtools, persist, subscribeWithSelector } from 'zustand/middleware'
 import { ahspRepository } from '../lib/ahspRepository'
 import {
   calculateSingleAHSPPrice,
@@ -13,9 +13,10 @@ import {
   toSupabaseRows,
   initializeAHSPItem,
   initializeAHSPComponent,
-  calculateAHSPPriceInWorker
+  calculateAHSPPriceInWorker,
+  ahspDataService
 } from '../services/ahspService'
-import { syncAHSPItem, syncAHSPItemUpdate, syncResource, syncResources, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncAHSPItemUpdate, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -50,8 +51,9 @@ const scheduleRecalc = (fn: () => void, ms = 400) => {
  * Create AHSP Store with Zustand
  */
 export const useAHSPStore = create<AHSPStore>()(
-  devtools(
-    persist(
+  subscribeWithSelector(
+    devtools(
+      persist(
       (set, get) => ({
         // Initial state
         resources: [],
@@ -85,7 +87,7 @@ export const useAHSPStore = create<AHSPStore>()(
         // Data fetching actions — delegated to ahspRepository
         fetchResources: async () => {
           set((state) => ({ loading: { ...state.loading, resources: true }, errors: { ...state.errors, resources: null } }))
-          const { data, error } = await ahspRepository.fetchAllResources()
+          const { data, error } = await ahspDataService.fetchAllResources()
           if (error) {
             set((state) => ({
               loading: { ...state.loading, resources: false },
@@ -107,7 +109,7 @@ export const useAHSPStore = create<AHSPStore>()(
             errors: { ...state.errors, ahspItems: null },
           }))
 
-          const { data: allItems, error } = await ahspRepository.fetchAllAHSPItems()
+          const { data: itemsWithLogs, error } = await ahspDataService.fetchAllAHSPItems()
           if (error) {
             set((state) => ({
               loading: { ...state.loading, ahspItems: false },
@@ -116,19 +118,6 @@ export const useAHSPStore = create<AHSPStore>()(
             toast.error('Failed to load AHSP items', { description: error })
             return
           }
-
-          // Fetch creation logs via repository
-          const logByAhspId = await ahspRepository.fetchCreationLogs(allItems.map(i => i.id))
-
-          const itemsWithLogs: AHSPItem[] = allItems.map((item) => {
-            const log = logByAhspId.get(item.id)
-            if (!log) return item
-            return {
-              ...item,
-              creationMode: log.creation_mode as 'sni' | 'custom' | 'historical',
-              sourceReference: log.source_reference || undefined,
-            }
-          })
 
           set((state) => ({
             ahspItems: itemsWithLogs,
@@ -196,42 +185,20 @@ export const useAHSPStore = create<AHSPStore>()(
         },
 
         // Resource actions
-        addResource: (resource) => {
-          // Validate input
+        addResource: async (resource) => {
           const validation = validate(resourceInputSchema, resource)
           if (!validation.success) {
-            const errors = validation.errors || []
-            const errorMsg = errors[0]?.message || 'Validation failed'
-            toast.error('Failed to add resource', {
-              description: errorMsg
-            })
-            set((state) => ({
-              errors: {
-                ...state.errors,
-                resources: errorMsg,
-              },
-            }))
-            return
+            const errorMsg = validation.errors?.[0]?.message || 'Validation failed'
+            toast.error('Failed to add resource', { description: errorMsg })
+            return ''
           }
 
-          const newResource: Resource = {
-            ...validation.data!,
-            id: generateId('res'),
-            isActive: validation.data!.isActive ?? true,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }
-
+          const newResource = await ahspDataService.addResource(validation.data!)
+          
           set((state) => ({
             resources: [...state.resources, newResource],
-            errors: {
-              ...state.errors,
-              resources: null,
-            },
+            errors: { ...state.errors, resources: null },
           }))
-
-          // Queue-based sync with retry logic
-          syncResource(newResource)
 
           return newResource.id
         },
@@ -260,30 +227,20 @@ export const useAHSPStore = create<AHSPStore>()(
           scheduleRecalc(() => get().recalculateAllPrices())
         },
 
-        deleteResource: (id) => {
-          set((state) => {
-            // Check if resource is used in any component
-            const isUsed = Object.values(state.componentsByAHSP)
-              .flat()
-              .some(component => component.resourceId === id)
-
-            if (isUsed) {
-              return {
-                errors: {
-                  ...state.errors,
-                  resources: 'Cannot delete resource that is used in AHSP components',
-                },
-              }
-            }
-
-            return {
+        deleteResource: async (id) => {
+          try {
+            await ahspDataService.deleteResource(id, get().componentsByAHSP)
+            set((state) => ({
               resources: state.resources.filter(resource => resource.id !== id),
-              errors: {
-                ...state.errors,
-                resources: null,
-              },
-            }
-          })
+              errors: { ...state.errors, resources: null },
+            }))
+          } catch (err: unknown) {
+            const errorMsg = (err as Error).message
+            toast.error(errorMsg)
+            set((state) => ({
+              errors: { ...state.errors, resources: errorMsg },
+            }))
+          }
         },
 
         importResources: (resources) => {
@@ -330,70 +287,21 @@ export const useAHSPStore = create<AHSPStore>()(
           return newItem.id
         },
 
-        updateAHSPItem: (id, updates) => {
-          // Validate updates
+        updateAHSPItem: async (id, updates) => {
           const validation = validate(ahspItemUpdateSchema, updates)
           if (!validation.success) {
-            const errors = validation.errors || []
-            const errorMsg = errors[0]?.message || 'Validation failed'
-            toast.error('Failed to update AHSP item', {
-              description: errorMsg
-            })
+            toast.error('Failed to update AHSP item', { description: validation.errors?.[0]?.message })
             return
           }
 
-          // Capture old item for version history
           const oldItem = get().ahspItems.find(i => i.id === id)
+          if (!oldItem) return
+
+          const updated = await ahspDataService.updateAHSPItemWithHistory(id, validation.data!, oldItem)
 
           set((state) => ({
-            ahspItems: state.ahspItems.map(item =>
-              item.id === id
-                ? {
-                    ...item,
-                    ...validation.data!,
-                    updatedAt: new Date().toISOString(),
-                    currentVersion: (item.currentVersion ?? 1) + 1,
-                  }
-                : item
-            ),
+            ahspItems: state.ahspItems.map(item => item.id === id ? updated : item),
           }))
-
-          const state = get()
-          const updated = state.ahspItems.find(i => i.id === id)
-          if (updated) {
-            syncAHSPItem(updated)
-            // Fire-and-forget version history record
-            void (async () => {
-              try {
-                // Bump current_version in DB
-                const { assertSupabase } = await import('../lib/supabaseClient')
-                const client = assertSupabase()
-                await client
-                  .from('ahsp_items')
-                  .update({ current_version: updated.currentVersion ?? 1 })
-                  .eq('id', id)
-
-                // Insert history snapshot
-                await ahspRepository.insertPriceHistory({
-                  ahspId: id,
-                  zoneId: null,
-                  oldPrice: oldItem?.basePrice ?? null,
-                  newPrice: updated.basePrice,
-                  overheadPercentage: updated.overheadPercentage ?? null,
-                  profitPercentage: updated.profitPercentage ?? null,
-                  priceMaterial: updated.price_material ?? null,
-                  priceLabor: updated.price_labor ?? null,
-                  priceEquipment: updated.price_equipment ?? null,
-                  priceSubcon: updated.price_subcon ?? null,
-                  versionNumber: updated.currentVersion ?? 1,
-                  changeType: 'UPDATE',
-                  changeNote: null,
-                })
-              } catch (err) {
-                console.warn('[AHSP] Version history insert failed:', err)
-              }
-            })()
-          }
         },
 
         deleteAHSPItem: (id) => {
@@ -800,7 +708,8 @@ export const useAHSPStore = create<AHSPStore>()(
       }
     )
   )
-)
+))
+
 
 /**
  * Get AHSP summary statistics
@@ -906,3 +815,26 @@ export function validateAHSP(state: AHSPState) {
     warnings,
   }
 }
+
+/**
+ * Cross-Store Synchronization: AHSP -> RAB
+ * 
+ * Notify useRABStore when AHSP prices change so it can flag drifts.
+ * Fulfills Section 4.3A.1 of the refactoring plan.
+ */
+useAHSPStore.subscribe(
+  (state) => state.ahspItems,
+  (items) => {
+    // We import useRABStore dynamically to avoid circular dependencies
+    import('./rabStore').then(({ useRABStore }) => {
+       const staleIds = items.map(i => i.id)
+       if (staleIds.length > 0) {
+         // This flags that catalog prices have changed
+         // and the RAB view might need to highlight drifts.
+         useRABStore.getState().checkPriceDrift()
+       }
+    }).catch(() => {
+        // Silently ignore if RAB store is not yet loaded
+    })
+  }
+)

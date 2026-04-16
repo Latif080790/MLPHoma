@@ -8,7 +8,7 @@ import { devtools, persist } from 'zustand/middleware'
 import type { RABVersion, RABChangeLog, RABVersionSnapshot, RABVersionComparison } from '../types/rabVersion'
 import { generateId } from '../lib/idGenerator'
 import { toast } from 'sonner'
-import { supabase } from '../lib/supabaseClient'
+import { rabVersionService } from '../services/rabVersionService'
 import { useRabStore } from './rabStore'
 
 interface RABVersionState {
@@ -69,29 +69,10 @@ export const useRABVersionStore = create<RABVersionState>()(
           }))
 
           // Sync to Supabase
-          if (supabase) {
-            try {
-              const { error } = await supabase.from('rab_versions').insert({
-                id: version.id,
-                project_id: projectId,
-                version: newVersion,
-                created_by: version.createdBy,
-                created_by_name: version.createdByName,
-                description,
-                change_type: changeType,
-                changes: JSON.stringify(changes),
-                snapshot: JSON.stringify(snapshot),
-                status: 'draft',
-                tags,
-                created_at: version.createdAt
-              })
-
-              if (error) {
-                console.error('Failed to sync version to Supabase:', error)
-              }
-            } catch (err) {
-              console.error('Error syncing version:', err)
-            }
+          try {
+            await rabVersionService.createVersion(version)
+          } catch (err) {
+            console.error('Error syncing version:', err)
           }
 
           toast.success(`Version ${newVersion} created`)
@@ -235,64 +216,34 @@ export const useRABVersionStore = create<RABVersionState>()(
           }))
 
           // Sync to Supabase
-          if (supabase) {
-            supabase.from('rab_versions').delete().eq('id', versionId).then(({ error }) => {
-              if (error) {
-                console.error('Failed to delete version from Supabase:', error)
-              }
-            })
-          }
+          rabVersionService.deleteVersion(versionId).catch(err => {
+            console.error('Failed to delete version from Supabase:', err)
+          })
 
           toast.success('Version deleted')
         },
 
         fetchVersionsFromSupabase: async (projectId) => {
-          if (!supabase) return
-
           set({ loading: true })
-
           try {
-            const { data, error } = await supabase
-              .from('rab_versions')
-              .select('*')
-              .eq('project_id', projectId)
-              .order('version', { ascending: true })
+            const versions = await rabVersionService.fetchVersions(projectId)
+            const maxVersion = versions.length > 0 ? Math.max(...versions.map(v => v.version)) : 0
 
-            if (error) throw error
-
-            if (data) {
-              const versions: RABVersion[] = data.map(row => ({
-                id: row.id,
-                projectId: row.project_id,
-                version: row.version,
-                createdAt: row.created_at,
-                createdBy: row.created_by,
-                createdByName: row.created_by_name,
-                description: row.description,
-                changeType: row.change_type,
-                changes: JSON.parse(row.changes),
-                snapshot: JSON.parse(row.snapshot),
-                status: row.status,
-                tags: row.tags || []
-              }))
-
-              const maxVersion = versions.length > 0 ? Math.max(...versions.map(v => v.version)) : 0
-
-              set(state => ({
-                versionsByProject: {
-                  ...state.versionsByProject,
-                  [projectId]: versions
-                },
-                currentVersion: {
-                  ...state.currentVersion,
-                  [projectId]: maxVersion
-                },
-                loading: false
-              }))
-            }
+            set(state => ({
+              versionsByProject: {
+                ...state.versionsByProject,
+                [projectId]: versions
+              },
+              currentVersion: {
+                ...state.currentVersion,
+                [projectId]: maxVersion
+              },
+              loading: false
+            }))
           } catch (error) {
             console.error('Error fetching versions:', error)
             set({ loading: false })
+            toast.error('Failed to load version history')
           }
         }
       }),

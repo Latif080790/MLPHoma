@@ -102,6 +102,8 @@ interface RabState {
   unlockBaseline: (projectId: string) => Promise<void>
   isLocked: (projectId: string) => boolean
   refreshDrift: (projectId: string) => Promise<void>
+  checkPriceDrift: () => Promise<void>
+  syncWithCatalog: (projectId: string) => Promise<void>
 }
 
 const STORAGE_KEY = 'rabStore:v2'
@@ -656,6 +658,76 @@ export const useRabStore = create<RabState>((set, get) => {
         }
       }))
     },
+
+    checkPriceDrift: async () => {
+      // Find active project from projectStore
+      try {
+        const { useProjectStore } = await import('./projectStore')
+        const activeProjectId = useProjectStore.getState().activeProjectId
+        if (activeProjectId) {
+          const locked = get().isLocked(activeProjectId)
+          
+          if (!locked) {
+            // Rule: Auto-sync if not locked
+            await get().syncWithCatalog(activeProjectId)
+          }
+
+          // In both cases, refresh the drift metadata (Locked will show actual drift, Unlocked will show 0 impact)
+          await get().refreshDrift(activeProjectId)
+        }
+      } catch (err) {
+        console.warn('[RAB] Failed to check price drift:', err)
+      }
+    },
+
+    syncWithCatalog: async (projectId: string) => {
+      if (get().isLocked(projectId)) return
+
+      const { useAHSPStore } = await import('./ahspStore')
+      const catalog = useAHSPStore.getState().ahspItems
+      if (!catalog.length) return
+
+      const catalogMap = new Map(catalog.map(h => [h.code, h]))
+      const currentItems = get().itemsByProject[projectId] || []
+      
+      let changed = false
+      const updated = currentItems.map(item => {
+        const code = item.item_code || item.code
+        if (!code) return item
+
+        const master = catalogMap.get(code)
+        if (master && master.finalPrice !== item.unit_price) {
+          changed = true
+          const newUnitPrice = master.finalPrice
+          const newTotal = Number(item.volume || 0) * newUnitPrice
+          
+          return {
+            ...item,
+            unit_price: newUnitPrice,
+            finalTotal: newTotal,
+            final_total: newTotal,
+            finalPrice: newTotal,
+            cost_material: master.price_material || 0,
+            cost_labor: master.price_labor || 0,
+            cost_equipment: master.price_equipment || 0,
+            cost_subcon: master.price_subcon || 0,
+            updatedAt: new Date().toISOString()
+          }
+        }
+        return item
+      })
+
+      if (changed) {
+        set((s) => ({
+          itemsByProject: { ...s.itemsByProject, [projectId]: updated }
+        }))
+        get().persist()
+        syncRABItems(updated, projectId)
+        toast.info('RAB updated with new catalog prices', { 
+          description: 'This project is in draft mode (not locked).' 
+        })
+      }
+    },
   }
 })
 
@@ -669,4 +741,24 @@ eventBus.on('rab:changed', ({ projectId, changeType }) => {
   }
 })
 
-export default useRabStore
+/**
+ * Cross-Store Synchronization: RAB → Timeline
+ *
+ * When RAB items change (price/volume update), propagate cost metadata
+ * to linked Timeline tasks. Fulfills Section 4.3A.3 of the refactoring plan.
+ */
+eventBus.on('rab:changed', ({ changeType }) => {
+  if (changeType === 'update' || changeType === 'import') {
+    // Debounce: let batch changes settle before syncing
+    setTimeout(() => {
+      import('./timelineStore').then(module => {
+        module.default.getState().syncTaskCostsFromRAB()
+      }).catch(() => {
+        // Timeline store not yet loaded — skip
+      })
+    }, 500)
+  }
+})
+
+export default useRabStore
+

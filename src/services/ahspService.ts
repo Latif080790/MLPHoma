@@ -16,6 +16,8 @@ import type {
 } from '../types/ahsp'
 import type { AhspItemRow, ResourceRow, AhspComponentRow } from '../lib/supabaseClient'
 import { generateId } from '../lib/idGenerator'
+import { ahspRepository } from '../lib/ahspRepository'
+import { assertSupabase } from '../lib/supabaseClient'
 
 /**
  * Calculate AHSP price for a single item in a Web Worker.
@@ -320,4 +322,99 @@ export function toSupabaseRows(
     }))
 
     return { ahspRows, resourceRows, componentRows }
+}
+
+/**
+ * AHSP Service - Data Orchestration Methods
+ */
+export const ahspDataService = {
+    async fetchAllResources() {
+        return ahspRepository.fetchAllResources()
+    },
+
+    async fetchAllAHSPItems() {
+        const { data: allItems, error } = await ahspRepository.fetchAllAHSPItems()
+        if (error) return { data: [], error }
+
+        const logByAhspId = await ahspRepository.fetchCreationLogs(allItems.map(i => i.id))
+        const itemsWithLogs: AHSPItem[] = allItems.map((item) => {
+            const log = logByAhspId.get(item.id)
+            if (!log) return item
+            return {
+                ...item,
+                creationMode: log.creation_mode as 'sni' | 'custom' | 'historical',
+                sourceReference: log.source_reference || undefined,
+            }
+        })
+        return { data: itemsWithLogs, error: null }
+    },
+
+    async addResource(resource: Partial<Resource>) {
+        const newResource: Resource = {
+            id: generateId('res'),
+            code: resource.code || '',
+            name: resource.name || '',
+            type: resource.type || 'material',
+            unit: resource.unit || 'm',
+            unitPrice: resource.unitPrice || 0,
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            ...resource
+        }
+        ahspRepository.syncResource(newResource)
+        return newResource
+    },
+
+    async deleteResource(id: string, componentsByAHSP: Record<string, AHSPComponent[]>) {
+        const isUsed = Object.values(componentsByAHSP)
+            .flat()
+            .some(component => component.resourceId === id)
+
+        if (isUsed) {
+            throw new Error('Cannot delete resource that is used in AHSP components')
+        }
+        ahspRepository.deleteResource(id)
+    },
+
+    async updateAHSPItemWithHistory(id: string, updates: Partial<AHSPItem>, oldItem?: AHSPItem) {
+        const updatedItem = {
+            ...oldItem,
+            ...updates,
+            updatedAt: new Date().toISOString(),
+            currentVersion: (oldItem?.currentVersion ?? 1) + 1,
+        } as AHSPItem
+
+        ahspRepository.syncAHSPItem(updatedItem)
+
+        // Version History Record (Async)
+        void (async () => {
+            try {
+                const client = assertSupabase()
+                await client
+                    .from('ahsp_items')
+                    .update({ current_version: updatedItem.currentVersion ?? 1 })
+                    .eq('id', id)
+
+                await ahspRepository.insertPriceHistory({
+                    ahspId: id,
+                    zoneId: null,
+                    oldPrice: oldItem?.basePrice ?? null,
+                    newPrice: updatedItem.basePrice,
+                    overheadPercentage: updatedItem.overheadPercentage ?? null,
+                    profitPercentage: updatedItem.profitPercentage ?? null,
+                    priceMaterial: updatedItem.price_material ?? null,
+                    priceLabor: updatedItem.price_labor ?? null,
+                    priceEquipment: updatedItem.price_equipment ?? null,
+                    priceSubcon: updatedItem.price_subcon ?? null,
+                    versionNumber: updatedItem.currentVersion ?? 1,
+                    changeType: 'UPDATE',
+                })
+            } catch (err) {
+                console.warn('[AHSP] Version history sync failed:', err)
+            }
+        })()
+
+        return updatedItem
+    }
 }

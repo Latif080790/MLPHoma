@@ -81,6 +81,11 @@ interface CurvaSState {
   getDataPoints: (projectId: string) => CurvaSDataPoint[]
   getAnalysis: (projectId: string) => CurvaSAnalysis | null
   getSavedScenarios: (projectId: string) => SavedScenario[]
+  
+  // Standard async state
+  loading: boolean
+  error: string | null
+  lastSyncedAt: string | null
 }
 
 function toDate(d: string): Date {
@@ -193,25 +198,34 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
   dataPoints: {},
   analyses: {},
   configs: {},
-
-  // Saved scenarios storage (per project)
   savedScenarios: {},
-
-
+  loading: false,
+  error: null,
+  lastSyncedAt: null,
 
   analyzeProject: (projectId) => {
-    const points = get().dataPoints[projectId] || EMPTY_POINTS
-    const cfg = get().configs[projectId]
-    const analysis = computeAnalysis(projectId, points, cfg)
-    const prev = get().analyses[projectId] || null
-    if (isSameAnalysis(prev, analysis)) return
-    set((state) => ({
-      analyses: { ...state.analyses, [projectId]: analysis },
-    }))
-
-    // Integration Sync: Phase 4
-    if (analysis) {
-      syncCurvaSAnalysis(analysis)
+    set({ loading: true, error: null })
+    try {
+      const points = get().dataPoints[projectId] || EMPTY_POINTS
+      const cfg = get().configs[projectId]
+      const analysis = computeAnalysis(projectId, points, cfg)
+      const prev = get().analyses[projectId] || null
+      
+      if (!isSameAnalysis(prev, analysis)) {
+        set((state) => ({
+          analyses: { ...state.analyses, [projectId]: analysis },
+          loading: false
+        }))
+        
+        // Integration Sync: Phase 4
+        if (analysis) {
+          syncCurvaSAnalysis(analysis)
+        }
+      } else {
+        set({ loading: false })
+      }
+    } catch (err) {
+      set({ loading: false, error: (err as Error).message })
     }
   },
 
@@ -267,6 +281,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
 
   setPlannedFromRap: (projectId, rapPlan, totalBudget) => {
     if (!projectId || !rapPlan || rapPlan.length === 0) return
+    set({ loading: true, lastSyncedAt: new Date().toISOString() })
     const plan = [...rapPlan].map((p) => ({
       period: String(p.period || '').trim(),
       planned: Number.isFinite(p.planned) ? Number(p.planned) : 0,
@@ -316,6 +331,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
   // Progress → CurvaS sync
   syncFromProgress: (projectId, entries) => {
     if (!projectId || !entries || entries.length === 0) return
+    set({ loading: true, lastSyncedAt: new Date().toISOString() })
     const state = get()
     const existing = state.dataPoints[projectId] || EMPTY_POINTS
     const nowIso = new Date().toISOString()
