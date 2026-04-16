@@ -1,6 +1,8 @@
 
 import React, { useCallback, useEffect, useState } from "react"
-import { ModuleHeader } from "@/components/modules/ModuleHeader"
+// Enterprise patterns
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, ModeSwitch, WorkspaceHeader } from '@/components/patterns'
 import { Settings as SettingsIcon, Save, Users, Database, Globe, Loader2 } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -27,6 +29,13 @@ export default function Settings() {
     const [project, setProject] = useState<SettingsProject | null>(null)
     const [loading, setLoading] = useState(false)
     const [srStatus, setSrStatus] = useState('')
+    const [settingsTab, setSettingsTab] = useState('general')
+
+    const settingsTabOptions = [
+        { value: 'general', label: 'General', icon: <Globe className="h-3.5 w-3.5" /> },
+        { value: 'team', label: 'Team', icon: <Users className="h-3.5 w-3.5" /> },
+        { value: 'master', label: 'Master Data', icon: <Database className="h-3.5 w-3.5" /> },
+    ]
 
     const loadProject = useCallback(async (id: string) => {
         setSrStatus('Loading project settings...')
@@ -107,34 +116,39 @@ export default function Settings() {
             />
         )
     }
+    // Get initials for avatar (used in UI sections if needed)
+    // ... lines 112 onwards ...
 
     return (
-        <div className="space-y-6">
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={project?.name || 'Project'}
+                    syncStatus="synced"
+                />
+            }
+            navigation={
+                <ModeSwitch
+                    options={settingsTabOptions}
+                    value={settingsTab}
+                    onChange={setSettingsTab}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Settings"
+                    subtitle="Project configuration and master data"
+                    primaryAction={{
+                        label: loading ? 'Saving...' : 'Save Changes',
+                        icon: loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />,
+                        onClick: handleSave,
+                    }}
+                />
+            }
+        >
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<SettingsIcon size={18} />}
-                title="Settings"
-                description="Project configuration and master data."
-                accent="default"
-                actions={
-                    <Button size="sm" className="gap-2" onClick={handleSave} disabled={loading} aria-busy={loading}>
-                        {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} {loading ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                }
-            />
 
-            <Tabs defaultValue="general" className="w-full">
-                <TabsList className="mb-4">
-                    <TabsTrigger value="general" className="gap-2">
-                        <Globe size={14} /> General
-                    </TabsTrigger>
-                    <TabsTrigger value="team" className="gap-2">
-                        <Users size={14} /> Team
-                    </TabsTrigger>
-                    <TabsTrigger value="master" className="gap-2">
-                        <Database size={14} /> Master Data
-                    </TabsTrigger>
-                </TabsList>
+            <Tabs value={settingsTab} onValueChange={setSettingsTab} className="w-full">
 
                 {/* --- GENERAL SETTINGS --- */}
                 <TabsContent value="general">
@@ -216,6 +230,6 @@ export default function Settings() {
                     </div>
                 </TabsContent>
             </Tabs>
-        </div>
+        </PageShell>
     )
 }

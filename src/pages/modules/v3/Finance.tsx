@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap, Wallet } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -45,6 +44,10 @@ import { auditTrail } from "@/lib/auditTrail"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
 import ModuleListToolbar from "@/components/common/ModuleListToolbar"
+
+// ── Enterprise Pattern Imports ──────────────────────────────────────────────
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkspaceHeader, SummaryStrip, ModeSwitch, AlertStrip } from '@/components/patterns'
 
 const AP_STATUS_OPTIONS = [
     { value: 'all', label: 'All Status' },
@@ -358,97 +361,80 @@ export default function Finance() {
         )
     }
 
-    return (
-        <div className="space-y-6">
-            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<TrendingUp size={18} />}
-                title="Finance"
-                description="Manage AP (Invoices), AR (Claims), Aging, and 3-Way Matching."
-                accent="teal"
-            />
+    // ── ModeSwitch tab options ───────────────────────────────────────────────
+    const financeTabOptions = [
+        { value: 'overview', label: 'Overview', icon: <DollarSign className="h-3.5 w-3.5" /> },
+        { value: 'ap', label: 'AP', icon: <Receipt className="h-3.5 w-3.5" /> },
+        { value: 'ar', label: 'AR', icon: <FileText className="h-3.5 w-3.5" /> },
+        { value: 'aging', label: 'Aging', icon: <Clock className="h-3.5 w-3.5" /> },
+        { value: 'matching', label: '3-Way', icon: <ArrowRightLeft className="h-3.5 w-3.5" /> },
+        { value: 'cashflow', label: 'Cash Flow', icon: <TrendingUp className="h-3.5 w-3.5" /> },
+        { value: 'overhead', label: 'Overhead', icon: <PieChart className="h-3.5 w-3.5" /> },
+        { value: 'opname', label: 'Opname', icon: <Wallet className="h-3.5 w-3.5" /> },
+    ]
 
-            {/* Summary Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                    <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">AP Outstanding</p>
-                                <p className="text-2xl font-bold text-red-600">Rp {summary.totalAPOutstanding.toLocaleString()}</p>
-                            </div>
-                            <div className="p-2 rounded-lg bg-red-50 text-red-600"><Receipt size={20} /></div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{invoices.filter(i => i.status !== 'PAID').length} unpaid invoices</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">AR Receivable</p>
-                                <p className="text-2xl font-bold text-green-600">Rp {summary.totalAROutstanding.toLocaleString()}</p>
-                            </div>
-                            <div className="p-2 rounded-lg bg-green-50 text-green-600"><FileText size={20} /></div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">{claims.filter(c => c.status !== 'PAID').length} pending claims</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">Net Cash Flow</p>
-                                <p className={`text-2xl font-bold ${summary.netCashflow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    Rp {summary.netCashflow.toLocaleString()}
-                                </p>
-                            </div>
-                            <div className="p-2 rounded-lg bg-blue-50 text-blue-600"><DollarSign size={20} /></div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">In: Rp {summary.totalIncome.toLocaleString()} | Out: Rp {summary.totalExpense.toLocaleString()}</p>
-                    </CardContent>
-                </Card>
-                <Card className={summary.overdueCount > 0 ? 'border-red-300 bg-red-50/50' : ''}>
-                    <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-muted-foreground uppercase tracking-wider">Overdue</p>
-                                <p className="text-2xl font-bold text-orange-600">{summary.overdueCount}</p>
-                            </div>
-                            <div className="p-2 rounded-lg bg-orange-50 text-orange-600"><AlertTriangle size={20} /></div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">Rp {summary.overdueAmount.toLocaleString()} past due</p>
-                    </CardContent>
-                </Card>
-            </div>
+    // ── SummaryStrip items ───────────────────────────────────────────────────
+    const finSummaryItems = [
+        { label: 'AP Outstanding', value: `Rp ${summary.totalAPOutstanding.toLocaleString()}`, status: 'danger' as const },
+        { label: 'AR Receivable', value: `Rp ${summary.totalAROutstanding.toLocaleString()}`, status: 'success' as const },
+        { label: 'Net Cashflow', value: `Rp ${summary.netCashflow.toLocaleString()}`, status: (summary.netCashflow >= 0 ? 'success' : 'danger') as 'success' | 'danger' },
+        { label: 'Overdue', value: summary.overdueCount, status: (summary.overdueCount > 0 ? 'danger' : 'success') as 'danger' | 'success' },
+    ]
+
+    return (
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    syncStatus="synced"
+                    healthItems={[
+                        {
+                            label: 'Overdue',
+                            level: summary.overdueCount > 0 ? 'critical' : 'good',
+                            value: `${summary.overdueCount}`,
+                        },
+                    ]}
+                />
+            }
+            navigation={
+                <ModeSwitch
+                    options={financeTabOptions}
+                    value={activeTab}
+                    onChange={setActiveTab}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Finance"
+                    subtitle="Manage AP, AR, Aging, 3-Way Matching & Cash Flow"
+                    primaryAction={{
+                        label: 'Record Invoice',
+                        icon: <Plus className="h-3.5 w-3.5" />,
+                        onClick: () => setInvoiceDialogOpen(true),
+                    }}
+                    secondaryActions={[{
+                        label: 'Create Claim',
+                        icon: <FileText className="h-3.5 w-3.5" />,
+                        onClick: () => setClaimDialogOpen(true),
+                    }]}
+                />
+            }
+            summary={
+                <SummaryStrip items={finSummaryItems} variant="compact-cards" />
+            }
+            alert={
+                summary.overdueCount > 0 ? (
+                    <AlertStrip
+                        severity="warning"
+                        message={`${summary.overdueCount} invoice${summary.overdueCount > 1 ? 's' : ''} overdue — Rp ${summary.overdueAmount.toLocaleString()} past due`}
+                        action={{ label: 'View Aging', onClick: () => setActiveTab('aging') }}
+                    />
+                ) : undefined
+            }
+        >
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-4">
-                    <TabsTrigger value="overview" className="gap-2">
-                        <DollarSign size={14} /> Overview
-                    </TabsTrigger>
-                    <TabsTrigger value="ap" className="gap-2">
-                        <Receipt size={14} /> AP (Invoices)
-                    </TabsTrigger>
-                    <TabsTrigger value="ar" className="gap-2">
-                        <FileText size={14} /> AR (Claims)
-                    </TabsTrigger>
-                    <TabsTrigger value="aging" className="gap-2">
-                        <Clock size={14} /> Aging
-                    </TabsTrigger>
-                    <TabsTrigger value="matching" className="gap-2">
-                        <ArrowRightLeft size={14} /> 3-Way Match
-                    </TabsTrigger>
-                    <TabsTrigger value="cashflow" className="gap-2">
-                        <TrendingUp size={14} /> Cash Flow
-                    </TabsTrigger>
-                    <TabsTrigger value="overhead" className="gap-2">
-                        <PieChart size={14} /> Overhead
-                    </TabsTrigger>
-                    <TabsTrigger value="opname" className="gap-2">
-                        <Wallet size={14} /> Hutang Subcon (Opname)
-                    </TabsTrigger>
-                </TabsList>
 
                 {/* --- OVERVIEW --- */}
                 <TabsContent value="overview" className="space-y-6">
@@ -943,6 +929,6 @@ export default function Finance() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </PageShell>
     )
 }

@@ -20,6 +20,10 @@ import { useErrorHandler } from '@/hooks/useErrorHandler'
 import ModulePageState from '@/components/common/ModulePageState'
 import { Skeleton } from '@/components/common/LoadingSkeleton'
 
+// Enterprise patterns
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkflowStepper, WorkspaceHeader } from '@/components/patterns'
+
 import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
 import { prerequisiteCheckService, HandoverReadiness } from '@/services/prerequisiteCheckService'
 
@@ -168,28 +172,43 @@ export default function HandoverWizard() {
         )
     }
 
-    return (
-        <div className="max-w-4xl mx-auto space-y-8 p-6">
-            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <div className="text-center space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Project Handover Wizard</h1>
-                <p className="text-muted-foreground">Finalize &quot;{project.name}&quot; and generate completion documents.</p>
-            </div>
+    const wizardSteps = [
+        { id: '1', title: 'Summary', status: (step > 1 ? 'complete' : step === 1 ? 'active' : 'inactive') as 'complete' | 'active' | 'inactive' },
+        { id: '2', title: 'Inventory', status: (step > 2 ? 'complete' : step === 2 ? 'active' : 'inactive') as 'complete' | 'active' | 'inactive' },
+        { id: '3', title: 'Outstanding', status: (step > 3 ? 'complete' : step === 3 ? 'active' : outstanding.length > 0 ? 'warning' : 'inactive') as 'complete' | 'active' | 'warning' | 'inactive', count: outstanding.length > 0 ? outstanding.length : undefined },
+        { id: '4', title: 'Finalize', status: (step === 4 ? 'active' : 'inactive') as 'active' | 'inactive' },
+    ]
 
-            {/* Steps Indicator */}
-            <div className="flex justify-center gap-4">
-                {[1, 2, 3, 4].map(s => (
-                    <div key={s} className={`flex items-center gap-2 ${step >= s ? 'text-blue-600' : 'text-neutral-400'}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center border font-bold ${step >= s ? 'bg-blue-100 border-blue-600' : 'bg-white'}`}>
-                            {step > s ? <Check className="w-5 h-5" /> : s}
-                        </div>
-                        <span className="text-sm font-medium hidden md:block">
-                            {s === 1 ? 'Summary' : s === 2 ? 'Inventory' : s === 3 ? 'Outstanding' : 'Finalize'}
-                        </span>
-                        {s < 4 && <div className="w-8 h-px bg-neutral-200" />}
-                    </div>
-                ))}
-            </div>
+    return (
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={project.name}
+                    syncStatus="synced"
+                    healthItems={[
+                        {
+                            label: 'Readiness',
+                            level: readiness?.isReady ? 'good' : 'warning',
+                            value: readiness?.isReady ? 'Ready' : 'Pending',
+                        },
+                    ]}
+                />
+            }
+            navigation={
+                <WorkflowStepper
+                    steps={wizardSteps}
+                    activeStepId={String(step)}
+                    onStepClick={(id) => setStep(Number(id))}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Handover Wizard"
+                    subtitle={`Finalize "${project.name}" and generate completion documents`}
+                />
+            }
+        >
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
 
             <Card className="min-h-[400px] flex flex-col">
                 <CardHeader>
@@ -400,6 +419,6 @@ export default function HandoverWizard() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </PageShell>
     )
 }

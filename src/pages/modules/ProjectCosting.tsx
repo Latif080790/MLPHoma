@@ -1,6 +1,19 @@
-import React, { Suspense, useState, useEffect } from 'react'
-import { Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench, ChevronRight } from 'lucide-react'
-import { ModuleHeader } from '@/components/modules/ModuleHeader'
+/**
+ * ProjectCosting v2.tsx
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Integrated costing workspace: AHSP → WBS → RAB → RAP → Resource
+ * 
+ * REDESIGNED with enterprise design system:
+ *   L1: GlobalContextBar  → project context + health
+ *   L2: WorkflowStepper   → 5-step costing pipeline (replaces CostingFlowIndicator)
+ *   L3: WorkspaceHeader   → title + active step description
+ *   L4: SummaryStrip      → budget health KPIs
+ *   Alert: AlertStrip     → empty-data warnings
+ *   L6: Step Content      → lazy-loaded submodule
+ */
+
+import React, { Suspense, useState, useEffect, useMemo } from 'react'
+import { Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench, Plus, Settings2 } from 'lucide-react'
 import ModulePageState from '@/components/common/ModulePageState'
 import { BudgetHealthPanel } from '@/components/modules/BudgetHealthPanel'
 import { useProjectStore } from '@/store/projectStore'
@@ -11,103 +24,38 @@ import { useAHSPStore } from '@/store/ahspStore'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { lazyRetry } from '@/lib/lazyRetry'
 
+// ── Enterprise Pattern Imports ──────────────────────────────────────────────
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkspaceHeader, WorkflowStepper, SummaryStrip, AlertStrip } from '@/components/patterns'
+
 const AHSP = lazyRetry(() => import('@/pages/modules/AHSP/index'))
 const WBS = lazyRetry(() => import('@/pages/modules/WBS'))
 const RAB = lazyRetry(() => import('@/pages/modules/RAB'))
 const RAP = lazyRetry(() => import('@/pages/modules/RAP'))
 const ResourcePlan = lazyRetry(() => import('@/pages/modules/ResourcePlan'))
 
-type CostingTab = 'ahsp' | 'wbs' | 'rab' | 'rap' | 'resource'
+type CostingStep = 'ahsp' | 'wbs' | 'rab' | 'rap' | 'resource'
 
-// ─── Tab config ──────────────────────────────────────────────────────────────
-const TAB_CONFIG: Array<{
-  id: CostingTab
+// ─── Step Pipeline Configuration ────────────────────────────────────────────
+const STEP_CONFIG: Array<{
+  id: CostingStep
   label: string
-  shortLabel: string
-  icon: React.ReactNode
   description: string
+  icon: React.ReactNode
 }> = [
-    { id: 'ahsp', label: 'AHSP', shortLabel: 'AHSP', icon: <BookOpen size={13} />, description: 'Katalog harga satuan' },
-    { id: 'wbs', label: 'WBS', shortLabel: 'WBS', icon: <GitBranch size={13} />, description: 'Struktur pekerjaan' },
-    { id: 'rab', label: 'RAB', shortLabel: 'RAB', icon: <DollarSign size={13} />, description: 'Rencana anggaran biaya' },
-    { id: 'rap', label: 'RAP', shortLabel: 'RAP', icon: <BarChart2 size={13} />, description: 'Anggaran pelaksanaan' },
-    { id: 'resource', label: 'Resource Plan', shortLabel: 'RES', icon: <Wrench size={13} />, description: 'Kebutuhan resource' },
-  ]
-
-// ─── CostingFlowIndicator ────────────────────────────────────────────────────
-function CostingFlowIndicator({
-  activeTab,
-  onTabChange,
-  projectId,
-}: {
-  activeTab: CostingTab
-  onTabChange: (tab: CostingTab) => void
-  projectId: string
-}) {
-  // All selectors return primitives (numbers) to avoid new-reference re-render loops
-  const ahspCount = useAHSPStore(s => s.ahspItems.length)
-  const wbsCount = useWBSStore(s => s.itemsByProject[projectId]?.length ?? 0)
-  const rabCount = useRabStore(s => s.itemsByProject[projectId]?.length ?? 0)
-  const rapCount = useRapStore(s => s.items.filter(i => i.project_id === projectId).length)
-
-  const counts: Record<CostingTab, number | null> = {
-    ahsp: ahspCount,
-    wbs: wbsCount,
-    rab: rabCount,
-    rap: rapCount,
-    resource: null,
-  }
-
-  return (
-    <div
-      className="flex items-center overflow-x-auto rounded-lg border border-slate-200 bg-slate-50/60 px-2 py-1 dark:border-slate-700 dark:bg-slate-800/40"
-      role="navigation"
-      aria-label="Alur Project Costing"
-    >
-      {TAB_CONFIG.map((tab, idx) => {
-        const isActive = activeTab === tab.id
-        const count = counts[tab.id]
-        const hasIssue = count === 0 && tab.id !== 'resource'
-        return (
-          <React.Fragment key={tab.id}>
-            <button
-              type="button"
-              onClick={() => onTabChange(tab.id)}
-              className={`flex shrink-0 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${isActive
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
-            >
-              {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.shortLabel}</span>
-              {count !== null && (
-                <span
-                  className={`ml-0.5 rounded-full px-1.5 py-0 text-xs font-bold ${hasIssue
-                    ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'
-                    : 'bg-slate-200 text-slate-600 dark:bg-slate-600 dark:text-slate-200'
-                    }`}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-            {idx < TAB_CONFIG.length - 1 && (
-              <ChevronRight size={11} className="mx-0.5 shrink-0 text-slate-300 dark:text-slate-600" />
-            )}
-          </React.Fragment>
-        )
-      })}
-    </div>
-  )
-}
+  { id: 'ahsp', label: 'AHSP', description: 'Katalog harga satuan pekerjaan', icon: <BookOpen size={14} /> },
+  { id: 'wbs', label: 'WBS', description: 'Struktur pekerjaan & hierarki', icon: <GitBranch size={14} /> },
+  { id: 'rab', label: 'RAB', description: 'Rencana anggaran biaya baseline', icon: <DollarSign size={14} /> },
+  { id: 'rap', label: 'RAP', description: 'Anggaran pelaksanaan operasional', icon: <BarChart2 size={14} /> },
+  { id: 'resource', label: 'Resource', description: 'Perencanaan kebutuhan resource', icon: <Wrench size={14} /> },
+]
 
 // ─── TabFallback ─────────────────────────────────────────────────────────────
 function TabFallback() {
   return (
-    <div className="space-y-3 p-4">
+    <div className="space-y-space-3 p-padding-md">
       {[1, 2, 3, 4].map(i => (
-        <div key={i} className="h-8 animate-pulse rounded bg-slate-100 dark:bg-slate-800" style={{ width: `${85 - i * 10}%` }} />
+        <div key={i} className="h-8 animate-pulse rounded-radius-sm bg-surface-subtle" style={{ width: `${85 - i * 10}%` }} />
       ))}
     </div>
   )
@@ -116,12 +64,18 @@ function TabFallback() {
 export default function ProjectCosting() {
   const activeProjectId = useProjectStore(s => s.activeProjectId)
   const projects = useProjectStore(s => s.projects)
-  const [activeTab, setActiveTab] = useState<CostingTab>('ahsp')
-  const [srStatus, setSrStatus] = useState('AHSP tab opened.')
+  const [activeStep, setActiveStep] = useState<CostingStep>('ahsp')
+  const [srStatus, setSrStatus] = useState('AHSP step opened.')
+
+  // Store selectors — primitive values to avoid re-render loops
+  const ahspCount = useAHSPStore(s => s.ahspItems.length)
+  const wbsByProj = useWBSStore(s => s.itemsByProject)
+  const rabByProj = useRabStore(s => s.itemsByProject)
+  const rapItems = useRapStore(s => s.items)
 
   // Proactive fetching
-  const { fetchItems: fetchWbs, itemsByProject: wbsByProj } = useWBSStore()
-  const { fetchItems: fetchRab, itemsByProject: rabByProj } = useRabStore()
+  const { fetchItems: fetchWbs } = useWBSStore()
+  const { fetchItems: fetchRab } = useRabStore()
   const { fetchItems: fetchRap } = useRapStore()
 
   useEffect(() => {
@@ -134,6 +88,55 @@ export default function ProjectCosting() {
 
   const activeProject = activeProjectId ? projects[activeProjectId] : null
 
+  // ─── Compute step counts & states ─────────────────────────────────────────
+  const wbsCount = activeProjectId ? (wbsByProj[activeProjectId]?.length ?? 0) : 0
+  const rabCount = activeProjectId ? (rabByProj[activeProjectId]?.length ?? 0) : 0
+  const rapCount = activeProjectId ? rapItems.filter(i => i.project_id === activeProjectId).length : 0
+
+  const stepCounts: Record<CostingStep, number | null> = {
+    ahsp: ahspCount,
+    wbs: wbsCount,
+    rab: rabCount,
+    rap: rapCount,
+    resource: null,
+  }
+
+  const workflowSteps = useMemo(() => STEP_CONFIG.map(step => {
+    const count = stepCounts[step.id]
+    const hasData = count === null || count > 0
+    const isActive = activeStep === step.id
+
+    // Determine step status
+    let status: 'inactive' | 'active' | 'complete' | 'warning' = 'inactive'
+    if (isActive) status = 'active'
+    else if (!hasData && step.id !== 'resource') status = 'warning'
+    else if (hasData && count !== null && count > 0) status = 'complete'
+
+    return {
+      id: step.id,
+      title: step.label,
+      description: count !== null ? `${count} items` : step.description,
+      status,
+      icon: step.icon,
+      count: count ?? undefined,
+    }
+  }), [activeStep, ahspCount, wbsCount, rabCount, rapCount])
+
+  // ─── Summary Strip KPIs ───────────────────────────────────────────────────
+  const summaryItems = useMemo(() => [
+    { label: 'AHSP Items', value: ahspCount, status: ahspCount > 0 ? 'success' as const : 'warning' as const },
+    { label: 'WBS Items', value: wbsCount, status: wbsCount > 0 ? 'success' as const : 'warning' as const },
+    { label: 'RAB Lines', value: rabCount, status: rabCount > 0 ? 'success' as const : 'warning' as const },
+    { label: 'RAP Lines', value: rapCount, status: rapCount > 0 ? 'success' as const : 'info' as const },
+  ], [ahspCount, wbsCount, rabCount, rapCount])
+
+  // ─── Empty step alerts ────────────────────────────────────────────────────
+  const emptySteps = STEP_CONFIG
+    .filter(s => s.id !== 'resource')
+    .filter(s => stepCounts[s.id] === 0)
+    .map(s => s.label)
+
+  // ─── Guard: No active project ─────────────────────────────────────────────
   if (!activeProjectId || !activeProject) {
     return (
       <ModulePageState
@@ -146,56 +149,90 @@ export default function ProjectCosting() {
     )
   }
 
-  const handleTabChange = (next: CostingTab) => {
-    setActiveTab(next)
-    const labels: Record<CostingTab, string> = {
-      ahsp: 'AHSP', wbs: 'WBS', rab: 'RAB', rap: 'RAP', resource: 'Resource Plan',
-    }
-    setSrStatus(`${labels[next]} tab dibuka.`)
+  const handleStepChange = (stepId: string) => {
+    setActiveStep(stepId as CostingStep)
+    const stepLabel = STEP_CONFIG.find(s => s.id === stepId)?.label || stepId
+    setSrStatus(`${stepLabel} step dibuka.`)
   }
 
+  const currentStep = STEP_CONFIG.find(s => s.id === activeStep)!
+
   const renderContent = () => {
-    const wrap = (label: string, Component: React.LazyExoticComponent<() => JSX.Element>) => (
+    const wrap = (label: string, Component: React.LazyExoticComponent<React.ComponentType>) => (
       <ErrorBoundary errorMessage={`${label} module failed to render`}>
         <Suspense fallback={<TabFallback />}>
           <Component />
         </Suspense>
       </ErrorBoundary>
     )
-    switch (activeTab) {
-      case 'ahsp': return wrap('AHSP', AHSP as React.LazyExoticComponent<() => JSX.Element>)
-      case 'wbs': return wrap('WBS', WBS as React.LazyExoticComponent<() => JSX.Element>)
-      case 'rab': return wrap('RAB', RAB as React.LazyExoticComponent<() => JSX.Element>)
-      case 'rap': return wrap('RAP', RAP as React.LazyExoticComponent<() => JSX.Element>)
-      case 'resource': return wrap('Resource Plan', ResourcePlan as React.LazyExoticComponent<() => JSX.Element>)
+    switch (activeStep) {
+      case 'ahsp': return wrap('AHSP', AHSP as React.LazyExoticComponent<React.ComponentType>)
+      case 'wbs': return wrap('WBS', WBS as React.LazyExoticComponent<React.ComponentType>)
+      case 'rab': return wrap('RAB', RAB as React.LazyExoticComponent<React.ComponentType>)
+      case 'rap': return wrap('RAP', RAP as React.LazyExoticComponent<React.ComponentType>)
+      case 'resource': return wrap('Resource Plan', ResourcePlan as React.LazyExoticComponent<React.ComponentType>)
     }
   }
 
   return (
-    <div className="space-y-4 density-compact">
+    <PageShell
+      contextBar={
+        <GlobalContextBar
+          projectName={activeProject.name}
+          packageName={activeProject.code || undefined}
+          versionLabel={activeProject.status || undefined}
+          syncStatus="synced"
+          healthItems={[
+            {
+              label: 'Pipeline',
+              level: emptySteps.length === 0 ? 'good' : emptySteps.length <= 2 ? 'warning' : 'critical',
+              value: `${4 - emptySteps.length}/4`,
+            },
+          ]}
+        />
+      }
+      navigation={
+        <WorkflowStepper
+          steps={workflowSteps}
+          activeStepId={activeStep}
+          onStepClick={handleStepChange}
+        />
+      }
+      header={
+        <WorkspaceHeader
+          title={`Costing — ${currentStep.label}`}
+          subtitle={currentStep.description}
+          primaryAction={{
+            label: 'New Item',
+            icon: <Plus className="h-3.5 w-3.5" />,
+            onClick: () => { /* handled by submodule */ },
+          }}
+        />
+      }
+      summary={
+        <SummaryStrip items={summaryItems} variant="chips" />
+      }
+      alert={
+        emptySteps.length > 0 ? (
+          <AlertStrip
+            severity="info"
+            message={`${emptySteps.join(', ')} belum memiliki data — mulai dari ${emptySteps[0]} untuk melengkapi pipeline`}
+          />
+        ) : undefined
+      }
+    >
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-      <ModuleHeader
-        icon={<Calculator size={18} />}
-        title="Project Costing"
-        description={`Workspace terintegrasi costing — ${activeProject.name}`}
-        accent="emerald"
-      />
 
-      {/* ── Flow indicator breadcrumb ───────────────────────────────── */}
-      <CostingFlowIndicator
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        projectId={activeProjectId}
-      />
-
-      {/* ── Budget Health KPIs — FASE 5 ────────────────────────────── */}
+      {/* Budget Health KPIs */}
       <BudgetHealthPanel
         projectId={activeProjectId}
         projectBudget={activeProject.budget ?? 0}
       />
 
-
-      <div className="min-h-[420px]">{renderContent()}</div>
-    </div>
+      {/* Step Content */}
+      <div className="min-h-[420px] mt-[var(--space-4)]">
+        {renderContent()}
+      </div>
+    </PageShell>
   )
 }

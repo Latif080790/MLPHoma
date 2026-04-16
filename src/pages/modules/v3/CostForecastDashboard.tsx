@@ -6,7 +6,9 @@ import React, { useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ModuleHeader } from '@/components/modules/ModuleHeader'
+// Enterprise patterns
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkspaceHeader } from '@/components/patterns'
 import { 
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
     AreaChart, Area
@@ -48,25 +50,32 @@ export default function CostForecastDashboard() {
     )
 
     return (
-        <div className="space-y-6">
-            <ModuleHeader
-                icon={<BarChart3 size={18} />}
-                title="Predictive Cost & Schedule Control"
-                description="AI-driven Estimate at Completion (EAC) using daily EVM snapshots."
-                accent="indigo"
-                actions={
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => generateSnapshot()}
-                        disabled={loading}
-                        className="bg-white"
-                    >
-                        <RefreshCw size={14} className={`mr-2 ${loading ? 'animate-spin' : ''}`} />
-                        Capture Daily Snapshot
-                    </Button>
-                }
-            />
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    syncStatus="synced"
+                    healthItems={[
+                        {
+                            label: 'Alert',
+                            level: projections?.isRedAlert ? 'critical' : 'good',
+                            value: projections?.isRedAlert ? 'RED' : 'OK',
+                        },
+                    ]}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Predictive Cost & Schedule Control"
+                    subtitle="AI-driven Estimate at Completion (EAC) using daily EVM snapshots"
+                    primaryAction={{
+                        label: 'Capture Snapshot',
+                        icon: <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />,
+                        onClick: () => generateSnapshot(),
+                    }}
+                />
+            }
+        >
 
             {/* TOP METRICS (EAC Projections) */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -242,7 +251,7 @@ export default function CostForecastDashboard() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </PageShell>
     )
 }
 

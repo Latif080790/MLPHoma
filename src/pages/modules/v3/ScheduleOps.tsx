@@ -1,12 +1,26 @@
+/**
+ * ScheduleOps v2.tsx
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Integrated project planning, execution, and risk management.
+ * 
+ * REDESIGNED with enterprise design system:
+ *   L1: GlobalContextBar  → project context  
+ *   L2: ModeSwitch        → 3-mode: Plan | Track | Analyze (replaces raw TabsList)
+ *   L3: WorkspaceHeader   → title + active mode description + actions
+ *   L6: Tab Content       → lazy-loaded submodules within each mode
+ */
 
 import React, { Suspense } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
-import { ModuleHeader } from '@/components/modules/ModuleHeader'
-import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical, Boxes } from 'lucide-react'
+import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical, Boxes, BarChart2, Eye } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import ModulePageState from '@/components/common/ModulePageState'
 import { lazyRetry } from '@/lib/lazyRetry'
+
+// ── Enterprise Pattern Imports ──────────────────────────────────────────────
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, ModeSwitch, WorkspaceHeader } from '@/components/patterns'
 
 const WBS = lazyRetry(() => import('../WBS'))
 const Timeline = lazyRetry(() => import('../Timeline'))
@@ -19,14 +33,56 @@ const DailyProgressBoard = lazyRetry(() => import('@/components/progress/DailyPr
 const CriticalPathGantt = lazyRetry(() => import('@/components/charts/CriticalPathGantt').then((m) => ({ default: m.CriticalPathGantt })))
 
 function TabFallback() {
-    return <div className="p-4 text-sm text-slate-500">Loading module...</div>
+    return <div className="p-[var(--padding-md)] text-[var(--font-size-13)] text-[hsl(var(--color-text-tertiary))]">Loading module...</div>
 }
+
+// ─── Mode Configuration ─────────────────────────────────────────────────────
+const MODE_OPTIONS = [
+    { value: 'plan', label: 'Plan', icon: <GanttChartSquare className="h-3.5 w-3.5" /> },
+    { value: 'track', label: 'Track', icon: <TrendingUp className="h-3.5 w-3.5" /> },
+    { value: 'analyze', label: 'Analyze', icon: <BarChart2 className="h-3.5 w-3.5" /> },
+]
+
+const MODE_DESCRIPTIONS: Record<string, string> = {
+    plan: 'Timeline, WBS, and scheduling management',
+    track: 'Site progress tracking & daily operations',
+    analyze: 'Curva-S, risk analysis, and what-if scenarios',
+}
+
+type ScheduleMode = 'plan' | 'track' | 'analyze'
+
+// ─── Sub-tab config per mode ────────────────────────────────────────────────
+const PLAN_TABS = [
+    { value: 'timeline', label: 'Timeline (Gantt)', icon: <GanttChartSquare size={14} /> },
+    { value: 'wbs', label: 'WBS Structure', icon: <ListTodo size={14} /> },
+    { value: 'cpm', label: 'Critical Path', icon: <AlertTriangle size={14} /> },
+]
+
+const TRACK_TABS = [
+    { value: 'progress', label: 'Site Progress', icon: <TrendingUp size={14} /> },
+    { value: 'resource', label: 'Resource Entry', icon: <Boxes size={14} /> },
+]
+
+const ANALYZE_TABS = [
+    { value: 'curvas', label: 'Curva-S', icon: <TrendingUp size={14} className="rotate-180" /> },
+    { value: 'risk', label: 'Risk & Issues', icon: <AlertTriangle size={14} /> },
+    { value: 'scenario', label: 'What-If', icon: <FlaskConical size={14} /> },
+]
 
 export default function ScheduleOps() {
     const { activeProjectId } = useProjectStore()
     const [resourceOpen, setResourceOpen] = React.useState(false)
+    const [mode, setMode] = React.useState<ScheduleMode>('plan')
     const [activeTab, setActiveTab] = React.useState('timeline')
     const [srStatus, setSrStatus] = React.useState('')
+
+    // When mode changes, auto-select first tab of that mode
+    const handleModeChange = React.useCallback((newMode: string) => {
+        setMode(newMode as ScheduleMode)
+        const firstTab = newMode === 'plan' ? 'timeline' : newMode === 'track' ? 'progress' : 'curvas'
+        setActiveTab(firstTab)
+        setSrStatus(`Switched to ${newMode} mode.`)
+    }, [])
 
     React.useEffect(() => {
         const tabLabel =
@@ -52,50 +108,64 @@ export default function ScheduleOps() {
         )
     }
 
+    const currentTabs = mode === 'plan' ? PLAN_TABS : mode === 'track' ? TRACK_TABS : ANALYZE_TABS
+
     return (
-        <div className="space-y-6">
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={useProjectStore.getState().projects[activeProjectId]?.name || 'Project'}
+                    syncStatus="synced"
+                />
+            }
+            navigation={
+                <ModeSwitch
+                    options={MODE_OPTIONS}
+                    value={mode}
+                    onChange={handleModeChange}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Schedule & Operations"
+                    subtitle={MODE_DESCRIPTIONS[mode]}
+                    primaryAction={mode === 'track' ? {
+                        label: 'Resource Log',
+                        icon: <Boxes className="h-3.5 w-3.5" />,
+                        onClick: () => setResourceOpen(true),
+                    } : undefined}
+                />
+            }
+        >
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<CalendarClock size={18} />}
-                title="Schedule & Operations"
-                description="Integrated project planning, execution, and risk management."
-                accent="indigo"
-            />
 
             <Suspense fallback={null}>
                 <ResourceUsageDialog open={resourceOpen} onOpenChange={setResourceOpen} projectId={activeProjectId} />
             </Suspense>
 
+            {/* Sub-tabs within the mode */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-slate-100/50 dark:bg-slate-800/50 mb-6 backdrop-blur-sm">
-                    <TabsTrigger value="timeline" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
-                        <GanttChartSquare size={14} /> Timeline (Gantt)
-                    </TabsTrigger>
-                    <TabsTrigger value="wbs" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
-                        <ListTodo size={14} /> WBS Structure
-                    </TabsTrigger>
-                    <TabsTrigger value="cpm" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
-                        <AlertTriangle size={14} /> Critical Path
-                    </TabsTrigger>
-                    <TabsTrigger value="progress" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
-                        <TrendingUp size={14} /> Site Progress
-                    </TabsTrigger>
-                    <TabsTrigger value="curvas" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
-                        <TrendingUp size={14} className="rotate-180" /> Curva-S
-                    </TabsTrigger>
-                    <TabsTrigger value="risk" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
-                        <AlertTriangle size={14} /> Risk & Issues
-                    </TabsTrigger>
-                    <TabsTrigger value="resource" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
-                        <Boxes size={14} /> Resource Entry
-                    </TabsTrigger>
-                    <TabsTrigger value="scenario" className="gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 data-[state=active]:shadow-sm">
-                        <FlaskConical size={14} /> What-If
-                    </TabsTrigger>
-                </TabsList>
+                <div className="flex items-center overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 px-2 py-1 mb-4">
+                    {currentTabs.map((tab) => (
+                        <button
+                            key={tab.value}
+                            type="button"
+                            onClick={() => setActiveTab(tab.value)}
+                            className={`flex shrink-0 items-center gap-[var(--space-2)] rounded-[var(--radius-sm)] px-[var(--space-3)] py-[var(--space-2)] text-[var(--font-size-12)] font-[var(--font-weight-medium)] transition-colors duration-[var(--motion-duration-fast)] ${
+                                activeTab === tab.value
+                                    ? 'bg-[hsl(var(--color-surface-panel))] text-[hsl(var(--color-text-primary))] shadow-[var(--shadow-xs)]'
+                                    : 'text-[hsl(var(--color-text-tertiary))] hover:text-[hsl(var(--color-text-secondary))]'
+                            }`}
+                        >
+                            {tab.icon}
+                            <span className="hidden sm:inline">{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
 
+                {/* ─── Plan Mode Tabs ─────────────────────────────────────────── */}
                 <TabsContent value="timeline" className="outline-none">
-                    <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-0 min-h-[500px]">
+                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[500px]">
                         <Suspense fallback={<TabFallback />}>
                             <Timeline />
                         </Suspense>
@@ -103,7 +173,7 @@ export default function ScheduleOps() {
                 </TabsContent>
 
                 <TabsContent value="wbs" className="outline-none">
-                    <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-0 min-h-[500px]">
+                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[500px]">
                         <Suspense fallback={<TabFallback />}>
                             <WBS />
                         </Suspense>
@@ -116,12 +186,13 @@ export default function ScheduleOps() {
                     </Suspense>
                 </TabsContent>
 
+                {/* ─── Track Mode Tabs ────────────────────────────────────────── */}
                 <TabsContent value="progress" className="outline-none">
                     <Card className="border-none shadow-none bg-transparent">
                         <Suspense fallback={<TabFallback />}>
                             <DailyProgressBoard />
                         </Suspense>
-                        <div className="mt-6">
+                        <div className="mt-[var(--space-6)]">
                             <Suspense fallback={<TabFallback />}>
                                 <Progress />
                             </Suspense>
@@ -129,8 +200,30 @@ export default function ScheduleOps() {
                     </Card>
                 </TabsContent>
 
+                <TabsContent value="resource" className="outline-none">
+                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)] min-h-[400px]">
+                        <div className="text-center py-12">
+                            <Boxes className="mx-auto h-12 w-12 text-[hsl(var(--color-text-disabled))] mb-[var(--space-4)]" />
+                            <h3 className="text-lg font-[var(--font-weight-bold)]">Resource Logistics & Tooling</h3>
+                            <p className="text-[hsl(var(--color-text-tertiary))] max-w-sm mx-auto mb-[var(--space-6)] text-[var(--font-size-13)]">
+                                Log equipment usage and labor distribution here to feed the Portfolio Heatmap.
+                            </p>
+                            <div className="bg-[hsl(var(--color-surface-subtle))] p-[var(--padding-lg)] rounded-[var(--radius-lg)] border border-dashed border-[hsl(var(--color-border-default))] max-w-sm mx-auto">
+                                <p className="text-[var(--font-size-11)] text-[hsl(var(--color-text-disabled))] mb-[var(--space-4)] uppercase tracking-[var(--letter-spacing-wide)] font-[var(--font-weight-bold)]">Input Center</p>
+                                <button
+                                    onClick={() => setResourceOpen(true)}
+                                    className="flex w-full items-center justify-center gap-[var(--space-2)] rounded-[var(--radius-md)] bg-[hsl(var(--brand-primary-500))] px-[var(--space-4)] py-[var(--space-3)] text-[var(--font-size-13)] font-[var(--font-weight-bold)] text-white hover:bg-[hsl(var(--brand-primary-600))] shadow-[var(--shadow-md)] transition-all active:scale-95"
+                                >
+                                    <Boxes size={18} /> New Resource Log
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </TabsContent>
+
+                {/* ─── Analyze Mode Tabs ──────────────────────────────────────── */}
                 <TabsContent value="curvas" className="outline-none">
-                    <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-4">
+                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
                         <Suspense fallback={<TabFallback />}>
                             <CurvaS />
                         </Suspense>
@@ -138,45 +231,21 @@ export default function ScheduleOps() {
                 </TabsContent>
 
                 <TabsContent value="risk" className="outline-none">
-                    <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-4">
+                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
                         <Suspense fallback={<TabFallback />}>
                             <RiskRegister projectId={activeProjectId} />
                         </Suspense>
                     </div>
                 </TabsContent>
 
-                <TabsContent value="resource" className="outline-none">
-                    <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-4 min-h-[400px]">
-                        <div className="text-center py-12">
-                            <Boxes className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-                            <h3 className="text-lg font-bold">Resource Logistics & Tooling</h3>
-                            <p className="text-slate-500 max-w-sm mx-auto mb-6">
-                                Log equipment usage and labor distribution here to feed the Portfolio Heatmap.
-                            </p>
-                            <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 max-w-sm mx-auto">
-                                <p className="text-xs text-slate-400 mb-4 uppercase tracking-wider font-bold">Input Center</p>
-                                <button
-                                    onClick={() => setResourceOpen(true)}
-                                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700 shadow-md transition-all active:scale-95"
-                                >
-                                    <Boxes size={18} /> New Resource Log
-                                </button>
-                                <p className="mt-4 text-xs text-slate-400 italic">
-                                    Mencatat pemakaian alat (HM/Shift) dan distribusi tenaga kerja secara spesifik.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </TabsContent>
-
                 <TabsContent value="scenario" className="outline-none">
-                    <div className="rounded-xl border bg-white dark:bg-slate-900 shadow-sm overflow-hidden p-4">
+                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
                         <Suspense fallback={<TabFallback />}>
                             <TimelineScenarioPanel projectId={activeProjectId} />
                         </Suspense>
                     </div>
                 </TabsContent>
             </Tabs>
-        </div>
+        </PageShell>
     )
 }

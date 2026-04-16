@@ -1,7 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -32,6 +31,10 @@ import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
 import ModuleListToolbar from "@/components/common/ModuleListToolbar"
 import { CardSkeleton } from "@/components/common/LoadingSkeleton"
+
+// ── Enterprise Pattern Imports ──────────────────────────────────────────────
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 
 const CATEGORIES = ["Contracts", "Drawings", "Reports", "Invoices", "Correspondence", "Other"]
 const DOC_SORTS = [
@@ -310,20 +313,40 @@ export default function Documents() {
         )
     }
 
+    // ── SummaryStrip items ───────────────────────────────────────────────────
+    const activeCount = documents.filter(d => d.status === 'ACTIVE').length
+    const archivedCount = documents.filter(d => d.status === 'ARCHIVED').length
+    const lockedCount = documents.filter(d => d.is_locked).length
+    const docSummary = [
+        { label: 'Total', value: documents.length, status: 'neutral' as const },
+        { label: 'Active', value: activeCount, status: 'success' as const },
+        { label: 'Archived', value: archivedCount, status: archivedCount > 0 ? 'warning' as const : 'neutral' as const },
+        { label: 'Locked', value: lockedCount, status: lockedCount > 0 ? 'info' as const : 'neutral' as const },
+    ]
+
     return (
-        <div className="space-y-6">
-            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<Folder size={18} />}
-                title="Documents"
-                description="Centralized project repository."
-                accent="violet"
-                actions={
-                    <Button size="sm" className="gap-2" onClick={() => setUploadOpen(true)}>
-                        <Upload size={16} /> Upload Document
-                    </Button>
-                }
-            />
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    syncStatus="synced"
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Documents"
+                    subtitle="Centralized project document repository"
+                    primaryAction={{
+                        label: 'Upload',
+                        icon: <Upload className="h-3.5 w-3.5" />,
+                        onClick: () => setUploadOpen(true),
+                    }}
+                />
+            }
+            summary={
+                <SummaryStrip items={docSummary} variant="chips" />
+            }
+        >
 
             <ModuleListToolbar
                 query={search}
@@ -613,6 +636,6 @@ export default function Documents() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </PageShell>
     )
 }

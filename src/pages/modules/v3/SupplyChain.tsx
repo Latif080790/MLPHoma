@@ -1,6 +1,5 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, PackageCheck, ArrowRightLeft, ClipboardList } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -31,6 +30,10 @@ import type { TraceableDocType } from "@/types/traceability"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import ModulePageState from "@/components/common/ModulePageState"
 import ModuleListToolbar from "@/components/common/ModuleListToolbar"
+
+// ── Enterprise Pattern Imports ──────────────────────────────────────────────
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, ModeSwitch, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 
 const STATUS_FILTER_OPTIONS = [
     { value: 'all', label: 'All Status' },
@@ -366,31 +369,82 @@ export default function SupplyChain() {
         }
     }
 
+    // ── ModeSwitch tab options ───────────────────────────────────────────────
+    const supplyTabOptions = [
+        { value: 'requests', label: 'MR', icon: <Package className="h-3.5 w-3.5" /> },
+        { value: 'orders', label: 'PO', icon: <ShoppingCart className="h-3.5 w-3.5" /> },
+        { value: 'inventory', label: 'Inventory', icon: <Warehouse className="h-3.5 w-3.5" /> },
+        { value: 'transfers', label: 'Transfers', icon: <ArrowRightLeft className="h-3.5 w-3.5" /> },
+        { value: 'spk', label: 'SPK', icon: <ClipboardList className="h-3.5 w-3.5" /> },
+        { value: 'mtr', label: 'MTR', icon: <Truck className="h-3.5 w-3.5" /> },
+    ]
+
+    // ── SummaryStrip items ───────────────────────────────────────────────────
+    const pendingMR = materialRequests.filter(m => m.status === 'PENDING').length
+    const supplySummaryItems = [
+        { label: 'Material Req', value: materialRequests.length, status: 'neutral' as const },
+        { label: 'Pending', value: pendingMR, status: (pendingMR > 0 ? 'warning' : 'success') as 'warning' | 'success' },
+        { label: 'Purchase Orders', value: purchaseOrders.length, status: 'neutral' as const },
+        { label: 'Stock Items', value: inventoryStock.length, status: 'neutral' as const },
+    ]
+
     return (
-        <div className="space-y-6">
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    syncStatus="synced"
+                    healthItems={[
+                        {
+                            label: 'Pending',
+                            level: pendingMR > 5 ? 'warning' : 'good',
+                            value: `${pendingMR}`,
+                        },
+                    ]}
+                />
+            }
+            navigation={
+                <ModeSwitch
+                    options={supplyTabOptions}
+                    value={activeTab}
+                    onChange={setActiveTab}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Supply Chain"
+                    subtitle="End-to-end material management: MR → PO → GRN → Inventory"
+                    primaryAction={{
+                        label: 'New Request',
+                        icon: <Plus className="h-3.5 w-3.5" />,
+                        onClick: () => setMrOpen(true),
+                    }}
+                    secondaryActions={[
+                        {
+                            label: 'New PO',
+                            icon: <ShoppingCart className="h-3.5 w-3.5" />,
+                            onClick: () => setPoOpen(true),
+                        },
+                        {
+                            label: 'GRN',
+                            icon: <PackageCheck className="h-3.5 w-3.5" />,
+                            onClick: () => setGrnOpen(true),
+                        },
+                    ]}
+                    overflowActions={[
+                        {
+                            label: 'Transfer',
+                            icon: <ArrowRightLeft className="h-3.5 w-3.5" />,
+                            onClick: () => setTransferOpen(true),
+                        },
+                    ]}
+                />
+            }
+            summary={
+                <SummaryStrip items={supplySummaryItems} variant="chips" />
+            }
+        >
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<Truck size={18} />}
-                title="Supply Chain (Logistics)"
-                description="End-to-end material management: Requests -> Purchase Orders -> Inventory."
-                accent="orange"
-                actions={
-                    <div className="flex gap-2">
-                        <Button size="sm" className="gap-2" variant="outline" onClick={() => setGrnOpen(true)}>
-                            <PackageCheck size={16} /> GRN
-                        </Button>
-                        <Button size="sm" className="gap-2" variant="outline" onClick={() => setTransferOpen(true)}>
-                            <ArrowRightLeft size={16} /> Transfer
-                        </Button>
-                        <Button size="sm" className="gap-2" variant="outline" onClick={() => setPoOpen(true)}>
-                            <ShoppingCart size={16} /> New PO
-                        </Button>
-                        <Button size="sm" className="gap-2" onClick={() => setMrOpen(true)}>
-                            <Plus size={16} /> New Request
-                        </Button>
-                    </div>
-                }
-            />
 
             <MaterialRequestDialog open={mrOpen} onOpenChange={setMrOpen} projectId={activeProjectId} />
             <PurchaseOrderDialog open={poOpen} onOpenChange={setPoOpen} projectId={activeProjectId} />
@@ -401,46 +455,23 @@ export default function SupplyChain() {
             <ProcurementTracePanel open={!!tracePo} onOpenChange={(o) => { if (!o) setTracePo(null) }} po={tracePo} projectId={activeProjectId} />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <div className="flex items-center justify-between mb-4">
-                    <TabsList>
-                        <TabsTrigger value="requests" className="gap-2">
-                            <Package size={14} /> Material Requests
-                        </TabsTrigger>
-                        <TabsTrigger value="orders" className="gap-2">
-                            <ShoppingCart size={14} /> Purchase Orders
-                        </TabsTrigger>
-                        <TabsTrigger value="inventory" className="gap-2">
-                            <Warehouse size={14} /> Inventory
-                        </TabsTrigger>
-                        <TabsTrigger value="transfers" className="gap-2">
-                            <ArrowRightLeft size={14} /> Transfers
-                        </TabsTrigger>
-                        <TabsTrigger value="spk" className="gap-2">
-                            <ClipboardList size={14} /> SPK / Opname
-                        </TabsTrigger>
-                        <TabsTrigger value="mtr" className="gap-2">
-                            <Truck size={14} /> MTR
-                        </TabsTrigger>
-                    </TabsList>
-
-                    {toolbarEnabled && (
-                        <div className="w-[640px] max-w-full">
-                            <ModuleListToolbar
-                                query={searchTerm}
-                                onQueryChange={setSearchTerm}
-                                queryPlaceholder={activeTab === 'orders' ? 'Search PO number, vendor, status...' : 'Search item, WBS, status...'}
-                                filterValue={statusFilter}
-                                onFilterChange={setStatusFilter}
-                                filterOptions={STATUS_FILTER_OPTIONS}
-                                sortValue={sortBy}
-                                onSortChange={setSortBy}
-                                sortOptions={activeTab === 'orders' ? ORDER_SORT_OPTIONS : REQUEST_SORT_OPTIONS}
-                                resultCount={toolbarResultCount}
-                                resultLabel={activeTab === 'orders' ? 'orders' : 'requests'}
-                            />
-                        </div>
-                    )}
-                </div>
+                {toolbarEnabled && (
+                    <div className="w-full max-w-[640px] mb-[var(--space-4)]">
+                        <ModuleListToolbar
+                            query={searchTerm}
+                            onQueryChange={setSearchTerm}
+                            queryPlaceholder={activeTab === 'orders' ? 'Search PO number, vendor, status...' : 'Search item, WBS, status...'}
+                            filterValue={statusFilter}
+                            onFilterChange={setStatusFilter}
+                            filterOptions={STATUS_FILTER_OPTIONS}
+                            sortValue={sortBy}
+                            onSortChange={setSortBy}
+                            sortOptions={activeTab === 'orders' ? ORDER_SORT_OPTIONS : REQUEST_SORT_OPTIONS}
+                            resultCount={toolbarResultCount}
+                            resultLabel={activeTab === 'orders' ? 'orders' : 'requests'}
+                        />
+                    </div>
+                )}
 
                 {/* --- MATERIAL REQUESTS --- */}
                 <TabsContent value="requests" className="space-y-4">
@@ -741,7 +772,7 @@ export default function SupplyChain() {
                 </TabsContent>
 
             </Tabs>
-        </div>
+        </PageShell>
     )
 }
 

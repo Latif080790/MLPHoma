@@ -26,7 +26,9 @@ import {
     XCircle,
     Clock,
 } from 'lucide-react'
-import { ModuleHeader } from '@/components/modules/ModuleHeader'
+// Enterprise patterns
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 import { useProjectStore } from '@/store/projectStore'
 import { dashboardService, type DashboardStats } from '@/services/dashboardService'
 import { toast } from 'sonner'
@@ -418,25 +420,50 @@ export default function PortfolioAnalytics() {
         )
     }
 
+    // SummaryStrip for portfolio
+    const portfolioSummary = agg ? [
+        { label: 'Projects', value: agg.count, status: 'neutral' as const },
+        { label: 'Avg CPI', value: agg.avgCpi !== null ? agg.avgCpi.toFixed(2) : '—', status: (agg.avgCpi !== null && agg.avgCpi >= 0.95 ? 'success' : 'danger') as 'success' | 'danger' },
+        { label: 'Avg SPI', value: agg.avgSpi !== null ? agg.avgSpi.toFixed(2) : '—', status: (agg.avgSpi !== null && agg.avgSpi >= 0.95 ? 'success' : 'warning') as 'success' | 'warning' },
+        { label: 'Critical', value: agg.criticalCount, status: (agg.criticalCount > 0 ? 'danger' : 'success') as 'danger' | 'success' },
+    ] : []
+
     return (
-        <div className="space-y-6">
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName="Portfolio"
+                    syncStatus="synced"
+                    healthItems={agg ? [
+                        {
+                            label: 'Critical',
+                            level: agg.criticalCount > 0 ? 'critical' : 'good',
+                            value: `${agg.criticalCount}`,
+                        },
+                    ] : []}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Portfolio Analytics"
+                    subtitle="Cross-project EVM comparison — CPI, SPI, PHI, budget & schedule health"
+                    primaryAction={{
+                        label: 'Refresh',
+                        icon: <RefreshCw className="h-3.5 w-3.5" />,
+                        onClick: () => { void load(false) },
+                    }}
+                    secondaryActions={[{
+                        label: exporting ? 'Exporting...' : 'Export PDF',
+                        icon: <Download className="h-3.5 w-3.5" />,
+                        onClick: handleExportPDF,
+                    }]}
+                />
+            }
+            summary={
+                portfolioSummary.length > 0 ? <SummaryStrip items={portfolioSummary} variant="chips" /> : undefined
+            }
+        >
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<BarChart3 size={18} />}
-                title="Portfolio Analytics"
-                description="Cross-project EVM comparison — CPI, SPI, PHI, budget & schedule health"
-                accent="fuchsia"
-                actions={
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => { void load(false) }} className="gap-2" aria-busy={bootstrapping}>
-                            <RefreshCw size={14} /> Refresh
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleExportPDF} disabled={exporting} className="gap-2" aria-busy={exporting}>
-                            <Download size={14} /> {exporting ? 'Exporting…' : 'Export PDF'}
-                        </Button>
-                    </div>
-                }
-            />
 
             <ModuleListToolbar
                 query={query}
@@ -697,6 +724,6 @@ export default function PortfolioAnalytics() {
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-amber-400" /> 0.85–0.99 — Watch</span>
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-red-500" /> &lt; 0.85 — Critical</span>
             </div>
-        </div>
+        </PageShell>
     )
 }

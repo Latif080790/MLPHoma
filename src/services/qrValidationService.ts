@@ -11,6 +11,49 @@ export interface QRPayload {
     signature?: string
 }
 
+// ── QR Validation Record (used by QRValidationBadge) ────────────────────────
+export interface QRValidationRecord {
+    validationHash: string
+    documentId: string
+    projectId: string
+    documentTitle: string
+    versionNumber: number
+    category: string
+    issuedBy: string
+    issuedAt: string
+    expiresAt: string | null
+    revokedAt: string | null
+    revokedBy: string | null
+}
+
+// Storage key for localStorage-backed QR records
+const STORAGE_KEY = 'mlphoma_qr_records'
+
+function loadRecords(): QRValidationRecord[] {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY)
+        return raw ? JSON.parse(raw) : []
+    } catch {
+        return []
+    }
+}
+
+function saveRecords(records: QRValidationRecord[]) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records))
+    } catch {
+        // ignore storage errors
+    }
+}
+
+function generateHash(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    const segments = [8, 4, 4, 12]
+    return segments
+        .map(len => Array.from({ length: len }, () => chars[Math.floor(Math.random() * chars.length)]).join(''))
+        .join('-')
+}
+
 export const qrValidationService = {
     /**
      * verifyScannedPayload
@@ -41,5 +84,79 @@ export const qrValidationService = {
         } catch (err) {
             return { valid: false, error: 'Invalid QR format' }
         }
-    }
+    },
+
+    /**
+     * getActiveQR
+     * Returns the active (non-revoked) QR record for a given document, or undefined.
+     */
+    getActiveQR(documentId: string): QRValidationRecord | undefined {
+        const records = loadRecords()
+        return records.find(r => r.documentId === documentId && !r.revokedAt)
+    },
+
+    /**
+     * generate
+     * Creates a new QR validation record for a document.
+     */
+    generate(params: {
+        documentId: string
+        projectId: string
+        documentTitle: string
+        versionNumber: number
+        category: string
+        issuedBy: string
+        expiryDays?: number
+    }): QRValidationRecord {
+        // Revoke any existing active record for this document
+        const records = loadRecords()
+        const updated = records.map(r =>
+            r.documentId === params.documentId && !r.revokedAt
+                ? { ...r, revokedAt: new Date().toISOString(), revokedBy: 'system-auto' }
+                : r
+        )
+
+        const newRecord: QRValidationRecord = {
+            validationHash: generateHash(),
+            documentId: params.documentId,
+            projectId: params.projectId,
+            documentTitle: params.documentTitle,
+            versionNumber: params.versionNumber,
+            category: params.category,
+            issuedBy: params.issuedBy,
+            issuedAt: new Date().toISOString(),
+            expiresAt: params.expiryDays && params.expiryDays > 0
+                ? new Date(Date.now() + params.expiryDays * 86_400_000).toISOString()
+                : null,
+            revokedAt: null,
+            revokedBy: null,
+        }
+
+        updated.push(newRecord)
+        saveRecords(updated)
+        return newRecord
+    },
+
+    /**
+     * revoke
+     * Revokes a QR validation record by its hash.
+     */
+    revoke(hash: string, revokedBy: string): void {
+        const records = loadRecords()
+        const updated = records.map(r =>
+            r.validationHash === hash
+                ? { ...r, revokedAt: new Date().toISOString(), revokedBy }
+                : r
+        )
+        saveRecords(updated)
+    },
+
+    /**
+     * getQRUrl
+     * Returns a deep-link URL for verifying a document by its validation hash.
+     */
+    getQRUrl(hash: string): string {
+        const base = typeof window !== 'undefined' ? window.location.origin : ''
+        return `${base}/verify?hash=${encodeURIComponent(hash)}`
+    },
 }

@@ -36,7 +36,7 @@ export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
     : 'U'
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 gap-4">
+    <header className="h-14 flex items-center justify-between px-4 lg:px-6 gap-4">
       {/* Left: Breadcrumbs & Context */}
       <div className="flex items-center min-w-0 flex-1">
         <AppBreadcrumbs projectName={projectName} />

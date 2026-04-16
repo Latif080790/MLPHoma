@@ -3,7 +3,9 @@ import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ModuleHeader } from '@/components/modules/ModuleHeader'
+// Enterprise patterns
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 import { AlertTriangle, Boxes, CheckCircle2, Info } from 'lucide-react'
 import { resourceService, ResourceUtilization } from '@/services/resourceService'
 import { toast } from 'sonner'
@@ -99,15 +101,42 @@ export default function PortfolioResources() {
         )
     }
 
+    const highCount = resources.filter(r => r.totalUsage >= 85).length
+    const medCount = resources.filter(r => r.totalUsage >= 60 && r.totalUsage < 85).length
+    const lowCount = resources.filter(r => r.totalUsage < 60).length
+    const resSummary = [
+        { label: 'Resources', value: resources.length, status: 'neutral' as const },
+        { label: 'High', value: highCount, status: (highCount > 0 ? 'danger' : 'success') as 'danger' | 'success' },
+        { label: 'Medium', value: medCount, status: (medCount > 0 ? 'warning' : 'neutral') as 'warning' | 'neutral' },
+        { label: 'Low', value: lowCount, status: 'success' as const },
+    ]
+
     return (
-        <div className="space-y-6">
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName="Portfolio"
+                    syncStatus="synced"
+                    healthItems={[
+                        {
+                            label: 'Bottleneck',
+                            level: highCount > 0 ? 'critical' : 'good',
+                            value: `${highCount}`,
+                        },
+                    ]}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Resource Portfolio Heatmap"
+                    subtitle="Consolidated view of equipment and labor utilization across all active projects"
+                />
+            }
+            summary={
+                <SummaryStrip items={resSummary} variant="chips" />
+            }
+        >
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<Boxes size={18} />}
-                title="Resource Portfolio Heatmap"
-                description="Consolidated view of equipment and labor utilization across all active projects."
-                accent="cyan"
-            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {resources.map((res, i) => (
@@ -178,6 +207,6 @@ export default function PortfolioResources() {
                     Consider reallocating idle assets from projects with {'<'}20% usage or procuring additional units to avoid schedule slips.
                 </div>
             </div>
-        </div>
+        </PageShell>
     )
 }

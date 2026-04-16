@@ -1,7 +1,6 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { ModuleHeader } from "@/components/modules/ModuleHeader"
 import { GitPullRequest, DollarSign, Clock, Plus, TrendingUp, Check, X, Loader2, AlertTriangle } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +20,10 @@ import type { ChangeOrderStatus } from "@/types/change-order"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
 import { Skeleton } from "@/components/common/LoadingSkeleton"
+
+// ── Enterprise Pattern Imports ──────────────────────────────────────────────
+import { PageShell } from '@/components/layouts'
+import { GlobalContextBar, WorkspaceHeader, ModeSwitch, SummaryStrip, AlertStrip } from '@/components/patterns'
 
 export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
@@ -140,20 +143,68 @@ export default function ChangeManagement() {
         )
     }
 
+    const pendingCount = orders.filter(o => o.status === 'PENDING_APPROVAL' || o.status === 'DRAFT').length
+
+    // ── ModeSwitch tab options ───────────────────────────────────────────────
+    const ccoTabOptions = [
+        { value: 'log', label: 'Change Log', icon: <GitPullRequest className="h-3.5 w-3.5" /> },
+        { value: 'analysis', label: 'Impact', icon: <TrendingUp className="h-3.5 w-3.5" /> },
+    ]
+
+    // ── SummaryStrip items ───────────────────────────────────────────────────
+    const ccoSummary = [
+        { label: 'Cost Impact', value: `Rp ${totalCostImpact.toLocaleString()}`, status: (totalCostImpact > 0 ? 'danger' : 'success') as 'danger' | 'success' },
+        { label: 'Schedule Slip', value: `${totalTimeImpact} days`, status: (totalTimeImpact > 0 ? 'danger' : 'success') as 'danger' | 'success' },
+        { label: 'Approved', value: `Rp ${approvedCost.toLocaleString()}`, status: 'warning' as const },
+        { label: 'Pending', value: `Rp ${pendingCost.toLocaleString()}`, status: (pendingCost > 0 ? 'info' : 'neutral') as 'info' | 'neutral' },
+    ]
+
     return (
-        <div className="space-y-6">
+        <PageShell
+            contextBar={
+                <GlobalContextBar
+                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    syncStatus="synced"
+                    healthItems={[
+                        {
+                            label: 'VOs',
+                            level: pendingCount > 0 ? 'warning' : 'good',
+                            value: `${orders.length}`,
+                        },
+                    ]}
+                />
+            }
+            navigation={
+                <ModeSwitch
+                    options={ccoTabOptions}
+                    value={activeTab}
+                    onChange={setActiveTab}
+                />
+            }
+            header={
+                <WorkspaceHeader
+                    title="Change Management (CCO)"
+                    subtitle="Track Contract Change Orders (CCO) & Variation Orders (VO)"
+                    primaryAction={{
+                        label: 'New Change Order',
+                        icon: <Plus className="h-3.5 w-3.5" />,
+                        onClick: () => setDialogOpen(true),
+                    }}
+                />
+            }
+            summary={
+                <SummaryStrip items={ccoSummary} variant="compact-cards" />
+            }
+            alert={
+                pendingCount > 0 ? (
+                    <AlertStrip
+                        severity="warning"
+                        message={`${pendingCount} change order${pendingCount > 1 ? 's' : ''} pending approval — Rp ${pendingCost.toLocaleString()} potential impact`}
+                    />
+                ) : undefined
+            }
+        >
             <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
-            <ModuleHeader
-                icon={<GitPullRequest size={18} />}
-                title="Change Management (CCO)"
-                description="Track Contract Change Orders (CCO) and Variation Orders (VO)."
-                accent="rose"
-                actions={
-                    <Button size="sm" className="gap-2" onClick={() => setDialogOpen(true)}>
-                        <Plus size={16} /> New Change Order
-                    </Button>
-                }
-            />
 
             <ChangeOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} projectId={activeProjectId!} />
 
@@ -174,14 +225,6 @@ export default function ChangeManagement() {
             )}
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="mb-4">
-                    <TabsTrigger value="log" className="gap-2">
-                        <GitPullRequest size={14} /> Change Log
-                    </TabsTrigger>
-                    <TabsTrigger value="analysis" className="gap-2">
-                        <TrendingUp size={14} /> Impact Analysis
-                    </TabsTrigger>
-                </TabsList>
 
                 <TabsContent value="log" className="space-y-4">
                     {orders.length === 0 ? (
@@ -426,6 +469,6 @@ export default function ChangeManagement() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </PageShell>
     )
 }
