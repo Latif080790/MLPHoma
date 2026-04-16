@@ -81,7 +81,7 @@ export const qrValidationService = {
             }
 
             return { valid: true, payload }
-        } catch (err) {
+        } catch {
             return { valid: false, error: 'Invalid QR format' }
         }
     },

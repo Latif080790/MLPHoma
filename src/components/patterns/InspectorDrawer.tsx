@@ -127,7 +127,7 @@ function InspectorContent({
               {tab.icon}
               {tab.label}
               {typeof tab.badge === 'number' && tab.badge > 0 && (
-                <span className="ml-0.5 text-[10px] bg-muted px-1 rounded-full">
+                <span className="ml-0.5 text-xs bg-muted px-1 rounded-full">
                   {tab.badge}
                 </span>
               )}

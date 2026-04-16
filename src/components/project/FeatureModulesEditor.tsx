@@ -91,7 +91,7 @@ export function FeatureModulesEditor({ config, onUpdate }: FeatureModulesEditorP
             />
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border-emerald-200">
+            <Badge variant="outline" className="text-xs font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border-emerald-200">
               <Zap className="h-3 w-3 mr-1 fill-emerald-500 text-emerald-500" /> Live Sync
             </Badge>
           </div>

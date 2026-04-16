@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ResourcePlan.tsx
  * Resource Plan module â€” Volume kebutuhan resource dari AHSP Ã— volume RAP.
  *
@@ -451,7 +451,7 @@ export default function ResourcePlan() {
               </span>
             </CardTitle>
             <div className="flex items-center gap-3">
-              <div className="flex bg-slate-100 dark:bg-slate-800 rounded p-0.5 text-[10px] font-semibold">
+              <div className="flex bg-slate-100 dark:bg-slate-800 rounded p-0.5 text-xs font-semibold">
                 <button
                   onClick={() => setTimePeriod('day')}
                   className={`px-2 py-0.5 rounded-sm transition-colors ${timePeriod === 'day' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-700 dark:text-indigo-300' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
@@ -490,7 +490,7 @@ export default function ResourcePlan() {
                       onClick={() => setSelectedMonth(prev => prev === m.month ? null : m.month)}
                     >
                       {/* Hover Tooltip (Totals) */}
-                      <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none bg-slate-800 text-white text-[10px] px-2 py-1 rounded shadow-lg">
+                      <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none bg-slate-800 text-white text-xs px-2 py-1 rounded shadow-lg">
                         <div className="font-bold">{m.label}</div>
                         <div>{formatIDR(m.total)}</div>
                       </div>
@@ -517,7 +517,7 @@ export default function ResourcePlan() {
 
                       {/* X-axis Month Label */}
                       <div
-                        className={`absolute top-full mt-2 left-1/2 text-[10px] font-mono whitespace-nowrap origin-top-left -rotate-45 ${isSelected ? 'font-bold text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}
+                        className={`absolute top-full mt-2 left-1/2 text-xs font-mono whitespace-nowrap origin-top-left -rotate-45 ${isSelected ? 'font-bold text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}
                       >
                         {m.label}
                       </div>

@@ -369,7 +369,7 @@ export function computeArrivalScheduleWithTrace(
                 b.total += costPerDay
 
                 // Only add trace once per item per bucket to avoid trace explosion if spanning many days
-                let traceItem = b.traces.find(t => t.rapItemId === rapItem.id && t.resourceName === resource.name)
+                const traceItem = b.traces.find(t => t.rapItemId === rapItem.id && t.resourceName === resource.name)
                 if (traceItem) {
                     traceItem.costContrib += costPerDay
                     traceItem.volumeContrib += volPerDay

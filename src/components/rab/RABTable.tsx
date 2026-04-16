@@ -1782,7 +1782,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                                         })}
                                         <div className="flex items-center justify-end px-4 py-2 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700">
                                           <span className="text-xs font-bold uppercase tracking-wide text-slate-500 mr-3">Harga Satuan Analisa</span>
-                                          <span className="text-[12px] font-mono font-black text-slate-900 dark:text-white">{formatIDR(runningTotal)}</span>
+                                          <span className="text-xs font-mono font-black text-slate-900 dark:text-white">{formatIDR(runningTotal)}</span>
                                         </div>
                                       </div>
                                     )
@@ -1925,7 +1925,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                             <button
                               type="button"
                               onClick={() => updateItem(projectId, item.id, { is_domestic: !item.is_domestic })}
-                              className={`h-6 px-1.5 rounded text-[10px] font-black transition-all ${item.is_domestic !== false ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}
+                              className={`h-6 px-1.5 rounded text-xs font-black transition-all ${item.is_domestic !== false ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}
                               title={item.is_domestic !== false ? 'Domestic Content' : 'Imported Content'}
                             >
                               {item.is_domestic !== false ? 'DOM' : 'IMP'}
@@ -1939,7 +1939,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                               onChange={e => updateItem(projectId, item.id, { tkdn_percentage: parseFloat(e.target.value) || 0 })}
                               className="h-7 w-14 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-slate-200 focus:border-blue-500 shadow-none text-slate-500 px-1"
                             />
-                            <span className="text-[10px] text-slate-400 font-mono">%</span>
+                            <span className="text-xs text-slate-400 font-mono">%</span>
                           </div>
                         </TableCell>}
                         {isColVisible('cost_material') && <TableCell className="w-[110px] bg-blue-50/10 py-2.5 border-l-2 border-blue-100">

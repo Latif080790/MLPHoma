@@ -226,7 +226,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                                 <Camera size={10} /> Foto Evidence
                             </label>
                             <label className="flex items-center justify-center w-full h-8 mt-1 border border-dashed border-slate-300 rounded cursor-pointer hover:bg-slate-50 transition-colors">
-                                <span className="text-[10px] text-slate-400 font-bold">{photoCount > 0 ? `${photoCount} Photos Loaded` : 'Tap to Upload'}</span>
+                                <span className="text-xs text-slate-400 font-bold">{photoCount > 0 ? `${photoCount} Photos Loaded` : 'Tap to Upload'}</span>
                                 <input type="file" multiple accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                             </label>
                         </div>
@@ -453,8 +453,8 @@ export function DailyProgressBoard() {
                             {/* Note: locationValid is a state from TaskCard. For a board-level badge,
                                     it would typically come from a global state or be determined differently.
                                     Implementing as per instruction, assuming a global context for it. */}
-                            <Badge variant="outline" className={false ? "text-green-600 border-green-200" : "text-slate-400"}>
-                                <MapPin className="w-3 h-3 mr-1" /> {false ? "Geofence Secured" : "GPS Required"}
+                            <Badge variant="outline" className="text-slate-400">
+                                <MapPin className="w-3 h-3 mr-1" /> GPS Required
                             </Badge>
                         </div>
                         {report && report.avgProgressGain > 0 && (

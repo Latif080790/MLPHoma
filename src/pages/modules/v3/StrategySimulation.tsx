@@ -202,7 +202,7 @@ export default function StrategySimulation() {
                                 <Input type="number" value={delay} onChange={(e) => updateDelay(Number(e.target.value || 0))} className="h-8 text-center font-mono text-xs border-none bg-white shadow-inner" />
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateDelay(delay + 1)}>+</Button>
                             </div>
-                            <p className="text-[10px] text-slate-400 italic font-medium leading-tight">Simulates permit lags or material procurement bottlenecks.</p>
+                            <p className="text-xs text-slate-400 italic font-medium leading-tight">Simulates permit lags or material procurement bottlenecks.</p>
                         </div>
 
                         <div className="space-y-4 bg-slate-50/50 dark:bg-neutral-900/30 p-4 rounded-xl border border-slate-100 dark:border-neutral-800">
@@ -222,7 +222,7 @@ export default function StrategySimulation() {
                                 <Input type="number" value={resourceShift} onChange={(e) => updateResourceShift(Number(e.target.value || 0))} className="h-8 text-center font-mono text-xs border-none bg-white shadow-inner" />
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateResourceShift(resourceShift + 1)}>+</Button>
                             </div>
-                            <p className="text-[10px] text-slate-400 italic font-medium leading-tight">Simulates shifting labor to other emergency priority sites.</p>
+                            <p className="text-xs text-slate-400 italic font-medium leading-tight">Simulates shifting labor to other emergency priority sites.</p>
                         </div>
 
                         <div className="pt-2 flex gap-2">
@@ -290,7 +290,7 @@ export default function StrategySimulation() {
                                 <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="p-6 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-1 shadow-inner group transition-all hover:bg-white hover:shadow-md">
-                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingDown size={12} /> Schedule Impact (Avg SPI)</div>
+                                            <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingDown size={12} /> Schedule Impact (Avg SPI)</div>
                                             <div className="flex items-center gap-4">
                                                 <span className="text-3xl font-mono font-black text-slate-300 line-through decoration-slate-400/30">{result.originalAvgSpi.toFixed(2)}</span>
                                                 <span className="text-4xl font-mono font-black text-red-600 drop-shadow-sm">{result.simulatedAvgSpi.toFixed(2)}</span>
@@ -300,7 +300,7 @@ export default function StrategySimulation() {
                                             </div>
                                         </div>
                                         <div className="p-6 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-1 shadow-inner group transition-all hover:bg-white hover:shadow-md">
-                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingUp size={12} /> Liquidity Gap (M)</div>
+                                            <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingUp size={12} /> Liquidity Gap (M)</div>
                                             <div className="flex items-center gap-4">
                                                 <span className="text-3xl font-mono font-black text-slate-300 line-through decoration-slate-400/30">{Math.round(result.originalCashflow)}M</span>
                                                 <span className="text-4xl font-mono font-black text-emerald-600 drop-shadow-sm">{Math.round(result.simulatedCashflow)}M</span>
@@ -336,7 +336,7 @@ export default function StrategySimulation() {
                     {/* HISTORY PANEL */}
                     <Card className="border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden max-h-[300px]">
                         <CardHeader className="pb-3 flex-shrink-0 border-b">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center justify-between">
+                            <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 flex items-center justify-between">
                                 Simulation History
                                 <History size={12} />
                             </CardTitle>
@@ -354,11 +354,11 @@ export default function StrategySimulation() {
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center gap-2 mb-0.5">
                                                         <span className="font-bold text-sm text-slate-800 truncate">{sim.name}</span>
-                                                        <Badge variant="outline" className="text-[9px] px-1 h-3.5 border-slate-200 text-slate-500 font-mono">
+                                                        <Badge variant="outline" className="text-xs px-1 h-3.5 border-slate-200 text-slate-500 font-mono">
                                                             {sim.result.impactSeverity}
                                                         </Badge>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium">
+                                                    <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
                                                         <span>{format(new Date(sim.created_at), 'dd MMM HH:mm')}</span>
                                                         <span>•</span>
                                                         <span>Delay: {sim.params.delay}d</span>
@@ -407,11 +407,11 @@ export default function StrategySimulation() {
                             />
                         </div>
                         <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
-                            <div className="flex justify-between text-[11px] font-bold">
+                            <div className="flex justify-between text-xs font-bold">
                                 <span>SIMULATED SPI:</span>
                                 <span className="text-red-600 font-mono">{result?.simulatedAvgSpi.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-[11px] font-bold">
+                            <div className="flex justify-between text-xs font-bold">
                                 <span>CASHFLOW IMPACT:</span>
                                 <span className="text-emerald-600 font-mono">{result ? Math.round(result.simulatedCashflow) : 0}M</span>
                             </div>

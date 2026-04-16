@@ -966,7 +966,7 @@ export default function GanttChart({
       <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-indigo-50/80 via-white to-rose-50/60 dark:from-neutral-800/80 dark:via-neutral-900 dark:to-neutral-800/80">
         <div>
           <div className="text-base font-bold tracking-tight text-neutral-800 dark:text-neutral-100">Project Schedule</div>
-          <div className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">Virtualized Gantt · Canvas Connectors · CPM Engine</div>
+          <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Virtualized Gantt · Canvas Connectors · CPM Engine</div>
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -1007,35 +1007,35 @@ export default function GanttChart({
       {/* Performance controls + grouping */}
       <div className="px-5 py-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/60 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-3 flex-wrap">
-          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
+          <label className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
             <input type="checkbox" checked={performanceMode} onChange={(e) => setPerformanceMode(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
             Perf Mode
           </label>
-          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
+          <label className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
             <input type="checkbox" checked={groupByWBS} onChange={(e) => setGroupByWBS(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
             Group WBS
           </label>
-          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
+          <label className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
             <input type="checkbox" checked={disableShadows} onChange={(e) => setDisableShadows(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
             No Shadows
           </label>
-          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
+          <label className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
             <input type="checkbox" checked={disableTooltipsWhileInteracting} onChange={(e) => setDisableTooltipsWhileInteracting(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
             No Scroll Tips
           </label>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <label className="inline-flex items-center gap-1 text-[11px] text-neutral-400">
+          <label className="inline-flex items-center gap-1 text-xs text-neutral-400">
             Tile
-            <input type="number" className="w-14 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-[11px] text-center" value={tileSizeDays} onChange={(e) => setTileSizeDays(Math.max(10, Number(e.target.value)))} />
+            <input type="number" className="w-14 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-xs text-center" value={tileSizeDays} onChange={(e) => setTileSizeDays(Math.max(10, Number(e.target.value)))} />
           </label>
-          <label className="inline-flex items-center gap-1 text-[11px] text-neutral-400">
+          <label className="inline-flex items-center gap-1 text-xs text-neutral-400">
             Conn
-            <input type="number" className="w-14 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-[11px] text-center" value={connectorRowThreshold} onChange={(e) => setConnectorRowThreshold(Math.max(1, Number(e.target.value)))} />
+            <input type="number" className="w-14 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-xs text-center" value={connectorRowThreshold} onChange={(e) => setConnectorRowThreshold(Math.max(1, Number(e.target.value)))} />
           </label>
           <button
-            className="rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1 text-[11px] font-medium text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm"
+            className="rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm"
             onClick={async () => {
               try {
                 await runPerfAnalyze(8000, sampleMs)
@@ -1057,12 +1057,12 @@ export default function GanttChart({
           <div className="sticky top-0 z-30 backdrop-blur-lg bg-white/90 dark:bg-neutral-900/90 shadow-sm">
             {/* Month row */}
             <div className="flex items-center border-b border-neutral-200 dark:border-neutral-700" style={{ height: 36 }}>
-              <div className="flex items-center justify-start px-4 border-r border-neutral-200 dark:border-neutral-700 text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500" style={{ width: leftColWidth }}>
+              <div className="flex items-center justify-start px-4 border-r border-neutral-200 dark:border-neutral-700 text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500" style={{ width: leftColWidth }}>
                 Activity
               </div>
               <div className="relative" style={{ width: (endDay - startDay) * pxPerDay }}>
                 {monthSpans.map((m, i) => (
-                  <div key={i} className="absolute top-0 h-full px-3 text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center border-r border-neutral-100 dark:border-neutral-800" style={{ left: (m.startIndex - startDay) * pxPerDay, width: m.width }}>
+                  <div key={i} className="absolute top-0 h-full px-3 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center border-r border-neutral-100 dark:border-neutral-800" style={{ left: (m.startIndex - startDay) * pxPerDay, width: m.width }}>
                     <div className="truncate">{m.label}</div>
                   </div>
                 ))}
@@ -1071,7 +1071,7 @@ export default function GanttChart({
 
             {/* Day/Week row */}
             <div className="flex items-center border-b border-neutral-200 dark:border-neutral-700" style={{ height: 28 }}>
-              <div className="flex items-center px-4 border-r border-neutral-200 dark:border-neutral-700 text-[10px] font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider" style={{ width: leftColWidth }}>
+              <div className="flex items-center px-4 border-r border-neutral-200 dark:border-neutral-700 text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider" style={{ width: leftColWidth }}>
                 Duration
               </div>
 
@@ -1164,14 +1164,14 @@ export default function GanttChart({
                         style={{ top: 0, width: leftColWidth }}
                       >
                         <button
-                          className="flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors"
+                          className="flex items-center justify-center w-5 h-5 rounded text-xs font-bold border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors"
                           onClick={() => setCollapsedGroups((s) => ({ ...s, [r.groupId]: !s[r.groupId] }))}
                         >
                           {collapsed ? '▶' : '▼'}
                         </button>
                         <div className="min-w-0">
                           <div className="truncate text-[12px] font-bold text-neutral-700 dark:text-neutral-200 uppercase tracking-wide">{r.label}</div>
-                          <div className="text-[10px] text-neutral-400">{r.count} items</div>
+                          <div className="text-xs text-neutral-400">{r.count} items</div>
                         </div>
                       </div>
                     </div>
@@ -1250,7 +1250,7 @@ export default function GanttChart({
                       }}
                     />
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-2">
-                      <span className="text-[10px] font-bold text-white drop-shadow-sm truncate">{Math.round(t.progress ?? 0)}%</span>
+                      <span className="text-xs font-bold text-white drop-shadow-sm truncate">{Math.round(t.progress ?? 0)}%</span>
                     </div>
                   </div>
                 )
@@ -1273,11 +1273,11 @@ export default function GanttChart({
                           <div className="min-w-0 flex-1">
                             <div className="truncate text-[12px] font-semibold text-neutral-700 dark:text-neutral-200 leading-tight">{t.name}</div>
                             {t.assignedResources && t.assignedResources.length > 0 && (
-                              <div className="text-[10px] text-indigo-500 dark:text-indigo-400 font-medium truncate">
+                              <div className="text-xs text-indigo-500 dark:text-indigo-400 font-medium truncate">
                                 {t.assignedResources.join(', ')}
                               </div>
                             )}
-                            <div className="text-[10px] text-neutral-400 truncate" style={{ maxWidth: leftColWidth - 60 }}>
+                            <div className="text-xs text-neutral-400 truncate" style={{ maxWidth: leftColWidth - 60 }}>
                               {isMilestone ? '◆ ' : ''}{t.startDate}{!isMilestone ? ` → ${t.endDate}` : ''}
                             </div>
                           </div>
