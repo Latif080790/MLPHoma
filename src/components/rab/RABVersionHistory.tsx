@@ -211,11 +211,11 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                           <span className="inline-flex items-center justify-center h-7 min-w-[40px] rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black tracking-wide px-2 shrink-0">
                             v{version.version}
                           </span>
-                          <Badge className={`text-[10px] font-semibold uppercase tracking-wider border ${getChangeTypeStyle(version.changeType)}`}>
+                          <Badge className={`text-xs font-semibold uppercase tracking-wider border ${getChangeTypeStyle(version.changeType)}`}>
                             {version.changeType.replace('_', ' ')}
                           </Badge>
                           {version.status === 'published' && (
-                            <Badge variant="default" className="ml-auto bg-emerald-600 text-[10px] gap-1 shrink-0">
+                            <Badge variant="default" className="ml-auto bg-emerald-600 text-xs gap-1 shrink-0">
                               <Check className="h-2.5 w-2.5" />
                               Published
                             </Badge>
@@ -368,7 +368,7 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                                 <div className="space-y-1.5 text-xs">
                                   {mod.changes.map((change, cidx) => (
                                     <div key={cidx} className="flex items-center gap-2 text-blue-700 dark:text-blue-300 flex-wrap">
-                                      <Badge variant="outline" className="text-[10px] font-bold uppercase">
+                                      <Badge variant="outline" className="text-xs font-bold uppercase">
                                         {change.field}
                                       </Badge>
                                       <span className="line-through text-red-500 dark:text-red-400 font-mono">
@@ -491,7 +491,7 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                               </div>
                               <div className="text-slate-600 dark:text-slate-400 mb-1">{change.changeDescription}</div>
                               <div className="flex items-center gap-2 text-slate-500 flex-wrap">
-                                <Badge variant="outline" className="text-[10px] font-bold uppercase">{change.field}</Badge>
+                                <Badge variant="outline" className="text-xs font-bold uppercase">{change.field}</Badge>
                                 {change.oldValue !== undefined && (
                                   <>
                                     <span className="line-through font-mono text-red-500 dark:text-red-400">{String(change.oldValue ?? '')}</span>

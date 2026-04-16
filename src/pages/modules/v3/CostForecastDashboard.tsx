@@ -84,13 +84,13 @@ export default function CostForecastDashboard() {
                         <TrendingUp size={48} className="text-indigo-600" />
                     </div>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-[10px] font-black uppercase text-slate-400">Standard EAC</CardTitle>
+                        <CardTitle className="text-xs font-black uppercase text-slate-400">Standard EAC</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-2xl font-mono font-black text-indigo-700">
                             {projections?.eacStandard.toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-slate-400 mt-1 font-bold">Based on current CPI efficiency</p>
+                        <p className="text-xs text-slate-400 mt-1 font-bold">Based on current CPI efficiency</p>
                     </CardContent>
                 </Card>
 
@@ -99,13 +99,13 @@ export default function CostForecastDashboard() {
                         <FileWarning size={48} className="text-amber-600" />
                     </div>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-[10px] font-black uppercase text-slate-400">Conservative EAC</CardTitle>
+                        <CardTitle className="text-xs font-black uppercase text-slate-400">Conservative EAC</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-2xl font-mono font-black text-amber-700">
                             {projections?.eacConservative.toLocaleString()}
                         </p>
-                        <p className="text-[10px] text-slate-400 mt-1 font-bold">CPI x SPI weighted penalty</p>
+                        <p className="text-xs text-slate-400 mt-1 font-bold">CPI x SPI weighted penalty</p>
                     </CardContent>
                 </Card>
 
@@ -114,13 +114,13 @@ export default function CostForecastDashboard() {
                         <CalendarClock size={48} className="text-slate-600" />
                     </div>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-[10px] font-black uppercase text-slate-400">Forecasted Finish</CardTitle>
+                        <CardTitle className="text-xs font-black uppercase text-slate-400">Forecasted Finish</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-2xl font-mono font-black text-slate-700">
                             {projections?.projectedCompletion || '---'}
                         </p>
-                        <p className="text-[10px] text-slate-400 mt-1 font-bold">Based on current task velocity</p>
+                        <p className="text-xs text-slate-400 mt-1 font-bold">Based on current task velocity</p>
                     </CardContent>
                 </Card>
 
@@ -129,7 +129,7 @@ export default function CostForecastDashboard() {
                         <Activity size={48} className={projections?.isRedAlert ? 'text-red-600' : 'text-emerald-600'} />
                     </div>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-[10px] font-black uppercase text-slate-400">Health Alert</CardTitle>
+                        <CardTitle className="text-xs font-black uppercase text-slate-400">Health Alert</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {projections?.isRedAlert ? (
@@ -143,7 +143,7 @@ export default function CostForecastDashboard() {
                                 <span className="text-lg font-black">NORMAL</span>
                             </div>
                         )}
-                        <p className="text-[10px] text-slate-400 mt-1 font-bold">Governance Status</p>
+                        <p className="text-xs text-slate-400 mt-1 font-bold">Governance Status</p>
                     </CardContent>
                 </Card>
             </div>
@@ -155,9 +155,9 @@ export default function CostForecastDashboard() {
                         <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center justify-between">
                              EVM Performance history
                              <div className="flex gap-2">
-                                <Badge variant="outline" className="text-[9px] border-amber-500 text-amber-600">PV</Badge>
-                                <Badge variant="outline" className="text-[9px] border-emerald-500 text-emerald-600">EV</Badge>
-                                <Badge variant="outline" className="text-[9px] border-slate-500 text-slate-600">AC</Badge>
+                                <Badge variant="outline" className="text-xs border-amber-500 text-amber-600">PV</Badge>
+                                <Badge variant="outline" className="text-xs border-emerald-500 text-emerald-600">EV</Badge>
+                                <Badge variant="outline" className="text-xs border-slate-500 text-slate-600">AC</Badge>
                              </div>
                         </CardTitle>
                     </CardHeader>
@@ -204,7 +204,7 @@ export default function CostForecastDashboard() {
 
                 <Card className="lg:col-span-4 border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
                     <CardHeader className="pb-3 border-b">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                        <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
                              <History size={12} /> Predictive Alerts
                         </CardTitle>
                     </CardHeader>
@@ -215,10 +215,10 @@ export default function CostForecastDashboard() {
                                     <div className="flex items-center gap-2 text-red-700 font-black text-xs">
                                         <AlertTriangle size={14} /> SCHEDULE SLIPPAGE DETECTED
                                     </div>
-                                    <p className="text-[11px] text-red-600/80 leading-relaxed font-semibold">
+                                    <p className="text-xs text-red-600/80 leading-relaxed font-semibold">
                                         {projections.alertReason}
                                     </p>
-                                    <Button size="sm" variant="outline" className="w-full text-[10px] h-7 bg-white border-red-200 text-red-700 font-bold hover:bg-red-50">
+                                    <Button size="sm" variant="outline" className="w-full text-xs h-7 bg-white border-red-200 text-red-700 font-bold hover:bg-red-50">
                                         Suggest Mitigation Plan
                                     </Button>
                                 </div>
@@ -232,18 +232,18 @@ export default function CostForecastDashboard() {
                             {/* Summary Insights */}
                             <div className="p-4 space-y-4">
                                 <div className="space-y-1.5">
-                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Variance at Completion (VAC)</div>
+                                    <div className="text-xs font-black text-slate-400 uppercase tracking-widest">Variance at Completion (VAC)</div>
                                     <div className={`text-sm font-mono font-bold ${projections?.varianceAtCompletion && projections.varianceAtCompletion < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                                         {projections?.varianceAtCompletion.toLocaleString()}
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Risk Confidence</div>
+                                    <div className="text-xs font-black text-slate-400 uppercase tracking-widest">Risk Confidence</div>
                                     <div className="flex items-center gap-2">
                                         <div className="h-1.5 flex-1 bg-slate-100 rounded-full overflow-hidden">
                                             <div className="h-full bg-indigo-500 w-[85%]" />
                                         </div>
-                                        <span className="text-[10px] font-black text-slate-500">85%</span>
+                                        <span className="text-xs font-black text-slate-500">85%</span>
                                     </div>
                                 </div>
                             </div>

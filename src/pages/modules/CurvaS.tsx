@@ -283,7 +283,7 @@ export default function CurvaSPage() {
                 <p className="text-xs font-semibold uppercase text-neutral-500 tracking-wider">SPI (Schedule)</p>
                 <div className="flex items-end gap-2 mt-1">
                   <p className={`text-2xl font-bold ${analysis.metrics.spi < 1 ? 'text-red-600' : 'text-green-600'}`}>{analysis.metrics.spi.toFixed(2)}</p>
-                  <Badge variant="outline" className={`h-5 text-[10px] ${analysis.metrics.spi < 1 ? 'text-red-600 border-red-200 bg-red-50' : 'text-green-600 border-green-200 bg-green-50'}`}>
+                  <Badge variant="outline" className={`h-5 text-xs ${analysis.metrics.spi < 1 ? 'text-red-600 border-red-200 bg-red-50' : 'text-green-600 border-green-200 bg-green-50'}`}>
                     {analysis.metrics.spi < 1 ? 'LATE' : 'ON-TRACK'}
                   </Badge>
                 </div>
@@ -294,7 +294,7 @@ export default function CurvaSPage() {
                 <p className="text-xs font-semibold uppercase text-neutral-500 tracking-wider">CPI (Cost)</p>
                 <div className="flex items-end gap-2 mt-1">
                   <p className={`text-2xl font-bold ${analysis.metrics.cpi < 1 ? 'text-red-600' : 'text-green-600'}`}>{analysis.metrics.cpi.toFixed(2)}</p>
-                  <Badge variant="outline" className={`h-5 text-[10px] ${analysis.metrics.cpi < 1 ? 'text-red-600 border-red-200 bg-red-50' : 'text-green-600 border-green-200 bg-green-50'}`}>
+                  <Badge variant="outline" className={`h-5 text-xs ${analysis.metrics.cpi < 1 ? 'text-red-600 border-red-200 bg-red-50' : 'text-green-600 border-green-200 bg-green-50'}`}>
                     {analysis.metrics.cpi < 1 ? 'OVER-BUDGET' : 'UNDER-BUDGET'}
                   </Badge>
                 </div>

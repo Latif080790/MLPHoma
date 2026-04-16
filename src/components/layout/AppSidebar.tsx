@@ -117,7 +117,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                         <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                             MLPHoma
                         </span>
-                        <span className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
+                        <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
                             Construction Platform
                         </span>
                     </div>
@@ -131,7 +131,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                         {/* Group Label */}
                         {!collapsed && (
                             <div className="mb-1 px-2 pb-1 border-b border-slate-100 dark:border-slate-800">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                                     {group.label}
                                 </span>
                             </div>
@@ -145,7 +145,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                                         key={item.path}
                                         to={item.path}
                                         className={cn(
-                                            "group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors relative overflow-hidden",
+                                            "group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors relative overflow-hidden",
                                             isActive
                                                 ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
                                                 : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
@@ -168,7 +168,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                                             </span>
                                         )}
                                         {!collapsed && item.path === '/' && pendingApprovals > 0 && (
-                                            <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white leading-none">
+                                            <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white leading-none">
                                                 {pendingApprovals}
                                             </span>
                                         )}

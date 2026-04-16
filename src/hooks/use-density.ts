@@ -65,7 +65,9 @@ export function useDensity(options: UseDensityOptions = {}): UseDensityReturn {
       if (stored && ['compact', 'default', 'comfortable'].includes(stored)) {
         return stored as DensityMode;
       }
-    } catch {}
+    } catch {
+      // ignore
+    }
     return defaultDensity;
   });
 
@@ -73,7 +75,9 @@ export function useDensity(options: UseDensityOptions = {}): UseDensityReturn {
     setDensityState(d);
     try {
       localStorage.setItem(getStorageKey(moduleKey), d);
-    } catch {}
+    } catch {
+      // ignore
+    }
   }, [moduleKey]);
 
   return useMemo(() => ({

@@ -182,7 +182,7 @@ export function SmartToolbar({
           <Filter className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Filters</span>
           {activeFilterCount > 0 && (
-            <Badge className="h-4 min-w-[16px] px-1 text-[10px] bg-primary text-primary-foreground">
+            <Badge className="h-4 min-w-[16px] px-1 text-xs bg-primary text-primary-foreground">
               {activeFilterCount}
             </Badge>
           )}

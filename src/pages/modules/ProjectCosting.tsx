@@ -93,34 +93,36 @@ export default function ProjectCosting() {
   const rabCount = activeProjectId ? (rabByProj[activeProjectId]?.length ?? 0) : 0
   const rapCount = activeProjectId ? rapItems.filter(i => i.project_id === activeProjectId).length : 0
 
-  const stepCounts: Record<CostingStep, number | null> = {
-    ahsp: ahspCount,
-    wbs: wbsCount,
-    rab: rabCount,
-    rap: rapCount,
-    resource: null,
-  }
-
-  const workflowSteps = useMemo(() => STEP_CONFIG.map(step => {
-    const count = stepCounts[step.id]
-    const hasData = count === null || count > 0
-    const isActive = activeStep === step.id
-
-    // Determine step status
-    let status: 'inactive' | 'active' | 'complete' | 'warning' = 'inactive'
-    if (isActive) status = 'active'
-    else if (!hasData && step.id !== 'resource') status = 'warning'
-    else if (hasData && count !== null && count > 0) status = 'complete'
-
-    return {
-      id: step.id,
-      title: step.label,
-      description: count !== null ? `${count} items` : step.description,
-      status,
-      icon: step.icon,
-      count: count ?? undefined,
+  const workflowSteps = useMemo(() => {
+    const counts: Record<CostingStep, number | null> = {
+      ahsp: ahspCount,
+      wbs: wbsCount,
+      rab: rabCount,
+      rap: rapCount,
+      resource: null,
     }
-  }), [activeStep, ahspCount, wbsCount, rabCount, rapCount])
+
+    return STEP_CONFIG.map(step => {
+      const count = counts[step.id]
+      const hasData = count === null || count > 0
+      const isActive = activeStep === step.id
+
+      // Determine step status
+      let status: 'inactive' | 'active' | 'complete' | 'warning' = 'inactive'
+      if (isActive) status = 'active'
+      else if (!hasData && step.id !== 'resource') status = 'warning'
+      else if (hasData && count !== null && count > 0) status = 'complete'
+
+      return {
+        id: step.id,
+        title: step.label,
+        description: count !== null ? `${count} items` : step.description,
+        status,
+        icon: step.icon,
+        count: count ?? undefined,
+      }
+    })
+  }, [activeStep, ahspCount, wbsCount, rabCount, rapCount])
 
   // ─── Summary Strip KPIs ───────────────────────────────────────────────────
   const summaryItems = useMemo(() => [
