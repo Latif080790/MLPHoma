@@ -44,7 +44,9 @@ export interface TaskEditorProps {
  * Derive end date given a start date (YYYY-MM-DD) and duration days
  */
 function calculateEndDate(startDate: string, duration: number): string {
+  if (!startDate) return ''
   const end = new Date(startDate)
+  if (Number.isNaN(end.getTime())) return ''
   end.setDate(end.getDate() + Math.max(1, duration) - 1)
   return end.toISOString().split('T')[0]
 }
@@ -427,8 +429,8 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
 
                   <div>
                     <Label>End Date</Label>
-                    <div className="rounded-md border p-2 text-sm dark:border-neutral-800">
-                      {calculateEndDate(form.startDate, form.duration)}
+                    <div className="rounded-md border p-2 text-sm dark:border-neutral-800 bg-slate-50 dark:bg-slate-900/50 font-mono">
+                      {calculateEndDate(form.startDate, form.duration) || '—'}
                     </div>
                   </div>
                 </div>
