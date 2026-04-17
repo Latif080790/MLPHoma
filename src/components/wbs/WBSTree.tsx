@@ -202,11 +202,11 @@ function WBSTreeItem({
           onClick={() => onSelect(item)}
         >
           {renderItem ? renderItem(item) : (
-            <div className="flex items-center gap-2 min-w-0">
-              <span className={codeClass}>
+            <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+              <span className={`${codeClass} shrink-0`}>
                 {item.code}
               </span>
-              <span className={`${nameClass} truncate`}>
+              <span className={`${nameClass} truncate min-w-0 flex-1`}>
                 {item.name}
               </span>
               {/* Budget badge (Task 18) */}

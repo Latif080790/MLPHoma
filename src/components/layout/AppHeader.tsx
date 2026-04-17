@@ -14,7 +14,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { PresenceAvatars } from "@/components/common/PresenceAvatars"
+import { usePresence } from "@/hooks/usePresence"
+import { useProjectStore } from "@/store/projectStore"
 
 export interface AppHeaderProps {
   projectName?: string
@@ -23,6 +26,8 @@ export interface AppHeaderProps {
 
 export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
   const { user, profile, signOut } = useAuthStore()
+  const activeProjectId = useProjectStore((s) => s.activeProjectId)
+  const { peers } = usePresence(activeProjectId)
   const navigate = useNavigate()
 
   const handleSignOut = async () => {
@@ -44,6 +49,14 @@ export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        {/* Real-time Presence */}
+        {activeProjectId && peers.length > 0 && (
+          <div className="flex items-center gap-3 mr-2 animate-in fade-in slide-in-from-right-4 duration-500">
+            <PresenceAvatars users={peers} />
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
+          </div>
+        )}
+
         {/* P1.2.2: Cmd+K palette trigger */}
         <button
           onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}

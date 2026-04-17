@@ -12,7 +12,8 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DataTable } from '@/components/shared/DataTable'
+import { ColumnDef } from '@tanstack/react-table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { useProjectStore } from '@/store/projectStore'
 import {
@@ -207,61 +208,76 @@ export function OverheadCostPanel() {
                 <div className="col-span-8">
                     <Card className="h-full">
                         <CardContent className="p-0">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-slate-50/50 dark:bg-slate-900/50 text-xs">
-                                        <TableHead className="w-[180px]">Category & Label</TableHead>
-                                        <TableHead>Method</TableHead>
-                                        <TableHead className="text-right">Value/Rate</TableHead>
-                                        <TableHead className="text-right">Calculated (Rp)</TableHead>
-                                        <TableHead className="text-right w-20">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {summary.items.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="h-32 text-center text-slate-500">
-                                                No indirect costs defined. Click &quot;Load Template&quot; to start.
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        summary.items.map(item => (
-                                            <TableRow key={item.id} className="text-sm border-b border-slate-100 dark:border-slate-800">
-                                                <TableCell>
+                            <DataTable
+                                data={summary.items}
+                                emptyMessage="No indirect costs defined. Click 'Load Template' to start."
+                                columns={[
+                                    {
+                                        id: 'category',
+                                        header: 'Category & Label',
+                                        cell: ({ row }) => {
+                                            const item = row.original;
+                                            return (
+                                                <div>
                                                     <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                                                         {OVERHEAD_CATEGORY_ICONS[item.category] || '📋'} {item.label}
                                                     </div>
                                                     <div className="text-xs text-slate-500 mt-0.5">{OVERHEAD_CATEGORY_LABELS[item.category]}</div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant="outline" className="text-xs uppercase font-normal bg-slate-50 dark:bg-slate-900">
-                                                        {item.method}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right font-mono text-slate-600 dark:text-slate-300 text-xs">
+                                                </div>
+                                            )
+                                        },
+                                        size: 180
+                                    },
+                                    {
+                                        id: 'method',
+                                        header: 'Method',
+                                        cell: ({ row }) => (
+                                            <Badge variant="outline" className="text-xs uppercase font-normal bg-slate-50 dark:bg-slate-900">
+                                                {row.original.method}
+                                            </Badge>
+                                        )
+                                    },
+                                    {
+                                        id: 'rate',
+                                        header: () => <div className="text-right">Value/Rate</div>,
+                                        cell: ({ row }) => {
+                                            const item = row.original;
+                                            return (
+                                                <div className="text-right font-mono text-slate-600 dark:text-slate-300 text-xs">
                                                     {item.method === 'PERCENTAGE'
                                                         ? <span className="text-blue-600 font-semibold">{item.percentage}%</span>
                                                         : `Rp ${item.fixedAmount?.toLocaleString('id-ID')}`
                                                     }
-                                                </TableCell>
-                                                <TableCell className="text-right font-mono font-semibold text-slate-900 dark:text-white">
-                                                    Rp {item.calculatedAmount.toLocaleString('id-ID')}
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-1">
-                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600" onClick={() => handleOpenEdit(item)}>
-                                                            <Edit2 size={12} />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => handleDelete(item.id)}>
-                                                            <Trash2 size={12} />
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                                </div>
+                                            )
+                                        }
+                                    },
+                                    {
+                                        id: 'calculated',
+                                        header: () => <div className="text-right">Calculated (Rp)</div>,
+                                        cell: ({ row }) => (
+                                            <div className="text-right font-mono font-semibold text-slate-900 dark:text-white">
+                                                Rp {row.original.calculatedAmount.toLocaleString('id-ID')}
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        id: 'actions',
+                                        header: () => <div className="text-right">Actions</div>,
+                                        cell: ({ row }) => (
+                                            <div className="flex justify-end gap-1">
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-blue-600" onClick={() => handleOpenEdit(row.original)}>
+                                                    <Edit2 size={12} />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => handleDelete(row.original.id)}>
+                                                    <Trash2 size={12} />
+                                                </Button>
+                                            </div>
+                                        ),
+                                        size: 80
+                                    }
+                                ]}
+                            />
                         </CardContent>
                     </Card>
                 </div>

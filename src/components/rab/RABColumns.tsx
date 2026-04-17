@@ -1,0 +1,203 @@
+import React from 'react'
+import { ColumnDef } from '@tanstack/react-table'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { 
+  ChevronDown, ChevronRight, Info, Trash2, Link2, 
+  MapPin, Settings2, Info as InfoIcon 
+} from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { CurrencyCell } from '../shared/CurrencyCell'
+import { StatusBadge } from '../shared/StatusBadge'
+
+/**
+ * RABColumns
+ * 
+ * Column definitions for the New RAB Table.
+ * Encapsulates cell rendering logic, including inline editing and visual badges.
+ */
+export const getRABColumns = (
+  {
+    onSelectRow,
+    onVolumeChange,
+    onPriceChange,
+    onRemoveRow,
+    onToggleExpand,
+    paretoMap,
+    projectLocked,
+    validLinksByRabItem,
+  }: {
+    onSelectRow: (id: string, checked: boolean) => void
+    onVolumeChange: (id: string, value: string) => void
+    onPriceChange: (id: string, value: string) => void
+    onRemoveRow: (id: string) => void
+    onToggleExpand: (id: string) => void
+    paretoMap: Map<string, string>
+    projectLocked: boolean
+    validLinksByRabItem: Record<string, any[]>
+  }
+): ColumnDef<any>[] => [
+  {
+    id: 'select',
+    header: ({ table }) => (
+      <div className="flex justify-center">
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      </div>
+    ),
+    size: 48,
+  },
+  {
+    accessorKey: 'index',
+    header: 'No.',
+    cell: ({ row }) => <span className="text-slate-400 font-mono">{row.index + 1}</span>,
+    size: 56,
+  },
+  {
+    id: 'pareto',
+    header: () => (
+      <div className="flex items-center gap-1">
+        <span>Cls</span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <InfoIcon className="h-3 w-3 text-slate-400" />
+            </TooltipTrigger>
+            <TooltipContent>Class A = High Impact, B = Medium, C = Low</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+    ),
+    cell: ({ row }) => {
+      const pClass = paretoMap.get(row.original.id) || 'C'
+      return (
+        <Badge 
+          variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} 
+          className="h-5 min-w-5 px-1 text-[9px] font-black uppercase tracking-tighter"
+        >
+          {pClass}
+        </Badge>
+      )
+    },
+    size: 48,
+  },
+  {
+    accessorKey: 'item_code',
+    header: 'Code',
+    cell: ({ row }) => <span className="font-mono text-slate-500">{row.original.item_code || row.original.code || '-'}</span>,
+    size: 100,
+  },
+  {
+    accessorKey: 'name',
+    header: 'Description & Specification',
+    cell: ({ row }) => {
+      const item = row.original
+      const isExpanded = row.getIsExpanded()
+      return (
+        <div className="flex items-start gap-2 py-1">
+          <button 
+            onClick={() => row.toggleExpanded()}
+            className="mt-1 text-slate-400 hover:text-blue-500 transition-colors"
+          >
+            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </button>
+          <div className="flex flex-col min-w-0 flex-1 whitespace-normal break-words">
+            <span className="font-bold text-slate-900 leading-tight dark:text-slate-100">{item.name}</span>
+            <span className="text-[10px] text-slate-400">{item.notes || 'No specification'}</span>
+            
+            {/* Linked WBS Tags */}
+            {validLinksByRabItem[item.id]?.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {validLinksByRabItem[item.id].map((l: any) => (
+                  <Badge key={l.id} variant="secondary" className="px-1 py-0 h-4 text-[9px] bg-indigo-50 text-indigo-600 border-indigo-100">
+                    <Link2 size={8} className="mr-0.5" /> {l.wbsItemId.substring(0, 8)}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )
+    },
+    size: 320,
+  },
+  {
+    accessorKey: 'volume',
+    header: () => <div className="text-right">Volume</div>,
+    cell: ({ row }) => (
+      <Input
+        type="number"
+        value={row.original.volume || ''}
+        className="h-7 text-right text-xs bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 transition-all font-mono"
+        onChange={(e) => onVolumeChange(row.original.id, e.target.value)}
+      />
+    ),
+    size: 100,
+  },
+  {
+    accessorKey: 'unit',
+    header: () => <div className="text-center">SAT.</div>,
+    cell: ({ row }) => (
+      <div className="text-center">
+        <Badge variant="outline" className="text-[10px] font-bold text-slate-600 bg-slate-50 border-slate-200 uppercase px-1.5 h-5">
+          {row.original.unit || '-'}
+        </Badge>
+      </div>
+    ),
+    size: 64,
+  },
+  {
+    accessorKey: 'unit_price',
+    header: () => <div className="text-right">Unit Price</div>,
+    cell: ({ row }) => (
+      <Input
+        type="number"
+        value={row.original.unit_price || ''}
+        disabled={projectLocked || !!row.original.snapshot_price}
+        className="h-7 text-right text-xs font-mono bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 transition-all disabled:opacity-50"
+        onChange={(e) => onPriceChange(row.original.id, e.target.value)}
+      />
+    ),
+    size: 140,
+  },
+  {
+    id: 'total',
+    header: () => <div className="text-right">Total Amount</div>,
+    cell: ({ row }) => {
+      const total = (row.original.volume || 0) * (row.original.unit_price || 0)
+      return <CurrencyCell value={total} variant="default" className="text-xs font-bold" />
+    },
+    size: 144,
+  },
+  {
+    id: 'actions',
+    header: () => <div className="text-center">Aksi</div>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 transition-colors"
+          onClick={() => onRemoveRow(row.original.id)}
+        >
+          <Trash2 size={14} />
+        </Button>
+      </div>
+    ),
+    size: 64,
+  },
+]

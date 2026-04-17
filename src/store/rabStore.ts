@@ -104,6 +104,12 @@ interface RabState {
   refreshDrift: (projectId: string) => Promise<void>
   checkPriceDrift: () => Promise<void>
   syncWithCatalog: (projectId: string) => Promise<void>
+  // Scenario Analysis (WF04)
+  scenarios: (projectId: string) => any[]
+  activeScenarioVersion: (projectId: string) => string
+  createScenario: (projectId: string, name: string) => void
+  setScenarioData: (projectId: string, versionId: string, data: any) => void
+  switchScenario: (projectId: string, versionId: string) => void
 }
 
 const STORAGE_KEY = 'rabStore:v2'
@@ -207,6 +213,12 @@ export const useRabStore = create<RabState>((set, get) => {
     hasUnsavedChanges: {},
     autoSaveTimers: {},
     priceDrift: {},
+    scenarios: () => [],
+
+    activeScenarioVersion: () => 'Baseline',
+    createScenario: () => { toast.info('Scenario creation not available in this version.') },
+    setScenarioData: () => {},
+    switchScenario: () => { toast.info('Scenario switching coming soon.') },
 
     addItem: (projectId, item) => {
       if (get().isLocked(projectId)) {

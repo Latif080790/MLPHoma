@@ -69,7 +69,8 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
     const currentPath = location.pathname
     const { activeProjectId } = useProjectStore()
     const [pendingApprovals, setPendingApprovals] = React.useState(0)
-    const navGroups = React.useMemo(() => getSidebarGroups(), [])
+    // Removed useMemo cache here to avoid Rollup artifacting
+    const navGroups = getSidebarGroups()
 
     React.useEffect(() => {
         let mounted = true

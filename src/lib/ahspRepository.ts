@@ -10,7 +10,9 @@
 import { assertSupabase, fetchResources as sbFetchResources, fetchAhspItems as sbFetchAhspItems, bulkImportAHSPDirect } from './supabaseClient'
 import type { AhspItemRow, ResourceRow, AhspComponentRow } from './supabaseClient'
 import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from './supabaseSyncService'
+import { db } from './db' // Import browser-safe IndexedDB instance
 import type {
+
     Resource,
     AHSPItem,
     AHSPComponent,
@@ -88,6 +90,15 @@ export const ahspRepository = {
 
     async fetchAllResources(): Promise<{ data: Resource[]; error: string | null }> {
         try {
+            // STEP 1: Try Local Dexie Cache First for near-instant response
+            const localResources = await db.resources.toArray()
+            if (localResources.length > 0) {
+                // Background Sync to ensure freshness (don't await)
+                this.syncResourcesBackground().catch(err => console.warn('Background Resource Sync Failed:', err))
+                return { data: localResources, error: null }
+            }
+
+            // STEP 2: Fallback to Supabase if local is empty
             const allResources: Resource[] = []
             let offset = 0
             const batchSize = 1000
@@ -100,9 +111,15 @@ export const ahspRepository = {
                 const rows = (data as ResourceRow[]) || []
                 if (rows.length === 0) break
 
-                allResources.push(...rows.map(mapResourceRow))
+                const mapped = rows.map(mapResourceRow)
+                allResources.push(...mapped)
                 offset += batchSize
                 if (rows.length < batchSize) hasMore = false
+            }
+
+            // STEP 3: Cache in Dexie for future use
+            if (allResources.length > 0) {
+                await db.resources.bulkPut(allResources)
             }
 
             return { data: allResources, error: null }
@@ -110,6 +127,22 @@ export const ahspRepository = {
             return { data: [], error: (err as Error).message || 'Failed to fetch resources' }
         }
     },
+
+    /** Background fetch to keep IndexedDB fresh */
+    async syncResourcesBackground() {
+        let offset = 0
+        const batchSize = 1000
+        let hasMore = true
+        while (hasMore) {
+            const { data, error } = await sbFetchResources(batchSize, offset)
+            if (error || !data) break
+            const mapped = (data as ResourceRow[]).map(mapResourceRow)
+            await db.resources.bulkPut(mapped)
+            offset += batchSize
+            if (data.length < batchSize) hasMore = false
+        }
+    },
+
 
     syncResource(resource: Resource) {
         syncResource(resource)
@@ -127,6 +160,14 @@ export const ahspRepository = {
 
     async fetchAllAHSPItems(): Promise<{ data: AHSPItem[]; error: string | null }> {
         try {
+            // STEP 1: Try Local Dexie Cache First
+            const localItems = await db.ahsp.toArray()
+            if (localItems.length > 0) {
+                // Background Sync
+                this.syncAHSPItemsBackground().catch(err => console.warn('Background AHSP Sync Failed:', err))
+                return { data: localItems, error: null }
+            }
+
             const allItems: AHSPItem[] = []
             let offset = 0
             const batchSize = 1000
@@ -139,9 +180,15 @@ export const ahspRepository = {
                 const rows = (data as AhspItemRow[]) || []
                 if (rows.length === 0) break
 
-                allItems.push(...rows.map(mapAhspItemRow))
+                const mapped = rows.map(mapAhspItemRow)
+                allItems.push(...mapped)
                 offset += batchSize
                 if (rows.length < batchSize) hasMore = false
+            }
+
+            // STEP 2: Cache in Dexie
+            if (allItems.length > 0) {
+                await db.ahsp.bulkPut(allItems)
             }
 
             return { data: allItems, error: null }
@@ -149,6 +196,21 @@ export const ahspRepository = {
             return { data: [], error: (err as Error).message || 'Failed to fetch AHSP items' }
         }
     },
+
+    async syncAHSPItemsBackground() {
+        let offset = 0
+        const batchSize = 1000
+        let hasMore = true
+        while (hasMore) {
+            const { data, error } = await sbFetchAhspItems(batchSize, offset)
+            if (error || !data) break
+            const mapped = (data as AhspItemRow[]).map(mapAhspItemRow)
+            await db.ahsp.bulkPut(mapped)
+            offset += batchSize
+            if (data.length < batchSize) hasMore = false
+        }
+    },
+
 
     async fetchCreationLogs(ahspIds: string[]): Promise<Map<string, { creation_mode: string; source_reference: string | null }>> {
         const logMap = new Map<string, { creation_mode: string; source_reference: string | null }>()
@@ -185,16 +247,21 @@ export const ahspRepository = {
     },
 
     syncAHSPItem(item: AHSPItem) {
+        db.ahsp.put(item).catch(e => console.error('Dexie AHSP Cache Update failed', e))
         syncAHSPItem(item)
     },
 
     syncAHSPItemsWithComponents(items: AHSPItem[], components: AHSPComponent[]) {
+        db.ahsp.bulkPut(items).catch(e => console.error('Dexie bulkPut AHSP failed', e))
+        db.components.bulkPut(components).catch(e => console.error('Dexie bulkPut Components failed', e))
         return syncAHSPItemsWithComponents(items, components)
     },
 
     deleteAHSPItem(id: string) {
+        db.ahsp.delete(id).catch(e => console.error('Dexie Delete failed', e))
         syncDelete('ahsp_items', id)
     },
+
 
     async bulkImport(
         ahspRows: AhspItemRow[],

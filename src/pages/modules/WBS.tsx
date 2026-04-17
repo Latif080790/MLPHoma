@@ -51,21 +51,21 @@ function WBSKpiBar({ items, rabLinkedCount, totalBudget }: {
   const maxLevel = items.reduce((m, i) => Math.max(m, i.level || 1), 0)
 
   return (
-    <div className="flex items-center gap-1 flex-wrap">
-      <Badge variant="outline" className="h-6 gap-1 text-xs font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-        <Layers size={11} className="text-indigo-500" />
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <Badge variant="outline" className="h-[22px] gap-1 text-[10px] font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
+        <Layers size={10} className="text-indigo-500" />
         {items.length} nodes
       </Badge>
-      <Badge variant="outline" className="h-6 gap-1 text-xs font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
+      <Badge variant="outline" className="h-[22px] gap-1 text-[10px] font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
         {rootCount} root · L{maxLevel}
       </Badge>
-      <Badge variant="outline" className="h-6 gap-1 text-xs font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-        <Link2 size={11} className="text-blue-500" />
+      <Badge variant="outline" className="h-[22px] gap-1 text-[10px] font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
+        <Link2 size={10} className="text-blue-500" />
         {rabLinkedCount} RAB-linked
       </Badge>
       {totalBudget > 0 && (
-        <Badge variant="outline" className="h-6 gap-1 text-xs font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-          <Calculator size={11} className="text-emerald-500" />
+        <Badge variant="outline" className="h-[22px] gap-1 text-[10px] font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
+          <Calculator size={10} className="text-emerald-500" />
           {formatIDR(totalBudget)}
         </Badge>
       )}

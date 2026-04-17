@@ -133,6 +133,14 @@ export default function ProjectCosting() {
   ], [ahspCount, wbsCount, rabCount, rapCount])
 
   // ─── Empty step alerts ────────────────────────────────────────────────────
+  const stepCounts: Record<CostingStep, number> = {
+    ahsp: ahspCount,
+    wbs: wbsCount,
+    rab: rabCount,
+    rap: rapCount,
+    resource: 1, // resource not checked for empty alert
+  }
+
   const emptySteps = STEP_CONFIG
     .filter(s => s.id !== 'resource')
     .filter(s => stepCounts[s.id] === 0)

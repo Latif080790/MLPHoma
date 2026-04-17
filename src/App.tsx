@@ -16,6 +16,7 @@ import { useProjectStore } from './store/projectStore'
 import { NetworkProvider } from './providers/NetworkProvider'
 import { getProtectedRouteItems, type NavComponentKey } from './config/navRegistry'
 import { lazyRetry } from './lib/lazyRetry'
+import { initStoreSubscriptions } from './lib/storeSubscriptions'
 
 // Lazy-loaded page components with auto-retry for stale chunk recovery
 const ProjectManagement = lazyRetry(() => import('./pages/modules/ProjectManagement'))
@@ -92,9 +93,10 @@ export default function App() {
   const initialize = useAuthStore((state) => state.initialize)
   const protectedRoutes = React.useMemo(() => getProtectedRouteItems(), [])
 
-  // Initialize auth on app mount
+  // Initialize auth and store subscriptions on app mount
   useEffect(() => {
     initialize()
+    initStoreSubscriptions()
   }, [initialize])
 
   return (

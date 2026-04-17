@@ -256,7 +256,7 @@ export const useAHSPStore = create<AHSPStore>()(
           }))
 
           // Persist to Supabase
-          syncResources(newResources)
+          // syncResources(newResources)
         },
 
         exportResources: () => {
@@ -359,7 +359,10 @@ export const useAHSPStore = create<AHSPStore>()(
               componentsByAHSP: { ...state.componentsByAHSP, ...componentsByAHSP },
             }))
 
-            if (allNewResources.length > 0) syncResources(allNewResources)
+            if (allNewResources.length > 0) {
+              // syncResources(allNewResources)
+            }
+            // syncResources(newItems)
             syncAHSPItemsWithComponents(newItems, allNewComponents).catch(error => {
               console.error('Failed to sync AHSP data:', error)
             })
@@ -826,12 +829,12 @@ useAHSPStore.subscribe(
   (state) => state.ahspItems,
   (items) => {
     // We import useRABStore dynamically to avoid circular dependencies
-    import('./rabStore').then(({ useRABStore }) => {
+    import('./rabStore').then(({ useRabStore }) => {
        const staleIds = items.map(i => i.id)
        if (staleIds.length > 0) {
          // This flags that catalog prices have changed
          // and the RAB view might need to highlight drifts.
-         useRABStore.getState().checkPriceDrift()
+         const rabStore = useRabStore.getState().checkPriceDrift()
        }
     }).catch(() => {
         // Silently ignore if RAB store is not yet loaded

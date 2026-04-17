@@ -16,6 +16,7 @@ import { timelineTaskInputSchema, timelineTaskUpdateSchema } from '../lib/valida
 import { timelineService } from '../services/timelineService'
 import { generateId } from '../lib/idGenerator'
 import { eventBus } from '../lib/eventBus'
+import type { TimelineProgressEvidence } from '../types/progressEvidence'
 
 /**
  * Task status

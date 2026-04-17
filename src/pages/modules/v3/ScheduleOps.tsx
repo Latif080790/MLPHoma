@@ -1,15 +1,14 @@
 /**
  * ScheduleOps v2.tsx
- * ─────────────────────────────────────────────────────────────────────────────
  * Integrated project planning, execution, and risk management.
  * 
  * REDESIGNED with enterprise design system:
- *   L1: GlobalContextBar  → project context  
- *   L2: ModeSwitch        → 3-mode: Plan | Track | Analyze (replaces raw TabsList)
- *   L3: WorkspaceHeader   → title + active mode description + actions
- *   L6: Tab Content       → lazy-loaded submodules within each mode
+ *   L1: GlobalContextBar -> project context  
+ *   L2: ModeSwitch -> 3-mode: Plan | Track | Analyze 
+ *   L3: WorkspaceHeader -> title + active mode description + actions
+ *   L6: Tab Content -> lazy-loaded submodules within each mode
  */
-
+ 
 import React, { Suspense } from 'react'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { Card } from '@/components/ui/card'
@@ -21,6 +20,10 @@ import { lazyRetry } from '@/lib/lazyRetry'
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, ModeSwitch, WorkspaceHeader } from '@/components/patterns'
+import { usePresence } from '@/hooks/usePresence'
+import { PresenceAvatars } from '@/components/common/PresenceAvatars'
+import { useAuthStore } from '@/store/authStore'
+import { CPMWorkerStatus } from '@/components/charts/CPMWorkerStatus'
 
 const WBS = lazyRetry(() => import('../WBS'))
 const Timeline = lazyRetry(() => import('../Timeline'))
@@ -76,7 +79,12 @@ export default function ScheduleOps() {
     const [activeTab, setActiveTab] = React.useState('timeline')
     const [srStatus, setSrStatus] = React.useState('')
 
+    // Real-time Presence
+    const { peers } = usePresence(activeProjectId, `Schedule: ${mode}/${activeTab}`)
+    const otherPeers = peers.filter(p => p.user_id !== useAuthStore.getState().user?.id)
+
     // When mode changes, auto-select first tab of that mode
+
     const handleModeChange = React.useCallback((newMode: string) => {
         setMode(newMode as ScheduleMode)
         const firstTab = newMode === 'plan' ? 'timeline' : newMode === 'track' ? 'progress' : 'curvas'
@@ -129,11 +137,25 @@ export default function ScheduleOps() {
                 <WorkspaceHeader
                     title="Schedule & Operations"
                     subtitle={MODE_DESCRIPTIONS[mode]}
-                    primaryAction={mode === 'track' ? {
-                        label: 'Resource Log',
-                        icon: <Boxes className="h-3.5 w-3.5" />,
-                        onClick: () => setResourceOpen(true),
-                    } : undefined}
+                    primaryAction={
+                        <div className="flex items-center gap-4">
+                            {otherPeers.length > 0 && (
+                                <div className="flex items-center gap-2 pr-2 border-r border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-right-2 duration-300">
+                                    <PresenceAvatars users={otherPeers} />
+                                </div>
+                            )}
+                            {mode === 'track' && (
+                                <Button
+                                    size="sm"
+                                    className="h-8 gap-2 text-xs"
+                                    onClick={() => setResourceOpen(true)}
+                                >
+                                    <Boxes className="h-3.5 w-3.5" />
+                                    Resource Log
+                                </Button>
+                            )}
+                        </div>
+                    }
                 />
             }
         >
@@ -145,22 +167,34 @@ export default function ScheduleOps() {
 
             {/* Sub-tabs within the mode */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <div className="flex items-center overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 px-2 py-1 mb-4">
-                    {currentTabs.map((tab) => (
-                        <button
-                            key={tab.value}
-                            type="button"
-                            onClick={() => setActiveTab(tab.value)}
-                            className={`flex shrink-0 items-center gap-[var(--space-2)] rounded-[var(--radius-sm)] px-[var(--space-3)] py-[var(--space-2)] text-[var(--font-size-12)] font-[var(--font-weight-medium)] transition-colors duration-[var(--motion-duration-fast)] ${
-                                activeTab === tab.value
-                                    ? 'bg-[hsl(var(--color-surface-panel))] text-[hsl(var(--color-text-primary))] shadow-[var(--shadow-xs)]'
-                                    : 'text-[hsl(var(--color-text-tertiary))] hover:text-[hsl(var(--color-text-secondary))]'
-                            }`}
-                        >
-                            {tab.icon}
-                            <span className="hidden sm:inline">{tab.label}</span>
-                        </button>
-                    ))}
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 px-2 py-1">
+                        {currentTabs.map((tab) => (
+                            <button
+                                key={tab.value}
+                                type="button"
+                                onClick={() => setActiveTab(tab.value)}
+                                className={`flex shrink-0 items-center gap-[var(--space-2)] rounded-[var(--radius-sm)] px-[var(--space-3)] py-[var(--space-2)] text-[var(--font-size-12)] font-[var(--font-weight-medium)] transition-colors duration-[var(--motion-duration-fast)] ${
+                                    activeTab === tab.value
+                                        ? 'bg-[hsl(var(--color-surface-panel))] text-[hsl(var(--color-text-primary))] shadow-[var(--shadow-xs)]'
+                                        : 'text-[hsl(var(--color-text-tertiary))] hover:text-[hsl(var(--color-text-secondary))]'
+                                }`}
+                            >
+                                {tab.icon}
+                                <span className="hidden sm:inline">{tab.label}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {mode === 'plan' && (
+                        <div className="hidden lg:block animate-in fade-in slide-in-from-top-2 duration-500">
+                            <CPMWorkerStatus 
+                                isCalculating={false} 
+                                taskCount={142} 
+                                lastDurationMs={42} 
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* ─── Plan Mode Tabs ─────────────────────────────────────────── */}

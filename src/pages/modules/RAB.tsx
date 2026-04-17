@@ -13,12 +13,15 @@ import { useRabStore } from '@/store/rabStore'
 import { useProjectStore } from '@/store/projectStore'
 import { useAHSPStore } from '@/store/ahspStore'
 import { toast } from 'sonner'
+import { useAuthStore } from '@/store/authStore'
 import { RABTable } from '@/components/rab/RABTable'
 import { formatIDR } from '@/lib/utils'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import { CardSkeleton } from '@/components/common/LoadingSkeleton'
 import type { RABItem } from '@/types/rab'
 import { PriceDriftBanner } from '@/components/rab/PriceDriftBanner'
+import { usePresence } from '@/hooks/usePresence'
+import { PresenceAvatars } from '@/components/common/PresenceAvatars'
 
 const EMPTY_ARRAY: RABItem[] = []
 
@@ -26,14 +29,20 @@ const EMPTY_ARRAY: RABItem[] = []
 export default function RAB() {
   const syncProjectToSupabase = useRabStore(s => s.syncProjectToSupabase)
   const fetchRabFromSupabase = useRabStore(s => s.fetchItems)
-  // Use direct state selection to ensure stability
-  const currentProject = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
+  const activeProjectId = useProjectStore(s => s.activeProjectId)
+  const currentProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
+  
+  // Real-time Presence for this module
+  const { peers } = usePresence(activeProjectId ?? null, 'RAB Estimator')
+  const otherPeers = peers.filter(p => p.user_id !== useAuthStore.getState().user?.id)
+
   const updateProject = useProjectStore(s => s.updateProject)
   const items = useRabStore(s => currentProject ? s.getItems(currentProject.id) : EMPTY_ARRAY)
   const isLocked = useRabStore(s => currentProject ? s.isLocked(currentProject.id) : false)
   const { zones, loading } = useAHSPStore()
   const [syncing, setSyncing] = React.useState(false)
   const [showSettings, setShowSettings] = React.useState(false)
+
 
   // Fetch RAB items from Supabase on mount / project change
   useEffect(() => {
@@ -128,25 +137,35 @@ export default function RAB() {
         description="Manage budget items and calculations"
         accent="emerald"
         actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1.5 text-xs"
-              onClick={() => setShowSettings(s => !s)}
-            >
-              <Settings2 className="h-3.5 w-3.5" />
-              Rates
-              {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
-                <span className="ml-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 px-1.5 text-xs font-bold">
-                  OH {overheadPct}% · P {profitPct}% · T {taxRate}%
-                </span>
-              )}
-            </Button>
-            <Button onClick={handleSync} disabled={syncing} variant="outline" className="h-8 gap-2 text-xs">
-              <CloudUpload className="h-4 w-4" />
-              {syncing ? 'Syncing...' : 'Sync to Supabase'}
-            </Button>
+          <div className="flex items-center gap-4">
+            {/* Peer awareness in this module */}
+            {otherPeers.length > 0 && (
+              <div className="flex items-center gap-2 pr-2 border-r border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-right-2 duration-300">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider hidden lg:block">Active Peers:</span>
+                <PresenceAvatars users={otherPeers} />
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-xs"
+                onClick={() => setShowSettings(s => !s)}
+              >
+                <Settings2 className="h-3.5 w-3.5" />
+                Rates
+                {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
+                  <span className="ml-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 px-1.5 text-xs font-bold">
+                    OH {overheadPct}% · P {profitPct}% · T {taxRate}%
+                  </span>
+                )}
+              </Button>
+              <Button onClick={handleSync} disabled={syncing} variant="outline" className="h-8 gap-2 text-xs">
+                <CloudUpload className="h-4 w-4" />
+                {syncing ? 'Syncing...' : 'Sync to Supabase'}
+              </Button>
+            </div>
           </div>
         }
       />
