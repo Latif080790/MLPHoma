@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react"
-import { assertSupabase } from "@/lib/supabaseClient"
 import { Invoice } from "@/types/finance"
+import { financeService } from "@/services/financeService"
 import { toast } from "sonner"
 
 interface MatchRecord {
@@ -44,15 +44,8 @@ export function ThreeWayMatch({ projectId, invoices }: ThreeWayMatchProps) {
   async function loadMatchData() {
     setLoading(true)
     try {
-      const client = assertSupabase()
+      const { pos, grns } = await financeService.getThreeWayMatchData(projectId)
 
-      // Get POs for the project
-      const { data: pos, error: poErr } = await client
-        .from('purchase_orders')
-        .select('id, po_number, vendor_name, total_amount, status')
-        .eq('project_id', projectId)
-
-      if (poErr) throw poErr
       if (!pos || pos.length === 0) {
         setRecords([])
         setLoading(false)
@@ -60,13 +53,7 @@ export function ThreeWayMatch({ projectId, invoices }: ThreeWayMatchProps) {
       }
 
       const poIds = pos.map(po => po.id)
-
-      // Get GRNs linked to these POs
-      const { data: grns } = await client
-        .from('grn')
-        .select('id, po_id, total_amount, status')
-        .in('po_id', poIds)
-
+      
       // Get Invoices linked to these POs
       const poInvoices = invoices.filter(inv => inv.po_id && poIds.includes(inv.po_id))
 

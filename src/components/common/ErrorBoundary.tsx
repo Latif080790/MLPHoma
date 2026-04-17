@@ -16,7 +16,7 @@
 
 import React from 'react'
 import { AlertTriangle, RefreshCw, Home, Copy } from 'lucide-react'
-import { buildExternalErrorLog, reportExternalError } from '@/services/errorLoggingService'
+import { logError } from '@/services/errorLoggingService'
 
 /**
  * State ErrorBoundary.
@@ -75,9 +75,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       this.props.onError(error, errorInfo)
     }
 
-    const payload = buildExternalErrorLog(error, errorInfo, nextErrorCount)
-    reportExternalError(payload).catch((loggingError) => {
-      console.warn('External error logging failed:', loggingError)
+    logError(error, {
+      componentStack: errorInfo.componentStack,
+      errorCount: nextErrorCount
     })
   }
 

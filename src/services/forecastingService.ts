@@ -17,6 +17,31 @@ export interface ForecastProjections {
 
 export const forecastingService = {
     /**
+     * Get historical metrics for a specific project.
+     */
+    async getHistory(projectId: string): Promise<any[]> {
+        const supabase = assertSupabase()
+        const { data, error } = await supabase
+            .from('project_daily_metrics')
+            .select('*')
+            .eq('project_id', projectId)
+            .order('snapshot_date', { ascending: true })
+
+        if (error) throw error
+        return data || []
+    },
+
+    /**
+     * Trigger backend RPC to generate snapshots for all projects.
+     */
+    async generateSnapshot(): Promise<void> {
+        const supabase = assertSupabase()
+        const { error } = await supabase.rpc('rpc_snapshot_all_projects')
+        if (error) throw error
+    },
+
+
+    /**
      * Get trend-based forecasts for a specific project.
      */
     async getTrendForecast(projectId: string): Promise<ForecastProjections> {

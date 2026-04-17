@@ -421,5 +421,28 @@ export const supplyChainService = {
                 isAlert: leakagePercentage > 15
             }
         })
+    },
+
+    /**
+     * Get lifecycle trace data for a Purchase Order (GRNs and Invoices)
+     */
+    async getProcurementTraceData(poId: string) {
+        const client = assertSupabase()
+
+        // Fetch GRNs linked to this PO
+        const { data: grnRows } = await client
+            .from('goods_receipts')
+            .select('*')
+            .eq('po_id', poId)
+            .order('created_at', { ascending: true })
+
+        // Fetch Invoices linked to this PO
+        const { data: invRows } = await client
+            .from('invoices')
+            .select('*')
+            .eq('po_id', poId)
+            .order('created_at', { ascending: true })
+
+        return { grnRows: grnRows || [], invRows: invRows || [] }
     }
 }

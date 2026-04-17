@@ -38,7 +38,7 @@ import { ZoneManager } from './ZoneManager'
 import { ZonePriceEditor } from './ZonePriceEditor'
 import { PriceHistoryDialog } from './PriceHistoryDialog'
 import { AHSPCreationModeDialog, type AHSPCreationMode } from './AHSPCreationModeDialog'
-import { saveCreationLog } from '../../lib/supabaseClient'
+import { ahspDataService } from '../../services/ahspService'
 import { formatIDR } from '../../lib/utils'
 import type { AHSPItem } from '../../types/ahsp'
 import { toast } from 'sonner'
@@ -784,7 +784,7 @@ export function AHSPCatalog({
             // Save creation log for new items
             if (selectedMode) {
               try {
-                await saveCreationLog({
+                await ahspDataService.saveCreationLog({
                   ahsp_id: itemId,
                   creation_mode: selectedMode,
                   source_reference: sourceReference || '',

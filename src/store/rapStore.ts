@@ -8,14 +8,22 @@ import { useCurvaSStore } from './curvaSStore'
 
 interface RapState {
   items: RapItem[]
-  isLoading: boolean
+  /** Standardized loading flag (was isLoading — renamed for StandardStoreContract compliance) */
+  loading: boolean
   error: string | null
+  lastSyncedAt: number | null
+
+  // Standard actions
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
 
   fetchItems: (projectId: string) => Promise<void>
   updateItem: (item: Partial<RapItem>) => Promise<void>
   initFromRab: (projectId: string, rabItems: Array<Record<string, unknown>>) => Promise<void>
   /** Return RAP items as monthly plan entries for Curva-S / CashFlow import */
   getPlan: (projectId: string) => { period: string; planned: number; actual: number }[]
+  /** Recalculate monthly distribution — called from Timeline→RAP cross-store subscription */
+  recalculateDistribution: (projectId: string) => void
   /** Aggregate RAP items by wbs_id for EVM cost drill-down */
   getCostByWBS: (projectId: string) => {
     wbsId: string
@@ -55,19 +63,23 @@ export const useRapStore = create<RapState>()(
 
     return {
       items: [],
-      isLoading: false,
+      loading: false,
       error: null,
+      lastSyncedAt: null,
+
+      setLoading: (loading: boolean) => set({ loading }),
+      setError: (error: string | null) => set({ error }),
 
       fetchItems: async (projectId: string) => {
-        set({ isLoading: true, error: null })
+        set({ loading: true, error: null })
         try {
           const data = await rapService.getByProject(projectId)
-          set({ items: data as RapItem[] })
+          set({ items: data as RapItem[], lastSyncedAt: Date.now() })
         } catch (err: unknown) {
           set({ error: (err as Error).message })
           toast.error('Failed to load RAP items: ' + (err as Error).message)
         } finally {
-          set({ isLoading: false })
+          set({ loading: false })
         }
       },
 
@@ -115,17 +127,41 @@ export const useRapStore = create<RapState>()(
         }))
       },
 
+      recalculateDistribution: (projectId: string) => {
+        // Force cache invalidation by touching items array reference.
+        // The cached getter (createCachedGetterWithKey) checks identity,
+        // so re-setting the same array reference won't help — we need to
+        // trigger a fresh computation via the RAP→CurvaS subscription.
+        const currentItems = get().items
+        const projectItems = currentItems.filter(i => i.project_id === projectId)
+
+        if (projectItems.length === 0) return
+
+        // Recompute the monthly distribution plan
+        const plan = get().getPlan(projectId)
+        if (plan.length === 0) return
+
+        const totalBudget = projectItems.reduce((sum, i) => sum + (i.total_budget || 0), 0)
+
+        // Direct push to CurvaS (bypasses subscription latency for immediate UI feedback)
+        import('./curvaSStore').then(m => {
+          m.useCurvaSStore.getState().setPlannedFromRap(projectId, plan, totalBudget)
+        }).catch(() => {})
+
+        set({ lastSyncedAt: Date.now() })
+      },
+
       initFromRab: async (projectId: string, rabItems: Array<Record<string, unknown>>) => {
-        set({ isLoading: true })
+        set({ loading: true })
         try {
           const data = await rapService.initFromRab(projectId, rabItems)
           // Update local state with fresh data from DB
-          set({ items: data as RapItem[] })
+          set({ items: data as RapItem[], lastSyncedAt: Date.now() })
           toast.success(`RAP initialized with ${data.length} items from RAB`)
         } catch (err: unknown) {
           toast.error('Failed to initialize RAP: ' + (err as Error).message)
         } finally {
-          set({ isLoading: false })
+          set({ loading: false })
         }
       }
     }
@@ -133,22 +169,39 @@ export const useRapStore = create<RapState>()(
 )
 
 /**
- * Cross-Store Synchronization: RAP -> Curva-S
- * 
- * Automatically re-calculate S-Curve data points whenever RAP items change.
- * This fulfills audit requirement CF-03.
+ * Cross-Store Synchronization: RAP → Curva-S  [Subscription 4 of 4]
+ *
+ * Automatically rebuild S-Curve planned data whenever RAP items change.
+ * This fulfills audit requirement CF-03 (EVM Pipeline continuity).
+ *
+ * Triggered by: fetchItems, updateItem, initFromRab
+ * Downstream: curvaSStore.setPlannedFromRap()
  */
 useRapStore.subscribe(
   (state) => state.items,
   (items) => {
-    if (items && items.length > 0) {
-      const projectId = items[0].project_id
-      if (projectId) {
-        const plan = useRapStore.getState().getPlan(projectId)
-        // sync to curva-S store
-        useCurvaSStore.getState().setPlannedFromRap(projectId, plan, 0)
-      }
-    }
+    if (!items || items.length === 0) return
+
+    // Group by project and sync each project's S-Curve
+    const projectIds = [...new Set(items.map(i => i.project_id).filter(Boolean))]
+
+    projectIds.forEach(projectId => {
+      const projectItems = items.filter(i => i.project_id === projectId)
+      if (projectItems.length === 0) return
+
+      const plan = useRapStore.getState().getPlan(projectId)
+      if (plan.length === 0) return
+
+      // Calculate total budget from actual RAP items (not hardcoded 0)
+      const totalBudget = projectItems.reduce((sum, i) => sum + (i.total_budget || 0), 0)
+
+      console.debug(
+        `[Sync 4/4] RAP→CurvaS: project=${projectId}, items=${projectItems.length}, ` +
+        `periods=${plan.length}, totalBudget=${totalBudget.toLocaleString('id-ID')}`
+      )
+
+      useCurvaSStore.getState().setPlannedFromRap(projectId, plan, totalBudget)
+    })
   }
 )
 

@@ -109,5 +109,31 @@ export const timelineService = {
    */
   syncDelete(id: string): void {
     syncDelete('timeline_tasks', id)
+  },
+
+  /**
+   * Upload progress photo
+   */
+  async uploadProgressPhoto(file: File, path: string): Promise<string> {
+    if (!supabase) throw new Error('Supabase not initialized')
+    const fileName = `${path}/${crypto.randomUUID()}-${file.name}`
+    const { data, error } = await supabase.storage.from('progress-evidence').upload(fileName, file)
+    if (error) throw new Error(error.message)
+    const { data: { publicUrl } } = supabase.storage.from('progress-evidence').getPublicUrl(data.path)
+    return publicUrl
+  },
+
+  /**
+   * Update task progress directly
+   */
+  async updateTaskProgress(projectId: string, taskId: string, progress: number): Promise<void> {
+    if (!supabase) throw new Error('Supabase not initialized')
+    const { error } = await supabase
+      .from('timeline_tasks')
+      .update({ progress, updated_at: new Date().toISOString() })
+      .eq('id', taskId)
+      .eq('project_id', projectId)
+    
+    if (error) throw new Error(error.message)
   }
 }

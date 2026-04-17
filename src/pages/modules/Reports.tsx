@@ -19,7 +19,7 @@ import { calculateCashFlow } from "../../lib/cashflowCalculator"
 import HandoverWizard from "./v3/HandoverWizard"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-type RapPlanPoint = { date: string; planned: number; actual: number }
+type RapPlanPoint = { period: string; planned: number; actual: number }
 type RapPlannedItem = {
   rabId?: string
   rab_id?: string

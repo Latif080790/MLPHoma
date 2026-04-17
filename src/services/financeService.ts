@@ -4,6 +4,9 @@ import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
 import { Invoice, ClientClaim, FinanceTransaction } from '../types/finance'
 import { auditTrail } from '../lib/auditTrail'
+import { supplyChainService } from './supplyChainService'
+import { notificationService } from './notificationService'
+import { matchInvoice } from './invoiceMatchingService'
 
 export const financeService = {
     // --- Invoices (AP) ---
@@ -49,6 +52,31 @@ export const financeService = {
             )
         }
         
+        // 3-Way Match Check for Alerts
+        if (data.po_id && data.project_id) {
+            Promise.all([
+                supplyChainService.getPurchaseOrders(data.project_id),
+                supplyChainService.getInventoryTransactions(data.project_id)
+            ]).then(([pos, grns]) => {
+                const matchResult = matchInvoice(data as Invoice, pos, grns)
+                if (matchResult.status === 'mismatch' || matchResult.status === 'partial') {
+                    // Check if variance > 5%
+                    const highVariance = matchResult.discrepancies.find(d => !d.tolerable && d.variance > 5)
+                    if (highVariance && userId) {
+                        notificationService.createNotification({
+                            userId, // Send to creator for now, or PM
+                            title: 'Invoice Variance Alert',
+                            message: `Invoice ${data.invoice_number} exceeds PO limit by ${highVariance.variance.toFixed(1)}%. Review required.`,
+                            type: 'BUDGET_CRITICAL',
+                            severity: 'critical',
+                            metadata: { linkUrl: '/finance' },
+                            projectId: data.project_id
+                        }).catch(console.error)
+                    }
+                }
+            }).catch(err => console.warn('[financeService] 3-way match alert check failed', err))
+        }
+
         return data
     },
 
@@ -231,5 +259,31 @@ export const financeService = {
             .eq('id', id)
 
         if (error) throw error
+    },
+
+    // --- Analytics / Matching ---
+    async getThreeWayMatchData(projectId: string) {
+        const client = assertSupabase()
+
+        // Get POs for the project
+        const { data: pos, error: poErr } = await client
+            .from('purchase_orders')
+            .select('id, po_number, vendor_name, total_amount, status')
+            .eq('project_id', projectId)
+
+        if (poErr) throw poErr
+        if (!pos || pos.length === 0) {
+            return { pos: [], grns: [] }
+        }
+
+        const poIds = pos.map(po => po.id)
+
+        // Get GRNs linked to these POs
+        const { data: grns } = await client
+            .from('grn')
+            .select('id, po_id, total_amount, status')
+            .in('po_id', poIds)
+
+        return { pos, grns: grns || [] }
     }
 }

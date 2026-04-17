@@ -416,5 +416,21 @@ export const ahspDataService = {
         })()
 
         return updatedItem
+    },
+
+    async saveCreationLog(log: {
+        ahsp_id: string
+        creation_mode: 'sni' | 'custom' | 'historical'
+        source_reference?: string
+        created_by?: string
+        metadata?: unknown
+    }) {
+        const client = assertSupabase()
+        const id = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        return client.from('ahsp_creation_logs').insert({
+            id,
+            ...log,
+            created_at: new Date().toISOString()
+        })
     }
 }

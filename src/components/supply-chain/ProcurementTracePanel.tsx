@@ -26,7 +26,7 @@ import {
     Loader2,
     ArrowDown,
 } from 'lucide-react'
-import { assertSupabase } from '@/lib/supabaseClient'
+import { supplyChainService } from '@/services/supplyChainService'
 import { format } from 'date-fns'
 import type { PurchaseOrder } from '@/types/supply-chain'
 import type { GoodsReceipt } from '@/types/grn'
@@ -102,14 +102,7 @@ export function ProcurementTracePanel({
     async function fetchTraceData(poId: string) {
         setLoading(true)
         try {
-            const client = assertSupabase()
-
-            // Fetch GRNs linked to this PO
-            const { data: grnRows } = await client
-                .from('goods_receipts')
-                .select('*')
-                .eq('po_id', poId)
-                .order('created_at', { ascending: true })
+            const { grnRows, invRows } = await supplyChainService.getProcurementTraceData(poId)
 
             setGrns((grnRows || []).map((r: Record<string, unknown>) => ({
                 id: r.id as string,
@@ -129,13 +122,6 @@ export function ProcurementTracePanel({
                 createdAt: r.created_at as string,
                 updatedAt: (r.updated_at as string) || '',
             })))
-
-            // Fetch Invoices linked to this PO
-            const { data: invRows } = await client
-                .from('invoices')
-                .select('*')
-                .eq('po_id', poId)
-                .order('created_at', { ascending: true })
 
             setInvoices((invRows || []).map((r: Record<string, unknown>) => ({
                 id: r.id as string,

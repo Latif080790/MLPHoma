@@ -28,7 +28,7 @@ interface RABToolbarProps {
   isLocked: boolean
   draftCount: number
   selectedCount: number
-  scenarioVersion?: number | null
+  scenarioVersion?: string | null
   
   // Actions
   onAddItem: () => void
@@ -41,7 +41,7 @@ interface RABToolbarProps {
   onToggleLock: () => void
   onShowHistory: () => void
   onPublish: () => void
-  onSwitchScenario: (version: number | null) => void
+  onSwitchScenario: (version: string | null) => void
   onSaveScenario: () => void
   
   // Data for Scenarios
@@ -235,7 +235,7 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
         </Button>
 
         {draftCount > 0 ? (
-          <Button onClick={onPublish} size="sm" className="h-9 text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none">
+          <Button id="btn-publish-drafts" onClick={onPublish} size="sm" className="h-9 text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Publish ({draftCount})
           </Button>

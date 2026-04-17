@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Hammer, Clock, Save, Loader2 } from 'lucide-react'
-import { assertSupabase } from '@/lib/supabaseClient'
+import { resourceService } from '@/services/resourceService'
 import { toast } from 'sonner'
 
 interface ResourceUsageDialogProps {
@@ -28,17 +28,13 @@ export function ResourceUsageDialog({ open, onOpenChange, projectId }: ResourceU
 
         setLoading(true)
         try {
-            const supabase = assertSupabase()
-            const { error } = await supabase.from('tools_usage_logs').insert([{
-                project_id: projectId,
-                tool_name: form.tool_name,
-                hours_used: Number(form.hours_used),
-                log_date: form.log_date,
-                status: form.status,
-                resource_id: 'MANUAL_ENTRY' // Fallback for manual logs
-            }])
-
-            if (error) throw error
+            await resourceService.logResourceUsage({
+                projectId,
+                toolName: form.tool_name,
+                hoursUsed: Number(form.hours_used),
+                logDate: form.log_date,
+                status: form.status
+            })
 
             toast.success("Resource usage logged successfully")
             onOpenChange(false)
@@ -76,6 +72,7 @@ export function ResourceUsageDialog({ open, onOpenChange, projectId }: ResourceU
                             placeholder="Contoh: Excavator PC200, Crane, dsb."
                             value={form.tool_name}
                             onChange={e => setForm({ ...form, tool_name: e.target.value })}
+                            className="field-input-mobile"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -86,7 +83,7 @@ export function ResourceUsageDialog({ open, onOpenChange, projectId }: ResourceU
                                 <Input
                                     id="hours"
                                     type="number"
-                                    className="pl-8"
+                                    className="pl-8 field-input-mobile"
                                     value={form.hours_used}
                                     onChange={e => setForm({ ...form, hours_used: Number(e.target.value) })}
                                 />

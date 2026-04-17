@@ -15,7 +15,7 @@
 import { create } from 'zustand'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
 import { syncDelete, syncRABItems } from '../lib/supabaseSyncService'
-import { fetchRabItems } from '../lib/supabaseClient'
+import { rabService } from '../services/rabService'
 import { validate } from '../lib/validationMiddleware'
 import { rabItemInputSchema, rabItemUpdateSchema } from '../lib/validationSchemas'
 import { toast } from 'sonner'
@@ -460,11 +460,7 @@ export const useRabStore = create<RabState>((set, get) => {
 
     fetchItems: async (projectId: string) => {
       try {
-        const { data, error } = await fetchRabItems(projectId)
-        if (error) {
-          console.warn('[RAB] Failed to fetch from Supabase:', error.message)
-          return
-        }
+        const data = await rabService.fetchRabItems(projectId)
         if (!data || !Array.isArray(data) || data.length === 0) return
 
         // Map snake_case DB columns → RABItem fields
@@ -568,8 +564,18 @@ export const useRabStore = create<RabState>((set, get) => {
       const updatedItems = get().itemsByProject[projectId] || []
       syncRABItems(updatedItems, projectId)
 
-      toast.success(`Published ${draftItems.length} items to database`)
+      toast.success(`${draftItems.length} item RAB dipublikasikan`, {
+        description: 'Menyinkronisasi ke Timeline, RAP, dan Curva-S…',
+        duration: 3000,
+      })
       get().logAction({ projectId, action: 'publishDrafts', payload: { count: draftItems.length } })
+
+      // Notify downstream sync chain (non-blocking)
+      // Import lazily to avoid circular dependency at module init time
+      import('../lib/storeSubscriptions').then(({ notifySyncComplete }) => {
+        // Allow the reactive subscriptions ~800ms to propagate
+        setTimeout(() => notifySyncComplete(projectId), 800)
+      }).catch(() => {})
     },
 
     getDraftCount: (projectId: string) => {

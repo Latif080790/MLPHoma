@@ -26,67 +26,26 @@ import { CurrencyCell } from '../shared/CurrencyCell'
 interface BudgetGuardDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    projectId: string
-    items: CheckableItem[]
-    poReference?: string
+    result: BudgetCheckResult | null
+    loading: boolean
     onProceed: () => void
+    onRequestOverride: () => void
 }
 
 export function BudgetGuardDialog({
     open,
     onOpenChange,
-    projectId,
-    items,
-    poReference,
+    result,
+    loading,
     onProceed,
+    onRequestOverride,
 }: BudgetGuardDialogProps) {
-    const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState<BudgetCheckResult | null>(null)
     const [submittingApproval, setSubmittingApproval] = useState(false)
-
-    useEffect(() => {
-        if (!open || items.length === 0) {
-            setResult(null)
-            return
-        }
-
-        setLoading(true)
-        checkBudgetAvailability(projectId, items)
-            .then(setResult)
-            .catch(err => {
-                console.warn('[BudgetGuard] Check failed:', err)
-                toast.error('Budget check failed', { description: err.message })
-            })
-            .finally(() => setLoading(true)) // Ensure we don't flash, wait for it
-            setTimeout(() => setLoading(false), 500)
-    }, [open, projectId, items])
 
     const handleRequestApproval = async () => {
         setSubmittingApproval(true)
         try {
-            const { user, profile } = useAuthStore.getState()
-            const totalAmount = items.reduce((sum, i) => sum + (i.quantity * i.unitPrice), 0)
-
-            await approvalService.createApproval({
-                projectId,
-                entityType: 'PURCHASE_ORDER',
-                entityId: poReference || 'pending-po',
-                title: `Budget Guard: PO ${poReference || 'New'}`,
-                description: `PO requires approval — budget critically low. Total: Rp ${totalAmount.toLocaleString()}`,
-                requesterId: user?.id || 'unknown',
-                requesterName: profile?.full_name || user?.email || 'Procurement',
-                approverRole: 'manager',
-                impactSummary: {
-                    totalAmount,
-                    itemCount: items.length,
-                    reason: 'Budget threshold exceeded (<10% remaining)',
-                },
-            })
-
-            toast.success('Approval request sent', { description: 'Sent to PM\'s Command Center for review.' })
-            onOpenChange(false)
-        } catch (err: unknown) {
-            toast.error('Failed to submit approval', { description: (err as Error).message })
+            await onRequestOverride()
         } finally {
             setSubmittingApproval(false)
         }

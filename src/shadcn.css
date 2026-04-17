@@ -169,7 +169,17 @@
 }
 
 .control-compact {
-  @apply h-8 md:h-8 text-xs;
+  /* WCAG 2.5.5: min 44px on mobile, compact 32px on desktop */
+  @apply h-11 text-sm md:h-8 md:text-xs;
+}
+
+/* Field-size utility for FieldTasks & mobile-first components */
+.field-input-mobile {
+  @apply h-12 text-base placeholder:text-sm;
+}
+
+.field-button {
+  @apply h-12 px-6 text-base font-medium;
 }
 
 .touch-safe {

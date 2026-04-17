@@ -13,6 +13,7 @@ import * as xlsx from 'xlsx'
 
 import { useRabStore, calculatePareto, RABItem } from '@/store/rabStore'
 import { useAHSPStore } from '@/store/ahspStore'
+import { AHSPItem } from '@/types/ahsp'
 import { useTimelineStore } from '@/store/timelineStore'
 import { useProjectStore } from '@/store/projectStore'
 import { useWBSStore } from '@/store/wbsStore'
@@ -41,7 +42,7 @@ interface RABTableProps {
 export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   // Global Stores
   const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot, unlockBaseline, scenarios, activeScenarioVersion, createScenario, setScenarioData, switchScenario } = useRabStore()
-  const { fetchComponents, componentsByAHSP } = useAHSPStore()
+  const { fetchComponents, componentsByAHSP, ahspItems } = useAHSPStore()
   const { getTasks, setTasks } = useTimelineStore()
   const project = useProjectStore(s => s.projects[projectId])
   const { zones } = useAHSPStore()
@@ -171,7 +172,8 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   }
 
   const handleAutoSchedule = async () => {
-    const tasks = generateScheduleFromRAB(items, new Date())
+    const ahspMap = new Map<string, AHSPItem>(ahspItems.map((i: any) => [i.code || '', i]))
+    const tasks = generateScheduleFromRAB(projectId, project?.startDate || new Date().toISOString(), items, ahspMap, componentsByAHSP)
     setTasks(projectId, tasks)
     setConfirmScheduleOpen(false)
     toast.success(`Generated ${tasks.length} tasks from RAB items`)
@@ -190,7 +192,9 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       isMilestone: false,
       color: '#3B82F6',
       sortOrder: index,
-      rab_item_id: item.id
+      rab_item_id: item.id,
+      level: 1,
+      parentId: null
     }))
     importWBS(projectId, newWbsItems)
     setConfirmWBSOpen(false)
@@ -224,9 +228,9 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-slate-950 p-2 sm:p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative z-0">
       
-      {showDriftAnalysis && (
+      {showDriftAnalysis && currentZone && (
         <div className="mb-4">
-          <RABPriceDriftDashboard items={items} projectId={projectId} />
+          <RABPriceDriftDashboard projectId={projectId} />
         </div>
       )}
 
@@ -251,7 +255,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         onToggleLock={() => projectLocked ? setShowUnlockConfirm(true) : setShowLockConfirm(true)}
         onShowHistory={() => setShowVersionHistory(true)}
         onPublish={() => setShowPublishConfirm(true)}
-        onSwitchScenario={(v) => switchScenario(projectId, v)}
+        onSwitchScenario={(v) => { if (v) switchScenario(projectId, v) }}
         onSaveScenario={() => setShowSaveScenario(true)}
         availableColumns={[
           { id: 'pareto', label: 'Kelas Pareto' },

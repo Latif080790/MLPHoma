@@ -22,6 +22,7 @@ import type { RABItem } from '@/types/rab'
 import { PriceDriftBanner } from '@/components/rab/PriceDriftBanner'
 import { usePresence } from '@/hooks/usePresence'
 import { PresenceAvatars } from '@/components/common/PresenceAvatars'
+import { assertSupabase } from '@/lib/supabaseClient'
 
 const EMPTY_ARRAY: RABItem[] = []
 
@@ -48,6 +49,27 @@ export default function RAB() {
   useEffect(() => {
     if (currentProject?.id) {
       fetchRabFromSupabase(currentProject.id)
+    }
+  }, [currentProject?.id, fetchRabFromSupabase])
+
+  // Real-time listener for lock states (S5-05)
+  useEffect(() => {
+    if (!currentProject?.id) return
+    const client = assertSupabase()
+    const channel = client.channel(`rab_lock_monitor_${currentProject.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'rab_items',
+        filter: `project_id=eq.${currentProject.id}`
+      }, () => {
+        // Automatically fetch to update lock state derived from snapshot_price
+        fetchRabFromSupabase(currentProject.id)
+      })
+      .subscribe()
+
+    return () => {
+      client.removeChannel(channel)
     }
   }, [currentProject?.id, fetchRabFromSupabase])
 

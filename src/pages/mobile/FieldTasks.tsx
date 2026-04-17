@@ -220,7 +220,7 @@ export default function FieldTasks() {
                                 />
                                 <Input
                                     type="number"
-                                    className="w-24 h-11 text-center font-bold text-lg"
+                                    className="w-24 text-center font-bold text-lg field-input-mobile"
                                     value={progressVal}
                                     onChange={(e) => setProgressVal(Number(e.target.value))}
                                     min={0} max={100}
@@ -267,8 +267,7 @@ export default function FieldTasks() {
                             </label>
                             <Button
                                 variant={gpsCoords ? 'outline' : 'default'}
-                                size="xl"
-                                className={`w-full gap-2 text-base ${gpsCoords ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
+                                className={`w-full gap-2 field-button ${gpsCoords ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
                                 onClick={captureGps}
                                 disabled={gpsLoading}
                             >
@@ -291,8 +290,8 @@ export default function FieldTasks() {
                     </div>
 
                     <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t shrink-0 flex gap-3">
-                        <Button variant="outline" size="touch" className="flex-1" onClick={() => setSelectedTask(null)}>Cancel</Button>
-                        <Button size="touch" className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={handleSubmit}>
+                        <Button variant="outline" className="flex-1 field-button" onClick={() => setSelectedTask(null)}>Cancel</Button>
+                        <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700 field-button" onClick={handleSubmit}>
                             Submit Log
                         </Button>
                     </div>

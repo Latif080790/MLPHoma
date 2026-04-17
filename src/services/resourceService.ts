@@ -71,5 +71,22 @@ export const resourceService = {
         })
 
         return Object.values(equipmentMap)
+    },
+
+    /**
+     * Log a new resource usage entry
+     */
+    async logResourceUsage(data: { projectId: string, toolName: string, hoursUsed: number, logDate: string, status: string }) {
+        const supabase = assertSupabase()
+        const { error } = await supabase.from('tools_usage_logs').insert([{
+            project_id: data.projectId,
+            tool_name: data.toolName,
+            hours_used: data.hoursUsed,
+            log_date: data.logDate,
+            status: data.status,
+            resource_id: 'MANUAL_ENTRY' // Fallback for manual logs
+        }])
+
+        if (error) throw error
     }
 }

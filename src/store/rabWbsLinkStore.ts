@@ -13,9 +13,7 @@
 
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { supabase as _supabaseClient } from '../lib/supabaseClient'
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const supabase = _supabaseClient!
+import { rabWbsLinkService } from '../services/rabWbsLinkService'
 import type { RabWbsLink, RabWbsLinkRow } from '../types/rabWbsLink'
 import { rowToLink } from '../types/rabWbsLink'
 
@@ -83,12 +81,8 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
       fetchLinks: async (projectId) => {
         set({ loading: true, error: null })
         try {
-          const { data, error } = await supabase
-            .rpc('rpc_get_rab_wbs_links', { p_project_id: projectId })
+          const rows = await rabWbsLinkService.getLinks(projectId)
 
-          if (error) throw error
-
-          const rows = (data || []) as RabWbsLinkRow[]
           const byRabItem: Record<string, RabWbsLink[]> = {}
           rows.forEach((row) => {
             const link = rowToLink(row)
@@ -140,14 +134,10 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
         try {
           // Insert via RPC
           const newPct = rebalanced.find((l) => l.wbsItemId === wbsItemId)?.allocationPct ?? equalPct
-          const { data: newRow, error: insertError } = await supabase
-            .rpc('rpc_add_rab_wbs_link', {
-              p_rab_item_id: rabItemId,
-              p_wbs_item_id: wbsItemId,
-              p_allocation_pct: newPct,
-            })
-
-          if (insertError) {
+          let newRow: any;
+          try {
+             newRow = await rabWbsLinkService.addLink(rabItemId, wbsItemId, newPct)
+          } catch(insertError: any) {
             console.error('[rabWbsLinkStore] addLink RPC failed:', insertError.message)
             set((s) => ({
               linksByRabItem: { ...s.linksByRabItem, [rabItemId]: existing },
@@ -155,14 +145,11 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
             return
           }
 
+
           // Update allocation_pct on pre-existing links via RPC
           const existingUpdates = rebalanced.filter((l) => l.wbsItemId !== wbsItemId)
           for (const l of existingUpdates) {
-            await supabase.rpc('rpc_update_rab_wbs_allocation', {
-              p_rab_item_id: rabItemId,
-              p_wbs_item_id: l.wbsItemId,
-              p_allocation_pct: l.allocationPct,
-            })
+            await rabWbsLinkService.updateAllocation(rabItemId, l.wbsItemId, l.allocationPct)
           }
 
           // Update the pending ID with the real one from DB
@@ -199,18 +186,11 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
         }))
 
         try {
-          await supabase.rpc('rpc_remove_rab_wbs_link', {
-            p_rab_item_id: rabItemId,
-            p_wbs_item_id: wbsItemId,
-          })
+          await rabWbsLinkService.removeLink(rabItemId, wbsItemId)
 
           // Update pcts on remaining
           for (const l of rebalanced) {
-            await supabase.rpc('rpc_update_rab_wbs_allocation', {
-              p_rab_item_id: rabItemId,
-              p_wbs_item_id: l.wbsItemId,
-              p_allocation_pct: l.allocationPct,
-            })
+            await rabWbsLinkService.updateAllocation(rabItemId, l.wbsItemId, l.allocationPct)
           }
         } catch (err) {
           console.error('[rabWbsLinkStore] removeLink error:', err)
@@ -229,11 +209,7 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
         }))
 
         try {
-          await supabase.rpc('rpc_update_rab_wbs_allocation', {
-            p_rab_item_id: rabItemId,
-            p_wbs_item_id: wbsItemId,
-            p_allocation_pct: pct,
-          })
+          await rabWbsLinkService.updateAllocation(rabItemId, wbsItemId, pct)
         } catch (err) {
           console.error('[rabWbsLinkStore] updateAllocation error:', err)
         }
@@ -251,11 +227,7 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
 
         try {
           for (const l of rebalanced) {
-            await supabase.rpc('rpc_update_rab_wbs_allocation', {
-              p_rab_item_id: rabItemId,
-              p_wbs_item_id: l.wbsItemId,
-              p_allocation_pct: l.allocationPct,
-            })
+            await rabWbsLinkService.updateAllocation(rabItemId, l.wbsItemId, l.allocationPct)
           }
         } catch (err) {
           console.error('[rabWbsLinkStore] rebalanceEqually error:', err)
@@ -283,17 +255,13 @@ export const useRabWbsLinkStore = create<RabWbsLinkStore>()(
 
         try {
           // Delete all links for this WBS node via RPC
-          await supabase.rpc('rpc_unlink_wbs_node', { p_wbs_item_id: wbsItemId })
+          await rabWbsLinkService.unlinkWbsNode(wbsItemId)
 
           // Update pcts for remaining links
           const { linksByRabItem: updated } = get()
           for (const rabId of affectedRabIds) {
             for (const l of updated[rabId] || []) {
-              await supabase.rpc('rpc_update_rab_wbs_allocation', {
-                p_rab_item_id: rabId,
-                p_wbs_item_id: l.wbsItemId,
-                p_allocation_pct: l.allocationPct,
-              })
+              await rabWbsLinkService.updateAllocation(rabId, l.wbsItemId, l.allocationPct)
             }
           }
         } catch (err) {
