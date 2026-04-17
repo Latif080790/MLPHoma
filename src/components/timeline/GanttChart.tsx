@@ -21,8 +21,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '../ui/context-menu'
-import { Image as ImageIcon, FileText, Activity } from 'lucide-react'
-import GanttLegend from './GanttLegend'
+
 import { createCpmWorker } from '../../workers/createCpmWorker'
 
 /**
@@ -126,23 +125,7 @@ function buildDates(minISO: string, maxISO: string): string[] {
   return out
 }
 
-/**
- * statusColor
- * Small color helper for status chips
- * @param status
- */
-function statusColor(status?: string) {
-  switch (status) {
-    case 'completed':
-      return 'bg-emerald-500'
-    case 'in_progress':
-      return 'bg-blue-500'
-    case 'delayed':
-      return 'bg-red-500'
-    default:
-      return 'bg-neutral-400'
-  }
-}
+
 
 /**
  * useWindowSize - return window width (simple hook)
@@ -216,20 +199,23 @@ export default function GanttChart({
    */
   const palette = useMemo(
     () => ({
-      primary: '#4f46e5', // Indigo 600 (Sleek modern)
-      critical: '#e11d48', // Rose 600 (Vibrant critical)
-      progress: 'rgba(255, 255, 255, 0.25)', // Lighter progress overlay for contrast
-      neutral: '#94a3b8',
-      bg: '#ffffff',
+      primary: 'rgb(var(--brand-primary-500))',
+      critical: 'rgb(var(--color-status-danger-border))',
+      line: 'rgb(var(--neutral-400))',
+      progress: 'rgba(255, 255, 255, 0.3)',
+      bg: 'rgb(var(--neutral-0))',
+      rowAlt: 'rgba(var(--neutral-100), 0.3)',
     }),
     [],
   )
   const defaultLeftColWidth = width < 640 ? 260 : width < 1024 ? 320 : 380
   const [userLeftColWidth, setUserLeftColWidth] = useState<number | null>(null)
   const leftColWidth = userLeftColWidth ?? defaultLeftColWidth
-  // denser rows for Primavera P6 style
-  const rowHeight = 32
-  const barHeight = 16
+  
+  // Compact engineering layout
+  const rowHeight = 36
+  const barHeight = 18
+  const barRadius = 4 // --radius-xs equivalent
 
   /**
    * Date range and days
@@ -306,7 +292,7 @@ export default function GanttChart({
    * ------------------------- */
   const [tileSizeDays, setTileSizeDays] = useState<number>(120)
   const [connectorRowThreshold, setConnectorRowThreshold] = useState<number>(60)
-  const [sampleMs, setSampleMs] = useState<number>(200)
+
   const [performanceMode, setPerformanceMode] = useState<boolean>(false)
   const [disableShadows, setDisableShadows] = useState<boolean>(false)
   const [disableTooltipsWhileInteracting, setDisableTooltipsWhileInteracting] = useState<boolean>(true)
@@ -317,7 +303,7 @@ export default function GanttChart({
       setConnectorRowThreshold(40)
       setDisableShadows(true)
       setDisableTooltipsWhileInteracting(true)
-      setSampleMs(250)
+
     }
     // do not revert user values automatically when performanceMode = false
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -529,39 +515,62 @@ export default function GanttChart({
     ctx.resetTransform()
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     ctx.scale(dpr, dpr)
-    ctx.lineWidth = 2
-    ctx.strokeStyle = '#94a3b8' // slate-400
-    ctx.fillStyle = '#94a3b8'
+    
+    // Pro Palette for Connectors
+    ctx.lineWidth = 1.5
+    ctx.strokeStyle = palette.line
+    ctx.fillStyle = palette.line
     ctx.lineJoin = 'round'
     ctx.lineCap = 'round'
+    
+    const cornerRadius = 6
+
     for (const c of visibleConnectorCoords) {
-      // Modern smooth bezier curves
       ctx.beginPath()
       ctx.moveTo(c.x1, c.y1)
 
       if (c.x1 < c.x2) {
-        // Forward connection: fluid bezier curve
-        const dist = Math.max(20, (c.x2 - c.x1) / 2.5)
-        ctx.bezierCurveTo(c.x1 + dist, c.y1, c.x2 - dist, c.y2, c.x2, c.y2)
+        // Manhattan forward: Right -> Down/Up -> Right
+        const midX = c.x1 + 12
+        
+        // Horizontal to mid point
+        ctx.lineTo(midX - cornerRadius, c.y1)
+        ctx.arcTo(midX, c.y1, midX, c.y1 + (c.y2 > c.y1 ? cornerRadius : -cornerRadius), cornerRadius)
+        
+        // Vertical to target row
+        ctx.lineTo(midX, c.y2 + (c.y2 > c.y1 ? -cornerRadius : cornerRadius))
+        ctx.arcTo(midX, c.y2, midX + cornerRadius, c.y2, cornerRadius)
+        
+        // Horizontal to arrow
+        ctx.lineTo(c.x2, c.y2)
       } else {
-        // Backward connection: stepped drops with rounded corners via bezier
-        const dropY = c.y1 + 16
-        ctx.bezierCurveTo(c.x1 + 12, c.y1, c.x1 + 12, dropY, c.x1 + 12, dropY)
-        ctx.lineTo(c.x2 - 12, dropY)
-        ctx.bezierCurveTo(c.x2 - 12, dropY, c.x2 - 12, c.y2, c.x2, c.y2)
+        // Backward connection: Loop around (Manhattan style)
+        const extendX = c.x1 + 16
+        const dropY = c.y1 + rowHeight / 2
+        
+        ctx.lineTo(extendX - cornerRadius, c.y1)
+        ctx.arcTo(extendX, c.y1, extendX, c.y1 + cornerRadius, cornerRadius)
+        ctx.lineTo(extendX, dropY - cornerRadius)
+        ctx.arcTo(extendX, dropY, extendX - cornerRadius, dropY, cornerRadius)
+        ctx.lineTo(c.x2 - 16 + cornerRadius, dropY)
+        ctx.arcTo(c.x2 - 16, dropY, c.x2 - 16, dropY + cornerRadius, cornerRadius)
+        ctx.lineTo(c.x2 - 16, c.y2 - cornerRadius)
+        ctx.arcTo(c.x2 - 16, c.y2, c.x2 - 16 + cornerRadius, c.y2, cornerRadius)
+        ctx.lineTo(c.x2, c.y2)
       }
       ctx.stroke()
 
-      // Right arrowhead
+      // Precision Arrowhead
       const ax = c.x2
       const ay = c.y2
       ctx.beginPath()
-      ctx.moveTo(ax - 5, ay - 4)
+      ctx.moveTo(ax - 5, ay - 3)
       ctx.lineTo(ax, ay)
-      ctx.lineTo(ax - 5, ay + 4)
-      ctx.fill()
+      ctx.lineTo(ax - 5, ay + 3)
+      ctx.lineWidth = 2
+      ctx.stroke()
     }
-  }, [visibleConnectorCoords, startDay, endDay, pxPerDay, leftColWidth, rowHeight, effectiveRows.length])
+  }, [visibleConnectorCoords, startDay, endDay, pxPerDay, leftColWidth, rowHeight, effectiveRows.length, palette.line])
 
   /* -------------------------
    * Profiling capture + analysis (local)
@@ -572,8 +581,7 @@ export default function GanttChart({
   const captureRef = useRef<ProfileSample[]>([])
   const captureIntervalRef = useRef<number | null>(null)
   const captureTimerRef = useRef<number | null>(null)
-  const [lastMetrics, setLastMetrics] = useState<ProfileSample | null>(null)
-  const [lastAnalysis, setLastAnalysis] = useState<Record<string, unknown> | null>(null)
+
 
   /**
    * startCapture
@@ -600,7 +608,7 @@ export default function GanttChart({
         renderMsEstimate: Math.round(performance.now() - renderStartRef.current),
       }
       captureRef.current.push(s)
-      setLastMetrics(s)
+
     }
     sample()
     captureIntervalRef.current = window.setInterval(sample, sampleIntervalMs)
@@ -613,82 +621,7 @@ export default function GanttChart({
     }, durationMs)
   }
 
-  /**
-   * runPerfAnalyze
-   * Capture for durationMs, compute aggregations and suggestions.
-   * @param durationMs capture duration
-   * @param sampleIntervalMs sample interval
-   */
-  async function runPerfAnalyze(durationMs = 10000, sampleIntervalMs = 200) {
-    if (captureRunning) return
-    captureRef.current = []
-    setCaptureRunning(true)
-    startCapture(durationMs, sampleIntervalMs)
-    await new Promise((res) => setTimeout(res, durationMs + 250))
-    setCaptureRunning(false)
-    const samples = captureRef.current.slice()
-    const n = samples.length || 1
-    const avgRenderedRows = Math.round(samples.reduce((s, it) => s + it.renderedRows, 0) / n)
-    const avgRenderedDays = Math.round(samples.reduce((s, it) => s + it.renderedDays, 0) / n)
-    const avgConnectors = Math.round(samples.reduce((s, it) => s + it.connectors, 0) / n)
-    const avgRenderMs = Math.round(samples.reduce((s, it) => s + it.renderMsEstimate, 0) / n)
-    const peakRenderedRows = Math.max(...samples.map((s) => s.renderedRows), 0)
-    const peakRenderedDays = Math.max(...samples.map((s) => s.renderedDays), 0)
-    const peakConnectors = Math.max(...samples.map((s) => s.connectors), 0)
-    const suggestions: string[] = []
 
-    if (avgRenderedDays > 200 || peakRenderedDays > 400) {
-      suggestions.push(
-        `Large horizontal window (avg ${avgRenderedDays} days). Increase tileSizeDays (currently ${tileSizeDays}) to lower per-day DOM.`,
-      )
-    } else if (avgRenderedDays > 80) {
-      suggestions.push(`Moderate horizontal window (avg ${avgRenderedDays} days). Consider increasing tileSizeDays or reduce label frequency.`)
-    } else {
-      suggestions.push('Horizontal rendering looks reasonable.')
-    }
-
-    if (avgConnectors > 150 || peakConnectors > 300) {
-      suggestions.push(
-        `Many connectors (avg ${avgConnectors}). Consider reducing connectorRowThreshold, aggregating connectors, or keep canvas connectors.`,
-      )
-    } else {
-      suggestions.push('Connector rendering within acceptable range.')
-    }
-
-    if (avgRenderMs > 120) {
-      suggestions.push(`High render time (avg ${avgRenderMs}ms). Consider disabling shadows/gradients and tooltips during interactions.`)
-    } else if (avgRenderMs > 60) {
-      suggestions.push(`Moderate render time (avg ${avgRenderMs}ms). Try adjusting overscan and visual effects.`)
-    } else {
-      suggestions.push('Rendering latency is low.')
-    }
-
-    if (avgRenderedRows > 500 || peakRenderedRows > 800) {
-      suggestions.push('Many rows rendered. Consider grouping WBS items or server-side pagination for very large projects.')
-    } else {
-      suggestions.push('Row rendering is acceptable.')
-    }
-
-    const result = {
-      capturedAt: new Date().toISOString(),
-      samples,
-      avgRenderedRows,
-      avgRenderedDays,
-      avgConnectors,
-      avgRenderMs,
-      peakRenderedRows,
-      peakRenderedDays,
-      peakConnectors,
-      suggestions,
-    }
-    setLastAnalysis(result)
-    // open JSON for inspection
-    const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    window.open(url, '_blank')
-    setTimeout(() => URL.revokeObjectURL(url), 5000)
-    return result
-  }
 
   /* -------------------------
    * Drag handling (kept minimal)
@@ -963,97 +896,9 @@ export default function GanttChart({
    * Render
    * ------------------------- */
   return (
-    <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-lg overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-indigo-50/80 via-white to-rose-50/60 dark:from-neutral-800/80 dark:via-neutral-900 dark:to-neutral-800/80">
-        <div>
-          <div className="text-base font-bold tracking-tight text-neutral-800 dark:text-neutral-100">Project Schedule</div>
-          <div className="text-xs text-neutral-400 dark:text-neutral-500 mt-0.5">Virtualized Gantt · Canvas Connectors · CPM Engine</div>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <button
-            title="Export PNG"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm"
-            onClick={exportPNG}
-          >
-            <ImageIcon className="h-3.5 w-3.5" />
-            PNG
-          </button>
-          <button
-            title="Export PDF (A4)"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm"
-            onClick={exportPDF}
-          >
-            <FileText className="h-3.5 w-3.5" />
-            PDF
-          </button>
-
-          <button
-            title="Start profiling capture (5s)"
-            className={`inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm ${captureRunning ? 'ring-2 ring-amber-300 bg-amber-50 dark:bg-amber-900/30' : ''}`}
-            onClick={() => {
-              if (!captureRunning) startCapture(5000, sampleMs)
-            }}
-          >
-            <Activity className="h-3.5 w-3.5" />
-            {captureRunning ? 'Capturing…' : 'Capture'}
-          </button>
-
-          <div className="hidden md:flex ml-1">
-            <GanttLegend compact={width < 900} palette={{ primary: palette.primary, critical: palette.critical, progress: palette.progress }} />
-          </div>
-        </div>
-      </div>
-
-      {/* Performance controls + grouping */}
-      <div className="px-5 py-2 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/60 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div className="flex items-center gap-3 flex-wrap">
-          <label className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
-            <input type="checkbox" checked={performanceMode} onChange={(e) => setPerformanceMode(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
-            Perf Mode
-          </label>
-          <label className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
-            <input type="checkbox" checked={groupByWBS} onChange={(e) => setGroupByWBS(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
-            Group WBS
-          </label>
-          <label className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
-            <input type="checkbox" checked={disableShadows} onChange={(e) => setDisableShadows(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
-            No Shadows
-          </label>
-          <label className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 cursor-pointer select-none">
-            <input type="checkbox" checked={disableTooltipsWhileInteracting} onChange={(e) => setDisableTooltipsWhileInteracting(e.target.checked)} className="h-3.5 w-3.5 accent-indigo-600 rounded" />
-            No Scroll Tips
-          </label>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <label className="inline-flex items-center gap-1 text-xs text-neutral-400">
-            Tile
-            <input type="number" className="w-14 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-xs text-center" value={tileSizeDays} onChange={(e) => setTileSizeDays(Math.max(10, Number(e.target.value)))} />
-          </label>
-          <label className="inline-flex items-center gap-1 text-xs text-neutral-400">
-            Conn
-            <input type="number" className="w-14 rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-xs text-center" value={connectorRowThreshold} onChange={(e) => setConnectorRowThreshold(Math.max(1, Number(e.target.value)))} />
-          </label>
-          <button
-            className="rounded-lg border border-neutral-200 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-2.5 py-1 text-xs font-medium text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors shadow-sm"
-            onClick={async () => {
-              try {
-                await runPerfAnalyze(8000, sampleMs)
-              } catch (err) {
-                // eslint-disable-next-line no-console
-                console.error('Perf analyze failed', err)
-              }
-            }}
-          >
-            Analyze (8s)
-          </button>
-        </div>
-      </div>
-
-      {/* Chart */}
-      <div ref={containerRef} className="relative overflow-auto outline-none" style={{ height }} onKeyDown={handleKeyDown} tabIndex={0} role="region" aria-label="Gantt chart">
+    <div className="flex flex-col h-full w-full bg-white dark:bg-neutral-900 overflow-hidden">
+      {/* Chart – fills entire container */}
+      <div ref={containerRef} className="relative overflow-auto outline-none flex-1" onKeyDown={handleKeyDown} tabIndex={0} role="region" aria-label="Gantt chart">
         {/* Resizable Split Pane Handle */}
         <div
           className="sticky top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-blue-500/80 hover:scale-x-150 transition-all flex items-center justify-center -ml-1 group"
@@ -1209,25 +1054,32 @@ export default function GanttChart({
                 const isCritical = criticalIds.has(t.id)
                 const isSelected = r.taskIndex === selectedIndex
 
-                const leftCellBase = `sticky left-0 z-10 flex items-center gap-2 px-3 text-sm border-b border-r ${isCritical
-                  ? 'bg-rose-50/60 dark:bg-rose-950/20 border-l-2 border-l-rose-500'
-                  : 'bg-white/95 dark:bg-neutral-900/95'
-                  } ${isSelected ? 'ring-1 ring-sky-300 bg-sky-50 dark:bg-sky-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800/60'}`
+                const leftCellBase = `sticky left-0 z-10 flex items-center gap-2 px-3 text-[12px] border-b border-r transition-colors ${
+                  isCritical
+                    ? 'bg-rose-50/40 dark:bg-rose-950/20 border-l-2 border-l-rose-500'
+                    : globalRowIndex % 2 === 0 ? 'bg-white/95 dark:bg-neutral-900/95' : 'bg-neutral-25 dark:bg-neutral-800/40'
+                } ${isSelected ? 'ring-1 ring-inset ring-brand-primary-300 bg-brand-primary-050 dark:bg-brand-primary-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/60'}`
 
                 const barTop = (rowHeight - barHeight) / 2
                 
-                // Aesthetic Premium Bar Styles
+                // Aesthetic Premium Bar Styles (Capsule + Glass)
                 const barStyle = {
                   left: Math.max(leftColWidth + 4, leftPx),
-                  width: Math.max(6, widthPx - 4),
+                  width: Math.max(8, widthPx - 8),
                   top: barTop,
                   height: barHeight,
-                  background: isCritical ? (disableShadows ? palette.critical : `linear-gradient(180deg, ${palette.critical}, #be123c)`) : (disableShadows ? palette.primary : `linear-gradient(180deg, ${palette.primary}, #4338ca)`),
-                  borderColor: isCritical ? '#9f1239' : '#3730a3',
-                  boxShadow: disableShadows ? 'none' : isCritical ? 'inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 6px rgba(225,29,72,0.3)' : 'inset 0 1px 1px rgba(255,255,255,0.3), 0 2px 6px rgba(79,70,229,0.3)',
+                  borderRadius: barRadius,
+                  background: isCritical 
+                    ? `linear-gradient(180deg, rgb(var(--color-status-danger-fg)), rgb(190, 18, 60))` 
+                    : `linear-gradient(180deg, rgb(var(--brand-primary-500)), rgb(67, 56, 202))`,
+                  border: `1px solid ${isCritical ? 'rgb(159, 18, 57)' : 'rgb(55, 48, 163)'}`,
+                  boxShadow: disableShadows ? 'none' : isCritical 
+                    ? '0 2px 8px rgba(225, 29, 72, 0.4), inset 0 1px 1px rgba(255,255,255,0.4)' 
+                    : '0 2px 8px rgba(79, 70, 229, 0.3), inset 0 1px 1px rgba(255,255,255,0.3)',
+                  backdropFilter: 'blur(2px)',
                 } as React.CSSProperties
 
-                const dimmed = highlightCriticalOnly && !isCritical ? 'opacity-30 saturate-50' : ''
+                const dimmed = highlightCriticalOnly && !isCritical ? 'opacity-20 saturate-50' : ''
                 const shouldUseTooltip = showCpmTooltip && !isInteracting && !(disableTooltipsWhileInteracting && isInteracting)
 
                 // Render Milestone (Diamond) or Standard Task Bar
@@ -1235,16 +1087,13 @@ export default function GanttChart({
                   <div
                     id={`gantt-bar-${t.id}`}
                     role="gridcell"
-                    aria-label={`${t.name} Milestone at ${t.startDate}`}
-                    tabIndex={0}
-                    className={`absolute flex items-center justify-center transition-none cursor-pointer hover:scale-110 ${dimmed}`}
-                    style={{ left: Math.max(leftColWidth + 4, leftPx - barHeight / 2), top: barTop, width: barHeight, height: barHeight, zIndex: 5 }}
+                    aria-label={`${t.name} Milestone`}
+                    className={`absolute flex items-center justify-center transition-transform duration-200 cursor-pointer hover:scale-125 z-20 ${dimmed}`}
+                    style={{ left: leftPx - barHeight / 2, top: barTop, width: barHeight, height: barHeight }}
                     onMouseDown={(e) => { e.preventDefault(); startDrag(t.id, e.clientX, t.startDate) }}
                     onClick={() => { setSelectedIndex(r.taskIndex); onTaskClick?.(t.id) }}
-                    onKeyDown={(e) => { if (e.key === 'Enter') onTaskEdit?.(t.id) }}
-                    title={`${t.startDate} (Milestone)`}
                   >
-                    <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-md" style={{ fill: isCritical ? palette.critical : palette.primary }}>
+                    <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-lg" style={{ fill: isCritical ? palette.critical : palette.primary }}>
                       <path d="M12 2L22 12L12 22L2 12L12 2Z" />
                     </svg>
                   </div>
@@ -1252,30 +1101,27 @@ export default function GanttChart({
                   <div
                     id={`gantt-bar-${t.id}`}
                     role="gridcell"
-                    aria-label={`${t.name} ${t.startDate} to ${t.endDate}`}
-                    tabIndex={0}
-                    className={`absolute rounded border transition-none cursor-pointer ${dimmed}`}
+                    aria-label={`${t.name} Bar`}
+                    className={`absolute transition-opacity duration-200 cursor-pointer group ${dimmed}`}
                     style={barStyle}
                     onMouseDown={(e) => { e.preventDefault(); startDrag(t.id, e.clientX, t.startDate) }}
                     onClick={() => { setSelectedIndex(r.taskIndex); onTaskClick?.(t.id) }}
-                    onKeyDown={(e) => { if (e.key === 'Enter') onTaskEdit?.(t.id) }}
-                    title={`${t.startDate} → ${t.endDate} (${duration}d)`}
                   >
+                    {/* Inner Progress Bar - Inset design */}
                     <div
-                      className="absolute left-0 top-0 h-full rounded-l-[3px]"
-                      style={{
-                        width: `${Math.max(0, Math.min(100, t.progress ?? 0))}%`,
-                        background: palette.progress,
-                      }}
+                      className="absolute left-0 top-0 h-full rounded-l-[3px] bg-white/20"
+                      style={{ width: `${Math.max(0, Math.min(100, t.progress ?? 0))}%` }}
                     />
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-2">
-                      <span className="text-xs font-bold text-white drop-shadow-sm truncate">{Math.round(t.progress ?? 0)}%</span>
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-start px-2 overflow-hidden">
+                      <span className="text-xs font-bold text-white/90 truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                        {Math.round(t.progress ?? 0)}%
+                      </span>
                     </div>
                   </div>
                 )
 
                 return (
-                  <div key={t.id} role="row" aria-rowindex={globalRowIndex + 1} style={{ height: rowHeight }} className="relative">
+                  <div key={t.id} role="row" aria-rowindex={globalRowIndex + 1} style={{ height: rowHeight }} className="relative group/row">
                     <ContextMenu>
                       <ContextMenuTrigger asChild>
                         <div
@@ -1288,16 +1134,30 @@ export default function GanttChart({
                           }}
                           tabIndex={0}
                         >
-                          <span className={`h-2 w-2 rounded-full ${statusColor(t.status)} ring-1 ring-white/80 shrink-0`} />
+                          {/* Line ID / Index */}
+                          <span className="text-xs font-mono text-neutral-400 w-5 shrink-0">
+                            {(globalRowIndex + 1).toString().padStart(2, '0')}
+                          </span>
+                          
+                          {/* Status Dot */}
+                          <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${
+                            t.status === 'completed' ? 'bg-emerald-500' : 
+                            t.status === 'in_progress' ? 'bg-blue-500' : 
+                            'bg-neutral-300'
+                          }`} />
+
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-[12px] font-semibold text-neutral-700 dark:text-neutral-200 leading-tight">{t.name}</div>
-                            {t.assignedResources && t.assignedResources.length > 0 && (
-                              <div className="text-xs text-indigo-500 dark:text-indigo-400 font-medium truncate">
-                                {t.assignedResources.join(', ')}
-                              </div>
-                            )}
-                            <div className="text-xs text-neutral-400 truncate" style={{ maxWidth: leftColWidth - 60 }}>
-                              {isMilestone ? '◆ ' : ''}{t.startDate}{!isMilestone ? ` → ${t.endDate}` : ''}
+                            <div className="truncate font-semibold text-neutral-800 dark:text-neutral-100 leading-tight">
+                              {t.name}
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-neutral-500 font-medium">
+                                {t.startDate}
+                              </span>
+                              <span className="text-xs text-neutral-300">|</span>
+                              <span className="text-xs text-brand-primary-500 font-bold uppercase tracking-wider">
+                                {inclusiveDays(t.startDate, t.endDate)}d
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1396,12 +1256,6 @@ export default function GanttChart({
           </div>
         </div>
       </div>
-
-      {/* mobile legend */}
-      <div className="md:hidden px-4 py-3 border-t bg-white/70 dark:bg-neutral-900/70">
-        <GanttLegend compact palette={{ primary: palette.primary, critical: palette.critical, progress: palette.progress }} />
-      </div>
-
     </div>
   )
 }
