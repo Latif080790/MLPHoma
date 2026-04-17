@@ -3,7 +3,8 @@ import { AppHeader } from "./AppHeader"
 import { AppSidebar } from "./AppSidebar"
 import { cn } from "@/lib/utils"
 import { useBreakpoint } from "@/hooks/use-breakpoint"
-import { SyncStatusBar } from "./SyncStatusBar"
+import { SyncStatusBar, SyncState } from "./SyncStatusBar"
+import { useOfflineQueueStore } from "@/store/offlineQueueStore"
 
 /**
  * AppShell v3 — Fixed layout container.
@@ -40,6 +41,31 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
 
   // Mobile drawer open state
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Offline queue state
+  const { queue, isSyncing, syncQueue } = useOfflineQueueStore()
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [lastSynced, setLastSynced] = useState<Date | undefined>(undefined)
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true)
+      syncQueue().then(() => setLastSynced(new Date()))
+    }
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [syncQueue])
+
+  let syncState: SyncState = 'synced'
+  if (!isOnline) syncState = 'offline'
+  else if (isSyncing) syncState = 'pending'
+  else if (queue.length > 0) syncState = 'error' // has queue but online and not syncing = error/failed previously
 
   // Sync to local storage (desktop collapsed state)
   useEffect(() => {
@@ -107,7 +133,11 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
       </div>
 
       {/* Persistence Feedback — WF01 */}
-      <SyncStatusBar />
+      <SyncStatusBar 
+        state={syncState}
+        pendingCount={queue.length}
+        lastSynced={lastSynced}
+      />
     </div>
   )
 }

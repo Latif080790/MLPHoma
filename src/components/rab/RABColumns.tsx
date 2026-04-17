@@ -1,5 +1,5 @@
-import React from 'react'
 import { ColumnDef } from '@tanstack/react-table'
+import { Link } from 'react-router-dom'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -123,9 +123,11 @@ export const getRABColumns = (
             {validLinksByRabItem[item.id]?.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {validLinksByRabItem[item.id].map((l: any) => (
-                  <Badge key={l.id} variant="secondary" className="px-1 py-0 h-4 text-[9px] bg-indigo-50 text-indigo-600 border-indigo-100">
-                    <Link2 size={8} className="mr-0.5" /> {l.wbsItemId.substring(0, 8)}
-                  </Badge>
+                  <Link key={l.id} to={`/schedule?taskId=${l.wbsItemId}`} title="Lihat di Timeline">
+                    <Badge variant="secondary" className="px-1 py-0 h-4 text-[9px] bg-indigo-50 text-indigo-600 border-indigo-100 cursor-pointer hover:bg-indigo-100 hover:text-indigo-700 transition-colors">
+                      <Link2 size={8} className="mr-0.5" /> Gantt: {l.wbsItemId.substring(0, 8)}
+                    </Badge>
+                  </Link>
                 ))}
               </div>
             )}
@@ -144,6 +146,16 @@ export const getRABColumns = (
         value={row.original.volume || ''}
         className="h-7 text-right text-xs bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 transition-all font-mono"
         onChange={(e) => onVolumeChange(row.original.id, e.target.value)}
+        onKeyDown={(e) => {
+          if (e.ctrlKey && e.key === 's') {
+            e.preventDefault()
+            const saveBtn = document.getElementById('btn-publish-drafts')
+            if (saveBtn) saveBtn.click()
+          }
+          if (e.key === 'Enter') {
+            e.currentTarget.blur() // exit edit mode mentally
+          }
+        }}
       />
     ),
     size: 100,
@@ -170,6 +182,16 @@ export const getRABColumns = (
         disabled={projectLocked || !!row.original.snapshot_price}
         className="h-7 text-right text-xs font-mono bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 transition-all disabled:opacity-50"
         onChange={(e) => onPriceChange(row.original.id, e.target.value)}
+        onKeyDown={(e) => {
+          if (e.ctrlKey && e.key === 's') {
+            e.preventDefault()
+            const saveBtn = document.getElementById('btn-publish-drafts')
+            if (saveBtn) saveBtn.click()
+          }
+          if (e.key === 'Enter') {
+            e.currentTarget.blur()
+          }
+        }}
       />
     ),
     size: 140,

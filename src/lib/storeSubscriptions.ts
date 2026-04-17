@@ -1,18 +1,34 @@
 /**
- * src/lib/storeSubscriptions.ts — Phase 10
+ * src/lib/storeSubscriptions.ts — Phase 10 (Updated: Sprint 1)
  * 
  * Centralized reactivity logic for cross-store synchronization.
- * This ensures that a change in one module (e.g., Resource Price) 
- * automatically propagates throughout the entire enterprise data chain:
- * AHSP -> RAB -> Timeline -> Cost Forecast.
+ * Data chain: AHSP → RAB → Timeline → RAP → CurvaS
+ *
+ * Subscriptions:
+ * [1] AHSP    → RAB   : Update RAB unit prices when catalog changes
+ * [2] RAB     → Timeline : Propagate RAB cost changes to linked tasks
+ * [3] Timeline → RAP  : Recalculate monthly distribution when schedule changes
+ * [4] RAP     → CurvaS  : Rebuild S-Curve data points when RAP plan changes
+ *             (Handled in rapStore.ts bottom-of-file subscription)
  */
 
 import { useAHSPStore } from '@/store/ahspStore'
 import { useRabStore } from '@/store/rabStore'
 import { useTimelineStore } from '@/store/timelineStore'
+import { useRapStore } from '@/store/rapStore'
 import { useProjectStore } from '@/store/projectStore'
+import { toast } from 'sonner'
 
 let isInitialized = false
+
+/** Debounce helper — prevents rapid successive triggers from cascading */
+function debounce<T extends(...args: unknown[]) => void>(fn: T, ms: number): T {
+  let timer: ReturnType<typeof setTimeout>
+  return ((...args: unknown[]) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), ms)
+  }) as T
+}
 
 /**
  * Initialize all cross-store subscriptions.
@@ -22,46 +38,82 @@ export function initStoreSubscriptions() {
   if (isInitialized) return
   isInitialized = true
 
-  console.info('[Sync] Initializing Cross-Store Subscriptions')
+  console.info('[Sync] Initializing Cross-Store Subscriptions — 4 pipelines active')
 
-  // 1. AHSP -> RAB: Update RAB unit prices when AHSP (Catalog) changes
-  // This listener fires when ahspItems in AHSP store are updated
+  // ── Subscription 1: AHSP → RAB ──────────────────────────────────────────────
+  // Update RAB unit prices when AHSP (Resource Catalog) changes
   useAHSPStore.subscribe(
     (state) => state.ahspItems,
     (items) => {
       if (!items || items.length === 0) return
-      
+
       const activeProjectId = useProjectStore.getState().activeProjectId
       if (!activeProjectId) return
 
-      console.debug(`[Sync] AHSP Catalog changed (${items.length} items). Triggering RAB drift check.`)
-      
-      // Debounce logic already exists in checkPriceDrift/syncWithCatalog
-      // But we trigger it here to ensure reactivity
+      console.debug(`[Sync 1/4] AHSP Catalog changed (${items.length} items). Triggering RAB drift check.`)
+
+      // checkPriceDrift handles debounce internally
       useRabStore.getState().checkPriceDrift()
     }
   )
 
-  // 2. RAB -> Timeline: Update Task Costs when RAB volume/price changes
-  // We subscribe to itemsByProject in rabStore
-  useRabStore.subscribe(
-    (state) => state.itemsByProject,
-    () => {
-      console.debug('[Sync] RAB items changed. Propagating to Timeline.')
-      
-      // Sync timeline costs from RAB
-      useTimelineStore.getState().syncTaskCostsFromRAB()
-    }
-  )
+  // ── Subscription 2: RAB → Timeline ──────────────────────────────────────────
+  // Sync task cost metadata when RAB item prices/volumes change
+  // NOTE: Primary handler is in rabStore.ts eventBus 'rab:changed' listener.
+  // This subscribe adds a reactive layer for direct store mutations.
+  const debouncedRabToTimeline = debounce(() => {
+    console.debug('[Sync 2/4] RAB items changed. Propagating costs to Timeline.')
+    useTimelineStore.getState().syncTaskCostsFromRAB()
+  }, 300)
 
-  // 3. Timeline -> Curva-S: Recalculate S-Curve when Timeline progresses
-  // Assuming useCostForecastStore or similar exists
-  useTimelineStore.subscribe(
-    (state) => state.tasksByProject,
-    () => {
-      console.debug('[Sync] Timeline tasks changed. Refreshing Curves.')
-      // If we had a forecast store, we would trigger it here:
-      // useCostForecastStore.getState().recalculate()
+  // useRabStore does NOT use subscribeWithSelector — use 1-arg subscribe with closure comparison
+  let prevRabItems = useRabStore.getState().itemsByProject
+  useRabStore.subscribe((state) => {
+    if (state.itemsByProject !== prevRabItems) {
+      prevRabItems = state.itemsByProject
+      debouncedRabToTimeline()
     }
-  )
+  })
+
+  // ── Subscription 3: Timeline → RAP ──────────────────────────────────────────
+  // Recalculate RAP monthly distribution when schedule (task dates) changes.
+  // This propagates date changes into the time-phased cost profile.
+  const debouncedTimelineToRap = debounce(() => {
+    const activeProjectId = useProjectStore.getState().activeProjectId
+    if (!activeProjectId) return
+
+    console.debug('[Sync 3/4] Timeline changed. Recalculating RAP distribution.')
+    useRapStore.getState().recalculateDistribution(activeProjectId)
+
+    // After RAP distribution updates, trigger CurvaS rebuild via the
+    // rapStore bottom-of-file subscription (Subscription 4 — handled in rapStore.ts)
+  }, 500)
+
+  // useTimelineStore does NOT use subscribeWithSelector — use 1-arg subscribe with closure comparison
+  let prevTasks = useTimelineStore.getState().tasksByProject
+  useTimelineStore.subscribe((state) => {
+    if (state.tasksByProject !== prevTasks) {
+      prevTasks = state.tasksByProject
+      debouncedTimelineToRap()
+    }
+  })
+
+  console.info('[Sync] Pipeline ready: AHSP → RAB → Timeline → RAP → CurvaS')
+}
+
+/**
+ * Toast notification for successful RAB → sync propagation.
+ * Called after publishDrafts / bulk RAB update to confirm chain sync.
+ */
+export function notifySyncComplete(projectId: string) {
+  const rapLastSync = useRapStore.getState().lastSyncedAt
+  const description = rapLastSync
+    ? `RAP & Curva-S tersinkronisasi ✓`
+    : 'Timeline tersinkronisasi ✓'
+
+  toast.success('RAB diperbarui', {
+    description,
+    duration: 3500,
+    id: `rab-sync-${projectId}`,  // prevent duplicates
+  })
 }

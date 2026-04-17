@@ -2,6 +2,7 @@ import React from 'react'
 import { Layers } from 'lucide-react'
 import { formatIDR } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 import type { AHSPComponent } from '@/types/ahsp'
 
 interface RABSubComponentProps {

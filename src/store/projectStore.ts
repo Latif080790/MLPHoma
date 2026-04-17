@@ -12,7 +12,8 @@
 
 import { create } from 'zustand'
 import { createCachedGetter } from '../lib/cachedGetter'
-import { fetchProjects, supabase, assertSupabase } from '../lib/supabaseClient'
+import { supabase } from '../lib/supabaseClient'
+import { projectService } from '../services/projectService'
 import { syncProject as syncProj, syncDelete } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import { projectInputSchema, projectUpdateSchema } from '../lib/validationSchemas'
@@ -288,14 +289,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
 
         // Supabase RPC to freeze baselines
         try {
-          const client = assertSupabase()
-          // If project ID is still uuid, we pass it. If it changed to text, it's fine too.
-          const { error } = await client.rpc('freeze_project_baseline', {
-            p_project_id: projectId,
-            p_snapshot_name: 'Initial Baseline'
-          })
-
-          if (error) throw error
+          await projectService.freezeProjectBaseline(projectId, 'Initial Baseline')
 
           const currentUser = useAuthStore.getState().user
           auditService.log({
@@ -401,7 +395,7 @@ export const useProjectStore = create<ProjectState>((set, get) => {
     loadProjects: async () => {
       if (!supabase) return
       try {
-        const { data, error } = await fetchProjects()
+        const { data, error } = await projectService.fetchProjects()
         if (error) throw error
         if (data) {
           const projects: Record<string, Project> = {}

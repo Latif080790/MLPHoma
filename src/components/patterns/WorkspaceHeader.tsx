@@ -41,6 +41,8 @@ interface WorkspaceHeaderProps {
   overflowActions?: WorkspaceAction[];
   /** Optional breadcrumb or path indicator */
   breadcrumb?: React.ReactNode;
+  /** Custom content to render before actions (e.g. avatars) */
+  extraContent?: React.ReactNode;
   /** Additional class names */
   className?: string;
 }
@@ -52,6 +54,7 @@ export function WorkspaceHeader({
   secondaryActions = [],
   overflowActions = [],
   breadcrumb,
+  extraContent,
   className,
 }: WorkspaceHeaderProps) {
   return (
@@ -76,8 +79,14 @@ export function WorkspaceHeader({
           )}
         </div>
 
-        {/* Actions */}
+        {/* Actions & Extra Content */}
         <div className="flex items-center gap-space-2 shrink-0">
+          {extraContent && (
+            <div className="flex items-center gap-space-2 animate-in fade-in duration-300 mr-space-2">
+              {extraContent}
+              <div className="h-4 w-px bg-border-default/50 dark:bg-border-subtle" />
+            </div>
+          )}
           {/* Secondary actions */}
           {secondaryActions.map((action, i) => (
             <Button

@@ -5,7 +5,7 @@
 
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import { assertSupabase } from '../lib/supabaseClient'
+import { rabApprovalService } from '../services/rabApprovalService'
 import { toast } from 'sonner'
 import { generateId } from '../lib/idGenerator'
 import type {
@@ -122,24 +122,8 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
             }
 
             // Save to Supabase
-            const supabase = assertSupabase()
-            const { error } = await supabase
-              .from('rab_approvals')
-              .insert({
-                id: approval.id,
-                project_id: approval.projectId,
-                rab_version_id: approval.rabVersionId,
-                status: approval.status,
-                submitted_at: approval.submittedAt.toISOString(),
-                submitted_by: approval.submittedBy,
-                submitted_by_name: approval.submittedByName,
-                current_step: approval.currentStep,
-                approval_chain: approval.approvalChain,
-                created_at: approval.createdAt.toISOString(),
-                updated_at: approval.updatedAt.toISOString()
-              })
+            await rabApprovalService.createApproval(approval)
 
-            if (error) throw error
 
             // Create history entry
             const historyEntry: ApprovalHistoryEntry = {
@@ -229,18 +213,13 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
             }
 
             // Update Supabase
-            const supabase = assertSupabase()
-            const { error } = await supabase
-              .from('rab_approvals')
-              .update({
-                status: updatedApproval.status,
-                current_step: updatedApproval.currentStep,
-                approval_chain: updatedApproval.approvalChain,
-                updated_at: updatedApproval.updatedAt.toISOString()
-              })
-              .eq('id', action.approvalId)
+            await rabApprovalService.updateApprovalStatus(
+              action.approvalId,
+              updatedApproval.status,
+              updatedApproval.currentStep,
+              updatedApproval.approvalChain
+            )
 
-            if (error) throw error
 
             // Create history entry
             const historyEntry: ApprovalHistoryEntry = {
@@ -319,18 +298,14 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
             }
 
             // Update Supabase
-            const supabase = assertSupabase()
-            const { error } = await supabase
-              .from('rab_approvals')
-              .update({
-                status: updatedApproval.status,
-                rejection_reason: updatedApproval.rejectionReason,
-                approval_chain: updatedApproval.approvalChain,
-                updated_at: updatedApproval.updatedAt.toISOString()
-              })
-              .eq('id', action.approvalId)
+            await rabApprovalService.updateApprovalStatus(
+              action.approvalId,
+              updatedApproval.status,
+              updatedApproval.currentStep,
+              updatedApproval.approvalChain,
+              updatedApproval.rejectionReason
+            )
 
-            if (error) throw error
 
             // Create history entry
             const historyEntry: ApprovalHistoryEntry = {
@@ -386,17 +361,14 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
             }
 
             // Update Supabase
-            const supabase = assertSupabase()
-            const { error } = await supabase
-              .from('rab_approvals')
-              .update({
-                status: 'cancelled',
-                rejection_reason: reason,
-                updated_at: updatedApproval.updatedAt.toISOString()
-              })
-              .eq('id', approvalId)
+            await rabApprovalService.updateApprovalStatus(
+              approvalId,
+              'cancelled',
+              updatedApproval.currentStep,
+              updatedApproval.approvalChain,
+              reason
+            )
 
-            if (error) throw error
 
             // Create history entry
             const historyEntry: ApprovalHistoryEntry = {
@@ -460,14 +432,7 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
           }))
 
           try {
-            const supabase = assertSupabase()
-            const { data, error } = await supabase
-              .from('rab_approvals')
-              .select('*')
-              .eq('project_id', projectId)
-              .order('created_at', { ascending: false })
-
-            if (error) throw error
+            const data = await rabApprovalService.getApprovalsByProject(projectId)
 
             const approvals: Record<string, RABApproval> = {}
             data?.forEach((row: Record<string, unknown>) => {

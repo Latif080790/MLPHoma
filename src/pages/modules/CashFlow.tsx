@@ -136,8 +136,8 @@ export default function CashFlow(): JSX.Element {
         return
       }
 
-      const curvaPlan = rapPlan.map((entry) => ({
-        period: entry.date,
+      const curvaPlan = rapPlan.map((entry: any) => ({
+        period: entry.period || entry.date || '',
         planned: entry.planned || 0,
         actual: entry.actual || 0,
       }))

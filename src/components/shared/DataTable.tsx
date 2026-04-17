@@ -153,6 +153,7 @@ export function DataTable<TData, TValue>({
 
 
   // Virtualization Setup
+  const isVirtualized = data.length > 100 || virtualized
   const tableContainerRef = React.useRef<HTMLDivElement>(null)
   const { rows } = table.getRowModel()
 
@@ -177,7 +178,7 @@ export function DataTable<TData, TValue>({
       <div 
         ref={tableContainerRef}
         className="relative overflow-auto custom-scrollbar"
-        style={{ height: virtualized ? maxHeight : 'auto' }}
+        style={{ height: isVirtualized ? maxHeight : 'auto' }}
       >
         <Table className="relative w-full border-separate border-spacing-0 table-fixed">
           <TableHeader className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 shadow-sm">
@@ -201,7 +202,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="relative" style={{ height: virtualized ? `${rowVirtualizer.getTotalSize()}px` : 'auto' }}>
+          <TableBody className="relative" style={{ height: isVirtualized ? `${rowVirtualizer.getTotalSize()}px` : 'auto' }}>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
@@ -213,7 +214,7 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : rows.length > 0 ? (
-              virtualized ? (
+              isVirtualized ? (
                 rowVirtualizer.getVirtualItems().map((virtualRow) => {
                   const row = rows[virtualRow.index]
                   return (

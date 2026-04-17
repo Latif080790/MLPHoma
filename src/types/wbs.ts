@@ -52,6 +52,16 @@ export interface WBSTreeState {
   loading: boolean
   /** Error message */
   error: string | null
+  /**
+   * Pending delete confirmation — set when user tries to delete a WBS node
+   * that has linked Timeline tasks. UI should show AlertDialog before confirming.
+   */
+  pendingDeleteConfirmation: {
+    projectId: string
+    wbsId: string
+    wbsCode: string
+    affectedTaskNames: string[]
+  } | null
 }
 
 /** WBS Actions */
@@ -82,6 +92,10 @@ export interface WBSActions {
   fetchItems: (projectId: string) => Promise<void>
   /** Clear project WBS */
   clearProject: (projectId: string) => void
+  /** Confirm pending delete — executes the guarded deletion */
+  confirmDelete: () => void
+  /** Cancel pending delete — dismisses the confirmation dialog */
+  cancelDelete: () => void
 }
 
 /** WBS Store Interface */

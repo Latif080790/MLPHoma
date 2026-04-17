@@ -33,7 +33,7 @@ describe('rapStore', () => {
   beforeEach(() => {
     useRapStore.setState({
       items: [],
-      isLoading: false,
+      loading: false,
       error: null,
     })
     vi.clearAllMocks()
@@ -99,7 +99,7 @@ describe('rapStore', () => {
 
       const state = useRapStore.getState()
       expect(state.items).toHaveLength(1)
-      expect(state.isLoading).toBe(false)
+      expect(state.loading).toBe(false)
       expect(state.error).toBeNull()
     })
 
@@ -110,7 +110,7 @@ describe('rapStore', () => {
       await useRapStore.getState().fetchItems('P-001')
 
       const state = useRapStore.getState()
-      expect(state.isLoading).toBe(false)
+      expect(state.loading).toBe(false)
       expect(state.error).toBeTruthy()
     })
   })

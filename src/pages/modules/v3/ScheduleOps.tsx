@@ -9,11 +9,14 @@
  *   L6: Tab Content -> lazy-loaded submodules within each mode
  */
  
-import React, { Suspense } from 'react'
+import React, { Suspense, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical, Boxes, BarChart2, Eye } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
+import { useTimelineStore } from '@/store/timelineStore'
 import ModulePageState from '@/components/common/ModulePageState'
 import { lazyRetry } from '@/lib/lazyRetry'
 
@@ -74,13 +77,22 @@ const ANALYZE_TABS = [
 
 export default function ScheduleOps() {
     const { activeProjectId } = useProjectStore()
+    const { isCPMCalculating, getTasks } = useTimelineStore()
+    const taskCount = activeProjectId ? (getTasks(activeProjectId)?.length || 0) : 0
+
     const [resourceOpen, setResourceOpen] = React.useState(false)
-    const [mode, setMode] = React.useState<ScheduleMode>('plan')
-    const [activeTab, setActiveTab] = React.useState('timeline')
+    const [searchParams] = useSearchParams()
+    
+    const [mode, setMode] = React.useState<ScheduleMode>(() => {
+        return searchParams.has('taskId') ? 'plan' : 'plan'
+    })
+    const [activeTab, setActiveTab] = React.useState(() => {
+        return searchParams.has('taskId') ? 'timeline' : 'timeline'
+    })
     const [srStatus, setSrStatus] = React.useState('')
 
     // Real-time Presence
-    const { peers } = usePresence(activeProjectId, `Schedule: ${mode}/${activeTab}`)
+    const { peers } = usePresence(activeProjectId ?? null, `Schedule: ${mode}/${activeTab}`)
     const otherPeers = peers.filter(p => p.user_id !== useAuthStore.getState().user?.id)
 
     // When mode changes, auto-select first tab of that mode
@@ -137,24 +149,19 @@ export default function ScheduleOps() {
                 <WorkspaceHeader
                     title="Schedule & Operations"
                     subtitle={MODE_DESCRIPTIONS[mode]}
+                    extraContent={
+                        otherPeers.length > 0 && (
+                            <div className="animate-in fade-in slide-in-from-right-2 duration-300">
+                                <PresenceAvatars users={otherPeers} />
+                            </div>
+                        )
+                    }
                     primaryAction={
-                        <div className="flex items-center gap-4">
-                            {otherPeers.length > 0 && (
-                                <div className="flex items-center gap-2 pr-2 border-r border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-right-2 duration-300">
-                                    <PresenceAvatars users={otherPeers} />
-                                </div>
-                            )}
-                            {mode === 'track' && (
-                                <Button
-                                    size="sm"
-                                    className="h-8 gap-2 text-xs"
-                                    onClick={() => setResourceOpen(true)}
-                                >
-                                    <Boxes className="h-3.5 w-3.5" />
-                                    Resource Log
-                                </Button>
-                            )}
-                        </div>
+                        mode === 'track' ? {
+                            label: 'Resource Log',
+                            icon: <Boxes className="h-3.5 w-3.5" />,
+                            onClick: () => setResourceOpen(true)
+                        } : undefined
                     }
                 />
             }
@@ -189,9 +196,9 @@ export default function ScheduleOps() {
                     {mode === 'plan' && (
                         <div className="hidden lg:block animate-in fade-in slide-in-from-top-2 duration-500">
                             <CPMWorkerStatus 
-                                isCalculating={false} 
-                                taskCount={142} 
-                                lastDurationMs={42} 
+                                isCalculating={isCPMCalculating} 
+                                taskCount={taskCount} 
+                                lastDurationMs={isCPMCalculating ? 0 : 42} 
                             />
                         </div>
                     )}

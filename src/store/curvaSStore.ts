@@ -67,6 +67,17 @@ interface CurvaSState {
     totalBudget: number
   ) => void
 
+  /**
+   * Pull RAP data directly and rebuild S-Curve planned baseline.
+   * Call this from the CurvaS page UI as a manual "Refresh from RAP" action.
+   * Subscription 4 in storeSubscriptions handles automatic updates.
+   */
+  recalculateFromRAP: (projectId: string) => void
+
+  // Standard contract
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+
   // Progress → CurvaS sync
   syncFromProgress: (
     projectId: string,
@@ -81,11 +92,11 @@ interface CurvaSState {
   getDataPoints: (projectId: string) => CurvaSDataPoint[]
   getAnalysis: (projectId: string) => CurvaSAnalysis | null
   getSavedScenarios: (projectId: string) => SavedScenario[]
-  
-  // Standard async state
+
+  // Standard async state (lastSyncedAt: ms epoch timestamp, consistent with StandardStoreContract)
   loading: boolean
   error: string | null
-  lastSyncedAt: string | null
+  lastSyncedAt: number | null
 }
 
 function toDate(d: string): Date {
@@ -203,6 +214,34 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
   error: null,
   lastSyncedAt: null,
 
+  setLoading: (loading: boolean) => set({ loading }),
+  setError: (error: string | null) => set({ error }),
+
+  /**
+   * S1-01: recalculateFromRAP — Pull current RAP plan and push to CurvaS.
+   * Available as a manual "Sync from RAP" action in the UI.
+   */
+  recalculateFromRAP: async (projectId: string) => {
+    set({ loading: true, error: null })
+    try {
+      const { useRapStore } = await import('./rapStore')
+      const rapState = useRapStore.getState()
+      const items = rapState.items.filter(i => i.project_id === projectId)
+
+      if (items.length === 0) {
+        set({ loading: false, error: 'Tidak ada item RAP untuk project ini' })
+        return
+      }
+
+      const plan = rapState.getPlan(projectId)
+      const totalBudget = items.reduce((sum, i) => sum + (i.total_budget || 0), 0)
+
+      get().setPlannedFromRap(projectId, plan, totalBudget)
+    } catch (err: unknown) {
+      set({ loading: false, error: (err as Error).message })
+    }
+  },
+
   analyzeProject: (projectId) => {
     set({ loading: true, error: null })
     try {
@@ -281,7 +320,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
 
   setPlannedFromRap: (projectId, rapPlan, totalBudget) => {
     if (!projectId || !rapPlan || rapPlan.length === 0) return
-    set({ loading: true, lastSyncedAt: new Date().toISOString() })
+    set({ loading: true, lastSyncedAt: Date.now() })
     const plan = [...rapPlan].map((p) => ({
       period: String(p.period || '').trim(),
       planned: Number.isFinite(p.planned) ? Number(p.planned) : 0,
@@ -331,7 +370,7 @@ export const useCurvaSStore = create<CurvaSState>((set, get) => ({
   // Progress → CurvaS sync
   syncFromProgress: (projectId, entries) => {
     if (!projectId || !entries || entries.length === 0) return
-    set({ loading: true, lastSyncedAt: new Date().toISOString() })
+    set({ loading: true, lastSyncedAt: Date.now() })
     const state = get()
     const existing = state.dataPoints[projectId] || EMPTY_POINTS
     const nowIso = new Date().toISOString()

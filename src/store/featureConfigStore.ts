@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { assertSupabase } from '../lib/supabaseClient'
+import { featureConfigService } from '../services/featureConfigService'
 import { generateDefaultFeatureConfig } from '../lib/featureDefaults'
 import type { FeatureConfig } from '../config/features/featureConfig'
 import { toast } from 'sonner'
@@ -21,29 +21,13 @@ export const useFeatureConfigStore = create<FeatureConfigState>((set, get) => ({
 
   fetchConfig: async (projectId: string) => {
     set({ loading: true, error: null })
-    const client = assertSupabase()
-
     try {
-      const { data, error } = await client
-        .from('feature_configs')
-        .select('config')
-        .eq('project_id', projectId)
-        .single()
+      let config = await featureConfigService.getFeatureConfig(projectId)
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-        throw error
-      }
-
-      let config: FeatureConfig
-      if (!data) {
+      if (!config) {
         // Initialize with defaults if not exists
         config = generateDefaultFeatureConfig(projectId)
-        await client.from('feature_configs').insert({
-          project_id: projectId,
-          config: config
-        })
-      } else {
-        config = data.config as FeatureConfig
+        await featureConfigService.createFeatureConfig(projectId, config)
       }
 
       set(state => ({
@@ -69,17 +53,8 @@ export const useFeatureConfigStore = create<FeatureConfigState>((set, get) => ({
       configs: { ...state.configs, [projectId]: newConfig }
     }))
 
-    const client = assertSupabase()
     try {
-      const { error } = await client
-        .from('feature_configs')
-        .upsert({
-          project_id: projectId,
-          config: newConfig,
-          updated_at: new Date().toISOString()
-        })
-
-      if (error) throw error
+      await featureConfigService.updateFeatureConfig(projectId, newConfig)
     } catch (err: any) {
       // Rollback
       set(state => ({

@@ -11,6 +11,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Label } from '../../components/ui/label'
@@ -207,6 +208,15 @@ export default function Timeline() {
   const [pendingDeleteTaskId, setPendingDeleteTaskId] = useState<string | null>(null)
   // Track per-project fetch completion to gate the demo-seed guard
   const [fetchedForProject, setFetchedForProject] = useState<string | null>(null)
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    const taskIdInQuery = searchParams.get('taskId')
+    if (taskIdInQuery) {
+      setSelectedId(taskIdInQuery)
+      // Remove or keep the search param. We'll just read it here to highlight.
+    }
+  }, [searchParams])
 
   // Toolbar states
   const [criticalOnly, setCriticalOnly] = useState<boolean>(false)

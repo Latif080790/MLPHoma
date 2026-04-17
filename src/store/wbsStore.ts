@@ -48,13 +48,43 @@ function sortHierarchy(items: WBSItem[]): WBSItem[] {
  */
 export const useWBSStore = create<WBSStore>()(
   devtools(
-    (set, get) => ({
+    (set, get) => {
+      /**
+       * Internal helper: perform the actual WBS deletion.
+       * Lives in closure (not in store type) to keep WBSStore interface clean.
+       */
+      function executeDelete(projectId: string, toDelete: Set<string>) {
+        const toDeleteIds: string[] = [...toDelete]
+
+        set((state) => {
+          const items = state.itemsByProject[projectId] || []
+          const updatedItems = items.filter(item => !toDelete.has(item.id))
+          const finalItems = generateCodesForProject(updatedItems)
+          const newSelectedId = state.selectedId && toDelete.has(state.selectedId)
+            ? null
+            : state.selectedId
+          return {
+            itemsByProject: { ...state.itemsByProject, [projectId]: finalItems },
+            selectedId: newSelectedId,
+            pendingDeleteConfirmation: null,
+          }
+        })
+
+        toDeleteIds.forEach(itemId => { wbsService.syncDelete(itemId) })
+        eventBus.emit('wbs:deleted', { projectId, wbsItemIds: toDeleteIds })
+        const remaining = get().itemsByProject[projectId] || []
+        if (remaining.length > 0) wbsService.syncItems(remaining, projectId)
+      }
+
+      return ({
+
       // Initial state
       itemsByProject: {},
       selectedId: null,
       expandedIds: new Set(),
       loading: false,
       error: null,
+      pendingDeleteConfirmation: null,
 
       // Add new WBS item
       addItem: (projectId, item) => {
@@ -167,11 +197,10 @@ export const useWBSStore = create<WBSStore>()(
 
       // Delete WBS item (and children) — with referential integrity guard
       deleteItem: (projectId, id) => {
-        const toDeleteIds: string[] = []
         const currentItems = get().itemsByProject[projectId] || []
 
-        // ── Phase 4: Referential Integrity Guard ────────────────────────────
-        // Before deleting, check if timeline tasks reference any of these WBS items
+        // ── Phase 4+: Referential Integrity Guard (BLOCKING) ─────────────────
+        // Collect all IDs to delete (item + all descendants)
         const toDelete = new Set<string>([id])
         let added = true
         while (added) {
@@ -186,6 +215,10 @@ export const useWBSStore = create<WBSStore>()(
           })
         }
 
+        // Find the WBS item being deleted for display info
+        const wbsItem = currentItems.find(i => i.id === id)
+        const wbsCode = wbsItem?.code ?? id
+
         // Check timeline for linked tasks (dynamic import to avoid circular deps)
         import('./timelineStore').then(module => {
           const timelineState = module.useTimelineStore.getState()
@@ -195,51 +228,69 @@ export const useWBSStore = create<WBSStore>()(
           )
 
           if (linkedTasks.length > 0) {
-            const taskNames = linkedTasks.slice(0, 3).map((t: { name: string }) => t.name).join(', ')
-            const extra = linkedTasks.length > 3 ? ` dan ${linkedTasks.length - 3} lainnya` : ''
-            toast.warning(
-              `WBS terhubung ke ${linkedTasks.length} task pada Timeline`,
-              `Task: ${taskNames}${extra}. Task-task ini akan menjadi "WBS Unlinked" setelah penghapusan.`
-            )
+            // BLOCK: set pending confirmation instead of proceeding
+            const affectedTaskNames = linkedTasks.slice(0, 5).map((t: { name: string }) => t.name)
+            set({
+              pendingDeleteConfirmation: {
+                projectId,
+                wbsId: id,
+                wbsCode,
+                affectedTaskNames,
+              }
+            })
+            return // Do NOT proceed with delete
           }
+
+          // No linked tasks — proceed with deletion directly
+          executeDelete(projectId, toDelete)
         }).catch(() => {
-          // Store not available
+          // Timeline store not available — proceed with deletion
+          executeDelete(projectId, toDelete)
         })
         // ── End Guard ─────────────────────────────────────────────────────────
+      },
 
-        set((state) => {
-          const items = state.itemsByProject[projectId] || []
 
-          toDeleteIds.push(...toDelete)
+      /** Confirm pending delete — executes the guarded deletion */
+      confirmDelete: () => {
+        const pending = get().pendingDeleteConfirmation
+        if (!pending) return
 
-          // Remove items
-          const updatedItems = items.filter(item => !toDelete.has(item.id))
+        const { projectId, wbsId } = pending
+        const currentItems = get().itemsByProject[projectId] || []
 
-          // Regenerate codes
-          const finalItems = generateCodesForProject(updatedItems)
+        // Rebuild toDelete set
+        const toDelete = new Set<string>([wbsId])
+        let added = true
+        while (added) {
+          added = false
+          currentItems.forEach(item => {
+            if (item.parentId && toDelete.has(item.parentId)) {
+              if (!toDelete.has(item.id)) {
+                toDelete.add(item.id)
+                added = true
+              }
+            }
+          })
+        }
 
-          // Update selection if needed
-          const newSelectedId = state.selectedId && toDelete.has(state.selectedId)
-            ? null
-            : state.selectedId
+        // Mark timeline tasks as WBS-unlinked before deleting
+        import('./timelineStore').then(module => {
+          const timelineStore = module.useTimelineStore.getState()
+          const allTasks = timelineStore.tasksByProject[projectId] || []
+          allTasks.forEach((t: { id: string; wbsId?: string }) => {
+            if (t.wbsId && toDelete.has(t.wbsId)) {
+              timelineStore.updateTask(projectId, t.id, { wbsId: undefined })
+            }
+          })
+        }).catch(() => {})
 
-          return {
-            itemsByProject: {
-              ...state.itemsByProject,
-              [projectId]: finalItems,
-            },
-            selectedId: newSelectedId,
-          }
-        })
+        executeDelete(projectId, toDelete)
+      },
 
-        // Sync deletions + re-sync remaining items (codes of siblings changed)
-        toDeleteIds.forEach(itemId => {
-          wbsService.syncDelete(itemId)
-        })
-        // Emit event for downstream subscribers (rabWbsLinkStore) to clean up links
-        eventBus.emit('wbs:deleted', { projectId, wbsItemIds: toDeleteIds })
-        const remaining = get().itemsByProject[projectId] || []
-        if (remaining.length > 0) wbsService.syncItems(remaining, projectId)
+      /** Cancel pending delete — dismiss dialog */
+      cancelDelete: () => {
+        set({ pendingDeleteConfirmation: null })
       },
 
 
@@ -481,7 +532,8 @@ export const useWBSStore = create<WBSStore>()(
           }
         })
       },
-    }),
+    })  // end of return ({
+    },  // end of (set, get) => {
     {
       name: 'wbs-store',
     }

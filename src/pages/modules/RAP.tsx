@@ -59,7 +59,7 @@ export default function RAP(): JSX.Element {
   const projectId = project?.id || ''
 
   // New Store (RAP Items) — all hooks BEFORE any early return
-  const { items, fetchItems, initFromRab, isLoading, updateItem } = useRapStore()
+  const { items, fetchItems, initFromRab, loading: isLoading, updateItem } = useRapStore()
   const { getItems: getRabItems, getDraftCount } = useRabStore()
 
   // Local state

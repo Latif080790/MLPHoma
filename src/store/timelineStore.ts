@@ -119,6 +119,20 @@ export interface TimelineState {
 
   /** Sync cost data from RAB items into linked timeline tasks */
   syncTaskCostsFromRAB: () => void
+
+  // ── Standard Store Contract additions ─────────────────────────────────────
+  /** Timestamp of last successful fetch (ms since epoch) */
+  lastSyncedAt: number | null
+  /** Standard setLoading action */
+  setLoading: (loading: boolean) => void
+  /** Standard setError action */
+  setError: (error: string | null) => void
+  /** True while CPM Web Worker is computing critical path */
+  isCPMCalculating: boolean
+  /** Set CPM calculating state */
+  setCPMCalculating: (calculating: boolean) => void
+  /** Returns all tasks linked to a specific WBS ID — used by WBS deletion guard */
+  getTasksByWbsId: (projectId: string, wbsId: string) => TimelineTask[]
 }
 
 /**
@@ -193,6 +207,17 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
     tasksByProject: {},
     loading: false,
     error: null,
+    lastSyncedAt: null,
+    isCPMCalculating: false,
+
+    setLoading: (loading: boolean) => set({ loading }),
+    setError: (error: string | null) => set({ error }),
+    setCPMCalculating: (calculating: boolean) => set({ isCPMCalculating: calculating }),
+
+    getTasksByWbsId: (projectId: string, wbsId: string): TimelineTask[] => {
+      const tasks = get().tasksByProject[projectId] || []
+      return tasks.filter(t => t.wbsId === wbsId)
+    },
 
     getTasks: (projectId: string) => {
       return getTasksCached(projectId)
@@ -362,6 +387,7 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
         set((s) => ({
           tasksByProject: { ...s.tasksByProject, [projectId]: tasks },
           loading: false,
+          lastSyncedAt: Date.now(),
         }))
       } catch (error) {
         const errorMsg = (error as Error).message

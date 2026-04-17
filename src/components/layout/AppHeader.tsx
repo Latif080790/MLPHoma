@@ -27,7 +27,7 @@ export interface AppHeaderProps {
 export function AppHeader({ projectName, onSearch }: AppHeaderProps) {
   const { user, profile, signOut } = useAuthStore()
   const activeProjectId = useProjectStore((s) => s.activeProjectId)
-  const { peers } = usePresence(activeProjectId)
+  const { peers } = usePresence(activeProjectId ?? null)
   const navigate = useNavigate()
 
   const handleSignOut = async () => {

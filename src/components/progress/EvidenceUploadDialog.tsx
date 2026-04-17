@@ -274,6 +274,7 @@ export function EvidenceUploadDialog({
                             multiple
                             onChange={handleFileSelect}
                             disabled={uploading}
+                            className="field-input-mobile"
                         />
                     </div>
                     
@@ -388,6 +389,7 @@ export function EvidenceUploadDialog({
                             onChange={(e) => setDescription(e.target.value)}
                             disabled={uploading}
                             rows={3}
+                            className="field-input-mobile !h-auto min-h-[100px]"
                         />
                     </div>
                     
@@ -425,12 +427,13 @@ export function EvidenceUploadDialog({
                 </div>
                 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} disabled={uploading}>
+                    <Button variant="outline" onClick={onClose} disabled={uploading} className="field-button">
                         Cancel
                     </Button>
                     <Button
                         onClick={handleUpload}
                         disabled={files.length === 0 || uploading || allUploaded || (requirement?.locationRequired && !location)}
+                        className="field-button"
                     >
                         {uploading ? `Uploading... (${uploadedCount}/${files.length})` : `Upload ${files.length} file(s)`}
                     </Button>
