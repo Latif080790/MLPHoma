@@ -13,12 +13,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Label } from '../../components/ui/label'
-import { Input } from '../../components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
-import { Plus, Trash2, AlertTriangle, Filter, Settings2, Download, Flag, FileText, GanttChartSquare, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
+import { Plus, Trash2, AlertTriangle, Settings2, Download, Flag, FileText, ZoomIn, ZoomOut, CalendarClock, Layers, Activity, CheckCircle2 } from 'lucide-react'
 import GanttChart from '../../components/timeline/GanttChart'
 import TaskEditor from '../../components/timeline/TaskEditor'
 import type { TaskEditorProps } from '../../components/timeline/TaskEditor'
@@ -370,20 +366,7 @@ export default function Timeline() {
     })
   }, [rawTasks, query, statusFilter, resourceFilter, dateFrom, dateTo])
 
-  const resourceOptions = useMemo(() => {
-    return Array.from(new Set(
-      rawTasks
-        .flatMap((task) => task.assignedResources || [])
-        .map((resource) => resource.trim())
-        .filter((resource) => resource.length > 0)
-    )).sort((a, b) => a.localeCompare(b))
-  }, [rawTasks])
 
-  const resetAdvancedFilters = () => {
-    setResourceFilter('all')
-    setDateFrom('')
-    setDateTo('')
-  }
 
   const summary = useMemo(() => {
     const total = rawTasks.length
@@ -449,344 +432,192 @@ export default function Timeline() {
   }
 
   return (
-    <div className="space-y-6">
-      <ModuleHeader
-        icon={<AlertTriangle size={18} />}
-        title="Timeline & Gantt"
-        description="Interactive Gantt chart with CPM analysis, dependencies, and baseline tracking."
-        accent="indigo"
-        actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setImportWBSOpen(true)} className="gap-2" size="sm">
-              <FileText className="h-4 w-4" />
-              Import WBS
-            </Button>
-            <Button onClick={openNew} className="gap-2" size="sm">
-              <Plus className="h-4 w-4" />
-              Add Task
-            </Button>
-            <Button variant="outline" className="gap-2 bg-transparent" onClick={removeSelected} size="sm">
-              <Trash2 className="h-4 w-4" />
-              Remove Task
-            </Button>
-          </div>
-        }
-      />
+    <div className="flex flex-col h-[calc(100vh-140px)] bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
+      
+      {/* ─── Level 1: Sleek Command Ribbon ─────────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-2 bg-white dark:bg-slate-950 border-b border-slate-200/60 dark:border-slate-800/60 shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-10 shrink-0">
+        
+        {/* Left: View Controls */}
+        <div className="flex items-center gap-3">
+          <Tabs value={viewMode} onValueChange={(v: string) => { if (isViewMode(v)) setViewMode(v) }}>
+            <TabsList className="h-8 bg-slate-100/80 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 p-1">
+              <TabsTrigger value="day" className="text-xs font-bold px-3 h-6 uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm">Day</TabsTrigger>
+              <TabsTrigger value="week" className="text-xs font-bold px-3 h-6 uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm">Week</TabsTrigger>
+              <TabsTrigger value="month" className="text-xs font-bold px-3 h-6 uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm">Month</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-      {/* Toolbar */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border shadow-sm p-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Settings2 className="h-4 w-4 text-blue-600" />
-          <h3 className="font-semibold text-sm">Display & Controls</h3>
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 rounded-lg px-2 h-8 border border-slate-200/60 dark:border-slate-800/60">
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-transparent" onClick={zoomOut} disabled={pxPerDay <= ZOOM_MIN}>
+              <ZoomOut className="h-4 w-4" />
+            </Button>
+            <input type="range" min={ZOOM_MIN} max={ZOOM_MAX} step={ZOOM_STEP} value={pxPerDay} onChange={(e) => setPxPerDay(parseInt(e.target.value, 10))} className="w-20 accent-blue-600 h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer" />
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-transparent" onClick={zoomIn} disabled={pxPerDay >= ZOOM_MAX}>
+              <ZoomIn className="h-4 w-4" />
+            </Button>
+            <span className="text-xs font-mono text-slate-400 w-8 text-center">{pxPerDay}px</span>
+          </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <div className="flex items-center gap-3">
-            <Label className="text-xs text-neutral-500 font-medium uppercase tracking-wider">Scale</Label>
-            <Tabs value={viewMode} onValueChange={(v: string) => { if (isViewMode(v)) setViewMode(v) }}>
-              <TabsList className="h-8">
-                <TabsTrigger value="day" className="text-xs px-2 h-6">Day</TabsTrigger>
-                <TabsTrigger value="week" className="text-xs px-2 h-6">Week</TabsTrigger>
-                <TabsTrigger value="month" className="text-xs px-2 h-6">Month</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          {/* P1.6.1 + QW.9: Zoom controls with +/- buttons */}
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-neutral-500 font-medium uppercase tracking-wider shrink-0">Zoom</Label>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-7 w-7 shrink-0"
-              onClick={zoomOut}
-              disabled={pxPerDay <= ZOOM_MIN}
-              title="Zoom out  [  ]"
-              aria-label="Zoom out"
-            >
-              <ZoomOut className="h-3.5 w-3.5" />
-            </Button>
-            <input
-              type="range"
-              min={ZOOM_MIN}
-              max={ZOOM_MAX}
-              step={ZOOM_STEP}
-              value={pxPerDay}
-              onChange={(e) => setPxPerDay(parseInt(e.target.value, 10))}
-              className="w-24 accent-blue-600 h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700"
-              aria-label="Zoom level"
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-7 w-7 shrink-0"
-              onClick={zoomIn}
-              disabled={pxPerDay >= ZOOM_MAX}
-              title="Zoom in  ]"
-              aria-label="Zoom in"
-            >
-              <ZoomIn className="h-3.5 w-3.5" />
-            </Button>
-            <button
-              onClick={zoomReset}
-              className="w-12 text-xs tabular-nums text-neutral-600 font-mono py-1 px-1.5 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 rounded text-center transition-colors cursor-pointer border border-transparent hover:border-blue-200"
-              title="Reset zoom  \\"
-              aria-label="Reset zoom to default"
-            >
-              {pxPerDay}px
-            </button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0 text-slate-400 hover:text-blue-600"
-              onClick={() => {
-                setViewMode('month')
-                setPxPerDay(10)
-              }}
-              title="Fit overview (month view, min zoom)"
-              aria-label="Fit overview"
-            >
-              <Maximize2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-
-          <div className="md:col-span-2 xl:col-span-2 flex items-center gap-4 flex-wrap">
+        {/* Center: Logic Toggles */}
+        <div className="flex items-center gap-5">
+           <div className="flex items-center gap-4 border-x border-slate-200/60 dark:border-slate-800/60 px-5">
             <label className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-red-600 rounded border-slate-300"
-                checked={criticalOnly}
-                onChange={(e) => setCriticalOnly(e.target.checked)}
-              />
-              <span className="text-sm group-hover:text-red-600 transition-colors">Critical Only</span>
+              <input type="checkbox" className="h-3.5 w-3.5 accent-rose-500 rounded border-slate-300" checked={criticalOnly} onChange={(e) => setCriticalOnly(e.target.checked)} />
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 group-hover:text-rose-600 transition-colors">Critical Path</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-blue-600 rounded border-slate-300"
-                checked={showDeps}
-                onChange={(e) => setShowDeps(e.target.checked)}
-              />
-              <span className="text-sm group-hover:text-blue-600 transition-colors">Dependencies</span>
+              <input type="checkbox" className="h-3.5 w-3.5 accent-blue-500 rounded border-slate-300" checked={showDeps} onChange={(e) => setShowDeps(e.target.checked)} />
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 group-hover:text-blue-600 transition-colors">Dependencies</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-emerald-600 rounded border-slate-300"
-                checked={showBaseline}
-                onChange={(e) => setShowBaseline(e.target.checked)}
-              />
-              <span className="text-sm group-hover:text-emerald-600 transition-colors">Baseline</span>
+              <input type="checkbox" className="h-3.5 w-3.5 accent-emerald-500 rounded border-slate-300" checked={showBaseline} onChange={(e) => setShowBaseline(e.target.checked)} />
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400 group-hover:text-emerald-600 transition-colors">Baseline</span>
             </label>
           </div>
+        </div>
 
-          <div className="md:col-span-2 xl:col-span-2">
+        {/* Right: Tools & Actions */}
+        <div className="flex items-center gap-2">
+          <div className="hidden lg:block border-r border-slate-200/60 dark:border-slate-800/60 pr-2 mr-1">
             <ModuleListToolbar
               query={query}
               onQueryChange={setQuery}
-              queryPlaceholder="Search tasks..."
+              queryPlaceholder="Filter activities..."
               filterValue={statusFilter}
               onFilterChange={setStatusFilter}
               filterOptions={TIMELINE_STATUS_OPTIONS}
               resultCount={filteredTasks.length}
-              resultLabel="tasks"
-              className="md:justify-start"
+              resultLabel="nodes"
+              className="h-8 border-none bg-transparent shadow-none"
             />
-            <div className="mt-2 flex flex-col gap-2 rounded-md border border-border/60 bg-background/80 p-3 md:flex-row md:items-end md:gap-3">
-              <div className="grid gap-1 md:w-[220px]">
-                <Label className="text-xs text-muted-foreground">Assigned Resource</Label>
-                <Select value={resourceFilter} onValueChange={setResourceFilter}>
-                  <SelectTrigger className="h-9" aria-label="Filter by assigned resource">
-                    <SelectValue placeholder="All Resources" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Resources</SelectItem>
-                    {resourceOptions.map((resource) => (
-                      <SelectItem key={resource} value={resource}>{resource}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-1 md:w-[170px]">
-                <Label className="text-xs text-muted-foreground">Start from</Label>
-                <Input
-                  type="date"
-                  value={dateFrom}
-                  onChange={(event) => setDateFrom(event.target.value)}
-                  aria-label="Filter task start date from"
-                  className="h-9"
-                />
-              </div>
-              <div className="grid gap-1 md:w-[170px]">
-                <Label className="text-xs text-muted-foreground">Start to</Label>
-                <Input
-                  type="date"
-                  value={dateTo}
-                  onChange={(event) => setDateTo(event.target.value)}
-                  aria-label="Filter task start date to"
-                  className="h-9"
-                />
-              </div>
-              <Button type="button" variant="outline" className="h-9 md:ml-auto" onClick={resetAdvancedFilters}>
-                Reset Filters
-              </Button>
-            </div>
           </div>
+          
+          <Button variant="outline" onClick={() => setImportWBSOpen(true)} className="h-8 text-xs px-3 gap-2 font-bold border-slate-200 dark:border-slate-800 hover:bg-slate-50" size="sm">
+            <FileText className="h-3.5 w-3.5 text-slate-400" />
+            WBS IMPORT
+          </Button>
+          
+          <Button onClick={openNew} className="h-8 text-xs px-4 gap-2 font-bold bg-blue-600 hover:bg-blue-700 shadow-sm" size="sm">
+            <Plus className="h-3.5 w-3.5" />
+            NEW TASK
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600">
+                <Settings2 className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="text-xs font-bold uppercase tracking-widest text-slate-400 px-3 py-2">Engineering Tools</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => { const api = useTimelineStore.getState(); api.setBaseline(projectId, true); toast.success('Baseline captured'); }}>
+                <Flag className="h-4 w-4 mr-3 text-slate-400" /> 
+                <div className="flex flex-col">
+                  <span>Capture Baseline</span>
+                  <span className="text-xs text-slate-400">Lock current schedule as baseline</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={exportPNG}><Download className="h-4 w-4 mr-3 text-slate-400" /> Export PNG</DropdownMenuItem>
+              <DropdownMenuItem onSelect={exportPDF}><Download className="h-4 w-4 mr-3 text-slate-400" /> Export PDF</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={removeSelected} className="text-red-600 focus:text-red-600 focus:bg-red-50">
+                <Trash2 className="h-4 w-4 mr-3" /> 
+                <span>Delete Selected</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
-      {/* KPI summary */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-blue-500 shadow-sm relative overflow-hidden">
-          <CardContent className="py-4">
-            <div className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1">Total Tasks</div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white">{summary.total}</div>
-            <div className="absolute right-2 top-2 opacity-10">
-              <FileText size={48} className="text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* ─── Level 2: Metric Chip Strip ─────────────────────────────── */}
+      <div className="flex flex-col md:flex-row items-stretch border-b bg-neutral-50 dark:bg-neutral-900 shadow-inner shrink-0 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-4 px-4 py-1.5">
+          
+          {/* Metric Chips */}
+          <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 rounded-full px-2.5 py-1 shadow-sm">
+            <Layers className="h-3 w-3 text-slate-400" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Total Scope</span>
+            <span className="text-xs font-mono font-bold text-slate-900 dark:text-white px-1 ml-1">{summary.total}</span>
+          </div>
 
-        <Card className="bg-gradient-to-br from-amber-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-amber-500 shadow-sm relative overflow-hidden">
-          <CardContent className="py-4">
-            <div className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">In Progress</div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white">{summary.inProgress}</div>
-            <div className="absolute right-2 top-2 opacity-10">
-              <Settings2 size={48} className="text-amber-600" />
-            </div>
-          </CardContent>
-        </Card>
+          <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-full px-2.5 py-1">
+            <Activity className="h-3 w-3 text-blue-500 animate-pulse" />
+            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tighter">Active Tasks</span>
+            <span className="text-xs font-mono font-bold text-blue-700 dark:text-blue-300 px-1 ml-1">{summary.inProgress}</span>
+          </div>
 
-        <Card className="bg-gradient-to-br from-emerald-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-emerald-500 shadow-sm relative overflow-hidden">
-          <CardContent className="py-4">
-            <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">Completed</div>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white">{summary.completed}</div>
-            <div className="absolute right-2 top-2 opacity-10">
-              <Filter size={48} className="text-emerald-600" />
-            </div>
-          </CardContent>
-        </Card>
+          <div className="flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 rounded-full px-2.5 py-1">
+            <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">Completed</span>
+            <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-300 px-1 ml-1">{summary.completed}</span>
+          </div>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-white dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-purple-500 shadow-sm relative overflow-hidden">
-          <CardContent className="py-4">
-            <div className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Schedule Range</div>
-            <div className="text-sm font-bold text-slate-900 dark:text-white mt-1.5 flex flex-col">
-              <span>{summary.start || '-'}</span>
-              <span className="text-slate-400 text-xs font-normal">to</span>
-              <span>{summary.end || '-'}</span>
+          <div className="hidden sm:flex items-center gap-3 ml-4 border-l border-slate-200/60 dark:border-slate-800/60 pl-4 py-1">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-slate-400 uppercase leading-none">Global Window</span>
+              <div className="flex items-center gap-2 mt-1">
+                <CalendarClock className="h-3.5 w-3.5 text-slate-400" />
+                <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
+                  {summary.start || 'N/A'} <span className="text-slate-300 mx-1">→</span> {summary.end || 'N/A'}
+                </span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        {/* Level 2 Right: Alert Strip (Refined) */}
+        {alerts.length > 0 && (
+          <div className="flex items-center gap-3 px-6 py-1.5 ml-auto border-l border-rose-100 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 cursor-pointer hover:bg-rose-100/50 transition-colors">
+            <div className="relative">
+              <AlertTriangle className="h-4 w-4 text-rose-600" />
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-rose-700 dark:text-rose-400">
+                {alerts.length} Warnings Detected
+              </span>
+              <span className="text-xs text-rose-500/80 font-medium">Critical schedule variances found</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Critical Path Alerts */}
-      {alerts.length > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <span className="font-bold text-red-800 dark:text-red-400">Early Warning Alerts</span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {alerts.slice(0, 4).map((alert, i) => (
-              <div key={i} className="bg-white dark:bg-slate-900 rounded p-3 text-sm flex items-center justify-between border border-red-100 dark:border-red-900/30">
-                <div className="overflow-hidden">
-                  <div className="font-semibold text-slate-800 dark:text-slate-200 truncate pr-2">{alert.taskName}</div>
-                  <div className="text-slate-500 text-xs mt-0.5">{alert.message}</div>
-                </div>
-                <div className="flex flex-col items-end shrink-0">
-                  <div className="text-xs font-mono text-red-600 font-bold">{alert.actualProgress.toFixed(0)}% / {alert.expectedProgress.toFixed(0)}%</div>
-                  {alert.severity === 'critical' ? (
-                    <span className="text-xs bg-red-100 text-red-700 px-1 py-0.5 mt-1 rounded">CRITICAL</span>
-                  ) : (
-                    <span className="text-xs bg-amber-100 text-amber-700 px-1 py-0.5 mt-1 rounded">WARNING</span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          {alerts.length > 4 && (
-            <div className="text-xs text-red-600 mt-3 text-center cursor-pointer hover:underline">
-              + {alerts.length - 4} more warnings...
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Chart */}
-      <div ref={exportRef}>
-        <Card className="border-0 shadow-md">
-          <CardHeader className="flex items-center justify-between bg-slate-50/50 border-b pb-4">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <GanttChartSquare className="h-5 w-5 text-blue-600" />
-              Project Schedule Visualization
-            </CardTitle>
-
-            {/* Export & Baseline actions */}
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Export
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Export Current View</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={exportPNG}>PNG</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={exportPDF}>PDF</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={() => {
-                  const api = useTimelineStore.getState()
-                  api.setBaseline(projectId, true)
-                  toast.success('Baseline captured')
-                }}
-              >
-                <Flag className="h-4 w-4" />
-                Capture Baseline
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <GanttChart
-              projectId={projectId}
-              height={520}
-              highlightCriticalOnly={criticalOnly}
-              showCpmTooltip={showTooltip}
-              pxPerDay={pxPerDay}
-              viewMode={viewMode}
-              showDependencies={showDeps}
-              showTodayLine={showTodayLine}
-              selectedTaskId={selectedId}
-              showBaseline={showBaseline}
-              tasksOverride={filteredTasks}
-              onTaskClick={(id) => {
-                const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
-                setEditingTask(toEditorTask(t))
-                setEditorOpen(true)
-                setSelectedId(id)
-              }}
-              onTaskMove={handleTaskMove}
-              onTaskEdit={(id) => {
-                const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
-                setEditingTask(toEditorTask(t))
-                setEditorOpen(true)
-                setSelectedId(id)
-              }}
-              onTaskDelete={(id) => {
-                setPendingDeleteTaskId(id)
-              }}
-            />
-            <div className="mt-3 text-xs text-neutral-500">
-              Tip: drag and drop bars to reschedule. Turn on CPM tooltip to inspect ES/EF/LS/LF/TF. Use Day/Week/Month and Zoom to
-              adjust the timeline scale.
-            </div>
-          </CardContent>
-        </Card>
+      {/* ─── Level 3: The Edge-to-Edge Gantt Canvas ─────────────────────── */}
+      <div ref={exportRef} className="flex-1 w-full bg-white relative overflow-hidden">
+        <GanttChart
+          projectId={projectId}
+          highlightCriticalOnly={criticalOnly}
+          showCpmTooltip={showTooltip}
+          pxPerDay={pxPerDay}
+          viewMode={viewMode}
+          showDependencies={showDeps}
+          showTodayLine={showTodayLine}
+          selectedTaskId={selectedId}
+          showBaseline={showBaseline}
+          tasksOverride={filteredTasks}
+          onTaskClick={(id) => {
+            const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
+            setEditingTask(toEditorTask(t))
+            setEditorOpen(true)
+            setSelectedId(id)
+          }}
+          onTaskMove={handleTaskMove}
+          onTaskEdit={(id) => {
+            const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
+            setEditingTask(toEditorTask(t))
+            setEditorOpen(true)
+            setSelectedId(id)
+          }}
+          onTaskDelete={(id) => {
+            setPendingDeleteTaskId(id)
+          }}
+        />
       </div>
 
       {/* Editor modal */}
