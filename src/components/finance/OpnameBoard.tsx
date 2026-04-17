@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DataTable } from '@/components/shared/DataTable'
+import { ColumnDef } from '@tanstack/react-table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { useProjectStore } from '@/store/projectStore'
@@ -127,24 +128,21 @@ export function OpnameBoard() {
                         <CardTitle className="text-sm">Active SPKs (Ready for Opname)</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <Table>
-                            <TableBody>
-                                {activeSpks.map(spk => (
-                                    <TableRow key={spk.id}>
-                                        <TableCell className="w-[100px] text-xs font-mono">{spk.spkNumber}</TableCell>
-                                        <TableCell className="text-xs truncate max-w-[120px]" title={spk.description}>{spk.description}</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-blue-600 bg-blue-50" onClick={() => handleStartDraft(spk)}>
-                                                <Calculator size={12} className="mr-1" /> Claim
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                                {activeSpks.length === 0 && (
-                                    <TableRow><TableCell colSpan={3} className="text-center text-xs text-slate-500 py-4">No active SPKs available.</TableCell></TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                        <DataTable
+                            data={activeSpks}
+                            emptyMessage="No active SPKs available."
+                            columns={[
+                                { accessorKey: 'spkNumber', header: 'SPK Number', size: 100, cell: ({ row }) => <span className="text-xs font-mono">{row.original.spkNumber}</span> },
+                                { accessorKey: 'description', header: 'Description', cell: ({ row }) => <span className="text-xs truncate max-w-[120px]" title={row.original.description}>{row.original.description}</span> },
+                                { id: 'actions', header: () => <div className="text-right">Aksi</div>, cell: ({ row }) => (
+                                    <div className="flex justify-end">
+                                        <Button size="sm" variant="ghost" className="h-6 px-2 text-xs text-blue-600 bg-blue-50" onClick={() => handleStartDraft(row.original)}>
+                                            <Calculator size={12} className="mr-1" /> Claim
+                                        </Button>
+                                    </div>
+                                ), size: 100 }
+                            ]}
+                        />
                     </CardContent>
                 </Card>
 
@@ -155,42 +153,66 @@ export function OpnameBoard() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow className="text-xs">
-                                    <TableHead>SPK / Period</TableHead>
-                                    <TableHead>Progress</TableHead>
-                                    <TableHead className="text-right">Net Payable</TableHead>
-                                    <TableHead className="text-center">Status</TableHead>
-                                    <TableHead className="text-right">Action</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {opnames.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(op => {
-                                    const parentSpk = spks.find(s => s.id === op.spkId)
-                                    return (
-                                        <TableRow key={op.id} className="text-xs">
-                                            <TableCell>
+                        <DataTable
+                            data={opnames.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
+                            emptyMessage="No progress claims recorded."
+                            columns={[
+                                { 
+                                    id: 'spk', 
+                                    header: 'SPK / Period', 
+                                    cell: ({ row }) => {
+                                        const op = row.original;
+                                        const parentSpk = spks.find(s => s.id === op.spkId);
+                                        return (
+                                            <div>
                                                 <div className="font-mono font-medium">{parentSpk?.spkNumber}</div>
                                                 <div className="text-xs text-slate-500">Period: {op.periodNumber} • {format(new Date(op.date), 'dd MMM yyyy')}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="font-medium text-blue-700">{op.progressPercentage}%</div>
-                                                <div className="text-xs text-slate-500">(+{op.currentPeriodProgressPercentage}%)</div>
-                                            </TableCell>
-                                            <TableCell className="text-right font-mono font-bold text-slate-900 dark:text-slate-100">
-                                                Rp {op.netPayable.toLocaleString('id-ID')}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                <Badge variant="outline" className={`text-xs ${op.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                                                        op.status === 'POSTED_TO_FINANCE' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                            op.status === 'SUBMITTED' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                                                                'bg-slate-50 text-slate-600'
-                                                    }`}>
-                                                    {op.status.replace('_', ' ')}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right">
+                                            </div>
+                                        );
+                                    }
+                                },
+                                {
+                                    id: 'progress',
+                                    header: 'Progress',
+                                    cell: ({ row }) => (
+                                        <div>
+                                            <div className="font-medium text-blue-700">{row.original.progressPercentage}%</div>
+                                            <div className="text-xs text-slate-500">(+{row.original.currentPeriodProgressPercentage}%)</div>
+                                        </div>
+                                    )
+                                },
+                                {
+                                    id: 'payable',
+                                    header: () => <div className="text-right">Net Payable</div>,
+                                    cell: ({ row }) => (
+                                        <div className="text-right font-mono font-bold text-slate-900 dark:text-slate-100">
+                                            Rp {row.original.netPayable.toLocaleString('id-ID')}
+                                        </div>
+                                    )
+                                },
+                                {
+                                    id: 'status',
+                                    header: () => <div className="text-center">Status</div>,
+                                    cell: ({ row }) => (
+                                        <div className="flex justify-center">
+                                            <Badge variant="outline" className={`text-xs ${row.original.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                    row.original.status === 'POSTED_TO_FINANCE' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                        row.original.status === 'SUBMITTED' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                                            'bg-slate-50 text-slate-600'
+                                                }`}>
+                                                {row.original.status.replace('_', ' ')}
+                                            </Badge>
+                                        </div>
+                                    ),
+                                    size: 150
+                                },
+                                {
+                                    id: 'actions',
+                                    header: () => <div className="text-right">Action</div>,
+                                    cell: ({ row }) => {
+                                        const op = row.original;
+                                        return (
+                                            <div className="flex justify-end gap-1 border-t-0">
                                                 {op.status === 'DRAFT' && (
                                                     <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-600" title="Submit" onClick={() => handleSubmit(op.id)}><Play size={12} /></Button>
                                                 )}
@@ -204,15 +226,13 @@ export function OpnameBoard() {
                                                         <Wallet size={12} className="mr-1" /> Post AP
                                                     </Button>
                                                 )}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                                {opnames.length === 0 && (
-                                    <TableRow><TableCell colSpan={5} className="text-center text-xs text-slate-500 py-8">No progress claims recorded.</TableCell></TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                                            </div>
+                                        );
+                                    },
+                                    size: 120
+                                }
+                            ]}
+                        />
                     </CardContent>
                 </Card>
             </div>

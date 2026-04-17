@@ -224,7 +224,9 @@ export default function GanttChart({
     }),
     [],
   )
-  const leftColWidth = width < 640 ? 260 : width < 1024 ? 320 : 380
+  const defaultLeftColWidth = width < 640 ? 260 : width < 1024 ? 320 : 380
+  const [userLeftColWidth, setUserLeftColWidth] = useState<number | null>(null)
+  const leftColWidth = userLeftColWidth ?? defaultLeftColWidth
   // denser rows for Primavera P6 style
   const rowHeight = 32
   const barHeight = 16
@@ -1052,6 +1054,23 @@ export default function GanttChart({
 
       {/* Chart */}
       <div ref={containerRef} className="relative overflow-auto outline-none" style={{ height }} onKeyDown={handleKeyDown} tabIndex={0} role="region" aria-label="Gantt chart">
+        {/* Resizable Split Pane Handle */}
+        <div
+          className="sticky top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-blue-500/80 hover:scale-x-150 transition-all flex items-center justify-center -ml-1 group"
+          style={{ left: leftColWidth, height: '100%', float: 'left' }}
+          onMouseDown={(e) => {
+            e.preventDefault()
+            const startX = e.clientX
+            const startW = leftColWidth
+            const move = (ev: MouseEvent) => setUserLeftColWidth(Math.max(200, Math.min(startW + (ev.clientX - startX), width - 200)))
+            const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up) }
+            window.addEventListener('mousemove', move)
+            window.addEventListener('mouseup', up)
+          }}
+        >
+          <div className="h-full w-[1px] bg-neutral-300 dark:bg-neutral-600 group-hover:bg-transparent" />
+        </div>
+
         <div ref={exportRef} style={{ width: (endDay - startDay) * pxPerDay + leftColWidth }}>
           {/* Sticky headers */}
           <div className="sticky top-0 z-30 backdrop-blur-lg bg-white/90 dark:bg-neutral-900/90 shadow-sm">

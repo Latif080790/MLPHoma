@@ -1,12 +1,11 @@
 /**
  * BudgetGuardDialog.tsx
- * Pre-flight dialog that shows budget check results before PO creation.
- * Displays per-item budget breakdown with color-coded status indicators.
- *
- * Epic S1.1: Budget Guard on Procurement
+ * 
+ * Enterprise-grade budget validation before PO creation.
+ * Combines high-fidelity UI with robust approval request logic.
  */
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     Dialog,
     DialogContent,
@@ -17,93 +16,89 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, CheckCircle2, XCircle, ShieldAlert, Loader2 } from 'lucide-react'
-import type { BudgetCheckResult, BudgetCheckItem } from '@/services/budgetGuardService'
+import { AlertTriangle, CheckCircle2, XCircle, ShieldAlert, Loader2, Shield } from 'lucide-react'
+import { toast } from 'sonner'
+import { useAuthStore } from '@/store/authStore'
+import { approvalService } from '@/services/approvalService'
+import { checkBudgetAvailability, type BudgetCheckResult, type BudgetCheckItem, type CheckableItem } from '@/services/budgetGuardService'
+import { CurrencyCell } from '../shared/CurrencyCell'
 
 interface BudgetGuardDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    /** Budget check result from checkBudgetAvailability */
-    result: BudgetCheckResult | null
-    /** Loading state while checking */
-    loading?: boolean
-    /** Called when user confirms proceed (budget OK) */
+    projectId: string
+    items: CheckableItem[]
+    poReference?: string
     onProceed: () => void
-    /** Called when user requests override approval (near threshold) */
-    onRequestOverride?: () => void
-}
-
-const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value)
-
-function getItemStatus(item: BudgetCheckItem): 'ok' | 'warning' | 'exceeded' {
-    if (item.exceeds) return 'exceeded'
-    const wouldRemain = item.remaining - item.requested
-    const threshold = item.totalBudget * 0.1
-    if (wouldRemain > 0 && wouldRemain < threshold) return 'warning'
-    return 'ok'
-}
-
-function StatusIcon({ status }: { status: 'ok' | 'warning' | 'exceeded' }) {
-    switch (status) {
-        case 'ok':
-            return <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-        case 'warning':
-            return <AlertTriangle className="h-4 w-4 text-amber-500" />
-        case 'exceeded':
-            return <XCircle className="h-4 w-4 text-red-500" />
-    }
-}
-
-function StatusBadge({ status }: { status: 'ok' | 'warning' | 'exceeded' }) {
-    const config = {
-        ok: { label: 'Within Budget', className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
-        warning: { label: 'Near Limit', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-        exceeded: { label: 'Exceeded', className: 'bg-red-500/15 text-red-400 border-red-500/30' },
-    }
-    const c = config[status]
-    return <Badge variant="outline" className={c.className}>{c.label}</Badge>
-}
-
-function BudgetBar({ item }: { item: BudgetCheckItem }) {
-    const usedPct = item.totalBudget > 0
-        ? Math.min(100, ((item.committed + item.actual) / item.totalBudget) * 100)
-        : 0
-    const requestedPct = item.totalBudget > 0
-        ? Math.min(100 - usedPct, (item.requested / item.totalBudget) * 100)
-        : 0
-    const status = getItemStatus(item)
-
-    return (
-        <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
-            {/* Already used portion */}
-            <div className="h-full float-left rounded-l-full bg-slate-500/60" style={{ width: `${usedPct}%` }} />
-            {/* Requested portion */}
-            <div
-                className={`h-full float-left ${status === 'exceeded' ? 'bg-red-500' : status === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
-                    }`}
-                style={{ width: `${requestedPct}%` }}
-            />
-        </div>
-    )
 }
 
 export function BudgetGuardDialog({
     open,
     onOpenChange,
-    result,
-    loading,
+    projectId,
+    items,
+    poReference,
     onProceed,
-    onRequestOverride,
 }: BudgetGuardDialogProps) {
-    // Loading state
+    const [loading, setLoading] = useState(false)
+    const [result, setResult] = useState<BudgetCheckResult | null>(null)
+    const [submittingApproval, setSubmittingApproval] = useState(false)
+
+    useEffect(() => {
+        if (!open || items.length === 0) {
+            setResult(null)
+            return
+        }
+
+        setLoading(true)
+        checkBudgetAvailability(projectId, items)
+            .then(setResult)
+            .catch(err => {
+                console.warn('[BudgetGuard] Check failed:', err)
+                toast.error('Budget check failed', { description: err.message })
+            })
+            .finally(() => setLoading(true)) // Ensure we don't flash, wait for it
+            setTimeout(() => setLoading(false), 500)
+    }, [open, projectId, items])
+
+    const handleRequestApproval = async () => {
+        setSubmittingApproval(true)
+        try {
+            const { user, profile } = useAuthStore.getState()
+            const totalAmount = items.reduce((sum, i) => sum + (i.quantity * i.unitPrice), 0)
+
+            await approvalService.createApproval({
+                projectId,
+                entityType: 'PURCHASE_ORDER',
+                entityId: poReference || 'pending-po',
+                title: `Budget Guard: PO ${poReference || 'New'}`,
+                description: `PO requires approval — budget critically low. Total: Rp ${totalAmount.toLocaleString()}`,
+                requesterId: user?.id || 'unknown',
+                requesterName: profile?.full_name || user?.email || 'Procurement',
+                approverRole: 'manager',
+                impactSummary: {
+                    totalAmount,
+                    itemCount: items.length,
+                    reason: 'Budget threshold exceeded (<10% remaining)',
+                },
+            })
+
+            toast.success('Approval request sent', { description: 'Sent to PM\'s Command Center for review.' })
+            onOpenChange(false)
+        } catch (err: unknown) {
+            toast.error('Failed to submit approval', { description: (err as Error).message })
+        } finally {
+            setSubmittingApproval(false)
+        }
+    }
+
     if (loading) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
                 <DialogContent className="sm:max-w-lg">
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
                         <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-                        <p className="text-sm text-muted-foreground">Checking budget availability…</p>
+                        <p className="text-sm text-muted-foreground font-medium">Checking budget against RAP...</p>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -119,68 +114,69 @@ export function BudgetGuardDialog({
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <ShieldAlert className="h-5 w-5" />
+                        <ShieldAlert className="h-5 w-5 text-blue-500" />
                         Budget Guard — Pre-Flight Check
                     </DialogTitle>
                     <DialogDescription>
-                        Verifikasi ketersediaan budget RAP sebelum membuat Purchase Order.
+                        Validating Procurement items against RAP budget allocation.
                     </DialogDescription>
                 </DialogHeader>
 
                 {/* Overall Status Banner */}
                 <div
-                    className={`rounded-lg border px-4 py-3 text-sm flex items-center gap-3 ${overallStatus === 'exceeded'
-                            ? 'bg-red-500/10 border-red-500/30 text-red-300'
+                    className={`rounded-lg border px-4 py-3 text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
+                        overallStatus === 'exceeded'
+                            ? 'bg-red-500/10 border-red-500/30 text-red-600 dark:text-red-400'
                             : overallStatus === 'warning'
-                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
-                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
                         }`}
                 >
-                    <StatusIcon status={overallStatus} />
-                    <span>{result.message}</span>
+                    {overallStatus === 'ok' && <CheckCircle2 className="h-4 w-4" />}
+                    {overallStatus === 'warning' && <AlertTriangle className="h-4 w-4" />}
+                    {overallStatus === 'exceeded' && <XCircle className="h-4 w-4" />}
+                    <span className="font-medium">{result.message}</span>
                 </div>
 
                 {/* Items Table */}
-                <div className="rounded-lg border border-white/10 overflow-hidden">
-                    <table className="w-full text-xs">
+                <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    <table className="w-full text-[11px]">
                         <thead>
-                            <tr className="border-b border-white/10 bg-white/[0.03]">
-                                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Item</th>
-                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">Budget</th>
-                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">Used</th>
-                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">Remaining</th>
-                                <th className="text-right px-3 py-2 font-medium text-muted-foreground">Requested</th>
-                                <th className="text-center px-3 py-2 font-medium text-muted-foreground">Status</th>
+                            <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                                <th className="text-left px-3 py-2 font-semibold text-slate-500 uppercase">Item</th>
+                                <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase">Budget</th>
+                                <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase">Used</th>
+                                <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase">Requested</th>
+                                <th className="text-center px-3 py-2 font-semibold text-slate-500 uppercase">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {result.items.map((item, idx) => {
-                                const status = getItemStatus(item)
+                                const status = item.exceeds ? 'exceeded' : (item.remaining - item.requested < item.totalBudget * 0.1) ? 'warning' : 'ok'
                                 return (
-                                    <tr
-                                        key={item.rapItemId || idx}
-                                        className={`border-b border-white/5 last:border-0 ${status === 'exceeded' ? 'bg-red-500/5' : ''
-                                            }`}
-                                    >
-                                        <td className="px-3 py-2.5">
-                                            <div className="font-medium text-foreground">{item.itemName}</div>
-                                            <BudgetBar item={item} />
+                                    <tr key={item.rapItemId || idx} className="border-b border-slate-50 dark:border-slate-900 last:border-0">
+                                        <td className="px-3 py-2 font-medium">{item.itemName}</td>
+                                        <td className="px-3 py-2">
+                                            <CurrencyCell value={item.totalBudget} className="text-[11px]" />
                                         </td>
-                                        <td className="text-right px-3 py-2.5 font-mono text-muted-foreground">
-                                            {formatCurrency(item.totalBudget)}
+                                        <td className="px-3 py-2 text-slate-500">
+                                            <CurrencyCell value={item.committed + item.actual} className="text-[11px] text-slate-500" />
                                         </td>
-                                        <td className="text-right px-3 py-2.5 font-mono text-muted-foreground">
-                                            {formatCurrency(item.committed + item.actual)}
+                                        <td className="px-3 py-2">
+                                            <CurrencyCell 
+                                                value={item.requested} 
+                                                variant={status === 'exceeded' ? 'negative' : status === 'warning' ? 'neutral' : 'default'}
+                                                className="text-[11px]" 
+                                            />
                                         </td>
-                                        <td className="text-right px-3 py-2.5 font-mono text-emerald-400">
-                                            {formatCurrency(item.remaining)}
-                                        </td>
-                                        <td className={`text-right px-3 py-2.5 font-mono font-semibold ${status === 'exceeded' ? 'text-red-400' : status === 'warning' ? 'text-amber-400' : 'text-foreground'
-                                            }`}>
-                                            {formatCurrency(item.requested)}
-                                        </td>
-                                        <td className="text-center px-3 py-2.5">
-                                            <StatusBadge status={status} />
+                                        <td className="px-3 py-2 text-center">
+                                            <Badge variant="outline" className={
+                                                status === 'exceeded' ? 'bg-red-50 text-red-600 border-red-200' :
+                                                status === 'warning' ? 'bg-amber-50 text-amber-600 border-amber-200' :
+                                                'bg-emerald-50 text-emerald-600 border-emerald-200'
+                                            }>
+                                                {status.toUpperCase()}
+                                            </Badge>
                                         </td>
                                     </tr>
                                 )
@@ -189,54 +185,41 @@ export function BudgetGuardDialog({
                     </table>
                 </div>
 
-                {/* Overage Detail (if exceeded) */}
-                {result.hasExceeded && result.exceededItems.length > 0 && (
-                    <div className="text-xs text-red-400/80 space-y-1">
-                        {result.exceededItems.map((item) => (
-                            <p key={item.rapItemId}>
-                                ⚠ <strong>{item.itemName}</strong>: Kelebihan {formatCurrency(item.overageAmount)} —
-                                kurangi qty atau ajukan override budget.
-                            </p>
-                        ))}
-                    </div>
-                )}
-
-                <DialogFooter className="gap-2 sm:gap-0">
-                    <Button variant="ghost" onClick={() => onOpenChange(false)}>
-                        Batal
-                    </Button>
+                <DialogFooter className="gap-2 sm:gap-0 bg-slate-50/50 dark:bg-slate-900/50 p-4 -mx-6 -mb-6 mt-2 border-t">
+                    <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
 
                     {overallStatus === 'ok' && (
                         <Button onClick={onProceed} className="bg-emerald-600 hover:bg-emerald-700">
-                            <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
                             Lanjutkan Buat PO
                         </Button>
                     )}
 
                     {overallStatus === 'warning' && (
-                        <>
+                        <div className="flex gap-2">
                             <Button
                                 variant="outline"
-                                onClick={onRequestOverride}
-                                className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+                                onClick={handleRequestApproval}
+                                disabled={submittingApproval}
+                                className="border-amber-500/30 text-amber-600 hover:bg-amber-500/10"
                             >
-                                <AlertTriangle className="h-4 w-4 mr-1.5" />
-                                Request Override Approval
+                                {submittingApproval ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Shield className="h-3.5 w-3.5 mr-1.5" />}
+                                Request Approval
                             </Button>
                             <Button onClick={onProceed} className="bg-amber-600 hover:bg-amber-700">
-                                Lanjutkan (Warning)
+                                Lanjutkan (Override)
                             </Button>
-                        </>
+                        </div>
                     )}
 
                     {overallStatus === 'exceeded' && (
                         <Button
-                            variant="outline"
-                            onClick={onRequestOverride}
-                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                            variant="destructive"
+                            onClick={handleRequestApproval}
+                            disabled={submittingApproval}
                         >
-                            <ShieldAlert className="h-4 w-4 mr-1.5" />
-                            Ajukan Override Budget
+                            <ShieldAlert className="h-3.5 w-3.5 mr-1.5" />
+                            Ajukan Override Budget (Exceeded)
                         </Button>
                     )}
                 </DialogFooter>

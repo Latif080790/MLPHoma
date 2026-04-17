@@ -3,6 +3,7 @@ import { AppHeader } from "./AppHeader"
 import { AppSidebar } from "./AppSidebar"
 import { cn } from "@/lib/utils"
 import { useBreakpoint } from "@/hooks/use-breakpoint"
+import { SyncStatusBar } from "./SyncStatusBar"
 
 /**
  * AppShell v3 — Fixed layout container.
@@ -74,14 +75,6 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
         isOverlay={shouldOverlay}
       />
 
-      {/* Sidebar - z-1000 handled inside component */}
-      <AppSidebar
-        collapsed={shouldOverlay ? false : collapsed}
-        setCollapsed={shouldOverlay ? () => setDrawerOpen(!drawerOpen) : setCollapsed}
-        open={drawerOpen}
-        isOverlay={shouldOverlay}
-      />
-
       {/* Main Content Wrapper — offset by sidebar width (hardcoded to ensure stability) */}
       <div
         className={cn(
@@ -112,6 +105,9 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
           </div>
         </main>
       </div>
+
+      {/* Persistence Feedback — WF01 */}
+      <SyncStatusBar />
     </div>
   )
 }

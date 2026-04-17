@@ -42,6 +42,8 @@ import { saveCreationLog } from '../../lib/supabaseClient'
 import { formatIDR } from '../../lib/utils'
 import type { AHSPItem } from '../../types/ahsp'
 import { toast } from 'sonner'
+import { DataTable } from '../shared/DataTable'
+import { getAHSPColumns } from './AHSPColumns'
 
 /**
  * Mini horizontal stacked bar showing cost composition (material/labor/equipment/subcon)
@@ -634,127 +636,40 @@ export function AHSPCatalog({
               <Button variant="link" onClick={handleAddItem} className="mt-2 text-blue-600">Buat item baru</Button>
             </div>
           ) : (
-            <TooltipProvider delayDuration={120}>
-              <Table className="w-full table-fixed">
-                <TableHeader className="sticky-glass-tablehead">
-                  <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
-                    <TableHead className="w-12 text-center py-4">
-                      <Checkbox
-                        checked={selectedIds.size > 0 && selectedIds.size === displayItems.length}
-                        onCheckedChange={handleToggleAll}
-                        aria-label="Select all"
-                        className="translate-y-0.5 border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                      />
-                    </TableHead>
-                    <TableHead className="w-[56px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">No.</TableHead>
-                    <TableHead className="min-w-[280px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Deskripsi Resource</TableHead>
-                    <TableHead className="w-[70px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Unit</TableHead>
-                    <TableHead className="w-[110px] text-right font-semibold text-blue-600 dark:text-blue-400 h-9 text-xs uppercase tracking-wider bg-blue-50/30">Material</TableHead>
-                    <TableHead className="w-[110px] text-right font-semibold text-orange-600 dark:text-orange-400 h-9 text-xs uppercase tracking-wider bg-orange-50/30">Labor</TableHead>
-                    <TableHead className="w-[110px] text-right font-semibold text-indigo-600 dark:text-indigo-400 h-9 text-xs uppercase tracking-wider bg-indigo-50/30">Equipment</TableHead>
-                    <TableHead className="w-[110px] text-right font-semibold text-purple-600 dark:text-purple-400 h-9 text-xs uppercase tracking-wider bg-purple-50/30">Subcon</TableHead>
-                    <TableHead className="w-[130px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Total Harga</TableHead>
-                    <TableHead className="w-[90px] text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {groupedDisplayRows.map((row) => {
-
-                    if (row.type === 'section') {
-                      return (
-                        <TableRow
-                          key={`section-${row.label}`}
-                          className="bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/40"
-                        >
-                          <TableCell colSpan={10} className="py-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                            {row.label}
-                          </TableCell>
-                        </TableRow>
-                      )
-                    }
-
-                    const item = row.item as AHSPItemWithPrices
-                    const matPrice = item.price_material || 0
-                    const labPrice = item.price_labor || 0
-                    const eqpPrice = item.price_equipment || 0
-                    const subPrice = item.price_subcon || 0
-
-                    const breakSum = (matPrice + labPrice + eqpPrice + subPrice)
-                    const isUnallocated = breakSum === 0 && (item.finalPrice || 0) > 0
-
-                    const totalPrice = isUnallocated ? item.finalPrice : breakSum
-                    const hasZoneOverride = selectedZone !== 'default' && (item as AHSPItemWithPrices).originalFinalPrice !== undefined
-
-                    return (
-                      <TableRow
-                        key={item.id}
-                        className={`group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800 ${selectedIds.has(item.id) ? 'bg-blue-50/50 hover:bg-blue-50/80 shadow-[inset_4px_0_0_0_#2563eb]' : ''}`}
-                        onClick={() => handleEditItem(item)}
-                      >
-                        <TableCell className="w-12 text-center py-2" onClick={(e) => e.stopPropagation()}>
-                          <Checkbox
-                            checked={selectedIds.has(item.id)}
-                            onCheckedChange={(checked) => handleToggleOne(item.id, !!checked)}
-                            aria-label={`Select ${item.name}`}
-                            className="translate-y-0.5 border-slate-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                          />
-                        </TableCell>
-                        <TableCell className="text-center font-mono text-xs text-slate-400 py-2">{row.rowNumber}</TableCell>
-                        <TableCell className="py-2">
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-medium text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
-                              {/* Version badge */}
-                              {(item.currentVersion ?? 1) > 1 ? (
-                                <span className="inline-flex items-center px-1.5 py-0 rounded text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 leading-4 cursor-default" title={`Versi ${item.currentVersion} — telah diperbarui`}>
-                                  v{item.currentVersion}
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-1.5 py-0 rounded text-xs font-medium bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500 leading-4 cursor-default" title="Versi awal">
-                                  v1
-                                </span>
-                              )}
-                              {hasZoneOverride && <Badge variant="secondary" className="h-4 px-1.5 text-xs uppercase tracking-wider">Adj Zona</Badge>}
-                              {(() => {
-                                const useCount = ahspUsageMap.get(item.id) ?? 0
-                                return useCount > 0 ? (
-                                  <Badge variant="outline" className="h-4 px-1.5 text-xs font-semibold text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-400">
-                                    {useCount} RAB
-                                  </Badge>
-                                ) : null
-                              })()}
-                            </div>
-                            <span className="text-xs font-mono text-slate-400">{item.code}</span>
-                            <CostMixBar mat={matPrice} lab={labPrice} eqp={eqpPrice} sub={subPrice} />
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center text-xs text-slate-500 py-2">{item.unit}</TableCell>
-                        <TableCell className="text-right font-mono text-xs text-slate-600 py-2 bg-blue-50/10">
-                          {isUnallocated ? (
-                            <span className="text-amber-600 font-bold" title="Komponen belum terhubung. Harga berasal dari data master.">
-                              {formatIDR(item.finalPrice)} (!)
-                            </span>
-                          ) : (
-                            matPrice > 0 ? formatIDR(matPrice) : '-'
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right font-mono text-xs text-slate-600 py-2 bg-orange-50/10">{!isUnallocated && labPrice > 0 ? formatIDR(labPrice) : '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-xs text-slate-600 py-2 bg-indigo-50/10">{!isUnallocated && eqpPrice > 0 ? formatIDR(eqpPrice) : '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-xs text-slate-600 py-2 bg-purple-50/10">{!isUnallocated && subPrice > 0 ? formatIDR(subPrice) : '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-xs font-bold text-slate-800 dark:text-slate-200 py-2">{formatIDR(totalPrice)}</TableCell>
-                        <TableCell className="py-2 text-right">
-                          <div className="flex justify-end gap-0.5 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100" onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleHistoryClick(item)}><History className="h-3 w-3" /></Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleEditItem(item)}><Edit2 className="h-3 w-3" /></Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500" onClick={() => handleDeleteItem(item)}><Trash2 className="h-3 w-3" /></Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </TooltipProvider>
+            <DataTable
+              columns={getAHSPColumns({
+                onEditItem: handleEditItem,
+                onHistoryClick: handleHistoryClick,
+                onDeleteItem: handleDeleteItem,
+                hasZoneOverride: selectedZone !== 'default',
+                ahspUsageMap
+              })}
+              data={groupedDisplayRows.map(r => r.type === 'section' ? r : r.item)}
+              virtualized={true}
+              maxHeight="calc(100vh - 280px)"
+              enableRowSelection={true}
+              rowSelection={Object.fromEntries(Array.from(selectedIds).map(id => [id, true]))}
+              onRowSelectionChange={(updater) => {
+                const newSelection = typeof updater === 'function' ? updater(Object.fromEntries(Array.from(selectedIds).map(id => [id, true]))) : updater;
+                const newIds = new Set<string>();
+                for (const key in newSelection) {
+                   if (newSelection[key]) newIds.add(key);
+                }
+                setSelectedIds(newIds);
+              }}
+              getRowId={(row: any) => row.id || `section-${row.label}`}
+              isCustomRow={(row: any) => row.type === 'section'}
+              renderCustomRow={(row: any) => (
+                <TableRow
+                  key={`section-${row.label}`}
+                  className="bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/40"
+                >
+                  <TableCell colSpan={10} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    {row.label}
+                  </TableCell>
+                </TableRow>
+              )}
+            />
           )}
         </div>
 

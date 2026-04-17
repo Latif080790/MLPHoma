@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { useProjectStore } from "@/store/projectStore"
 import { EmptyState } from "@/components/common/EmptyState"
 import { toast } from "sonner"
-import { assertSupabase } from "@/lib/supabaseClient"
+import { settingsService } from "@/services/settingsService"
 import { TeamManagementPanel } from "@/components/modules/TeamManagementPanel"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
@@ -41,9 +41,7 @@ export default function Settings() {
         setSrStatus('Loading project settings...')
         setLoading(true)
         const data = await handleAsync(async () => {
-            const client = assertSupabase()
-            const res = await client.from('projects').select('*').eq('id', id).single()
-            return res.data
+            return await settingsService.getProjectDetails(id)
         }, 'data.sync_failed')
         if (data) {
             setProject(data)

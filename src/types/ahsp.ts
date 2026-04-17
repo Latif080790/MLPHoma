@@ -157,7 +157,7 @@ export interface AHSPActions {
   fetchZonePrices: (zoneId: string) => Promise<void>
 
   // Resource actions
-  addResource: (resource: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => string | undefined
+  addResource: (resource: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string | undefined>
   updateResource: (id: string, updates: Partial<Resource>) => void
   deleteResource: (id: string) => void
   importResources: (resources: Omit<Resource, 'id' | 'createdAt' | 'updatedAt'>[]) => void

@@ -12,6 +12,7 @@ import { Label } from '../ui/label'
 import { Textarea } from '../ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { Badge } from '../ui/badge'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '../ui/sheet'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import type { TimelineTask, TaskDependency, TaskStatus, DependencyType } from '../../types/timeline'
 import { useTimelineStore } from '../../store/timelineStore'
@@ -270,18 +271,13 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
     }))
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-4xl max-h-[90vh] overflow-auto rounded-xl border bg-white p-6 shadow-xl dark:border-neutral-800 dark:bg-neutral-900">
+    <Sheet open={isOpen} onOpenChange={(open) => { if (!open) onClose() }}>
+      <SheetContent side="right" className="w-[100vw] sm:max-w-xl md:max-w-3xl overflow-y-auto p-6 sm:p-8">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-semibold">{task ? 'Edit Task' : 'Add New Task'}</h2>
-          <button onClick={onClose} className="rounded-md p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800" aria-label="Close">
-            <X size={20} />
-          </button>
-        </div>
+        <SheetHeader className="mb-6 pb-4 border-b dark:border-neutral-800">
+          <SheetTitle className="text-xl font-semibold text-left">{task ? 'Edit Task' : 'Add New Task'}</SheetTitle>
+        </SheetHeader>
 
         <form onSubmit={onSubmit} className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
@@ -573,7 +569,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
             <Button type="submit">Save Task</Button>
           </div>
         </form>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   )
 }
