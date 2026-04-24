@@ -87,7 +87,7 @@ export const getRABColumns = (
       return (
         <Badge 
           variant={pClass === 'A' ? 'destructive' : pClass === 'B' ? 'secondary' : 'outline'} 
-          className="h-5 min-w-5 px-1 text-[9px] font-black uppercase tracking-tighter"
+          className="h-5 min-w-5 px-1 text-xs font-black uppercase tracking-tighter"
         >
           {pClass}
         </Badge>
@@ -108,24 +108,36 @@ export const getRABColumns = (
       const item = row.original
       const isExpanded = row.getIsExpanded()
       return (
-        <div className="flex items-start gap-2 py-1">
+        <div className="flex items-start gap-2 py-1 max-w-[340px]">
           <button 
             onClick={() => row.toggleExpanded()}
-            className="mt-1 text-slate-400 hover:text-blue-500 transition-colors"
+            className="mt-0.5 text-slate-400 hover:text-blue-500 transition-colors shrink-0"
           >
             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </button>
-          <div className="flex flex-col min-w-0 flex-1 whitespace-normal break-words">
-            <span className="font-bold text-slate-900 leading-tight dark:text-slate-100">{item.name}</span>
-            <span className="text-[10px] text-slate-400">{item.notes || 'No specification'}</span>
+          <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+            <span 
+              className="font-bold text-slate-900 leading-snug dark:text-slate-100 line-clamp-2 break-words"
+              title={item.name}
+            >
+              {item.name}
+            </span>
+            {item.notes && item.notes !== 'No specification' ? (
+              <span 
+                className="text-xs text-slate-400 line-clamp-1 break-words mt-0.5"
+                title={item.notes}
+              >
+                {item.notes}
+              </span>
+            ) : null}
             
             {/* Linked WBS Tags */}
             {validLinksByRabItem[item.id]?.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {validLinksByRabItem[item.id].map((l: any) => (
                   <Link key={l.id} to={`/schedule?taskId=${l.wbsItemId}`} title="Lihat di Timeline">
-                    <Badge variant="secondary" className="px-1 py-0 h-4 text-[9px] bg-indigo-50 text-indigo-600 border-indigo-100 cursor-pointer hover:bg-indigo-100 hover:text-indigo-700 transition-colors">
-                      <Link2 size={8} className="mr-0.5" /> Gantt: {l.wbsItemId.substring(0, 8)}
+                    <Badge variant="secondary" className="px-1 py-0 h-4 text-xs bg-indigo-50 text-indigo-600 border-indigo-100 cursor-pointer hover:bg-indigo-100 hover:text-indigo-700 transition-colors">
+                      <Link2 size={8} className="mr-0.5" /> Gantt
                     </Badge>
                   </Link>
                 ))}
@@ -165,7 +177,7 @@ export const getRABColumns = (
     header: () => <div className="text-center">SAT.</div>,
     cell: ({ row }) => (
       <div className="text-center">
-        <Badge variant="outline" className="text-[10px] font-bold text-slate-600 bg-slate-50 border-slate-200 uppercase px-1.5 h-5">
+        <Badge variant="outline" className="text-xs font-bold text-slate-600 bg-slate-50 border-slate-200 uppercase px-1.5 h-5">
           {row.original.unit || '-'}
         </Badge>
       </div>
@@ -209,17 +221,36 @@ export const getRABColumns = (
     id: 'actions',
     header: () => <div className="text-center">Aksi</div>,
     cell: ({ row }) => (
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0 text-slate-400 hover:text-blue-600 transition-colors"
+          title="Edit item"
+          onClick={() => onSelectRow(row.original.id, true)}
+        >
+          <Settings2 size={13} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-600 transition-colors"
+          title="Link ke WBS"
+          onClick={() => onToggleExpand(row.original.id)}
+        >
+          <Link2 size={13} />
+        </Button>
         <Button
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 transition-colors"
+          title="Hapus"
           onClick={() => onRemoveRow(row.original.id)}
         >
-          <Trash2 size={14} />
+          <Trash2 size={13} />
         </Button>
       </div>
     ),
-    size: 64,
+    size: 96,
   },
 ]

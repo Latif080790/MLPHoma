@@ -14,7 +14,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
-import { Plus, Trash2, AlertTriangle, Settings2, Download, Flag, FileText, ZoomIn, ZoomOut, CalendarClock, Layers, Activity, CheckCircle2 } from 'lucide-react'
+import { Plus, Trash2, AlertTriangle, Settings2, Download, Flag, FileText, ZoomIn, ZoomOut, CalendarClock, Layers, Activity, CheckCircle2, X, ChevronRight, AlertCircle, Clock } from 'lucide-react'
 import GanttChart from '../../components/timeline/GanttChart'
 import TaskEditor from '../../components/timeline/TaskEditor'
 import type { TaskEditorProps } from '../../components/timeline/TaskEditor'
@@ -23,6 +23,7 @@ import { useTimelineStore } from '../../store/timelineStore'
 import { useProjectStore } from '../../store/projectStore'
 import type { TimelineState, TimelineTask } from '../../store/timelineStore'
 import { calculateTimelineAlerts } from '../../lib/timelineAlerts'
+import { seedEnterpriseProject } from '../../lib/demoDataSeeder'
 import { toast } from 'sonner'
 import {
   DropdownMenu,
@@ -202,6 +203,8 @@ export default function Timeline() {
   const [editingTask, setEditingTask] = useState<TaskEditorProps['task']>(null)
   const [selectedId, setSelectedId] = useState<string>('')
   const [pendingDeleteTaskId, setPendingDeleteTaskId] = useState<string | null>(null)
+  // Warning slide-over panel state
+  const [warningPanelOpen, setWarningPanelOpen] = useState(false)
   // Track per-project fetch completion to gate the demo-seed guard
   const [fetchedForProject, setFetchedForProject] = useState<string | null>(null)
   const [searchParams] = useSearchParams()
@@ -282,10 +285,13 @@ export default function Timeline() {
     if (!projectId || fetchedForProject !== projectId) return
     const tasks = getTasks(projectId) || []
     if (!tasks.length) {
-      const seeded = seedDemoTasks(projectId)
-      if (seeded) {
-        toast.info('Demo tasks added', { description: 'You can drag bars to reschedule.' })
-      }
+      seedEnterpriseProject(projectId).then((seeded) => {
+        if (seeded) {
+          toast.info('Enterprise sample project seeded', { 
+            description: 'WBS, RAB, and Timeline data have been generated for testing.' 
+          })
+        }
+      })
     }
   }, [getTasks, projectId, fetchedForProject])
 
@@ -512,6 +518,20 @@ export default function Timeline() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="text-xs font-bold uppercase tracking-widest text-slate-400 px-3 py-2">Engineering Tools</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-amber-600 dark:text-amber-400 font-medium"
+                onClick={() => {
+                  seedEnterpriseProject(projectId).then(() => {
+                    toast.success('Project Re-seeded', { 
+                      description: 'Sample data has been re-generated.' 
+                    })
+                  })
+                }}
+              >
+                <Activity className="mr-2 h-4 w-4" />
+                Seed Mock Data (Dev)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => { const api = useTimelineStore.getState(); api.setBaseline(projectId, true); toast.success('Baseline captured'); }}>
                 <Flag className="h-4 w-4 mr-3 text-slate-400" /> 
                 <div className="flex flex-col">
@@ -568,9 +588,12 @@ export default function Timeline() {
           </div>
         </div>
 
-        {/* Level 2 Right: Alert Strip (Refined) */}
+        {/* Level 2 Right: Alert Strip (Clickable) */}
         {alerts.length > 0 && (
-          <div className="flex items-center gap-3 px-6 py-1.5 ml-auto border-l border-rose-100 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 cursor-pointer hover:bg-rose-100/50 transition-colors">
+          <button
+            onClick={() => setWarningPanelOpen(true)}
+            className="flex items-center gap-3 px-6 py-1.5 ml-auto border-l border-rose-100 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-100/70 dark:hover:bg-rose-950/40 transition-colors group"
+          >
             <div className="relative">
               <AlertTriangle className="h-4 w-4 text-rose-600" />
               <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -578,13 +601,14 @@ export default function Timeline() {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
               </span>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col text-left">
               <span className="text-xs font-bold text-rose-700 dark:text-rose-400">
-                {alerts.length} Warnings Detected
+                {alerts.length} Warnings
               </span>
-              <span className="text-xs text-rose-500/80 font-medium">Critical schedule variances found</span>
+              <span className="text-xs text-rose-500/80 font-medium">Klik untuk detail</span>
             </div>
-          </div>
+            <ChevronRight className="h-3 w-3 text-rose-400 group-hover:translate-x-0.5 transition-transform" />
+          </button>
         )}
       </div>
 
@@ -619,6 +643,93 @@ export default function Timeline() {
           }}
         />
       </div>
+
+      {/* ─── Warning Slide-over Panel ─────────────────────────────────── */}
+      {warningPanelOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end" onClick={() => setWarningPanelOpen(false)}>
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+          {/* Panel */}
+          <div
+            className="relative z-10 w-80 max-w-full h-full bg-white dark:bg-neutral-900 shadow-2xl border-l border-neutral-200 dark:border-neutral-800 flex flex-col animate-in slide-in-from-right duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Panel Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-rose-50 dark:bg-rose-950/30">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-rose-600" />
+                <span className="font-bold text-sm text-rose-700 dark:text-rose-400">
+                  Schedule Warnings ({alerts.length})
+                </span>
+              </div>
+              <button
+                onClick={() => setWarningPanelOpen(false)}
+                className="rounded p-1 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            {/* Panel Body */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {alerts.map((alert, i) => (
+                <div
+                  key={i}
+                  className="rounded-lg border bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 p-3 space-y-1.5 hover:border-rose-200 dark:hover:border-rose-800 transition-colors"
+                >
+                  <div className="flex items-start gap-2">
+                    <div className={`mt-0.5 rounded px-1.5 py-0.5 text-xs font-bold uppercase tracking-wider shrink-0 ${
+                      alert.severity === 'critical'
+                        ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400'
+                        : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                    }`}>
+                      {alert.severity === 'critical' ? 'OVERDUE' : 'DELAY'}
+                    </div>
+                  </div>
+                  <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200 leading-snug">
+                    {alert.taskName}
+                  </p>
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                    {alert.message}
+                  </p>
+                  <div className="flex items-center gap-3 pt-1">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-neutral-400">Expected:</span>
+                      <span className="text-xs font-bold text-neutral-600 dark:text-neutral-300">{Math.round(alert.expectedProgress)}%</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-neutral-400">Actual:</span>
+                      <span className="text-xs font-bold text-rose-600">{Math.round(alert.actualProgress)}%</span>
+                    </div>
+                    {alert.delayDays > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Clock size={10} className="text-amber-500" />
+                        <span className="text-xs font-bold text-amber-600">+{alert.delayDays}d late</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {alerts.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-40 text-neutral-400">
+                  <AlertCircle size={32} className="mb-2 opacity-30" />
+                  <p className="text-sm">No active warnings</p>
+                </div>
+              )}
+            </div>
+            {/* Panel Footer */}
+            <div className="border-t border-neutral-200 dark:border-neutral-800 p-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+                onClick={() => setWarningPanelOpen(false)}
+              >
+                Tutup
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Editor modal */}
       <TaskEditor
