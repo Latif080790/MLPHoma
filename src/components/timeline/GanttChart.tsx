@@ -208,14 +208,15 @@ export default function GanttChart({
     }),
     [],
   )
-  const defaultLeftColWidth = width < 640 ? 260 : width < 1024 ? 320 : 380
+  const defaultLeftColWidth = width < 640 ? 220 : width < 1024 ? 300 : 360
   const [userLeftColWidth, setUserLeftColWidth] = useState<number | null>(null)
   const leftColWidth = userLeftColWidth ?? defaultLeftColWidth
   
-  // Compact engineering layout
-  const rowHeight = 36
-  const barHeight = 18
-  const barRadius = 4 // --radius-xs equivalent
+  // Row height: 52px = accommodates 2-line content (name + date/duration)
+  // Must match HTML left-panel row height exactly to keep bar alignment
+  const rowHeight = 52
+  const barHeight = 24
+  const barRadius = 6
 
   /**
    * Date range and days
@@ -361,10 +362,23 @@ export default function GanttChart({
     }
   }, [containerRef, height])
 
+  // Auto-scroll to today on first task load
+  const didAutoScrollRef = useRef(false)
+  useEffect(() => {
+    if (didAutoScrollRef.current || !containerRef.current || tasks.length === 0 || todayIndex < 0) return
+    didAutoScrollRef.current = true
+    const el = containerRef.current
+    const visibleW = el.clientWidth - leftColWidth
+    // Position today at ~1/3 from left of visible chart area
+    const targetScroll = Math.max(0, (todayIndex - startDay) * pxPerDay - visibleW / 3)
+    el.scrollLeft = targetScroll
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks.length])
+
   /* -------------------------
    * Grouping & Collapse by WBS
    * ------------------------- */
-  const [groupByWBS, setGroupByWBS] = useState<boolean>(false)
+  const [groupByWBS, setGroupByWBS] = useState<boolean>(true)
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({})
 
   /**
@@ -922,7 +936,9 @@ export default function GanttChart({
             {/* Month row */}
             <div className="flex items-center border-b border-neutral-200 dark:border-neutral-700" style={{ height: 36 }}>
               <div className="flex items-center justify-start px-4 border-r border-neutral-200 dark:border-neutral-700 text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500" style={{ width: leftColWidth }}>
-                Activity
+                <span className="flex-1">Activity / Task</span>
+                <span className="text-xs mr-2">Dur.</span>
+                <span className="text-xs">St.</span>
               </div>
               <div className="relative" style={{ width: (endDay - startDay) * pxPerDay }}>
                 {monthSpans.map((m, i) => (
@@ -1002,13 +1018,13 @@ export default function GanttChart({
             })}
 
             {showTodayLine && todayIndex >= startDay && todayIndex < endDay ? (
-              <div className="absolute pointer-events-none z-20" style={{ left: leftColWidth + (todayIndex - startDay) * pxPerDay - 1, top: 6, height: effectiveRows.length * rowHeight + 30 }} aria-hidden="true">
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2">
-                  <div className="text-xs px-2 py-0.5 rounded-full text-white shadow-sm" style={{ background: palette.critical }}>
-                    {todayISO}
+              <div className="absolute pointer-events-none z-20" style={{ left: leftColWidth + (todayIndex - startDay) * pxPerDay - 1, top: 0, height: effectiveRows.length * rowHeight + 64 }} aria-hidden="true">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                  <div className="text-xs px-2 py-0.5 rounded-full text-white shadow font-bold tracking-wider" style={{ background: '#f59e0b' }}>
+                    TODAY
                   </div>
                 </div>
-                <div className="w-px h-full" style={{ background: `${palette.critical}cc`, marginLeft: '0.5px' }} />
+                <div className="absolute top-5 w-0.5 h-full" style={{ background: 'rgba(245,158,11,0.8)', marginLeft: '0.5px' }} />
               </div>
             ) : null}
 
@@ -1053,6 +1069,7 @@ export default function GanttChart({
                 const widthPx = duration * pxPerDay
                 const isCritical = criticalIds.has(t.id)
                 const isSelected = r.taskIndex === selectedIndex
+                const taskStatus = t.status || 'not_started'
 
                 const leftCellBase = `sticky left-0 z-10 flex items-center gap-2 px-3 text-[12px] border-b border-r transition-colors ${
                   isCritical
@@ -1061,7 +1078,36 @@ export default function GanttChart({
                 } ${isSelected ? 'ring-1 ring-inset ring-brand-primary-300 bg-brand-primary-050 dark:bg-brand-primary-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/60'}`
 
                 const barTop = (rowHeight - barHeight) / 2
-                
+
+                // Status-based bar gradient
+                const barGradient = isCritical
+                  ? 'linear-gradient(180deg, #f43f5e 0%, #be123c 100%)'
+                  : taskStatus === 'completed'
+                  ? 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)'
+                  : taskStatus === 'delayed'
+                  ? 'linear-gradient(180deg, #f97316 0%, #ea580c 100%)'
+                  : taskStatus === 'in_progress'
+                  ? 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)'
+                  : 'linear-gradient(180deg, #94a3b8 0%, #64748b 100%)'
+
+                const barBorder = isCritical
+                  ? 'rgb(159, 18, 57)'
+                  : taskStatus === 'completed'
+                  ? 'rgb(22, 101, 52)'
+                  : taskStatus === 'delayed'
+                  ? 'rgb(194, 65, 12)'
+                  : taskStatus === 'in_progress'
+                  ? 'rgb(29, 78, 216)'
+                  : 'rgb(71, 85, 105)'
+
+                const barShadow = disableShadows ? 'none' : isCritical
+                  ? '0 2px 8px rgba(225,29,72,0.4), inset 0 1px 1px rgba(255,255,255,0.35)'
+                  : taskStatus === 'completed'
+                  ? '0 2px 8px rgba(34,197,94,0.35), inset 0 1px 1px rgba(255,255,255,0.35)'
+                  : taskStatus === 'in_progress'
+                  ? '0 2px 8px rgba(59,130,246,0.35), inset 0 1px 1px rgba(255,255,255,0.35)'
+                  : '0 1px 4px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.2)'
+
                 // Aesthetic Premium Bar Styles (Capsule + Glass)
                 const barStyle = {
                   left: Math.max(leftColWidth + 4, leftPx),
@@ -1069,13 +1115,9 @@ export default function GanttChart({
                   top: barTop,
                   height: barHeight,
                   borderRadius: barRadius,
-                  background: isCritical 
-                    ? `linear-gradient(180deg, rgb(var(--color-status-danger-fg)), rgb(190, 18, 60))` 
-                    : `linear-gradient(180deg, rgb(var(--brand-primary-500)), rgb(67, 56, 202))`,
-                  border: `1px solid ${isCritical ? 'rgb(159, 18, 57)' : 'rgb(55, 48, 163)'}`,
-                  boxShadow: disableShadows ? 'none' : isCritical 
-                    ? '0 2px 8px rgba(225, 29, 72, 0.4), inset 0 1px 1px rgba(255,255,255,0.4)' 
-                    : '0 2px 8px rgba(79, 70, 229, 0.3), inset 0 1px 1px rgba(255,255,255,0.3)',
+                  background: barGradient,
+                  border: `1px solid ${barBorder}`,
+                  boxShadow: barShadow,
                   backdropFilter: 'blur(2px)',
                 } as React.CSSProperties
 
@@ -1107,16 +1149,23 @@ export default function GanttChart({
                     onMouseDown={(e) => { e.preventDefault(); startDrag(t.id, e.clientX, t.startDate) }}
                     onClick={() => { setSelectedIndex(r.taskIndex); onTaskClick?.(t.id) }}
                   >
-                    {/* Inner Progress Bar - Inset design */}
-                    <div
-                      className="absolute left-0 top-0 h-full rounded-l-[3px] bg-white/20"
-                      style={{ width: `${Math.max(0, Math.min(100, t.progress ?? 0))}%` }}
+                    {/* Inner Progress Bar - visible dark overlay showing completion */}
+                     <div
+                      className="absolute left-0 top-0 h-full"
+                      style={{ 
+                        width: `${Math.max(0, Math.min(100, t.progress ?? 0))}%`,
+                        borderRadius: `${barRadius}px ${Math.min(barRadius, (t.progress ?? 0) >= 99 ? barRadius : 0)}px ${Math.min(barRadius, (t.progress ?? 0) >= 99 ? barRadius : 0)}px ${barRadius}px`,
+                        background: 'rgba(0,0,0,0.22)'
+                      }}
                     />
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-start px-2 overflow-hidden">
-                      <span className="text-xs font-bold text-white/90 truncate opacity-0 group-hover:opacity-100 transition-opacity">
-                        {Math.round(t.progress ?? 0)}%
-                      </span>
-                    </div>
+                    {/* Progress label (shown if bar is wide enough) */}
+                    {(t.progress ?? 0) > 0 && widthPx > 48 && (
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+                        <span className="text-xs font-bold text-white drop-shadow-sm">
+                          {Math.round(t.progress ?? 0)}%
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )
 
@@ -1127,7 +1176,7 @@ export default function GanttChart({
                         <div
                           id={`gantt-task-${t.id}`}
                           className={leftCellBase}
-                          style={{ top: 0, width: leftColWidth }}
+                          style={{ top: 0, width: leftColWidth, height: rowHeight }}
                           onClick={() => {
                             setSelectedIndex(r.taskIndex)
                             onTaskClick?.(t.id)
@@ -1147,15 +1196,14 @@ export default function GanttChart({
                           }`} />
 
                           <div className="min-w-0 flex-1">
-                            <div className="truncate font-semibold text-neutral-800 dark:text-neutral-100 leading-tight">
+                            <div className="truncate font-semibold text-neutral-800 dark:text-neutral-100 leading-tight text-xs">
                               {t.name}
                             </div>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs text-neutral-500 font-medium">
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-xs text-neutral-400 font-medium tabular-nums">
                                 {t.startDate}
                               </span>
-                              <span className="text-xs text-neutral-300">|</span>
-                              <span className="text-xs text-brand-primary-500 font-bold uppercase tracking-wider">
+                              <span className="text-xs bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold px-1 rounded">
                                 {inclusiveDays(t.startDate, t.endDate)}d
                               </span>
                             </div>
