@@ -11,11 +11,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'MLPHoma Project Manager',
+        name: 'MLPHoma by NATA LABA',
         short_name: 'MLPHoma',
-        description: 'Enterprise Construction Project Management',
-        theme_color: '#1d4ed8',
-        background_color: '#eff6ff',
+        description: 'Enterprise Construction Project Management by NATA LABA',
+        theme_color: '#f97316',
+        background_color: '#fff7ed',
         icons: [
           {
             src: 'pwa-192x192.png',

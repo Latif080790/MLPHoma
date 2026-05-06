@@ -27,7 +27,7 @@ import { assertSupabase } from '@/lib/supabaseClient'
 const EMPTY_ARRAY: RABItem[] = []
 
 /** RAB module component */
-export default function RAB() {
+export default function RAB({ embedded = false }: { embedded?: boolean }) {
   const syncProjectToSupabase = useRabStore(s => s.syncProjectToSupabase)
   const fetchRabFromSupabase = useRabStore(s => s.fetchItems)
   const activeProjectId = useProjectStore(s => s.activeProjectId)
@@ -137,12 +137,14 @@ export default function RAB() {
   if (!currentProject) {
     return (
       <div className="space-y-6">
-        <ModuleHeader
-          icon={<Calculator size={18} />}
-          title="RAB Builder"
-          description="Manage budget items and calculations"
-          showBackButton={false}
-        />
+        {!embedded && (
+          <ModuleHeader
+            icon={<Calculator size={18} />}
+            title="RAB Builder"
+            description="Manage budget items and calculations"
+            showBackButton={false}
+          />
+        )}
         <div className="p-8 text-center">
           <h2 className="text-lg font-semibold">No Project Selected</h2>
           <p className="text-muted-foreground">Please select a project to view RAB.</p>
@@ -153,7 +155,7 @@ export default function RAB() {
 
   return (
     <div className="space-y-4 density-compact">
-      <ModuleHeader
+      {!embedded && (<ModuleHeader
         icon={<Calculator size={18} />}
         title="RAB Builder"
         description="Manage budget items and calculations"
@@ -163,7 +165,7 @@ export default function RAB() {
             {/* Peer awareness in this module */}
             {otherPeers.length > 0 && (
               <div className="flex items-center gap-2 pr-2 border-r border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-right-2 duration-300">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider hidden lg:block">Active Peers:</span>
+                <span className="text-xs uppercase font-bold text-slate-400 tracking-wider hidden lg:block">Active Peers:</span>
                 <PresenceAvatars users={otherPeers} />
               </div>
             )}
@@ -190,7 +192,7 @@ export default function RAB() {
             </div>
           </div>
         }
-      />
+      />)}
 
       {/* Rates config — inline panel, no overflow/z-index issues */}
       {showSettings && (
@@ -338,7 +340,17 @@ export default function RAB() {
             {loading.ahspItems ? (
               <CardSkeleton />
             ) : (
-              <RABTable projectId={currentProject.id} />
+              <>
+                {items.length > 0 && summary.subtotal === 0 && (
+                  <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                    <span className="font-medium">
+                      ⚠ {items.length} item belum memiliki unit price — Grand Total = Rp 0.
+                    </span>
+                    <span className="ml-auto text-xs text-amber-600 dark:text-amber-400">Import dari AHSP untuk mengisi harga satuan otomatis.</span>
+                  </div>
+                )}
+                <RABTable projectId={currentProject.id} />
+              </>
             )}
           </CardContent>
         </Card>

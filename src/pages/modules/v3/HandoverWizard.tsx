@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -29,6 +30,7 @@ import { prerequisiteCheckService, HandoverReadiness } from '@/services/prerequi
 
 export default function HandoverWizard() {
     type InventoryItem = HandoverSummary['inventory'][number]
+    const navigate = useNavigate()
     const { handleAsync } = useErrorHandler()
     const activeProjectId = useProjectStore((s) => s.activeProjectId)
     const projects = useProjectStore((s) => s.projects)
@@ -396,7 +398,7 @@ export default function HandoverWizard() {
                         Next Step <ArrowRight className="ml-2 w-4 h-4" />
                     </Button>
                     {step === 4 && (
-                        <Button variant="outline" onClick={() => { window.location.hash = '/' }}>
+                        <Button variant="outline" onClick={() => navigate('/')}>
                             Close Wizard
                         </Button>
                     )}

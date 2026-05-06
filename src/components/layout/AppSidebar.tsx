@@ -17,6 +17,7 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
+    ChevronDown,
     Hexagon,
     Zap,
     BarChart3,
@@ -72,6 +73,25 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
     // Removed useMemo cache here to avoid Rollup artifacting
     const navGroups = getSidebarGroups()
 
+    // ── Group collapse state (persisted in localStorage) ─────────────────────
+    const STORAGE_KEY = 'mlphoma:sidebar:collapsed-groups'
+    const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>(() => {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY)
+            if (stored) return JSON.parse(stored) as Record<string, boolean>
+        } catch { /* ignore */ }
+        // Default: use defaultCollapsed from registry
+        return Object.fromEntries(navGroups.map((g) => [g.label, g.defaultCollapsed]))
+    })
+
+    const toggleGroup = (label: string) => {
+        setCollapsedGroups((prev) => {
+            const next = { ...prev, [label]: !prev[label] }
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+            return next
+        })
+    }
+
     React.useEffect(() => {
         let mounted = true
         const loadPending = async () => {
@@ -109,7 +129,10 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
         >
             {/* Logo Area */}
             <div className="flex h-14 items-center gap-3 px-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
-                <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 shadow-md text-white">
+                <div
+                    className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg shadow-md text-white"
+                    style={{ background: 'linear-gradient(135deg, #1d5fcc, #f97316)' }}
+                >
                     <Hexagon size={18} />
                 </div>
 
@@ -118,8 +141,8 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                         <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                             MLPHoma
                         </span>
-                        <span className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
-                            Construction Platform
+                        <span className="text-xs tracking-wider text-nl-orange font-semibold truncate">
+                            by NATA LABA
                         </span>
                     </div>
                 )}
@@ -127,58 +150,76 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
 
             {/* Navigation - Scrollable Area */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-4">
-                {navGroups.map((group) => (
-                    <div key={group.label}>
-                        {/* Group Label */}
-                        {!collapsed && (
-                            <div className="mb-1 px-2 pb-1 border-b border-slate-100 dark:border-slate-800">
-                                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                                    {group.label}
-                                </span>
-                            </div>
-                        )}
-                        <div className="space-y-0.5">
-                            {group.items.map((item) => {
-                                const isActive = currentPath === item.path
-                                const Icon = ICON_MAP[item.iconKey]
-                                return (
-                                    <Link
-                                        key={item.path}
-                                        to={item.path}
-                                        className={cn(
-                                            "group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors relative overflow-hidden",
-                                            isActive
-                                                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                {navGroups.map((group) => {
+                    const isGroupCollapsed = !collapsed && !!collapsedGroups[group.label]
+                    const hasActiveItem = group.items.some((item) => currentPath === item.path)
+                    return (
+                        <div key={group.label}>
+                            {/* Group Label */}
+                            {!collapsed && (
+                                <button
+                                    onClick={() => toggleGroup(group.label)}
+                                    className="w-full flex items-center justify-between mb-1 px-2 pb-1 border-b border-slate-100 dark:border-slate-800 group/grp"
+                                    aria-expanded={!isGroupCollapsed}
+                                    aria-label={`${isGroupCollapsed ? 'Expand' : 'Collapse'} ${group.label}`}
+                                >
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 group-hover/grp:text-slate-600 dark:group-hover/grp:text-slate-400 transition-colors">
+                                        {group.label}
+                                        {hasActiveItem && isGroupCollapsed && (
+                                            <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-nl-orange align-middle" />
                                         )}
-                                        title={collapsed ? item.label : undefined}
-                                    >
-                                        {isActive && (
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-blue-600 rounded-r-full" />
-                                        )}
-                                        <Icon
-                                            size={16}
-                                            className={cn(
-                                                "flex-shrink-0",
-                                                isActive ? "text-blue-600 dark:text-blue-400" : item.colorClass
-                                            )}
-                                        />
-                                        {!collapsed && (
-                                            <span className="truncate">
-                                                {item.label}
-                                            </span>
-                                        )}
-                                        {!collapsed && item.path === '/' && pendingApprovals > 0 && (
-                                            <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white leading-none">
-                                                {pendingApprovals}
-                                            </span>
-                                        )}
-                                    </Link>
-                                )
-                            })}
+                                    </span>
+                                    <ChevronDown
+                                        size={12}
+                                        className={`text-slate-300 dark:text-slate-600 group-hover/grp:text-slate-500 transition-transform duration-200 ${isGroupCollapsed ? '-rotate-90' : ''}`}
+                                    />
+                                </button>
+                            )}
+                            {!isGroupCollapsed && (
+                                <div className="space-y-0.5">
+                                    {group.items.map((item) => {
+                                        const isActive = currentPath === item.path
+                                        const Icon = ICON_MAP[item.iconKey]
+                                        return (
+                                            <Link
+                                                key={item.path}
+                                                to={item.path}
+                                                className={cn(
+                                                    "group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors relative overflow-hidden",
+                                                    isActive
+                                                        ? "bg-orange-50 text-nl-orange dark:bg-nl-sidebar-active dark:text-orange-300"
+                                                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                )}
+                                                title={collapsed ? item.label : undefined}
+                                            >
+                                                {isActive && (
+                                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-nl-orange rounded-r-full" />
+                                                )}
+                                                <Icon
+                                                    size={16}
+                                                    className={cn(
+                                                        "flex-shrink-0",
+                                                        isActive ? "text-blue-600 dark:text-blue-400" : item.colorClass
+                                                    )}
+                                                />
+                                                {!collapsed && (
+                                                    <span className="truncate">
+                                                        {item.label}
+                                                    </span>
+                                                )}
+                                                {!collapsed && item.path === '/' && pendingApprovals > 0 && (
+                                                    <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-xs font-bold text-white leading-none">
+                                                        {pendingApprovals}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        )
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
             </div>
 
             {/* Footer / Collapse Toggle */}

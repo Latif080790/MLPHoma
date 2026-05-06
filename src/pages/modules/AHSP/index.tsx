@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, Suspense } from 'react'
+import { TableSkeleton } from '@/components/common/LoadingSkeleton'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAHSPStore } from '@/store/ahspStore'
@@ -57,9 +58,8 @@ function AHSPContent() {
 
     if (initStatus === 'loading') {
         return (
-            <div className="flex flex-col items-center justify-center gap-3 p-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Memuat data AHSP & DKH dari database…</p>
+            <div style={{ minHeight: 420 }}>
+                <TableSkeleton rows={8} columns={5} />
             </div>
         )
     }
@@ -138,16 +138,16 @@ function AHSPContent() {
     )
 }
 
-export default function AHSPPage() {
+export default function AHSPPage({ embedded = false }: { embedded?: boolean }) {
     return (
         <div className="space-y-4">
             <ErrorBoundary
                 errorMessage="Failed to load AHSP module"
             >
-                <AHSPHeader />
+                {!embedded && <AHSPHeader />}
                 <Suspense fallback={
-                    <div className="flex items-center justify-center p-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <div style={{ minHeight: 420 }}>
+                        <TableSkeleton rows={8} columns={5} />
                     </div>
                 }>
                     <AHSPContent />

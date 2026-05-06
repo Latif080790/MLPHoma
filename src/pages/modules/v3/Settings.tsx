@@ -1,5 +1,6 @@
 
 import React, { useCallback, useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 // Enterprise patterns
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, ModeSwitch, WorkspaceHeader } from '@/components/patterns'
@@ -26,6 +27,7 @@ export default function Settings() {
         end_date?: string
     }
 
+    const navigate = useNavigate()
     const { activeProjectId, projects, updateProject } = useProjectStore()
     const { handleAsync } = useErrorHandler()
     const audit = useRabStore(s => s.audit)
@@ -202,7 +204,7 @@ export default function Settings() {
                 {/* --- MASTER DATA --- */}
                 <TabsContent value="master">
                     <div className="grid gap-4 md:grid-cols-2">
-                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => window.location.hash = '/costing'}>
+                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => navigate('/costing')}>
                             <CardHeader>
                                 <CardTitle className="text-base">AHSP Categories</CardTitle>
                                 <CardDescription>Manage standard pricing categories.</CardDescription>
@@ -211,7 +213,7 @@ export default function Settings() {
                                 <p className="text-xs text-muted-foreground">Open Project Costing module to manage AHSP data →</p>
                             </CardContent>
                         </Card>
-                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => window.location.hash = '/supply-chain'}>
+                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => navigate('/supply-chain')}>
                             <CardHeader>
                                 <CardTitle className="text-base">Vendors</CardTitle>
                                 <CardDescription>Manage supplier list for POs.</CardDescription>
@@ -220,7 +222,7 @@ export default function Settings() {
                                 <p className="text-xs text-muted-foreground">Open Supply Chain module to manage vendors →</p>
                             </CardContent>
                         </Card>
-                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => window.location.hash = '/finance'}>
+                        <Card className="hover:border-blue-500 cursor-pointer transition-colors" onClick={() => navigate('/finance')}>
                             <CardHeader>
                                 <CardTitle className="text-base">Cost Centers</CardTitle>
                                 <CardDescription>Define financial cost codes.</CardDescription>
@@ -276,13 +278,13 @@ export default function Settings() {
                                                             {entry.action}
                                                         </code>
                                                         {entry.payload && typeof entry.payload === 'object' && 'id' in entry.payload && (
-                                                            <span className="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">
+                                                            <span className="text-xs text-slate-400 font-mono truncate max-w-[120px]">
                                                                 #{String(entry.payload.id).slice(0, 8)}
                                                             </span>
                                                         )}
                                                     </div>
                                                 </div>
-                                                <time className="text-[10px] text-slate-400 shrink-0 mt-1 tabular-nums">
+                                                <time className="text-xs text-slate-400 shrink-0 mt-1 tabular-nums">
                                                     {new Date(entry.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                                 </time>
                                             </div>

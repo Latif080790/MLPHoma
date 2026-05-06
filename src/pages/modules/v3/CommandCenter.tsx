@@ -1,5 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react'
 import { Layout, Zap, FileDown } from 'lucide-react'
+import { differenceInDays, parseISO, isValid } from 'date-fns'
 import { useProjectStore } from '@/store/projectStore'
 import { dashboardService, DashboardStats } from '@/services/dashboardService'
 import { toast } from 'sonner'
@@ -74,6 +75,20 @@ export default function CommandCenter() {
 
     const activeProject = projects[activeProjectId || '']
 
+    // ── Day X of Y counter ───────────────────────────────────────────────────
+    const dayCounter = React.useMemo(() => {
+        if (!activeProject?.startDate || !activeProject?.endDate) return null
+        const start = parseISO(activeProject.startDate)
+        const end = parseISO(activeProject.endDate)
+        if (!isValid(start) || !isValid(end)) return null
+        const today = new Date()
+        const elapsed = differenceInDays(today, start) + 1
+        const total = differenceInDays(end, start) + 1
+        const remaining = differenceInDays(end, today)
+        if (total <= 0) return null
+        return { elapsed: Math.max(1, elapsed), total, remaining }
+    }, [activeProject])
+
     if (!activeProjectId) {
         return (
             <ModulePageState
@@ -144,6 +159,13 @@ export default function CommandCenter() {
             { label: 'SPI', value: (stats.spi || 0).toFixed(2), status: ((stats.spi ?? 1) >= 1 ? 'success' : 'danger') as 'success' | 'danger' },
             { label: 'Critical', value: stats.alertCounts?.CRITICAL || 0, status: ((stats.alertCounts?.CRITICAL || 0) > 0 ? 'danger' : 'success') as 'danger' | 'success' },
             { label: 'Risks', value: stats.criticalRisks || 0, status: ((stats.criticalRisks || 0) > 0 ? 'warning' : 'success') as 'warning' | 'success' },
+            ...(dayCounter
+                ? [{
+                    label: `Hari ${dayCounter.elapsed}/${dayCounter.total}`,
+                    value: `${dayCounter.remaining >= 0 ? dayCounter.remaining : 0} hari lagi`,
+                    status: (dayCounter.remaining < 0 ? 'danger' : dayCounter.remaining < dayCounter.total * 0.2 ? 'warning' : 'success') as 'success' | 'warning' | 'danger',
+                }]
+                : []),
         ] : []
 
     const criticalCount = isPortfolioMode ? (portfolioStats?.globalAlertCounts?.CRITICAL || 0) : (stats?.alertCounts?.CRITICAL || 0)

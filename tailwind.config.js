@@ -58,6 +58,16 @@ module.exports = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        /* NATA LABA Brand Tokens — V2 Evaluation "Opsi A Applied" */
+        'nl-orange': '#f97316',
+        'nl-orange-dark': '#ea580c',
+        'nl-orange-pale': '#ffedd5',
+        'nl-orange-border': '#fed7aa',
+        'nl-blue': '#1d5fcc',
+        'nl-blue-dark': '#153fa8',
+        'nl-blue-pale': '#dbeafe',
+        'nl-sidebar': '#0f172a',
+        'nl-sidebar-active': '#431407',
         /* MLPHoma Design Token System — Semantic Colors */
         surface: {
           canvas: 'hsl(var(--color-surface-canvas))',

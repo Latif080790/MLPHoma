@@ -7,6 +7,7 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { Search, Inbox, AlertCircle, Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /**
  * EmptyStateProps
@@ -25,8 +26,26 @@ export interface EmptyStateProps {
   actions?: React.ReactNode
   /** Backward-compatible alias for actions used in older calls */
   action?: React.ReactNode
+  /** Shorthand: single primary action label */
+  actionLabel?: string
+  /** Shorthand: single primary action handler */
+  onAction?: () => void
   /** Additional className */
   className?: string
+}
+
+/** Default SVG illustration for empty states */
+function DefaultIllustration() {
+  return (
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="10" y="20" width="60" height="48" rx="6" fill="currentColor" className="text-slate-100 dark:text-slate-800" />
+      <rect x="18" y="30" width="44" height="6" rx="3" fill="currentColor" className="text-slate-200 dark:text-slate-700" />
+      <rect x="18" y="42" width="30" height="4" rx="2" fill="currentColor" className="text-slate-200 dark:text-slate-700" />
+      <rect x="18" y="52" width="20" height="4" rx="2" fill="currentColor" className="text-slate-200 dark:text-slate-700" />
+      <circle cx="57" cy="22" r="14" fill="currentColor" className="text-slate-50 dark:text-slate-900" stroke="currentColor" strokeWidth="2" />
+      <path d="M51 22h12M57 16v12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-slate-300 dark:text-slate-600" />
+    </svg>
+  )
 }
 
 /**
@@ -41,9 +60,15 @@ export function EmptyState({
   imageKeyword,
   actions,
   action,
+  actionLabel,
+  onAction,
   className,
 }: EmptyStateProps) {
-  const cta = actions ?? action
+  const cta = actions ?? action ?? (actionLabel && onAction ? (
+    <Button size="sm" onClick={onAction}>
+      <Plus className="mr-1.5 h-3.5 w-3.5" />{actionLabel}
+    </Button>
+  ) : undefined)
   const hasImage = !!imageKeyword
 
   return (
@@ -61,7 +86,11 @@ export function EmptyState({
         <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
           {icon}
         </div>
-      ) : null}
+      ) : (
+        <div className="mb-4 opacity-60">
+          <DefaultIllustration />
+        </div>
+      )}
 
       <div className="text-base font-semibold">{title}</div>
       {description ? (

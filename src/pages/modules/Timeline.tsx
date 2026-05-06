@@ -193,7 +193,7 @@ function seedDemoTasks(projectId: string): boolean {
 }
 
 /** Timeline page component */
-export default function Timeline() {
+export default function Timeline({ embedded = false }: { embedded?: boolean }) {
   const activeProjectId = useProjectStore(s => s.activeProjectId)
   const activeProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
   const projectId = activeProject?.id || ''
@@ -442,11 +442,13 @@ export default function Timeline() {
   if (!projectId) {
     return (
       <div className="space-y-6">
-        <ModuleHeader
-          icon={<AlertTriangle size={18} />}
-          title="Timeline"
-          description="Project schedule and Gantt chart"
-        />
+        {!embedded && (
+          <ModuleHeader
+            icon={<AlertTriangle size={18} />}
+            title="Timeline"
+            description="Project schedule and Gantt chart"
+          />
+        )}
         <EmptyState
           title="No Project Selected"
           description="Please select a project to view its timeline."
@@ -473,11 +475,11 @@ export default function Timeline() {
           </Tabs>
 
           <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 rounded-lg px-2 h-8 border border-slate-200/60 dark:border-slate-800/60">
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-transparent" onClick={zoomOut} disabled={pxPerDay <= ZOOM_MIN}>
+            <Button variant="ghost" size="icon" aria-label="Zoom out" className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-transparent" onClick={zoomOut} disabled={pxPerDay <= ZOOM_MIN}>
               <ZoomOut className="h-4 w-4" />
             </Button>
             <input type="range" min={ZOOM_MIN} max={ZOOM_MAX} step={ZOOM_STEP} value={pxPerDay} onChange={(e) => setPxPerDay(parseInt(e.target.value, 10))} className="w-20 accent-blue-600 h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer" />
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-transparent" onClick={zoomIn} disabled={pxPerDay >= ZOOM_MAX}>
+            <Button variant="ghost" size="icon" aria-label="Zoom in" className="h-6 w-6 text-slate-400 hover:text-blue-600 hover:bg-transparent" onClick={zoomIn} disabled={pxPerDay >= ZOOM_MAX}>
               <ZoomIn className="h-4 w-4" />
             </Button>
             <span className="text-xs font-mono text-slate-400 w-8 text-center">{pxPerDay}px</span>
@@ -541,7 +543,7 @@ export default function Timeline() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600">
+              <Button variant="ghost" size="icon" aria-label="Timeline settings" className="h-8 w-8 text-slate-400 hover:text-blue-600">
                 <Settings2 className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

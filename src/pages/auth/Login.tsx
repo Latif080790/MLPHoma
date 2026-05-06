@@ -53,33 +53,49 @@ export default function Login() {
   return (
     <div className="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
 
-      {/* Left Column: Image & Brand */}
-      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-        <div className="absolute inset-0 bg-neutral-900" />
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay" />
+      {/* Left Column: Brand Panel */}
+      <div className="relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r overflow-hidden">
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #7c2d12 100%)' }} />
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-        <div className="relative z-20 flex items-center text-lg font-medium">
-          <div className="mr-2 rounded-full bg-white/10 p-2 backdrop-blur-sm">
-            <img src="/logo.png" alt="NATA LABA Logo" className="h-8 w-8 object-contain" />
+        <div className="relative z-20 flex items-center gap-3">
+          <div
+            className="flex h-9 w-9 items-center justify-center rounded-xl shadow-lg text-white"
+            style={{ background: 'linear-gradient(135deg, #1d5fcc, #f97316)' }}
+          >
+            <HardHat size={20} />
           </div>
-          NATA LABA Construction Suite
+          <div className="flex flex-col">
+            <span className="text-base font-bold leading-tight tracking-tight">NATA LABA</span>
+            <span className="text-xs font-semibold tracking-wider text-slate-400">Construction Suite</span>
+          </div>
         </div>
 
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
-            <p className="text-lg">
+            <p className="text-lg leading-relaxed">
               &ldquo;This platform has completely transformed how we manage our project estimates and timelines. The precision and speed are unmatched.&rdquo;
             </p>
-            <footer className="text-sm text-neutral-300">Achmad Latif, Project Manager</footer>
+            <footer className="text-sm text-orange-200">Achmad Latif, Project Manager</footer>
           </blockquote>
         </div>
       </div>
 
       {/* Right Column: Login Form */}
-      <div className="lg:p-8">
+      <div className="lg:p-8 border-t-4" style={{ borderTopColor: '#f97316' }}>
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
 
           <div className="flex flex-col space-y-2 text-center">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <div
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-white"
+                style={{ background: 'linear-gradient(135deg, #1d5fcc, #f97316)' }}
+              >
+                <DraftingCompass size={14} />
+              </div>
+              <span className="text-base font-bold text-foreground">NATA LABA</span>
+            </div>
             <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
             <p className="text-sm text-muted-foreground">
               Enter your credentials to access your dashboard
@@ -139,7 +155,13 @@ export default function Login() {
                 </div>
               </div>
 
-              <Button disabled={isLoading} className="mt-2 w-full group">
+              <Button
+                disabled={isLoading}
+                className="mt-2 w-full group text-white font-semibold"
+                style={{ backgroundColor: '#f97316' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#ea580c')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#f97316')}
+              >
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

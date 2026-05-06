@@ -98,22 +98,22 @@ export const getAHSPColumns = (
            <div className="flex items-center gap-1.5 flex-wrap">
              <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{item.name}</span>
              {(item.currentVersion ?? 1) > 1 ? (
-               <span className="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 leading-4">
+               <span className="inline-flex items-center px-1.5 py-0 rounded text-xs font-semibold bg-amber-100 text-amber-700 leading-4">
                  v{item.currentVersion}
                </span>
              ) : (
-               <span className="inline-flex items-center px-1.5 py-0 rounded text-[10px] font-medium bg-slate-100 text-slate-400 leading-4">
+               <span className="inline-flex items-center px-1.5 py-0 rounded text-xs font-medium bg-slate-100 text-slate-400 leading-4">
                  v1
                </span>
              )}
-             {isZoneAdjt && <Badge variant="secondary" className="h-4 px-1.5 text-[9px] uppercase tracking-wider">Adj Zona</Badge>}
+             {isZoneAdjt && <Badge variant="secondary" className="h-4 px-1.5 text-xs uppercase tracking-wider">Adj Zona</Badge>}
              {useCount > 0 && (
-               <Badge variant="outline" className="h-4 px-1.5 text-[9px] font-bold text-emerald-700 border-emerald-300 bg-emerald-50">
+               <Badge variant="outline" className="h-4 px-1.5 text-xs font-bold text-emerald-700 border-emerald-300 bg-emerald-50">
                  {useCount} RAB
                </Badge>
              )}
            </div>
-           <span className="text-[10px] font-mono font-medium text-slate-400">{item.code}</span>
+           <span className="text-xs font-mono font-medium text-slate-400">{item.code}</span>
            <CostMixBar mat={matPrice} lab={labPrice} eqp={eqpPrice} sub={subPrice} />
          </div>
       )
@@ -125,7 +125,7 @@ export const getAHSPColumns = (
     header: 'Unit',
     cell: ({ row }) => (
       <div className="text-center">
-        <Badge variant="outline" className="text-[10px] h-5 font-black uppercase text-slate-600 bg-slate-50 border-slate-200 justify-center">
+        <Badge variant="outline" className="text-xs h-5 font-black uppercase text-slate-600 bg-slate-50 border-slate-200 justify-center">
           {row.original.unit || '-'}
         </Badge>
       </div>
@@ -139,7 +139,7 @@ export const getAHSPColumns = (
        const matPrice = row.original.price_material || 0
        return (
          <div className="text-right font-mono text-xs text-slate-600 bg-blue-50/10 h-full flex items-center justify-end px-2 -mx-4 -my-2 py-3">
-            {matPrice > 0 ? formatIDR(matPrice) : '-'}
+            {matPrice > 0 ? formatIDR(matPrice) : <span className="text-slate-300 select-none" aria-hidden>·</span>}
          </div>
        )
     },
@@ -152,7 +152,7 @@ export const getAHSPColumns = (
        const labPrice = row.original.price_labor || 0
        return (
          <div className="text-right font-mono text-xs text-slate-600 bg-orange-50/10 h-full flex items-center justify-end px-2 -mx-4 -my-2 py-3">
-            {labPrice > 0 ? formatIDR(labPrice) : '-'}
+            {labPrice > 0 ? formatIDR(labPrice) : <span className="text-slate-300 select-none" aria-hidden>·</span>}
          </div>
        )
     },
@@ -165,7 +165,7 @@ export const getAHSPColumns = (
        const eqpPrice = row.original.price_equipment || 0
        return (
          <div className="text-right font-mono text-xs text-slate-600 bg-indigo-50/10 h-full flex items-center justify-end px-2 -mx-4 -my-2 py-3">
-            {eqpPrice > 0 ? formatIDR(eqpPrice) : '-'}
+            {eqpPrice > 0 ? formatIDR(eqpPrice) : <span className="text-slate-300 select-none" aria-hidden>·</span>}
          </div>
        )
     },
@@ -178,7 +178,7 @@ export const getAHSPColumns = (
        const subPrice = row.original.price_subcon || 0
        return (
          <div className="text-right font-mono text-xs text-slate-600 bg-purple-50/10 h-full flex items-center justify-end px-2 -mx-4 -my-2 py-3">
-            {subPrice > 0 ? formatIDR(subPrice) : '-'}
+            {subPrice > 0 ? formatIDR(subPrice) : <span className="text-slate-300 select-none" aria-hidden>·</span>}
          </div>
        )
     },

@@ -204,7 +204,7 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
 
       {/* Expanded body */}
       {expanded && (
-        <div className="px-4 pb-4 pt-1 space-y-3">
+        <div className="px-4 pb-3 pt-1 space-y-3">
           {/* Metric cards */}
           <div className="flex flex-wrap gap-2">
             <MetricCard
@@ -253,7 +253,14 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
             )}
           </div>
 
-          {/* Alert banners */}
+          {/* Alert banners — inside expanded body */}
+          <AlertBanner messages={kpi.alerts} />
+        </div>
+      )}
+
+      {/* Critical alerts always visible even when collapsed */}
+      {!expanded && kpi.alerts.length > 0 && (
+        <div className="px-4 pb-3">
           <AlertBanner messages={kpi.alerts} />
         </div>
       )}

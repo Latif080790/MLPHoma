@@ -24,7 +24,7 @@ const ProjectManagement = lazyRetry(() => import('./pages/modules/ProjectManagem
 
 // v3 Ultra Modules
 const CommandCenter = lazyRetry(() => import('./pages/modules/v3/CommandCenter'))
-const ProjectCosting = lazyRetry(() => import('@/pages/modules/ProjectCosting'))
+const ProjectCosting = lazyRetry(() => import('@/pages/modules/v3/ProjectCosting'))
 const ScheduleOps = lazyRetry(() => import('./pages/modules/v3/ScheduleOps'))
 const SupplyChain = lazyRetry(() => import('./pages/modules/v3/SupplyChain'))
 const Finance = lazyRetry(() => import('./pages/modules/v3/Finance'))
