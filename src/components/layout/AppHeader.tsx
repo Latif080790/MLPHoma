@@ -1,6 +1,7 @@
 import React from "react"
 import { ThemeToggle } from "@/components/shared/ThemeToggle"
 import { LogOut, User, Search, Command, Menu, WifiOff, CloudUpload } from "lucide-react"
+import { ProjectSwitcherDropdown } from "./ProjectSwitcherDropdown"
 import { useAuthStore } from "@/store/authStore"
 import { useNavigate } from "react-router"
 import { NotificationCenter } from "@/components/common/NotificationCenter"
@@ -58,7 +59,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
 
   return (
     <header className="h-14 flex items-center justify-between px-4 lg:px-6 gap-4">
-      {/* Left: Hamburger (mobile) + Breadcrumbs */}
+      {/* Left: Hamburger (mobile) + Breadcrumbs + Project Switcher */}
       <div className="flex items-center min-w-0 flex-1 gap-2">
         {onMenuToggle && (
           <Button
@@ -73,6 +74,9 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
           </Button>
         )}
         <AppBreadcrumbs projectName={projectName} />
+        <div className="hidden md:block ml-1">
+          <ProjectSwitcherDropdown />
+        </div>
       </div>
 
       {/* Right: Actions */}
@@ -93,7 +97,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
                 >
                   {!isOnline ? <WifiOff size={16} /> : <CloudUpload size={16} />}
                   {queue.length > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[9px] font-bold text-white">
+                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-xs font-bold text-white">
                       {queue.length > 99 ? '99+' : queue.length}
                     </span>
                   )}
@@ -139,6 +143,17 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
               className="h-9 w-64 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
             />
           </div>
+        )}
+
+        {/* Environment Badge */}
+        {import.meta.env.MODE !== 'production' && (
+          <span className={`hidden sm:inline-flex items-center px-2 py-0.5 rounded text-xs font-bold tracking-wider ${
+            import.meta.env.MODE === 'development'
+              ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+              : 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300'
+          }`}>
+            {import.meta.env.MODE === 'development' ? 'DEV' : 'STAGING'}
+          </span>
         )}
 
         <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2" />

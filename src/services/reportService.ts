@@ -119,7 +119,7 @@ export const reportService = {
             doc.setFontSize(8)
             doc.setTextColor(150, 150, 150)
             doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' })
-            doc.text('MLPHoma Construction Management System', 195, 290, { align: 'right' })
+            doc.text('MLPHoma — NATA LABA Construction Management', 195, 290, { align: 'right' })
         }
 
         // Save

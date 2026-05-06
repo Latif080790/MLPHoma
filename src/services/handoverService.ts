@@ -301,7 +301,7 @@ export const handoverService = {
         doc.text('( Direktur / Owner )', 145, ySign + 35);
 
         doc.setFontSize(10);
-        doc.text('Dokumen ini digenerate otomatis oleh sistem MLPHoma.', 105, 280, { align: 'center' });
+        doc.text('Dokumen ini digenerate otomatis oleh MLPHoma by NATA LABA.', 105, 280, { align: 'center' });
 
         doc.save(`BAST_Proyek_${projectId}.pdf`);
     }

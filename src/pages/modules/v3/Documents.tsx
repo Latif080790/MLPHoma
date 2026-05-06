@@ -1,7 +1,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2 } from "lucide-react"
+import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2, Eye } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -46,6 +46,7 @@ const DOC_SORTS = [
 
 export default function Documents() {
     const { activeProjectId } = useProjectStore()
+    const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
     const { handleAsync } = useErrorHandler()
     const { user } = useAuthStore()
     const [documents, setDocuments] = useState<ProjectDocument[]>([])
@@ -79,6 +80,7 @@ export default function Documents() {
     // Version History State
     const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
     const [pendingDeleteDoc, setPendingDeleteDoc] = useState<ProjectDocument | null>(null)
+    const [previewDoc, setPreviewDoc] = useState<ProjectDocument | null>(null)
     const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
 
@@ -328,7 +330,7 @@ export default function Documents() {
         <PageShell
             contextBar={
                 <GlobalContextBar
-                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    projectName={activeProjectName}
                     syncStatus="synced"
                 />
             }
@@ -412,7 +414,7 @@ export default function Documents() {
                     ))}
                 </div>
             ) : filteredDocs.length === 0 ? (
-                <EmptyState title="No Documents Found" description="Upload contracts, drawings, or reports." imageKeyword="files" />
+                <EmptyState title="No Documents Found" description="Upload contracts, drawings, or reports." />
             ) : (
                 <div
                     ref={docsScrollRef}
@@ -460,6 +462,18 @@ export default function Documents() {
                                             >
                                                 <Download size={14} />
                                             </Button>
+                                            {doc.file_url && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    aria-label="Preview dokumen"
+                                                    className="text-neutral-400 hover:text-blue-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                                                    onClick={() => setPreviewDoc(doc)}
+                                                    title="Preview"
+                                                >
+                                                    <Eye size={14} />
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -626,6 +640,37 @@ export default function Documents() {
                     onReverted={loadDocs}
                 />
             )}
+
+            {/* PDF Preview Dialog */}
+            <Dialog open={!!previewDoc} onOpenChange={(open) => { if (!open) setPreviewDoc(null) }}>
+                <DialogContent className="max-w-4xl w-full h-[85vh] flex flex-col p-0">
+                    <DialogHeader className="px-4 pt-4 pb-2 shrink-0">
+                        <DialogTitle className="flex items-center gap-2 text-sm">
+                            <FileText size={16} />
+                            {previewDoc?.title}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-hidden">
+                        {previewDoc?.file_url && previewDoc.file_url.toLowerCase().includes('.pdf') ? (
+                            <iframe
+                                src={previewDoc.file_url}
+                                title={`Preview: ${previewDoc.title}`}
+                                className="w-full h-full border-0"
+                                aria-label={`Preview PDF: ${previewDoc.title}`}
+                            />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-400">
+                                <FileText size={48} className="opacity-30" />
+                                <p className="text-sm">Preview tidak tersedia untuk format ini</p>
+                                <Button size="sm" variant="outline" onClick={() => previewDoc && handleDownload(previewDoc)}>
+                                    <Download size={14} className="mr-2" />
+                                    Download untuk membuka
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <AlertDialog open={!!pendingDeleteDoc} onOpenChange={(open) => { if (!open) setPendingDeleteDoc(null) }}>
                 <AlertDialogContent>

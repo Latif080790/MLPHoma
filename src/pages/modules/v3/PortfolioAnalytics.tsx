@@ -6,6 +6,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -142,7 +143,8 @@ function daysLeft(endDate?: string) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function PortfolioAnalytics() {
-    const projectsMap = useProjectStore((s) => s.projects)
+    const navigate = useNavigate()
+    const { projects: projectsMap, setActiveProject } = useProjectStore()
     const projects = useMemo(() => Object.values(projectsMap), [projectsMap])
 
     const [data, setData] = useState<ProjectStats[]>([])
@@ -589,7 +591,11 @@ export default function PortfolioAnalytics() {
                             spi: p.stats?.spi || 1,
                             cpi: p.stats?.cpi || 1,
                             budget: p.budget || p.stats?.totalBudget || 0
-                        }))} 
+                        }))}
+                        onProjectClick={(projectId) => {
+                            setActiveProject(projectId)
+                            navigate('/project-overview')
+                        }}
                     />
                 </div>
             )}

@@ -17,6 +17,7 @@ import { useRabStore } from '@/store/rabStore'
 import { useTimelineStore } from '@/store/timelineStore'
 import { useRapStore } from '@/store/rapStore'
 import { useProjectStore } from '@/store/projectStore'
+import { useAuthStore } from '@/store/authStore'
 import { toast } from 'sonner'
 
 let isInitialized = false
@@ -39,6 +40,24 @@ export function initStoreSubscriptions() {
   isInitialized = true
 
   console.info('[Sync] Initializing Cross-Store Subscriptions — 4 pipelines active')
+
+  // ── Subscription 0: Auth → Projects ────────────────────────────────────────
+  // Auto-load projects whenever a user session becomes available.
+  // This ensures any module (e.g. /costing) works even if ProjectManagement
+  // was never visited in this session.
+  let prevAuthUser = useAuthStore.getState().user
+  if (prevAuthUser) {
+    // User already authenticated at init time — load immediately
+    useProjectStore.getState().loadProjects()
+  }
+  useAuthStore.subscribe((state) => {
+    if (state.user !== prevAuthUser) {
+      prevAuthUser = state.user
+      if (state.user) {
+        useProjectStore.getState().loadProjects()
+      }
+    }
+  })
 
   // ── Subscription 1: AHSP → RAB ──────────────────────────────────────────────
   // Update RAB unit prices when AHSP (Resource Catalog) changes

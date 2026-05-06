@@ -30,6 +30,7 @@ import { format } from 'date-fns'
 
 export default function CostForecastDashboard() {
     const activeProjectId = useProjectStore(s => s.activeProjectId)
+    const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
     const { history, projections, loading, fetchHistory, generateSnapshot } = useForecastStore()
 
     useEffect(() => {
@@ -53,7 +54,7 @@ export default function CostForecastDashboard() {
         <PageShell
             contextBar={
                 <GlobalContextBar
-                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    projectName={activeProjectName}
                     syncStatus="synced"
                     healthItems={[
                         {

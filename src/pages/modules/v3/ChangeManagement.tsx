@@ -27,6 +27,7 @@ import { GlobalContextBar, WorkspaceHeader, ModeSwitch, SummaryStrip, AlertStrip
 
 export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
+    const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
     const { handleAsync } = useErrorHandler()
     const { orders, fetchOrders, loading, updateStatus, previewCascade, cascadePreview, previewLoading, clearPreview } = useChangeOrderStore()
     const [activeTab, setActiveTab] = useState("log")
@@ -163,7 +164,7 @@ export default function ChangeManagement() {
         <PageShell
             contextBar={
                 <GlobalContextBar
-                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    projectName={activeProjectName}
                     syncStatus="synced"
                     healthItems={[
                         {
@@ -316,6 +317,73 @@ export default function ChangeManagement() {
                 </TabsContent>
 
                 <TabsContent value="analysis" className="space-y-6">
+                    {/* Visual Impact Cascade Flow */}
+                    {orders.length > 0 && (
+                        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
+                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Cascade Impact Flow</p>
+                            <div className="flex items-stretch gap-0 overflow-x-auto pb-1">
+                                {[
+                                    {
+                                        label: 'Change Order',
+                                        icon: '📋',
+                                        value: `${orders.length} VO`,
+                                        sub: `${orders.filter(o => o.status === 'APPROVED').length} approved`,
+                                        color: 'border-blue-400 bg-blue-50 dark:bg-blue-950/30',
+                                        textColor: 'text-blue-700 dark:text-blue-300',
+                                    },
+                                    {
+                                        label: 'RAB Impact',
+                                        icon: '💰',
+                                        value: totalCostImpact >= 0 ? `+Rp ${(totalCostImpact / 1e6).toFixed(1)}M` : `-Rp ${(Math.abs(totalCostImpact) / 1e6).toFixed(1)}M`,
+                                        sub: 'total budget delta',
+                                        color: totalCostImpact > 0 ? 'border-red-400 bg-red-50 dark:bg-red-950/30' : 'border-green-400 bg-green-50 dark:bg-green-950/30',
+                                        textColor: totalCostImpact > 0 ? 'text-red-700 dark:text-red-300' : 'text-green-700 dark:text-green-300',
+                                    },
+                                    {
+                                        label: 'RAP Effect',
+                                        icon: '📊',
+                                        value: approvedCost > 0 ? `+Rp ${(approvedCost / 1e6).toFixed(1)}M` : '—',
+                                        sub: 'committed cost',
+                                        color: approvedCost > 0 ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/30' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30',
+                                        textColor: approvedCost > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-400',
+                                    },
+                                    {
+                                        label: 'Schedule Slip',
+                                        icon: '📅',
+                                        value: totalTimeImpact > 0 ? `+${totalTimeImpact} hari` : '0 hari',
+                                        sub: 'extension of time',
+                                        color: totalTimeImpact > 0 ? 'border-orange-400 bg-orange-50 dark:bg-orange-950/30' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30',
+                                        textColor: totalTimeImpact > 0 ? 'text-orange-700 dark:text-orange-300' : 'text-slate-400',
+                                    },
+                                    {
+                                        label: 'Finance Impact',
+                                        icon: '🏦',
+                                        value: pendingCost > 0 ? `Rp ${(pendingCost / 1e6).toFixed(1)}M pending` : 'Stable',
+                                        sub: 'cash flow effect',
+                                        color: pendingCost > 0 ? 'border-purple-400 bg-purple-50 dark:bg-purple-950/30' : 'border-green-400 bg-green-50 dark:bg-green-950/30',
+                                        textColor: pendingCost > 0 ? 'text-purple-700 dark:text-purple-300' : 'text-green-700 dark:text-green-300',
+                                    },
+                                ].map((node, idx, arr) => (
+                                    <React.Fragment key={node.label}>
+                                        <div className={`flex-1 min-w-[120px] rounded-lg border-2 p-3 ${node.color}`}>
+                                            <div className="text-lg mb-1">{node.icon}</div>
+                                            <div className={`text-xs font-bold uppercase tracking-wide mb-1 ${node.textColor}`}>{node.label}</div>
+                                            <div className={`text-sm font-semibold ${node.textColor}`}>{node.value}</div>
+                                            <div className="text-xs text-slate-400 mt-0.5">{node.sub}</div>
+                                        </div>
+                                        {idx < arr.length - 1 && (
+                                            <div className="flex items-center px-1 text-slate-300 dark:text-slate-600 shrink-0">
+                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M7 5l6 5-6 5V5z" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

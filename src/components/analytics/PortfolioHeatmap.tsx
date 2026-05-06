@@ -12,9 +12,10 @@ interface ProjectData {
 
 interface PortfolioHeatmapProps {
     projects: ProjectData[]
+    onProjectClick?: (projectId: string) => void
 }
 
-const PortfolioHeatmap: React.FC<PortfolioHeatmapProps> = ({ projects }) => {
+const PortfolioHeatmap: React.FC<PortfolioHeatmapProps> = ({ projects, onProjectClick }) => {
     // Process data for the chart
     const data = projects.map(p => ({
         x: p.spi,
@@ -43,6 +44,11 @@ const PortfolioHeatmap: React.FC<PortfolioHeatmapProps> = ({ projects }) => {
                         <span className="text-slate-500">Budget:</span>
                         <span>Rp {(item.z / 1000000).toLocaleString()}M</span>
                     </div>
+                    {onProjectClick && (
+                        <div className="mt-1.5 pt-1 border-t border-slate-700 text-xs text-slate-400 text-center">
+                            Klik untuk buka detail →
+                        </div>
+                    )}
                 </div>
             )
         }
@@ -92,13 +98,18 @@ const PortfolioHeatmap: React.FC<PortfolioHeatmapProps> = ({ projects }) => {
                         <text x="75%" y="75%" fill="#0072B2" fontSize="10" fontWeight="bold" opacity="0.4" textAnchor="middle">DRIFT ZONE</text>
                         <text x="25%" y="75%" fill="#CC6600" fontSize="10" fontWeight="bold" opacity="0.4" textAnchor="middle">DANGER ZONE</text>
 
-                        <Scatter name="Projects" data={data}>
+                        <Scatter
+                            name="Projects"
+                            data={data}
+                            onClick={onProjectClick ? (payload) => { if (payload?.id) onProjectClick(payload.id as string) } : undefined}
+                            style={onProjectClick ? { cursor: 'pointer' } : undefined}
+                        >
                             {data.map((entry, index) => {
                                 let color = '#10b981' // Ideal (Top Right)
                                 if (entry.x < 1 && entry.y < 1) color = '#ef4444' // Danger (Bottom Left)
                                 else if (entry.x < 1) color = '#f59e0b' // Burn (Top Left)
                                 else if (entry.y < 1) color = '#3b82f6' // Drift (Bottom Right)
-                                
+
                                 return <Cell key={`cell-${index}`} fill={color} fillOpacity={0.6} stroke={color} strokeWidth={2} />
                             })}
                         </Scatter>

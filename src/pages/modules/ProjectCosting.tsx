@@ -13,7 +13,7 @@
  */
 
 import React, { Suspense, useState, useEffect, useMemo } from 'react'
-import { Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench, Plus, Settings2 } from 'lucide-react'
+import { Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench, ArrowRight, AlertCircle } from 'lucide-react'
 import ModulePageState from '@/components/common/ModulePageState'
 import { BudgetHealthPanel } from '@/components/modules/BudgetHealthPanel'
 import { useProjectStore } from '@/store/projectStore'
@@ -54,10 +54,12 @@ const STEP_CONFIG: Array<{
 // ─── TabFallback ─────────────────────────────────────────────────────────────
 function TabFallback() {
   return (
-    <div className="space-y-space-3 p-padding-md">
-      {[1, 2, 3, 4].map(i => (
-        <div key={i} className="h-8 animate-pulse rounded-radius-sm bg-surface-subtle" style={{ width: `${85 - i * 10}%` }} />
+    <div className="space-y-space-3 p-padding-md" style={{ minHeight: 420 }}>
+      <div className="h-6 w-1/3 animate-pulse rounded-radius-sm bg-surface-subtle" />
+      {[1, 2, 3, 4, 5, 6].map(i => (
+        <div key={i} className="h-8 animate-pulse rounded-radius-sm bg-surface-subtle" style={{ width: `${90 - i * 8}%` }} />
       ))}
+      <div className="mt-6 h-48 animate-pulse rounded-radius-sm bg-surface-subtle opacity-60" />
     </div>
   )
 }
@@ -103,10 +105,19 @@ export default function ProjectCosting() {
       resource: null,
     }
 
+    // Prerequisite chain: WBS needs AHSP, RAB needs WBS, RAP needs RAB
+    const prereqs: Partial<Record<CostingStep, CostingStep>> = {
+      wbs: 'ahsp',
+      rab: 'wbs',
+      rap: 'rab',
+    }
+
     return STEP_CONFIG.map(step => {
       const count = counts[step.id]
       const hasData = count === null || count > 0
       const isActive = activeStep === step.id
+      const prereqStep = prereqs[step.id]
+      const prereqMissing = prereqStep !== undefined && counts[prereqStep] === 0
 
       // Determine step status
       let status: 'inactive' | 'active' | 'complete' | 'warning' = 'inactive'
@@ -114,13 +125,18 @@ export default function ProjectCosting() {
       else if (!hasData && step.id !== 'resource') status = 'warning'
       else if (hasData && count !== null && count > 0) status = 'complete'
 
+      const prereqLabel = prereqStep ? STEP_CONFIG.find(s => s.id === prereqStep)?.label : undefined
+
       return {
         id: step.id,
         title: step.label,
-        description: count !== null ? `${count} items` : step.description,
+        description: prereqMissing && !isActive
+          ? `Lengkapi ${prereqLabel} terlebih dahulu`
+          : count !== null ? `${count} items` : step.description,
         status,
         icon: step.icon,
         count: count ?? undefined,
+        disabled: prereqMissing && !isActive,
       }
     })
   }, [activeStep, ahspCount, wbsCount, rabCount, rapCount])
@@ -169,19 +185,19 @@ export default function ProjectCosting() {
   const currentStep = STEP_CONFIG.find(s => s.id === activeStep)!
 
   const renderContent = () => {
-    const wrap = (label: string, Component: React.LazyExoticComponent<React.ComponentType>) => (
+    const wrap = (label: string, Component: React.LazyExoticComponent<React.ComponentType>, props?: Record<string, unknown>) => (
       <ErrorBoundary errorMessage={`${label} module failed to render`}>
         <Suspense fallback={<TabFallback />}>
-          <Component />
+          <Component {...(props ?? {})} />
         </Suspense>
       </ErrorBoundary>
     )
     switch (activeStep) {
-      case 'ahsp': return wrap('AHSP', AHSP as React.LazyExoticComponent<React.ComponentType>)
-      case 'wbs': return wrap('WBS', WBS as React.LazyExoticComponent<React.ComponentType>)
-      case 'rab': return wrap('RAB', RAB as React.LazyExoticComponent<React.ComponentType>)
-      case 'rap': return wrap('RAP', RAP as React.LazyExoticComponent<React.ComponentType>)
-      case 'resource': return wrap('Resource Plan', ResourcePlan as React.LazyExoticComponent<React.ComponentType>)
+      case 'ahsp': return wrap('AHSP', AHSP as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
+      case 'wbs': return wrap('WBS', WBS as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
+      case 'rab': return wrap('RAB', RAB as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
+      case 'rap': return wrap('RAP', RAP as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
+      case 'resource': return wrap('Resource Plan', ResourcePlan as React.LazyExoticComponent<React.ComponentType>, { embedded: true, onSwitchToRap: () => setActiveStep('rap') })
     }
   }
 
@@ -213,11 +229,6 @@ export default function ProjectCosting() {
         <WorkspaceHeader
           title={`Costing — ${currentStep.label}`}
           subtitle={currentStep.description}
-          primaryAction={{
-            label: 'New Item',
-            icon: <Plus className="h-3.5 w-3.5" />,
-            onClick: () => { /* handled by submodule */ },
-          }}
         />
       }
       summary={
@@ -239,6 +250,40 @@ export default function ProjectCosting() {
         projectId={activeProjectId}
         projectBudget={activeProject.budget ?? 0}
       />
+
+      {/* Guided onboarding — shown when pipeline is fully empty */}
+      {emptySteps.length === 4 && (
+        <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-900/10 p-6 mt-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Pipeline Costing Belum Diisi</p>
+                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                  Ikuti urutan berikut untuk membangun rencana anggaran proyek:
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {STEP_CONFIG.filter(s => s.id !== 'resource').map((step, i, arr) => (
+                  <React.Fragment key={step.id}>
+                    <button
+                      type="button"
+                      onClick={() => handleStepChange(step.id)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 px-3 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+                    >
+                      {step.icon}
+                      {step.label}
+                    </button>
+                    {i < arr.length - 1 && (
+                      <ArrowRight size={14} className="text-amber-400 self-center" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Step Content */}
       <div className="min-h-[420px] mt-[var(--space-4)]">

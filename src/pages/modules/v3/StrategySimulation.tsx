@@ -40,6 +40,7 @@ import { format } from 'date-fns'
 export default function StrategySimulation() {
     const { handleAsync } = useErrorHandler()
     const activeProjectId = useProjectStore(s => s.activeProjectId) || 'global'
+    const activeProjectName = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId]?.name || 'Portfolio' : 'Portfolio')
     
     const [delay, setDelay] = useState(0)
     const [resourceShift, setResourceShift] = useState(0)
@@ -151,7 +152,7 @@ export default function StrategySimulation() {
         <PageShell
             contextBar={
                 <GlobalContextBar
-                    projectName={useProjectStore.getState().projects[activeProjectId]?.name || 'Portfolio'}
+                    projectName={activeProjectName}
                     syncStatus="synced"
                     healthItems={result ? [
                         {

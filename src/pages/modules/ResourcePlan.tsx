@@ -107,7 +107,7 @@ function getPeriodStartDate(key: string, periodType: 'day' | 'week' | 'month'): 
 }
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export default function ResourcePlan() {
+export default function ResourcePlan({ embedded = false, onSwitchToRap }: { embedded?: boolean; onSwitchToRap?: () => void }) {
   const project = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId] : null)
   const projectId = project?.id || ''
 
@@ -296,17 +296,24 @@ export default function ResourcePlan() {
   if (rapItems.length === 0) {
     return (
       <div className="space-y-4 density-compact">
-        <ModuleHeader
-          icon={<Wrench size={18} />}
-          title="Resource Plan"
-          description={`Kebutuhan resource â€” ${project.name}`}
-          accent="indigo"
-        />
+        {!embedded && (
+          <ModuleHeader
+            icon={<Wrench size={18} />}
+            title="Resource Plan"
+            description={`Kebutuhan resource — ${project.name}`}
+            accent="indigo"
+          />
+        )}
         <ModulePageState
           icon={<Wrench size={18} />}
           title="Belum ada item RAP"
           variant="empty"
           message="Sync RAP dari RAB terlebih dahulu untuk melihat kebutuhan resource."
+          action={onSwitchToRap ? (
+            <Button size="sm" variant="outline" onClick={onSwitchToRap}>
+              → Buka RAP
+            </Button>
+          ) : undefined}
         />
       </div>
     )
@@ -316,12 +323,13 @@ export default function ResourcePlan() {
 
   return (
     <div className="space-y-4 density-compact">
-      <ModuleHeader
-        icon={<Wrench size={18} />}
-        title="Resource Plan"
-        description={`Rekap volume & jadwal kebutuhan resource â€” ${project.name}`}
-        accent="indigo"
-        actions={
+      {!embedded && (
+        <ModuleHeader
+          icon={<Wrench size={18} />}
+          title="Resource Plan"
+          description={`Rekap volume & jadwal kebutuhan resource — ${project.name}`}
+          accent="indigo"
+          actions={
           <div className="flex gap-2">
             <Button
               variant="outline" size="sm"
@@ -349,8 +357,7 @@ export default function ResourcePlan() {
             />
           </div>
         }
-      />
-
+      />      )}
       {/* â”€â”€ Warning: unlinked RAP items â”€â”€ */}
       {unlinkedCount > 0 && (
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs dark:border-amber-800 dark:bg-amber-900/20">

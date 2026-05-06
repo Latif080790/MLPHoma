@@ -43,7 +43,7 @@ const EMPTY_POINTS: CurvaSDataPoint[] = []
  * CurvaSPage
  * Page-level component orchestrating Curva-S data and analysis.
  */
-export default function CurvaSPage() {
+export default function CurvaSPage({ embedded = false }: { embedded?: boolean }) {
   const activeProjectId = useProjectStore(s => s.activeProjectId)
   const activeProject = useProjectStore(s => activeProjectId ? s.projects[activeProjectId] : null)
   const projectId = activeProject?.id || ''
@@ -141,11 +141,13 @@ export default function CurvaSPage() {
   if (!projectId) {
     return (
       <div className="space-y-6">
-        <ModuleHeader
-          icon={<LineChart size={18} />}
-          title="Curva-S"
-          description="Analyze S-Curve from unified schedule."
-        />
+        {!embedded && (
+          <ModuleHeader
+            icon={<LineChart size={18} />}
+            title="Curva-S"
+            description="Analyze S-Curve from unified schedule."
+          />
+        )}
         <div className="rounded-xl border p-6 text-center dark:border-neutral-800">
           <p className="text-neutral-600 dark:text-neutral-300">Please select a project to view Curva-S.</p>
         </div>
@@ -157,6 +159,7 @@ export default function CurvaSPage() {
 
   return (
     <div className="space-y-6">
+      {!embedded && (
       <ModuleHeader
         icon={<LineChart size={18} />}
         title="Curva-S"
@@ -196,6 +199,7 @@ export default function CurvaSPage() {
           </div>
         }
       />
+      )}
 
       {/* Empty tips */}
       {empty && (

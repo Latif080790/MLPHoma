@@ -52,19 +52,19 @@ function WBSKpiBar({ items, rabLinkedCount, totalBudget }: {
 
   return (
     <div className="flex items-center gap-1.5 flex-wrap">
-      <Badge variant="outline" className="h-[22px] gap-1 text-[10px] font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
+      <Badge variant="outline" className="h-[22px] gap-1 text-xs font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
         <Layers size={10} className="text-indigo-500" />
         {items.length} nodes
       </Badge>
-      <Badge variant="outline" className="h-[22px] gap-1 text-[10px] font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
+      <Badge variant="outline" className="h-[22px] gap-1 text-xs font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
         {rootCount} root · L{maxLevel}
       </Badge>
-      <Badge variant="outline" className="h-[22px] gap-1 text-[10px] font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
+      <Badge variant="outline" className="h-[22px] gap-1 text-xs font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
         <Link2 size={10} className="text-blue-500" />
         {rabLinkedCount} RAB-linked
       </Badge>
       {totalBudget > 0 && (
-        <Badge variant="outline" className="h-[22px] gap-1 text-[10px] font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
+        <Badge variant="outline" className="h-[22px] gap-1 text-xs font-mono bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 grow justify-center">
           <Calculator size={10} className="text-emerald-500" />
           {formatIDR(totalBudget)}
         </Badge>
@@ -79,7 +79,7 @@ const EMPTY_ARRAY: RABItem[] = []
 /**
  * WBS Page Component
  */
-export default function WBS() {
+export default function WBS({ embedded = false }: { embedded?: boolean }) {
   // Project context (Task: use stable selector to avoid getSnapshot warning)
   const activeProjectId = useProjectStore((s) => s.activeProjectId)
   const activeProject = useProjectStore((s) => activeProjectId ? s.projects[activeProjectId] : null)
@@ -304,11 +304,13 @@ export default function WBS() {
   if (!projectId) {
     return (
       <div className="space-y-6">
-        <ModuleHeader
-          icon={<FileText size={18} />}
-          title="WBS"
-          description="Work Breakdown Structure management"
-        />
+        {!embedded && (
+          <ModuleHeader
+            icon={<FileText size={18} />}
+            title="WBS"
+            description="Work Breakdown Structure management"
+          />
+        )}
         <EmptyState
           title="No Project Selected"
           description="Please select a project to manage its WBS structure."
@@ -429,7 +431,7 @@ export default function WBS() {
 
   return (
     <div className="space-y-4 density-compact">
-      <ModuleHeader
+      {!embedded && (<ModuleHeader
         icon={<FileText size={18} />}
         title="WBS"
         description="Work Breakdown Structure with hierarchical management"
@@ -499,7 +501,7 @@ export default function WBS() {
             </Button>
           </div>
         }
-      />
+      />)}
 
       {/* Error messages */}
       {error && (

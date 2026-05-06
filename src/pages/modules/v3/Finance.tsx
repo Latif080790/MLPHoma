@@ -83,6 +83,7 @@ const AR_SORT_OPTIONS = [
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
+    const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
     const { handleAsync } = useErrorHandler()
     const [activeTab, setActiveTab] = useState("overview")
     const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
@@ -401,8 +402,12 @@ export default function Finance() {
     ]
 
     const exportFilename = `Finance_${activeProjectId}_${new Date().toISOString().slice(0, 10)}`
+
+    return (
+        <PageShell
+            contextBar={
                 <GlobalContextBar
-                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    projectName={activeProjectName}
                     syncStatus="synced"
                     healthItems={[
                         {

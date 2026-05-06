@@ -121,7 +121,7 @@ async function exportPDF(element: HTMLElement | null, filename = "Progress.pdf")
 /**
  * Progress module page
  */
-export default function Progress() {
+export default function Progress({ embedded = false }: { embedded?: boolean }) {
   const project = useProjectStore((s): Project | null => s.getActiveProject?.() ?? null)
   const projectId = project?.id ?? "demo"
 
@@ -305,6 +305,7 @@ export default function Progress() {
 
   return (
     <div className="space-y-6">
+      {!embedded && (
       <ModuleHeader
         icon={<BarChart2 size={18} />}
         title="Progress Tracking"
@@ -341,6 +342,7 @@ export default function Progress() {
               ]}
               filename={`Progress_${projectId}`}
             />
+            <button
               className="inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
               onClick={() => exportPDF(exportRef.current, "Progress.pdf")}
             >
@@ -349,6 +351,7 @@ export default function Progress() {
           </div>
         }
       />
+      )}
 
       <ResourceUsageDialog open={resourceOpen} onOpenChange={setResourceOpen} projectId={projectId} />
 

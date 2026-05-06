@@ -360,9 +360,15 @@ export function getSidebarGroups() {
       }
     )
 
+  const defaultCollapsedGroups: Partial<Record<NavGroup, boolean>> = {
+    Portfolio: true,
+    System: true,
+  }
+
   return (Object.keys(grouped) as NavGroup[]).map((label) => ({
     label,
     items: grouped[label],
+    defaultCollapsed: defaultCollapsedGroups[label] ?? false,
   }))
 }
 

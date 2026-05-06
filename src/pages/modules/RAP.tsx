@@ -5,6 +5,7 @@ import { useRapStore } from '@/store/rapStore'
 import { useRabStore } from '@/store/rabStore'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
+import { TableSkeleton } from '@/components/common/LoadingSkeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { Button } from '@/components/ui/button'
@@ -55,7 +56,7 @@ function KPICard({ label, value, sub, colorClass }: { label: string; value: stri
   )
 }
 
-export default function RAP(): JSX.Element {
+export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.Element {
   const project = useProjectStore((s) => s.projects[s.activeProjectId || ''] || null)
   const projectId = project?.id || ''
 
@@ -176,7 +177,7 @@ export default function RAP(): JSX.Element {
 
   return (
     <div className="space-y-4 density-compact">
-      <ModuleHeader
+      {!embedded && (<ModuleHeader
         icon={<LayoutList size={18} />}
         title="RAP Budget Control"
         description={`Rencana Anggaran Pelaksanaan — ${project.name}`}
@@ -225,7 +226,7 @@ export default function RAP(): JSX.Element {
             />
           </div>
         }
-      />
+      />)}
 
       {/* Wrapper without nested tabs — just Budget Control + collapsible Scheduler */}
       <div className="space-y-4">
@@ -244,9 +245,9 @@ export default function RAP(): JSX.Element {
             />
             <KPICard
               label="Efisiensi"
-              value={`${totals.efficiency}%`}
-              colorClass={totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600'}
-              sub={totals.efficiency >= 90 ? 'On track' : totals.efficiency >= 75 ? 'Monitor' : 'At Risk'}
+              value={totals.totalBudget === 0 ? '—' : `${totals.efficiency}%`}
+              colorClass={totals.totalBudget === 0 ? 'text-slate-400' : totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600'}
+              sub={totals.totalBudget === 0 ? 'Belum ada budget' : totals.efficiency >= 90 ? 'On track' : totals.efficiency >= 75 ? 'Monitor' : 'At Risk'}
             />
           </div>
 
@@ -323,7 +324,13 @@ export default function RAP(): JSX.Element {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredItems.length === 0 ? (
+                  {isLoading && projectItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="p-4">
+                        <TableSkeleton rows={6} columns={6} />
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredItems.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-12 text-slate-400 bg-slate-50/20">
                         {/* Task 38: Enhanced import CTA */}

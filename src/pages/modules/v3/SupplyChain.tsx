@@ -60,6 +60,7 @@ const ORDER_SORT_OPTIONS = [
 
 export default function SupplyChain() {
     const { activeProjectId } = useProjectStore()
+    const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
     const {
         materialRequests,
         purchaseOrders,
@@ -108,6 +109,7 @@ export default function SupplyChain() {
     const [transferOpen, setTransferOpen] = useState(false)
     const [tracePo, setTracePo] = useState<PurchaseOrder | null>(null)
     const [mtrRequestOpen, setMtrRequestOpen] = useState(false)
+    const [logisticsTab, setLogisticsTab] = useState<'transfers' | 'mtr'>('transfers')
     const [srStatus, setSrStatus] = useState('')
 
     const filteredMaterialRequests = useMemo(() => {
@@ -211,13 +213,13 @@ export default function SupplyChain() {
                 activeTab === 'requests' ? 'material requests' :
                     activeTab === 'orders' ? 'purchase orders' :
                         activeTab === 'inventory' ? 'inventory' :
-                            activeTab === 'transfers' ? 'transfers' :
-                                activeTab === 'spk' ? 'SPK opname' : 'material transfer requests'
+                            activeTab === 'logistics' ? 'logistics' :
+                                activeTab === 'spk' ? 'SPK opname' : 'data'
             setSrStatus(`Loading ${tabLabel} data...`)
             if (activeTab === "requests") fetchMaterialRequests(activeProjectId)
             if (activeTab === "orders") fetchPurchaseOrders(activeProjectId)
             if (activeTab === "inventory") fetchInventory(activeProjectId)
-            if (activeTab === "transfers") fetchTransfers(activeProjectId)
+            if (activeTab === "logistics") fetchTransfers(activeProjectId)
         }
     }, [activeProjectId, activeTab, fetchInventory, fetchMaterialRequests, fetchPurchaseOrders, fetchTransfers])
 
@@ -228,14 +230,14 @@ export default function SupplyChain() {
             activeTab === 'requests' ? 'material requests' :
                 activeTab === 'orders' ? 'purchase orders' :
                     activeTab === 'inventory' ? 'inventory' :
-                        activeTab === 'transfers' ? 'transfers' :
-                            activeTab === 'spk' ? 'SPK opname' : 'material transfer requests'
+                        activeTab === 'logistics' ? 'logistics' :
+                            activeTab === 'spk' ? 'SPK opname' : 'data'
 
         const isLoading =
             (activeTab === 'requests' && loading.mr) ||
             (activeTab === 'orders' && loading.po) ||
             (activeTab === 'inventory' && loading.inventory) ||
-            (activeTab === 'transfers' && loading.transfer)
+            (activeTab === 'logistics' && loading.transfer)
 
         if (error) {
             setSrStatus(`Failed to load ${tabLabel}.`)
@@ -309,13 +311,13 @@ export default function SupplyChain() {
         (activeTab === 'requests' && loading.mr) ||
         (activeTab === 'orders' && loading.po) ||
         (activeTab === 'inventory' && loading.inventory) ||
-        (activeTab === 'transfers' && loading.transfer)
+        (activeTab === 'logistics' && loading.transfer)
 
     const currentTabHasData =
         (activeTab === 'requests' && materialRequests.length > 0) ||
         (activeTab === 'orders' && purchaseOrders.length > 0) ||
         (activeTab === 'inventory' && inventoryStock.length > 0) ||
-        activeTab === 'transfers' ||
+        activeTab === 'logistics' ||
         activeTab === 'spk' ||
         activeTab === 'mtr'
 
@@ -374,9 +376,8 @@ export default function SupplyChain() {
         { value: 'requests', label: 'MR', icon: <Package className="h-3.5 w-3.5" /> },
         { value: 'orders', label: 'PO', icon: <ShoppingCart className="h-3.5 w-3.5" /> },
         { value: 'inventory', label: 'Inventory', icon: <Warehouse className="h-3.5 w-3.5" /> },
-        { value: 'transfers', label: 'Transfers', icon: <ArrowRightLeft className="h-3.5 w-3.5" /> },
+        { value: 'logistics', label: 'Logistics', icon: <ArrowRightLeft className="h-3.5 w-3.5" /> },
         { value: 'spk', label: 'SPK', icon: <ClipboardList className="h-3.5 w-3.5" /> },
-        { value: 'mtr', label: 'MTR', icon: <Truck className="h-3.5 w-3.5" /> },
     ]
 
     // ── SummaryStrip items ───────────────────────────────────────────────────
@@ -392,7 +393,7 @@ export default function SupplyChain() {
         <PageShell
             contextBar={
                 <GlobalContextBar
-                    projectName={useProjectStore.getState().projects[activeProjectId || '']?.name || 'Project'}
+                    projectName={activeProjectName}
                     syncStatus="synced"
                     healthItems={[
                         {
@@ -750,25 +751,39 @@ export default function SupplyChain() {
                     </div>
                 </TabsContent>
 
-                {/* --- MATERIAL TRANSFERS --- */}
-                <TabsContent value="transfers" className="space-y-4">
-                    <MaterialTransferPanel />
+                {/* --- LOGISTICS (Transfers + MTR) --- */}
+                <TabsContent value="logistics" className="space-y-4">
+                    <div className="flex gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <button
+                            onClick={() => setLogisticsTab('transfers')}
+                            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${logisticsTab === 'transfers' ? 'bg-primary text-primary-foreground' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                        >
+                            Material Transfers
+                        </button>
+                        <button
+                            onClick={() => setLogisticsTab('mtr')}
+                            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${logisticsTab === 'mtr' ? 'bg-primary text-primary-foreground' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                        >
+                            Transfer Requests
+                        </button>
+                    </div>
+                    {logisticsTab === 'transfers' && <MaterialTransferPanel />}
+                    {logisticsTab === 'mtr' && (
+                        <>
+                            <div className="flex justify-end">
+                                <Button size="sm" onClick={() => setMtrRequestOpen(true)} className="gap-2">
+                                    <Plus size={14} /> New Transfer Request
+                                </Button>
+                            </div>
+                            <MaterialTransferApprovalPanel projectId={activeProjectId} />
+                            <MTRPanel />
+                        </>
+                    )}
                 </TabsContent>
 
                 {/* --- SPK / OPNAME --- */}
                 <TabsContent value="spk" className="space-y-4">
                     <SubcontractorPanel />
-                </TabsContent>
-
-                {/* --- MTR (Material Transfer Requests) --- */}
-                <TabsContent value="mtr" className="space-y-4">
-                    <div className="flex justify-end">
-                        <Button size="sm" onClick={() => setMtrRequestOpen(true)} className="gap-2">
-                            <Plus size={14} /> New Transfer Request
-                        </Button>
-                    </div>
-                    <MaterialTransferApprovalPanel projectId={activeProjectId} />
-                    <MTRPanel />
                 </TabsContent>
 
             </Tabs>
