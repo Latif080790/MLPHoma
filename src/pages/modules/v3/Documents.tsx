@@ -1,7 +1,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2, Eye } from "lucide-react"
+import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2, Eye, Link2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -44,6 +44,35 @@ const DOC_SORTS = [
     { value: 'title-desc', label: 'Title Z-A' },
 ]
 
+const DOC_LINK_STORAGE_KEY = 'documents.entityLinks'
+
+type DocumentEntityLink = {
+    linked_entity_id: string
+    linked_entity_type: NonNullable<ProjectDocument['linked_entity_type']>
+}
+
+function loadDocumentLinks(): Record<string, DocumentEntityLink> {
+    try {
+        return JSON.parse(localStorage.getItem(DOC_LINK_STORAGE_KEY) || '{}') as Record<string, DocumentEntityLink>
+    } catch {
+        return {}
+    }
+}
+
+function saveDocumentLinks(links: Record<string, DocumentEntityLink>) {
+    try {
+        localStorage.setItem(DOC_LINK_STORAGE_KEY, JSON.stringify(links))
+    } catch {
+        // ignore localStorage errors
+    }
+}
+
+function mergeLinkedDocument(doc: ProjectDocument): ProjectDocument {
+    const links = loadDocumentLinks()
+    const link = links[doc.id]
+    return link ? { ...doc, ...link } : doc
+}
+
 export default function Documents() {
     const { activeProjectId } = useProjectStore()
     const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
@@ -81,6 +110,9 @@ export default function Documents() {
     const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
     const [pendingDeleteDoc, setPendingDeleteDoc] = useState<ProjectDocument | null>(null)
     const [previewDoc, setPreviewDoc] = useState<ProjectDocument | null>(null)
+    const [linkDoc, setLinkDoc] = useState<ProjectDocument | null>(null)
+    const [linkEntityType, setLinkEntityType] = useState<NonNullable<ProjectDocument['linked_entity_type']>>('task')
+    const [linkEntityId, setLinkEntityId] = useState('')
     const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
 
@@ -95,7 +127,7 @@ export default function Documents() {
         }, 'document.general', { showToast: false })
 
         if (data) {
-            setDocuments(data)
+            setDocuments(data.map(mergeLinkedDocument))
             setSrStatus(`Loaded ${data.length} documents.`)
         } else {
             setPageError('Failed to load document repository data.')
@@ -113,6 +145,24 @@ export default function Documents() {
             })
         }
     }, [activeProjectId, loadDocs])
+
+    const handleSaveLink = useCallback(() => {
+        if (!linkDoc) return
+        if (!linkEntityId.trim()) {
+            toast.error('Entity ID wajib diisi')
+            return
+        }
+        const links = loadDocumentLinks()
+        links[linkDoc.id] = {
+            linked_entity_id: linkEntityId.trim(),
+            linked_entity_type: linkEntityType,
+        }
+        saveDocumentLinks(links)
+        setDocuments((current) => current.map((doc) => doc.id === linkDoc.id ? { ...doc, ...links[linkDoc.id] } : doc))
+        setLinkDoc(null)
+        setLinkEntityId('')
+        toast.success('Link entity disimpan')
+    }, [linkDoc, linkEntityId, linkEntityType])
 
     useEffect(() => {
         try {
@@ -510,6 +560,20 @@ export default function Documents() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                aria-label="Link entity"
+                                                className="text-neutral-400 hover:text-indigo-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                                                onClick={() => {
+                                                    setLinkDoc(doc)
+                                                    setLinkEntityType(doc.linked_entity_type || 'task')
+                                                    setLinkEntityId(doc.linked_entity_id || '')
+                                                }}
+                                                title="Link to entity"
+                                            >
+                                                <Link2 size={14} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 aria-label="Hapus dokumen"
                                                 className="text-neutral-400 hover:text-red-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                                                 onClick={() => setPendingDeleteDoc(doc)}
@@ -548,6 +612,14 @@ export default function Documents() {
                                             )}
                                         </div>
                                         <p className="text-xs text-neutral-500">{doc.category} • v{doc.version_number}</p>
+                                        {doc.linked_entity_type && (
+                                            <div className="flex items-center gap-1 mt-1">
+                                                <Link2 className="h-3 w-3 text-blue-500" />
+                                                <span className="text-xs text-blue-600 dark:text-blue-400 capitalize">
+                                                    Linked: {doc.linked_entity_type.replace('_', ' ')}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className="text-xs text-neutral-400 mt-1">
                                             {format(new Date(doc.created_at), 'dd MMM yyyy')}
                                             {doc.file_size ? ` • ${(doc.file_size / 1024).toFixed(0)} KB` : ''}

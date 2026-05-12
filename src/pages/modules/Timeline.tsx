@@ -14,7 +14,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '../../components/ui/tabs'
-import { Plus, Trash2, AlertTriangle, Settings2, Download, Flag, FileText, ZoomIn, ZoomOut, CalendarClock, Layers, Activity, CheckCircle2, X, ChevronRight, AlertCircle, Clock } from 'lucide-react'
+import { Plus, Trash2, AlertTriangle, Settings2, Download, Flag, FileText, ZoomIn, ZoomOut, CalendarClock, Layers, Activity, CheckCircle2, X, ChevronRight, AlertCircle, Clock, BookTemplate } from 'lucide-react'
 import GanttChart from '../../components/timeline/GanttChart'
 import TaskEditor from '../../components/timeline/TaskEditor'
 import type { TaskEditorProps } from '../../components/timeline/TaskEditor'
@@ -47,6 +47,7 @@ import {
 import { ModuleHeader } from '../../components/modules/ModuleHeader'
 import { EmptyState } from '../../components/common/EmptyState'
 import ModuleListToolbar from '../../components/common/ModuleListToolbar'
+import { ProjectTemplateDialog } from '../../components/common/ProjectTemplateDialog'
 
 /** YYYY-MM-DD from Date (local-safe for UI) */
 function toISODate(d: Date): string {
@@ -204,6 +205,8 @@ export default function Timeline({ embedded = false }: { embedded?: boolean }) {
   const [editingTask, setEditingTask] = useState<TaskEditorProps['task']>(null)
   const [selectedId, setSelectedId] = useState<string>('')
   const [pendingDeleteTaskId, setPendingDeleteTaskId] = useState<string | null>(null)
+  const [templateDialogOpen, setTemplateDialogOpen] = useState(false)
+  const [templateDialogMode, setTemplateDialogMode] = useState<'save' | 'apply'>('apply')
   // Warning slide-over panel state
   const [warningPanelOpen, setWarningPanelOpen] = useState(false)
   // Track per-project fetch completion to gate the demo-seed guard
@@ -371,6 +374,28 @@ export default function Timeline({ embedded = false }: { embedded?: boolean }) {
     }
   }
 
+  /** Handle task resize from Gantt right-edge drag. Keeps startDate, changes endDate. */
+  const handleTaskResize = (taskId: string, newEndDate: string) => {
+    try {
+      const tasks = getTasks(projectId) || []
+      const task = tasks.find((x: TimelineTask) => String(x.id) === String(taskId))
+      if (!task) {
+        toast.error('Task not found')
+        return
+      }
+      const payload = { startDate: task.startDate, endDate: newEndDate }
+      const api = useTimelineStore.getState()
+      if (typeof api.updateTaskDates === 'function') {
+        api.updateTaskDates(projectId, String(task.id), payload)
+        toast.success('Task diubah', { description: `${task.name} → s/d ${newEndDate}` })
+      }
+    } catch (err) {
+      toast.error('Failed to resize task')
+      // eslint-disable-next-line no-console
+      console.error(err)
+    }
+  }
+
   // Filtering & summary
   const rawTasks = getTasks(projectId)
   const filteredTasks = useMemo(() => {
@@ -525,6 +550,23 @@ export default function Timeline({ embedded = false }: { embedded?: boolean }) {
             WBS IMPORT
           </Button>
 
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 text-xs px-3 gap-2 font-bold border-slate-200 dark:border-slate-800 hover:bg-slate-50">
+                <BookTemplate className="h-3.5 w-3.5 text-slate-400" />
+                Templates
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onSelect={() => { setTemplateDialogMode('apply'); setTemplateDialogOpen(true) }}>
+                Terapkan Template
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => { setTemplateDialogMode('save'); setTemplateDialogOpen(true) }}>
+                Simpan Sebagai Template
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <button
             className="flex items-center gap-1.5 h-8 px-3 rounded-md text-xs font-medium border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
             title="Compute task start/end dates from dependencies (FS/SS/FF/SF + lag)"
@@ -664,6 +706,7 @@ export default function Timeline({ embedded = false }: { embedded?: boolean }) {
             setSelectedId(id)
           }}
           onTaskMove={handleTaskMove}
+          onTaskResize={handleTaskResize}
           onTaskEdit={(id) => {
             const t = getTasks(projectId).find((x: TimelineTask) => String(x.id) === String(id)) || null
             setEditingTask(toEditorTask(t))
@@ -804,6 +847,15 @@ export default function Timeline({ embedded = false }: { embedded?: boolean }) {
         projectId={projectId}
         open={importWBSOpen}
         onOpenChange={setImportWBSOpen}
+      />
+
+      <ProjectTemplateDialog
+        open={templateDialogOpen}
+        onOpenChange={setTemplateDialogOpen}
+        mode={templateDialogMode}
+        projectId={projectId}
+        onApplied={(count) => toast.success(`${count} task ditambahkan dari template`)}
+        onSaved={() => toast.success('Template berhasil disimpan')}
       />
     </div>
   )

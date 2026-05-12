@@ -1,6 +1,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, PackageCheck, ArrowRightLeft, ClipboardList, ShieldCheck, XCircle } from "lucide-react"
+import { Truck, Package, ShoppingCart, Warehouse, Plus, FileText, ArrowDown, ArrowUp, PackageCheck, ArrowRightLeft, ClipboardList, ShieldCheck, XCircle } from "lucide-react"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,6 +16,7 @@ import { useAuthStore } from "@/store/authStore"
 import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
 import { BulkActionBar } from "@/components/common/BulkActionBar"
+import { ExcelImportPreviewDialog } from "@/components/common/ExcelImportPreviewDialog"
 import { MaterialRequestDialog } from "@/components/supply-chain/MaterialRequestDialog"
 import { PurchaseOrderDialog } from "@/components/supply-chain/PurchaseOrderDialog"
 import { InventoryTransactionDialog } from "@/components/supply-chain/InventoryTransactionDialog"
@@ -76,6 +77,7 @@ export default function SupplyChain() {
         fetchTransfers,
         updatePoStatus,
         updateMrStatus,
+        createPurchaseOrder,
     } = useSupplyChainStore()
 
     const [activeTab, setActiveTab] = useState("requests")
@@ -114,8 +116,44 @@ export default function SupplyChain() {
     const [transferOpen, setTransferOpen] = useState(false)
     const [tracePo, setTracePo] = useState<PurchaseOrder | null>(null)
     const [mtrRequestOpen, setMtrRequestOpen] = useState(false)
+    const [poImportOpen, setPoImportOpen] = useState(false)
     const [logisticsTab, setLogisticsTab] = useState<'transfers' | 'mtr'>('transfers')
     const [srStatus, setSrStatus] = useState('')
+
+    const handlePoImport = useCallback(async (rows: Record<string, unknown>[]) => {
+        if (!activeProjectId) return
+        const poRows = rows
+            .map((row) => ({
+                poNumber: String(row.poNumber ?? row.po_number ?? '').trim(),
+                vendorName: String(row.vendorName ?? row.vendor_name ?? '').trim(),
+                itemName: String(row.itemName ?? row.item_name ?? '').trim(),
+                quantity: Number(row.quantity ?? row.qty ?? 0),
+                unitPrice: Number(row.unitPrice ?? row.unit_price ?? 0),
+            }))
+            .filter((row) => row.poNumber && row.vendorName && row.itemName && row.quantity > 0)
+
+        if (!poRows.length) {
+            toast.error('Tidak ada baris PO yang valid')
+            return
+        }
+
+        for (const row of poRows) {
+            await createPurchaseOrder(
+                {
+                    projectId: activeProjectId,
+                    poNumber: row.poNumber,
+                    vendorName: row.vendorName,
+                    status: 'DRAFT',
+                    totalAmount: row.quantity * row.unitPrice,
+                },
+                [{ itemName: row.itemName, quantity: row.quantity, unitPrice: row.unitPrice }],
+            )
+        }
+
+        toast.success(`Imported ${poRows.length} purchase orders`)
+        setPoImportOpen(false)
+        await fetchPurchaseOrders(activeProjectId)
+    }, [activeProjectId, createPurchaseOrder, fetchPurchaseOrders])
 
     // v4 Sprint 2: Bulk selection states
     const [selectedPoIds, setSelectedPoIds] = useState<Set<string>>(new Set())
@@ -469,6 +507,11 @@ export default function SupplyChain() {
                             onClick: () => setPoOpen(true),
                         },
                         {
+                            label: 'Import Excel',
+                            icon: <FileText className="h-3.5 w-3.5" />,
+                            onClick: () => setPoImportOpen(true),
+                        },
+                        {
                             label: 'GRN',
                             icon: <PackageCheck className="h-3.5 w-3.5" />,
                             onClick: () => setGrnOpen(true),
@@ -496,6 +539,20 @@ export default function SupplyChain() {
             <MaterialTransferDialog open={transferOpen} onOpenChange={setTransferOpen} projectId={activeProjectId} />
             <MaterialTransferRequestDialog open={mtrRequestOpen} onOpenChange={setMtrRequestOpen} projectId={activeProjectId} />
             <ProcurementTracePanel open={!!tracePo} onOpenChange={(o) => { if (!o) setTracePo(null) }} po={tracePo} projectId={activeProjectId} />
+            <ExcelImportPreviewDialog
+                open={poImportOpen}
+                onOpenChange={setPoImportOpen}
+                title="Import Purchase Order Excel"
+                description="Map spreadsheet columns to PO fields, preview the rows, then create purchase orders in bulk."
+                targetFields={[
+                    { key: 'poNumber', label: 'PO Number', required: true },
+                    { key: 'vendorName', label: 'Vendor Name', required: true },
+                    { key: 'itemName', label: 'Item Name', required: true },
+                    { key: 'quantity', label: 'Quantity', required: true, transform: (raw) => Number(String(raw).replace(/[^0-9.-]/g, '')) },
+                    { key: 'unitPrice', label: 'Unit Price', required: true, transform: (raw) => Number(String(raw).replace(/[^0-9.-]/g, '')) },
+                ]}
+                onImport={handlePoImport}
+            />
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 {toolbarEnabled && (

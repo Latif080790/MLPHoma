@@ -113,6 +113,35 @@ export default function App() {
     initStoreSubscriptions()
   }, [initialize])
 
+  // v4 Sprint 3 — Item 18: Context-aware global keyboard shortcuts
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      // Ignore when typing in inputs
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+
+      // Ctrl+N — context-aware "New item" based on current hash route
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === 'n') {
+        e.preventDefault()
+        const hash = window.location.hash
+        // Emit a synthetic new-item event modules can listen to
+        const evt = new CustomEvent('app:new-item', { detail: { route: hash } })
+        window.dispatchEvent(evt)
+      }
+
+      // Ctrl+S — trigger form save
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === 's') {
+        e.preventDefault()
+        window.dispatchEvent(new CustomEvent('app:save'))
+      }
+
+      // G+H, G+P, G+S, G+F — navigate
+      // (handled by GlobalCommandPalette / existing nav)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
   return (
     <HashRouter>
       <NetworkProvider>

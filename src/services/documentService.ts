@@ -31,6 +31,10 @@ export interface ProjectDocument {
     successor_id?: string   // Next version
     uploaded_by?: string
     created_by?: string
+    
+    // v4 Sprint 3 — Item 16: Entity linking (stored client-side in localStorage)
+    linked_entity_id?: string
+    linked_entity_type?: 'task' | 'rab_item' | 'approval' | 'milestone'
 }
 
 export interface DocumentGovernanceState {

@@ -58,6 +58,8 @@ export interface GanttChartProps {
   showBaseline?: boolean
   onTaskEdit?: (taskId: string) => void
   onTaskDelete?: (taskId: string) => void
+  /** v4 Sprint 3 — Item 13: Resize right edge to change end date */
+  onTaskResize?: (taskId: string, newEndDate: string) => void
   onAutoSchedule?: (tasks: import('../../store/timelineStore').TimelineTask[]) => void
 }
 
@@ -190,6 +192,7 @@ export default function GanttChart({
   showBaseline = true,
   onTaskEdit,
   onTaskDelete,
+  onTaskResize,
 }: GanttChartProps) {
   const { width } = useWindowSize()
   const { getTasks } = useTimelineStore()
@@ -674,6 +677,7 @@ export default function GanttChart({
    * Drag handling (kept minimal)
    * ------------------------- */
   const dragRef = useRef<{ id: string; startX: number; origStartISO: string } | null>(null)
+  const resizeRef = useRef<{ id: string; startX: number; origEndISO: string; origStartISO: string; origDuration: number } | null>(null)
   useEffect(() => {
     function onMove(e: MouseEvent) {
       const drag = dragRef.current
@@ -682,6 +686,14 @@ export default function GanttChart({
       const deltaDays = Math.round(dx / pxPerDay)
       const newStart = addDaysISO(drag.origStartISO, deltaDays)
       if (containerRef.current) containerRef.current.setAttribute('data-drag-preview', newStart)
+    }
+    function onResizeMove(e: MouseEvent) {
+      const resize = resizeRef.current
+      if (!resize) return
+      const dx = e.clientX - resize.startX
+      const deltaDays = Math.round(dx / pxPerDay)
+      const newEnd = addDaysISO(resize.origEndISO, deltaDays)
+      if (containerRef.current) containerRef.current.setAttribute('data-resize-preview', newEnd)
     }
     function onUp(e: MouseEvent) {
       const drag = dragRef.current
@@ -698,20 +710,54 @@ export default function GanttChart({
       interactionTimeoutRef.current = window.setTimeout(() => setIsInteracting(false), 250)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('mousemove', onResizeMove)
+      window.removeEventListener('mouseup', onResizeUp)
+    }
+    function onResizeUp(e: MouseEvent) {
+      const resize = resizeRef.current
+      if (!resize) return
+      const dx = (e && typeof e.clientX === 'number') ? (e.clientX - resize.startX) : 0
+      const deltaDays = Math.round(dx / pxPerDay)
+      // Ensure end >= start + 1 day
+      const rawEndDate = addDaysISO(resize.origEndISO, deltaDays)
+      const minEndDate = addDaysISO(resize.origStartISO, 0) // same as start at minimum
+      const newEnd = rawEndDate >= minEndDate ? rawEndDate : minEndDate
+      const id = resize.id
+      resizeRef.current = null
+      if (containerRef.current) containerRef.current.removeAttribute('data-resize-preview')
+      if (deltaDays !== 0 && onTaskResize) onTaskResize(id, newEnd)
+      if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current)
+      setIsInteracting(true)
+      interactionTimeoutRef.current = window.setTimeout(() => setIsInteracting(false), 250)
+      window.removeEventListener('mousemove', onResizeMove)
+      window.removeEventListener('mouseup', onResizeUp)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
     }
     if (dragRef.current) {
       setIsInteracting(true)
       window.addEventListener('mousemove', onMove)
       window.addEventListener('mouseup', onUp)
     }
+    if (resizeRef.current) {
+      setIsInteracting(true)
+      window.addEventListener('mousemove', onResizeMove)
+      window.addEventListener('mouseup', onResizeUp)
+    }
     return () => {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('mousemove', onResizeMove)
+      window.removeEventListener('mouseup', onResizeUp)
     }
-  }, [onTaskMove, pxPerDay])
+  }, [onTaskMove, onTaskResize, pxPerDay])
 
   function startDrag(id: string, startX: number, origStartISO: string) {
     dragRef.current = { id, startX, origStartISO }
+  }
+
+  function startResize(id: string, startX: number, origEndISO: string, origStartISO: string, origDuration: number) {
+    resizeRef.current = { id, startX, origEndISO, origStartISO, origDuration }
   }
 
   /* -------------------------
@@ -1196,6 +1242,18 @@ export default function GanttChart({
                           {Math.round(t.progress ?? 0)}%
                         </span>
                       </div>
+                    )}
+                    {/* Resize handle — right edge drag to change end date */}
+                    {onTaskResize && (
+                      <div
+                        aria-label="Resize task end date"
+                        className="absolute right-0 top-0 h-full w-2 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/30 rounded-r"
+                        onMouseDown={(e) => {
+                          e.stopPropagation()
+                          e.preventDefault()
+                          startResize(t.id, e.clientX, t.endDate, t.startDate, duration)
+                        }}
+                      />
                     )}
                   </div>
                 )
