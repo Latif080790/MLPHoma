@@ -133,9 +133,19 @@
     @apply bg-background text-foreground;
   }
 
-  /* Standardized focus ring — WCAG 2.4.7 compliance */
+  /* Brand ::selection — orange tint */
+  ::selection {
+    background-color: rgb(249 115 22 / 0.18);
+    color: inherit;
+  }
+  ::-moz-selection {
+    background-color: rgb(249 115 22 / 0.18);
+    color: inherit;
+  }
+
+  /* Standardized focus ring — WCAG 2.4.7 + brand orange */
   *:focus-visible {
-    outline: 2px solid hsl(var(--ring));
+    outline: 2px solid rgb(249 115 22 / 0.70);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -205,5 +215,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50 transition-colors;
+  @apply rounded-full transition-colors;
+  background-color: rgb(249 115 22 / 0.22);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(249 115 22 / 0.40);
 }
