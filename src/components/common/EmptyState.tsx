@@ -75,12 +75,16 @@ export function EmptyState({
     <div className={cn('flex flex-col items-center justify-center rounded-xl border bg-white p-8 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900', className)}>
       {/* Illustration or Icon */}
       {hasImage ? (
-        <div className="mb-4 w-full max-w-sm overflow-hidden rounded-lg border dark:border-neutral-800">
-          <img
-            src={`https://sider.ai/autoimage/${encodeURIComponent(imageKeyword || '')}`}
-            className="h-36 w-full object-cover"
-            alt={title}
-          />
+        <div className="mb-4 flex h-32 w-full max-w-sm items-center justify-center rounded-xl border border-dashed border-orange-200 dark:border-orange-900 bg-gradient-to-br from-orange-50 to-blue-50 dark:from-orange-950/20 dark:to-blue-950/20">
+          <div className="flex flex-col items-center gap-2 opacity-60">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="4" y="28" width="40" height="16" rx="2" fill="#f97316" fillOpacity="0.2" stroke="#f97316" strokeWidth="1.5"/>
+              <rect x="12" y="16" width="24" height="14" rx="2" fill="#1d5fcc" fillOpacity="0.15" stroke="#1d5fcc" strokeWidth="1.5"/>
+              <rect x="20" y="8" width="8" height="10" rx="1" fill="#f97316" fillOpacity="0.3" stroke="#f97316" strokeWidth="1.5"/>
+              <line x1="4" y1="28" x2="44" y2="28" stroke="#64748b" strokeWidth="1" strokeDasharray="3 2"/>
+            </svg>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{imageKeyword}</span>
+          </div>
         </div>
       ) : icon ? (
         <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
@@ -137,7 +141,7 @@ export function EmptyProjectList({ onCreate }: { onCreate: () => void }) {
       action={
         <button
           onClick={onCreate}
-          className="inline-flex items-center gap-2 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+          className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 dark:bg-orange-500 dark:hover:bg-orange-600 transition-colors"
         >
           <Plus className="h-4 w-4" />
           Buat Proyek Baru
@@ -185,7 +189,7 @@ export function OfflineState({ onRetry }: { onRetry?: () => void }) {
         onRetry ? (
           <button
             onClick={onRetry}
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+            className="rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors"
           >
             Coba Lagi
           </button>
