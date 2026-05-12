@@ -140,7 +140,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
               type="text"
               placeholder="Search..."
               onChange={(e) => onSearch(e.target.value)}
-              className="h-9 w-64 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+              className="h-9 w-64 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400"
             />
           </div>
         )}
@@ -170,7 +170,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
             <Button variant="ghost" className="relative h-9 w-9 rounded-full select-none">
               <Avatar className="h-9 w-9 border-2 border-white dark:border-slate-800 shadow-sm cursor-pointer transition-transform hover:scale-105">
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-medium text-xs">
+                <AvatarFallback className="bg-gradient-to-br from-[#1d5fcc] to-[#f97316] text-white font-medium text-xs">
                   {initials}
                 </AvatarFallback>
               </Avatar>

@@ -18,6 +18,7 @@ import { NetworkProvider } from './providers/NetworkProvider'
 import { getProtectedRouteItems, type NavComponentKey } from './config/navRegistry'
 import { lazyRetry } from './lib/lazyRetry'
 import { initStoreSubscriptions } from './lib/storeSubscriptions'
+import { KeyboardShortcutsPanel } from './components/common/KeyboardShortcutsPanel'
 
 // Lazy-loaded page components with auto-retry for stale chunk recovery
 const ProjectManagement = lazyRetry(() => import('./pages/modules/ProjectManagement'))
@@ -121,6 +122,8 @@ export default function App() {
         <Suspense fallback={null}>
           <GlobalCommandPalette />
         </Suspense>
+        {/* Keyboard shortcuts overlay (Shift+?) */}
+        <KeyboardShortcutsPanel />
         {/* Error boundary membungkus seluruh routing */}
         <ErrorBoundary>
           <Suspense fallback={<PageSkeleton />}>
