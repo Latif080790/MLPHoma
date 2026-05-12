@@ -59,6 +59,7 @@ import { toast } from 'sonner'
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, SummaryStrip, AlertStrip } from '@/components/patterns'
 import type { } from '@/components/patterns/SummaryStrip'
+import { PHIDrillDown } from '@/components/common/PHIDrillDown'
 
 // ─── Helper: risk score color ───────────────────────────────────────────────
 function riskScoreColor(score: number) {
@@ -548,8 +549,12 @@ export default function ProjectOverview() {
 
       {/* Main Content Grid */}
       <div className="space-y-[var(--space-4)]">
-        {/* Timeline + Risks */}
+        {/* PHI + Timeline + Risks */}
         <div className="grid gap-[var(--space-4)] grid-cols-1 lg:grid-cols-3">
+          <PHIDrillDown
+            projectId={activeProjectId}
+            criticalRiskCount={risks.filter(r => r.risk_score >= 15).length}
+          />
           <TimelineSection upcoming={upcoming} overdue={overdue} />
           <RiskSection risks={risks} />
         </div>

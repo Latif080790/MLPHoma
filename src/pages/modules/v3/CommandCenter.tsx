@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { ApprovalInbox } from '@/components/dashboard/ApprovalInbox'
 import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
 import { MRPAlertPanel } from '@/components/supply-chain/MRPAlertPanel'
+import { AnomalyWidget } from '@/components/common/AnomalyWidget'
 import { AuditLogViewer } from '@/components/audit/AuditLogViewer'
 import { ApprovalQueueWidget } from '@/components/dashboard/ApprovalQueueWidget'
 import ModulePageState from '@/components/common/ModulePageState'
@@ -278,6 +279,9 @@ export default function CommandCenter() {
                 </div>
                 <div className="md:col-span-2">
                     <MRPAlertPanel compact />
+                </div>
+                <div className="md:col-span-2">
+                    <AnomalyWidget projectId={activeProjectId} compact />
                 </div>
 
                 {/* G. CRITICAL PATH WARNING PANEL */}

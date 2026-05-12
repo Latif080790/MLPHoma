@@ -37,6 +37,7 @@ import { CashflowForecastWidget } from "@/components/finance/CashflowForecastWid
 import { approvalService } from "@/services/approvalService"
 import { useAuthStore } from "@/store/authStore"
 import { InvoiceMatchDialog } from "@/components/finance/InvoiceMatchDialog"
+import { AnomalyWidget } from "@/components/common/AnomalyWidget"
 import { matchInvoice, getMatchStatusColor, getMatchStatusLabel } from "@/services/invoiceMatchingService"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import type { Invoice } from "@/types/finance"
@@ -468,6 +469,7 @@ export default function Finance() {
 
                 {/* --- OVERVIEW --- */}
                 <TabsContent value="overview" className="space-y-6">
+                    <AnomalyWidget projectId={activeProjectId} />
                     <div className="grid gap-4 md:grid-cols-2">
                         {/* Recent Invoices */}
                         <Card>
