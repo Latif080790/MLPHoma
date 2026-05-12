@@ -215,7 +215,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
             <ExportMenu
               data={projectItems}
               columns={[
-                { header: 'Item Name', accessor: r => r.name || (r as Record<string, {name?: string}>).ahsp_items?.name || (r as Record<string, {name?: string}>).rab_items?.name || '' },
+                { header: 'Item Name', accessor: r => r.name || (r as any).ahsp_items?.name || (r as any).rab_items?.name || '' },
                 { header: 'Total Budget', accessor: r => r.total_budget || 0 },
                 { header: 'Committed Cost', accessor: r => r.committed_cost || 0 },
                 { header: 'Actual Cost', accessor: r => r.actual_cost || 0 },
