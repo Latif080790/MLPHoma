@@ -418,4 +418,34 @@
   --nav-item-active-bg: 221 83% 15%;
   --nav-item-active-text: var(--brand-primary-300);
   --nav-item-hover-bg: var(--neutral-700);
+
+  /* --- Shadow Overrides (Dark) — stronger for dark canvas depth --- */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.30);
+  --shadow-sm:
+    0 1px 3px 0 rgb(0 0 0 / 0.40),
+    0 1px 2px -1px rgb(0 0 0 / 0.30);
+  --shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.45),
+    0 2px 4px -2px rgb(0 0 0 / 0.35),
+    0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.50),
+    0 4px 6px -4px rgb(0 0 0 / 0.40),
+    0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.55),
+    0 8px 10px -6px rgb(0 0 0 / 0.45),
+    0 0 0 1px rgb(255 255 255 / 0.05);
+
+  /* --- Glow Overrides (Dark) — more vivid on dark canvas --- */
+  --shadow-glow-orange:
+    0 0 0 1px rgb(249 115 22 / 0.20),
+    0 8px 24px -4px rgb(249 115 22 / 0.30);
+  --shadow-glow-orange-hover:
+    0 0 0 1px rgb(249 115 22 / 0.30),
+    0 12px 32px -4px rgb(249 115 22 / 0.40);
+  --shadow-glow-blue:
+    0 0 0 1px rgb(29 95 204 / 0.20),
+    0 8px 24px -4px rgb(29 95 204 / 0.28);
+  --shadow-focus-ring: 0 0 0 2px rgb(9 9 11), 0 0 0 4px rgb(249 115 22 / 0.55);
 }

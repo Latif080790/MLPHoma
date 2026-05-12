@@ -153,11 +153,42 @@
 
 /* Glassmorphism Utilities */
 .glass {
-  @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-sm;
+  @apply bg-white/70 backdrop-blur-md backdrop-saturate-150 border border-white/30 shadow-sm;
 }
 
 .dark .glass {
-  @apply bg-slate-900/70 border-white/10;
+  background-color: rgb(9 9 11 / 0.75);
+  border-color: rgb(255 255 255 / 0.08);
+}
+
+/* Glass card — elevated panel with border glow */
+.glass-card {
+  @apply rounded-xl border bg-white/60 backdrop-blur-sm backdrop-saturate-150 shadow-sm transition-all duration-200;
+  border-color: rgb(255 255 255 / 0.50);
+}
+
+.dark .glass-card {
+  background-color: rgb(24 24 27 / 0.70);
+  border-color: rgb(255 255 255 / 0.07);
+}
+
+/* Glass sidebar panel */
+.glass-sidebar {
+  @apply bg-white/90 backdrop-blur-sm border-r border-black/5;
+}
+
+.dark .glass-sidebar {
+  background-color: rgb(9 9 11 / 0.92);
+  border-color: rgb(255 255 255 / 0.06);
+}
+
+/* Frosted overlay — for modals/drawers */
+.glass-overlay {
+  @apply bg-black/20 backdrop-blur-sm;
+}
+
+.dark .glass-overlay {
+  background-color: rgb(0 0 0 / 0.50);
 }
 
 /* Dense Engineering Utilities */
