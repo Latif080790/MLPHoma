@@ -175,6 +175,15 @@ module.exports = {
       ringOffsetWidth: {
         DEFAULT: '2px', // Add offset for clearer separation
       },
+      fontFamily: {
+        display: ['Geist', 'Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'],
+      },
+      transitionTimingFunction: {
+        spring: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        standard: 'cubic-bezier(0.2, 0, 0, 1)',
+      },
       keyframes: {
         'accordion-down': {
           from: {

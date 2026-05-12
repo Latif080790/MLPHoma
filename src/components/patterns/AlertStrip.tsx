@@ -40,7 +40,7 @@ interface AlertStripProps {
 const severityConfig: Record<AlertSeverity, { icon: React.ReactNode; classes: string }> = {
   info: {
     icon: <Info className="h-4 w-4 shrink-0" />,
-    classes: 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/50 dark:border-blue-800 dark:text-blue-200',
+    classes: 'bg-orange-50 border-orange-200 text-orange-800 dark:bg-orange-950/40 dark:border-orange-800 dark:text-orange-200',
   },
   success: {
     icon: <CheckCircle2 className="h-4 w-4 shrink-0" />,
