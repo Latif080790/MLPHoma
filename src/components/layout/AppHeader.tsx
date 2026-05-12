@@ -58,7 +58,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
     : 'U'
 
   return (
-    <header className="h-14 flex items-center justify-between px-4 lg:px-6 gap-4">
+    <header className="sticky top-0 z-50 h-14 flex items-center justify-between px-4 lg:px-6 gap-4 border-b border-black/5 dark:border-white/8 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-zinc-950/70 transition-shadow">
       {/* Left: Hamburger (mobile) + Breadcrumbs + Project Switcher */}
       <div className="flex items-center min-w-0 flex-1 gap-2">
         {onMenuToggle && (
