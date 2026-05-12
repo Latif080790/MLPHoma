@@ -135,7 +135,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
         {/* Search Bar (Collapsible on mobile) */}
         {onSearch && (
           <div className="relative hidden md:block group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" size={16} />
             <input
               type="text"
               placeholder="Search..."
