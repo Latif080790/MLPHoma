@@ -38,6 +38,9 @@ import { approvalService } from "@/services/approvalService"
 import { useAuthStore } from "@/store/authStore"
 import { InvoiceMatchDialog } from "@/components/finance/InvoiceMatchDialog"
 import { AnomalyWidget } from "@/components/common/AnomalyWidget"
+import { BulkActionBar } from "@/components/common/BulkActionBar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Checkbox } from "@/components/ui/checkbox"
 import { matchInvoice, getMatchStatusColor, getMatchStatusLabel } from "@/services/invoiceMatchingService"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import type { Invoice } from "@/types/finance"
@@ -129,12 +132,14 @@ export default function Finance() {
     const [pendingInvoicePayment, setPendingInvoicePayment] = useState<{ id: string; project_id: string; total_amount: number; invoice_number: string; vendor_name?: string } | null>(null)
     const [matchDialogInvoice, setMatchDialogInvoice] = useState<Invoice | null>(null)
     const [srStatus, setSrStatus] = useState('')
+    // v4 Sprint 2: Bulk selection state
+    const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set())
     const { purchaseOrders, inventoryTransactions } = useSupplyChainStore()
 
     const {
         invoices, claims, transactions, loading,
         summary, aging,
-        fetchAll, markOverdue, payInvoice, updateClaimStatus
+        fetchAll, markOverdue, payInvoice, updateClaimStatus, updateInvoiceStatus
     } = useFinanceStore()
 
     // P0.3.3: Invoice table virtualizer
@@ -311,6 +316,53 @@ export default function Finance() {
         }
     }
 
+    // v4 Sprint 2: Bulk payment request handler
+    const handleBulkPayRequest = async () => {
+        if (!activeProjectId || selectedInvoiceIds.size === 0) return
+        const targets = filteredInvoices.filter(
+            inv => selectedInvoiceIds.has(inv.id) && inv.status !== 'PAID' && inv.status !== 'PENDING_PAYMENT'
+        )
+        setSrStatus(`Requesting payment for ${targets.length} invoices...`)
+        for (const inv of targets) {
+            await handleAsync(async () => {
+                const { user, profile } = useAuthStore.getState()
+                await approvalService.createApproval({
+                    projectId: inv.project_id,
+                    entityType: 'PAYMENT',
+                    entityId: inv.id,
+                    title: `Payment: ${inv.vendor_name || 'Vendor'} Inv#${inv.invoice_number}`,
+                    description: `Bulk payment approval for Rp ${inv.total_amount.toLocaleString()}`,
+                    requesterId: user?.id || 'unknown',
+                    requesterName: profile?.full_name || user?.email || 'Finance',
+                    approverRole: 'manager',
+                    impactSummary: { amount: inv.total_amount, vendor: inv.vendor_name }
+                })
+                useFinanceStore.getState().updateInvoiceStatus(inv.id, 'PENDING_PAYMENT', inv.project_id)
+                return true
+            }, 'approval.general')
+        }
+        toast.success(`${targets.length} payment requests submitted`)
+        setSrStatus(`${targets.length} payment approval requests submitted.`)
+        setSelectedInvoiceIds(new Set())
+    }
+
+    // v4 Sprint 2: Toggle individual / all selection
+    const toggleInvoiceSelection = (id: string) => {
+        setSelectedInvoiceIds(prev => {
+            const next = new Set(prev)
+            if (next.has(id)) { next.delete(id) } else { next.add(id) }
+            return next
+        })
+    }
+    const isAllInvoicesSelected = filteredInvoices.length > 0 && filteredInvoices.every(inv => selectedInvoiceIds.has(inv.id))
+    const toggleAllInvoices = () => {
+        if (isAllInvoicesSelected) {
+            setSelectedInvoiceIds(new Set())
+        } else {
+            setSelectedInvoiceIds(new Set(filteredInvoices.map(inv => inv.id)))
+        }
+    }
+
     const claimActions = (claim: ClientClaim) => {
         const transitions: Record<string, { label: string; next: ClientClaim['status']; icon: React.ReactNode }> = {
             DRAFT: { label: 'Submit', next: 'SUBMITTED', icon: <Send size={12} /> },
@@ -387,10 +439,9 @@ export default function Finance() {
     // ── Export column definitions ─────────────────────────────────────────────
     const invoiceExportCols: ExportColumn<Invoice>[] = [
         { header: 'Invoice #', accessor: r => r.invoice_number ?? '' },
-        { header: 'Vendor', accessor: r => r.vendor ?? '' },
-        { header: 'Amount', accessor: r => r.amount ?? 0 },
+        { header: 'Vendor', accessor: r => r.vendor_name ?? '' },
+        { header: 'Amount', accessor: r => r.total_amount ?? 0 },
         { header: 'Status', accessor: r => r.status ?? '' },
-        { header: 'Issue Date', accessor: r => r.issue_date ?? '' },
         { header: 'Due Date', accessor: r => r.due_date ?? '' },
     ]
 
@@ -622,6 +673,21 @@ export default function Finance() {
                             <Plus size={14} /> Record Invoice
                         </Button>
                     </div>
+
+                    {/* v4 Sprint 2: Bulk Action Bar */}
+                    <BulkActionBar
+                        selectedCount={selectedInvoiceIds.size}
+                        label="invoices selected"
+                        onClear={() => setSelectedInvoiceIds(new Set())}
+                        actions={[
+                            {
+                                label: 'Request Payment',
+                                icon: <Send size={12} />,
+                                onClick: handleBulkPayRequest,
+                                disabled: filteredInvoices.filter(inv => selectedInvoiceIds.has(inv.id) && inv.status !== 'PAID' && inv.status !== 'PENDING_PAYMENT').length === 0,
+                            },
+                        ]}
+                    />
                     {filteredInvoices.length === 0 ? (
                         <EmptyState title="No Invoices Found" description="No invoice matches current search/filter." imageKeyword="invoice" />
                     ) : (
@@ -630,6 +696,13 @@ export default function Finance() {
                                 <Table>
                                     <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
                                         <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                            <TableHead className="w-10 p-3">
+                                                <Checkbox
+                                                    checked={isAllInvoicesSelected}
+                                                    onCheckedChange={toggleAllInvoices}
+                                                    aria-label="Select all invoices"
+                                                />
+                                            </TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Inv Number</TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Trace</TableHead>
@@ -657,7 +730,15 @@ export default function Finance() {
                                             const upstreamCount = inv.po_id ? 1 : 0
 
                                             return (
-                                                <TableRow key={inv.id} data-index={vRow.index} ref={virtualInvoiceRows.measureElement} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
+                                                <TableRow key={inv.id} data-index={vRow.index} ref={virtualInvoiceRows.measureElement} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''} ${selectedInvoiceIds.has(inv.id) ? 'bg-orange-50/60 dark:bg-orange-900/10' : ''}`}>
+                                                    {/* v4 Sprint 2: checkbox */}
+                                                    <TableCell className="p-3 w-10" onClick={e => e.stopPropagation()}>
+                                                        <Checkbox
+                                                            checked={selectedInvoiceIds.has(inv.id)}
+                                                            onCheckedChange={() => toggleInvoiceSelection(inv.id)}
+                                                            aria-label={`Select invoice ${inv.invoice_number}`}
+                                                        />
+                                                    </TableCell>
                                                     <TableCell className="p-3 font-medium text-slate-700 dark:text-slate-300">{inv.vendor_name}</TableCell>
                                                     <TableCell className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">{inv.invoice_number}</TableCell>
                                                     <TableCell className="p-3">
@@ -690,12 +771,37 @@ export default function Finance() {
                                                             )
                                                         })()}
                                                     </TableCell>
+                                                    {/* v4 Sprint 2: inline status edit via Popover */}
                                                     <TableCell className="p-3 text-center">
-                                                        <Badge variant={
-                                                            inv.status === 'PAID' ? 'default' :
-                                                                inv.status === 'OVERDUE' ? 'destructive' :
-                                                                    'secondary'
-                                                        } className="text-xs font-normal px-2 py-0.5">{inv.status}</Badge>
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <button className="cursor-pointer hover:opacity-80 transition-opacity" aria-label={`Change invoice status (currently ${inv.status})`}>
+                                                                    <Badge variant={
+                                                                        inv.status === 'PAID' ? 'default' :
+                                                                            inv.status === 'OVERDUE' ? 'destructive' :
+                                                                                'secondary'
+                                                                    } className="text-xs font-normal px-2 py-0.5">
+                                                                        {inv.status}
+                                                                    </Badge>
+                                                                </button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-44 p-1" align="center">
+                                                                <p className="text-xs font-semibold text-zinc-500 px-2 py-1">Change Status</p>
+                                                                {(['UNPAID', 'PARTIAL', 'PENDING_PAYMENT', 'PAID'] as const).map(s => (
+                                                                    <button
+                                                                        key={s}
+                                                                        className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                                                        onClick={() => {
+                                                                            if (!activeProjectId) return
+                                                                            updateInvoiceStatus(inv.id, s, activeProjectId)
+                                                                            toast.success(`Invoice ${inv.invoice_number} → ${s}`)
+                                                                        }}
+                                                                    >
+                                                                        {s}
+                                                                    </button>
+                                                                ))}
+                                                            </PopoverContent>
+                                                        </Popover>
                                                     </TableCell>
                                                     <TableCell className="p-3 text-right">
                                                         {inv.status !== 'PAID' && inv.status !== 'PENDING_PAYMENT' && (
