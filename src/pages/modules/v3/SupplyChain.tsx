@@ -1,6 +1,6 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react"
-import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, PackageCheck, ArrowRightLeft, ClipboardList } from "lucide-react"
+import { Truck, Package, ShoppingCart, Warehouse, Plus, ArrowDown, ArrowUp, PackageCheck, ArrowRightLeft, ClipboardList, ShieldCheck, XCircle } from "lucide-react"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -9,10 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useProjectStore } from "@/store/projectStore"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
+import { useAuthStore } from "@/store/authStore"
 import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
+import { BulkActionBar } from "@/components/common/BulkActionBar"
 import { MaterialRequestDialog } from "@/components/supply-chain/MaterialRequestDialog"
 import { PurchaseOrderDialog } from "@/components/supply-chain/PurchaseOrderDialog"
 import { InventoryTransactionDialog } from "@/components/supply-chain/InventoryTransactionDialog"
@@ -70,7 +73,9 @@ export default function SupplyChain() {
         fetchMaterialRequests,
         fetchPurchaseOrders,
         fetchInventory,
-        fetchTransfers
+        fetchTransfers,
+        updatePoStatus,
+        updateMrStatus,
     } = useSupplyChainStore()
 
     const [activeTab, setActiveTab] = useState("requests")
@@ -111,6 +116,10 @@ export default function SupplyChain() {
     const [mtrRequestOpen, setMtrRequestOpen] = useState(false)
     const [logisticsTab, setLogisticsTab] = useState<'transfers' | 'mtr'>('transfers')
     const [srStatus, setSrStatus] = useState('')
+
+    // v4 Sprint 2: Bulk selection states
+    const [selectedPoIds, setSelectedPoIds] = useState<Set<string>>(new Set())
+    const [selectedMrIds, setSelectedMrIds] = useState<Set<string>>(new Set())
 
     const filteredMaterialRequests = useMemo(() => {
         const q = searchTerm.trim().toLowerCase()
@@ -197,6 +206,39 @@ export default function SupplyChain() {
             : undefined
 
     const toolbarEnabled = activeTab === 'requests' || activeTab === 'orders'
+
+    // v4 Sprint 2: PO bulk action helpers
+    const togglePoSelection = (id: string) => {
+        setSelectedPoIds(prev => { const n = new Set(prev); if (n.has(id)) { n.delete(id) } else { n.add(id) }  return n })
+    }
+    const selectablePos = filteredPurchaseOrders.filter(po => po.status === 'DRAFT' || po.status === 'PENDING')
+    const isAllPoSelected = selectablePos.length > 0 && selectablePos.every(po => selectedPoIds.has(po.id))
+    const toggleAllPos = () => {
+        if (isAllPoSelected) setSelectedPoIds(new Set())
+        else setSelectedPoIds(new Set(selectablePos.map(po => po.id)))
+    }
+    const handleBulkPoApprove = async () => {
+        const { user } = useAuthStore.getState()
+        const targets = filteredPurchaseOrders.filter(po => selectedPoIds.has(po.id))
+        for (const po of targets) await updatePoStatus(po.id, 'APPROVED', user?.id)
+        setSelectedPoIds(new Set())
+    }
+    const handleBulkPoReject = async () => {
+        const targets = filteredPurchaseOrders.filter(po => selectedPoIds.has(po.id))
+        for (const po of targets) await updatePoStatus(po.id, 'REJECTED')
+        setSelectedPoIds(new Set())
+    }
+
+    // v4 Sprint 2: MR bulk action helpers
+    const toggleMrSelection = (id: string) => {
+        setSelectedMrIds(prev => { const n = new Set(prev); if (n.has(id)) { n.delete(id) } else { n.add(id) } return n })
+    }
+
+    const handleBulkMrApprove = async () => {
+        const targets = filteredMaterialRequests.filter(mr => selectedMrIds.has(mr.id))
+        for (const mr of targets) await updateMrStatus(mr.id, 'APPROVED')
+        setSelectedMrIds(new Set())
+    }
 
     // P0.3: Virtualizer for PO table
     const poScrollRef = useRef<HTMLDivElement>(null)
@@ -522,6 +564,17 @@ export default function SupplyChain() {
                             imageKeyword="request"
                         />
                     ) : (
+                        <>
+                        {/* v4 Sprint 2: MR Bulk Action Bar */}
+                        <BulkActionBar
+                            selectedCount={selectedMrIds.size}
+                            label="requests selected"
+                            onClear={() => setSelectedMrIds(new Set())}
+                            actions={[
+                                { label: 'Approve All', icon: <ShieldCheck size={12} />, onClick: handleBulkMrApprove, variant: 'outline' },
+                            ]}
+                            className="mb-2"
+                        />
                         <div className="grid gap-3">
                             {filteredMaterialRequests.map((mr) => {
                                 const traceChain = mr.status === 'PO_CREATED'
@@ -532,8 +585,18 @@ export default function SupplyChain() {
                                     : []
 
                                 return (
-                                    <div key={mr.id} className="group flex items-center justify-between p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-md transition-all hover:border-blue-200 dark:hover:border-blue-800">
-                                        <div className="flex items-center gap-4">
+                                    <div key={mr.id} className={`group flex items-center justify-between p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-md transition-all hover:border-blue-200 dark:hover:border-blue-800 ${selectedMrIds.has(mr.id) ? 'border-orange-300 dark:border-orange-700 bg-orange-50/40 dark:bg-orange-900/10' : ''}`}>
+                                        {/* v4 Sprint 2: checkbox for PENDING MRs */}
+                                        {mr.status === 'PENDING' && (
+                                            <div className="mr-3 shrink-0" onClick={e => e.stopPropagation()}>
+                                                <Checkbox
+                                                    checked={selectedMrIds.has(mr.id)}
+                                                    onCheckedChange={() => toggleMrSelection(mr.id)}
+                                                    aria-label={`Select MR ${mr.itemName}`}
+                                                />
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-4 flex-1">
                                             <div className="h-10 w-10 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
                                                 <Package size={20} />
                                             </div>
@@ -562,6 +625,7 @@ export default function SupplyChain() {
                                 )
                             })}
                         </div>
+                        </>
                     )}
                 </TabsContent>
 
@@ -613,11 +677,31 @@ export default function SupplyChain() {
                             imageKeyword="purchase order"
                         />
                     ) : (
+                        <>
+                        {/* v4 Sprint 2: PO Bulk Action Bar */}
+                        <BulkActionBar
+                            selectedCount={selectedPoIds.size}
+                            label="POs selected"
+                            onClear={() => setSelectedPoIds(new Set())}
+                            actions={[
+                                { label: 'Approve', icon: <ShieldCheck size={12} />, onClick: handleBulkPoApprove, variant: 'outline' },
+                                { label: 'Reject', icon: <XCircle size={12} />, onClick: handleBulkPoReject, variant: 'destructive' },
+                            ]}
+                            className="mb-2"
+                        />
                         <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
                             <div ref={poScrollRef} className="max-h-[600px] overflow-auto relative">
                                 <Table>
                                     <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
                                         <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                            <TableHead className="w-10 p-3">
+                                                <Checkbox
+                                                    checked={isAllPoSelected}
+                                                    onCheckedChange={toggleAllPos}
+                                                    aria-label="Select all draft/pending purchase orders"
+                                                    disabled={selectablePos.length === 0}
+                                                />
+                                            </TableHead>
                                             <TableHead className="w-[120px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">PO Number</TableHead>
                                             <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
                                             <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Trace</TableHead>
@@ -644,7 +728,17 @@ export default function SupplyChain() {
                                             }
                                             const downstreamCount = Math.max(0, traceChain.length - 1)
                                             return (
-                                                <TableRow key={po.id} data-index={vRow.index} ref={poVirtualizer.measureElement} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors" onClick={() => setTracePo(po)}>
+                                                <TableRow key={po.id} data-index={vRow.index} ref={poVirtualizer.measureElement} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors ${selectedPoIds.has(po.id) ? 'bg-orange-50/60 dark:bg-orange-900/10' : ''}`} onClick={() => setTracePo(po)}>
+                                                    {/* v4 Sprint 2: checkbox — only selectable for DRAFT/PENDING */}
+                                                    <TableCell className="w-10 py-2 px-3" onClick={e => e.stopPropagation()}>
+                                                        {(po.status === 'DRAFT' || po.status === 'PENDING') && (
+                                                            <Checkbox
+                                                                checked={selectedPoIds.has(po.id)}
+                                                                onCheckedChange={() => togglePoSelection(po.id)}
+                                                                aria-label={`Select PO ${po.poNumber}`}
+                                                            />
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell className="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 py-2 border-r border-transparent">
                                                         {po.poNumber}
                                                     </TableCell>
@@ -686,10 +780,9 @@ export default function SupplyChain() {
                                 </Table>
                             </div>
                         </div>
+                        </>
                     )}
                 </TabsContent>
-
-                {/* --- INVENTORY --- */}
                 <TabsContent value="inventory" className="space-y-6">
                     <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-dashed">
                         <div className="text-sm text-slate-500 ml-2">Digital Warehouse <span className="text-slate-300">|</span> Real-time Levels</div>
