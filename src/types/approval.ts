@@ -14,7 +14,7 @@ export type ApprovalEntityType =
 
 export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
 
-export type ApproverRole = 'manager' | 'admin'
+export type ApproverRole = 'supervisor' | 'manager' | 'director' | 'admin'
 
 export interface ApprovalRequest {
     id: string

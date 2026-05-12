@@ -39,6 +39,7 @@ import { useAuthStore } from "@/store/authStore"
 import { InvoiceMatchDialog } from "@/components/finance/InvoiceMatchDialog"
 import { AnomalyWidget } from "@/components/common/AnomalyWidget"
 import { BulkActionBar } from "@/components/common/BulkActionBar"
+import { ExcelImportPreviewDialog } from "@/components/common/ExcelImportPreviewDialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { matchInvoice, getMatchStatusColor, getMatchStatusLabel } from "@/services/invoiceMatchingService"
@@ -131,6 +132,7 @@ export default function Finance() {
     })
     const [pendingInvoicePayment, setPendingInvoicePayment] = useState<{ id: string; project_id: string; total_amount: number; invoice_number: string; vendor_name?: string } | null>(null)
     const [matchDialogInvoice, setMatchDialogInvoice] = useState<Invoice | null>(null)
+    const [invoiceImportOpen, setInvoiceImportOpen] = useState(false)
     const [srStatus, setSrStatus] = useState('')
     // v4 Sprint 2: Bulk selection state
     const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set())
@@ -139,7 +141,7 @@ export default function Finance() {
     const {
         invoices, claims, transactions, loading,
         summary, aging,
-        fetchAll, markOverdue, payInvoice, updateClaimStatus, updateInvoiceStatus
+        fetchAll, markOverdue, payInvoice, updateClaimStatus, updateInvoiceStatus, createInvoice
     } = useFinanceStore()
 
     // P0.3.3: Invoice table virtualizer
@@ -198,6 +200,43 @@ export default function Finance() {
                 return bPeriod - aPeriod
             })
     }, [claims, arQuery, arStatusFilter, arSortBy, arPeriodFrom, arPeriodTo])
+
+    const handleInvoiceImport = useCallback(async (rows: Record<string, unknown>[]) => {
+        if (!activeProjectId) return
+        const invoiceRows = rows
+            .map((row) => ({
+                vendor_name: String(row.vendor_name ?? '').trim(),
+                invoice_number: String(row.invoice_number ?? '').trim(),
+                description: String(row.description ?? '').trim(),
+                amount: Number(row.amount ?? 0),
+                tax_amount: Number(row.tax_amount ?? 0),
+                due_date: String(row.due_date ?? '').trim(),
+            }))
+            .filter((row) => row.vendor_name && row.invoice_number && row.due_date)
+
+        if (!invoiceRows.length) {
+            toast.error('Tidak ada baris invoice yang valid')
+            return
+        }
+
+        for (const row of invoiceRows) {
+            await createInvoice({
+                project_id: activeProjectId,
+                vendor_name: row.vendor_name,
+                invoice_number: row.invoice_number,
+                description: row.description || undefined,
+                amount: row.amount,
+                tax_amount: row.tax_amount,
+                total_amount: row.amount + row.tax_amount,
+                due_date: row.due_date,
+                status: 'UNPAID',
+            })
+        }
+
+        toast.success(`Imported ${invoiceRows.length} invoices`)
+        setInvoiceImportOpen(false)
+        await fetchAll(activeProjectId)
+    }, [activeProjectId, createInvoice, fetchAll])
 
     const apVendorOptions = useMemo(() => {
         return Array.from(new Set(
@@ -486,11 +525,18 @@ export default function Finance() {
                         icon: <Plus className="h-3.5 w-3.5" />,
                         onClick: () => setInvoiceDialogOpen(true),
                     }}
-                    secondaryActions={[{
-                        label: 'Create Claim',
-                        icon: <FileText className="h-3.5 w-3.5" />,
-                        onClick: () => setClaimDialogOpen(true),
-                    }]}
+                    secondaryActions={[
+                        {
+                            label: 'Import Excel',
+                            icon: <FileText className="h-3.5 w-3.5" />,
+                            onClick: () => setInvoiceImportOpen(true),
+                        },
+                        {
+                            label: 'Create Claim',
+                            icon: <FileText className="h-3.5 w-3.5" />,
+                            onClick: () => setClaimDialogOpen(true),
+                        },
+                    ]}
                     extraContent={
                         <ExportMenu
                             data={activeTab === 'ar' ? filteredClaims as any[] : filteredInvoices}
@@ -1041,6 +1087,21 @@ export default function Finance() {
                 open={claimDialogOpen}
                 onOpenChange={setClaimDialogOpen}
                 projectId={activeProjectId!}
+            />
+            <ExcelImportPreviewDialog
+                open={invoiceImportOpen}
+                onOpenChange={setInvoiceImportOpen}
+                title="Import Invoice Excel"
+                description="Map Excel columns to AP invoice fields, preview rows, then create invoices in bulk."
+                targetFields={[
+                    { key: 'vendor_name', label: 'Vendor Name', required: true },
+                    { key: 'invoice_number', label: 'Invoice Number', required: true },
+                    { key: 'description', label: 'Description' },
+                    { key: 'amount', label: 'Amount', required: true, transform: (raw) => Number(String(raw).replace(/[^0-9.-]/g, '')) },
+                    { key: 'tax_amount', label: 'Tax Amount', transform: (raw) => Number(String(raw).replace(/[^0-9.-]/g, '')) },
+                    { key: 'due_date', label: 'Due Date', required: true },
+                ]}
+                onImport={handleInvoiceImport}
             />
             <InvoiceMatchDialog
                 open={!!matchDialogInvoice}

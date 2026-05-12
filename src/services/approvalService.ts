@@ -135,6 +135,15 @@ export const approvalService = {
         const client = assertSupabase()
         const id = generateId('appr')
 
+        // v4 Sprint 3 — Item 17: Smart approval routing by amount threshold
+        // Rp 0–50M → supervisor, Rp 50M–500M → manager, >Rp 500M → director
+        const resolvedRole: ApproverRole = input.approverRole ?? (() => {
+            const amount = typeof input.impactSummary?.amount === 'number' ? input.impactSummary.amount : 0
+            if (amount > 500_000_000) return 'director'
+            if (amount > 50_000_000) return 'manager'
+            return 'supervisor'
+        })()
+
         const { data, error } = await client
             .from('approval_requests')
             .insert({
@@ -144,7 +153,7 @@ export const approvalService = {
                 requester_name: input.requesterName || null,
                 entity_type: input.entityType,
                 entity_id: input.entityId,
-                approver_role: input.approverRole || 'manager',
+                approver_role: resolvedRole,
                 title: input.title,
                 description: input.description || null,
                 impact_summary: input.impactSummary ?? {},
@@ -157,11 +166,16 @@ export const approvalService = {
 
         const approval = rowToApproval(data)
 
-        // Notify managers/admins about the new approval request
+        // Notify approvers (role resolved by smart routing above)
+        // Map extended ApproverRole to notificationService's role type
+        const notifyRole: 'admin' | 'manager' | 'user' =
+            resolvedRole === 'director' ? 'admin' :
+            resolvedRole === 'supervisor' ? 'user' :
+            resolvedRole === 'admin' ? 'admin' : 'manager'
         try {
             await notificationService.notifyByRole(
                 input.projectId,
-                input.approverRole || 'manager',
+                notifyRole,
                 {
                     projectId: input.projectId,
                     type: 'APPROVAL_REQUEST',
