@@ -160,6 +160,7 @@ export const useRapStore = create<RapState>()(
           toast.success(`RAP initialized with ${data.length} items from RAB`)
         } catch (err: unknown) {
           toast.error('Failed to initialize RAP: ' + (err as Error).message)
+          throw err
         } finally {
           set({ loading: false })
         }
