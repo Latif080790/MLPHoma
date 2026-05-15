@@ -1,0 +1,30 @@
+const fs = require('fs');
+const file = 'D:/2. NATA_PROJECTAPP/PM_LABHA/MLPHoma/src/components/ahsp/AHSPItemEditor.tsx';
+let content = fs.readFileSync(file, 'utf8');
+
+content = content.replace(/rounded-3xl/g, 'rounded-xl');
+content = content.replace(/rounded-2xl/g, 'rounded-lg');
+content = content.replace(/rounded-\[3rem\]/g, 'rounded-xl');
+content = content.replace(/rounded-\[2rem\]/g, 'rounded-xl');
+content = content.replace(/font-black/g, 'font-semibold');
+content = content.replace(/h-14/g, 'h-10');
+content = content.replace(/h-12/g, 'h-10');
+content = content.replace(/text-6xl/g, 'text-3xl');
+content = content.replace(/text-5xl/g, 'text-2xl');
+content = content.replace(/text-4xl/g, 'text-xl');
+content = content.replace(/py-12/g, 'py-6');
+content = content.replace(/border-b-4/g, 'border-b');
+content = content.replace(/bg-blue-600 p-2/g, 'bg-blue-100 p-2 text-blue-700');
+content = content.replace(/bg-blue-600 p-3/g, 'bg-blue-100 p-2 text-blue-700');
+content = content.replace(/text-white shadow-xl shadow-blue-100 ring-4 ring-blue-50/g, 'shadow-sm ring-1 ring-blue-50');
+content = content.replace(/text-2xl font-semibold tracking-tight text-slate-900/g, 'text-lg font-semibold text-slate-900');
+content = content.replace(/bg-slate-50\/50/g, 'bg-slate-50/30');
+content = content.replace(/bg-blue-50\/30/g, 'bg-white');
+content = content.replace(/bg-emerald-50\/30/g, 'bg-white');
+content = content.replace(/border-blue-200/g, 'border-slate-200');
+content = content.replace(/border-emerald-200/g, 'border-slate-200');
+content = content.replace(/text-blue-800/g, 'text-slate-800');
+content = content.replace(/text-emerald-800/g, 'text-slate-800');
+
+fs.writeFileSync(file, content);
+console.log('Done refactoring AHSPItemEditor.tsx');

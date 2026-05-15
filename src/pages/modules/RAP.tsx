@@ -129,9 +129,14 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
       toast.error('No RAB items found to import')
       return
     }
-    await initFromRab(projectId, rabItems)
-    setConfirmImportOpen(false)
-    toast.success('RAB items imported to RAP')
+    try {
+      await initFromRab(projectId, rabItems)
+      setConfirmImportOpen(false)
+      toast.success('RAB items imported to RAP')
+    } catch (error) {
+      // Error is already toasted by the store, just prevent success toast
+      console.error('Import failed', error)
+    }
   }
 
   const handleApplyProfitSimulation = async () => {

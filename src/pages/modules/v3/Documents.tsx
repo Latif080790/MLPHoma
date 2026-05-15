@@ -44,35 +44,6 @@ const DOC_SORTS = [
     { value: 'title-desc', label: 'Title Z-A' },
 ]
 
-const DOC_LINK_STORAGE_KEY = 'documents.entityLinks'
-
-type DocumentEntityLink = {
-    linked_entity_id: string
-    linked_entity_type: NonNullable<ProjectDocument['linked_entity_type']>
-}
-
-function loadDocumentLinks(): Record<string, DocumentEntityLink> {
-    try {
-        return JSON.parse(localStorage.getItem(DOC_LINK_STORAGE_KEY) || '{}') as Record<string, DocumentEntityLink>
-    } catch {
-        return {}
-    }
-}
-
-function saveDocumentLinks(links: Record<string, DocumentEntityLink>) {
-    try {
-        localStorage.setItem(DOC_LINK_STORAGE_KEY, JSON.stringify(links))
-    } catch {
-        // ignore localStorage errors
-    }
-}
-
-function mergeLinkedDocument(doc: ProjectDocument): ProjectDocument {
-    const links = loadDocumentLinks()
-    const link = links[doc.id]
-    return link ? { ...doc, ...link } : doc
-}
-
 export default function Documents() {
     const { activeProjectId } = useProjectStore()
     const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
@@ -127,7 +98,7 @@ export default function Documents() {
         }, 'document.general', { showToast: false })
 
         if (data) {
-            setDocuments(data.map(mergeLinkedDocument))
+            setDocuments(data)
             setSrStatus(`Loaded ${data.length} documents.`)
         } else {
             setPageError('Failed to load document repository data.')
@@ -146,23 +117,29 @@ export default function Documents() {
         }
     }, [activeProjectId, loadDocs])
 
-    const handleSaveLink = useCallback(() => {
+    const handleSaveLink = useCallback(async () => {
         if (!linkDoc) return
         if (!linkEntityId.trim()) {
             toast.error('Entity ID wajib diisi')
             return
         }
-        const links = loadDocumentLinks()
-        links[linkDoc.id] = {
-            linked_entity_id: linkEntityId.trim(),
-            linked_entity_type: linkEntityType,
+        setSrStatus('Saving entity link...')
+
+        const success = await handleAsync(async () => {
+            await documentService.updateDocumentLink(linkDoc.id, linkEntityType, linkEntityId.trim())
+            return true
+        }, 'document.general')
+
+        if (success) {
+            setDocuments((current) => current.map((doc) => doc.id === linkDoc.id ? { ...doc, linked_entity_type: linkEntityType, linked_entity_id: linkEntityId.trim() } : doc))
+            setLinkDoc(null)
+            setLinkEntityId('')
+            toast.success('Link entity disimpan')
+            setSrStatus('Entity link saved successfully.')
+        } else {
+            setSrStatus('Failed to save entity link.')
         }
-        saveDocumentLinks(links)
-        setDocuments((current) => current.map((doc) => doc.id === linkDoc.id ? { ...doc, ...links[linkDoc.id] } : doc))
-        setLinkDoc(null)
-        setLinkEntityId('')
-        toast.success('Link entity disimpan')
-    }, [linkDoc, linkEntityId, linkEntityType])
+    }, [linkDoc, linkEntityId, linkEntityType, handleAsync])
 
     useEffect(() => {
         try {
@@ -758,6 +735,45 @@ export default function Documents() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Entity Link Dialog */}
+            <Dialog open={!!linkDoc} onOpenChange={(open) => { if (!open) setLinkDoc(null) }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Link Document to Entity</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="grid gap-2">
+                            <Label>Entity Type</Label>
+                            <Select value={linkEntityType} onValueChange={(val: any) => setLinkEntityType(val)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="task">Task (WBS)</SelectItem>
+                                    <SelectItem value="rab_item">RAB Item</SelectItem>
+                                    <SelectItem value="approval">Approval</SelectItem>
+                                    <SelectItem value="milestone">Milestone</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Entity ID</Label>
+                            <Input 
+                                value={linkEntityId} 
+                                onChange={e => setLinkEntityId(e.target.value)} 
+                                placeholder="e.g. TSK-001 or WBS ID" 
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setLinkDoc(null)}>Cancel</Button>
+                        <Button onClick={() => { void handleSaveLink() }} disabled={!linkEntityId.trim() || loading}>
+                            Save Link
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </PageShell>
     )
 }

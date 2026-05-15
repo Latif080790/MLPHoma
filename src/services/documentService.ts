@@ -443,5 +443,21 @@ export const documentService = {
         if (userId && userName) {
             await auditTrail.logDocumentDeleted(id, doc.title, userId, userName)
         }
+    },
+
+    /**
+     * Update document entity link
+     */
+    async updateDocumentLink(id: string, entityType: string, entityId: string): Promise<void> {
+        const client = assertSupabase()
+        const { error } = await client
+            .from('documents')
+            .update({ 
+                linked_entity_type: entityType,
+                linked_entity_id: entityId
+            })
+            .eq('id', id)
+
+        if (error) throw error
     }
 }

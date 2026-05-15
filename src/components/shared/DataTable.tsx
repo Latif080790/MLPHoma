@@ -74,14 +74,10 @@ const MemoizedVirtualRow = React.memo(({
     <TableRow
       data-index={virtualRow.index}
       className={cn(
-        "group absolute w-full transition-colors hover:bg-slate-50 dark:hover:bg-slate-900 border-b",
+        "group transition-colors hover:bg-slate-50 dark:hover:bg-slate-900 border-b",
         onRowClick && "cursor-pointer",
         rowClassName?.(row.original)
       )}
-      style={{
-        height: `${virtualRow.size}px`,
-        transform: `translateY(${virtualRow.start}px)`,
-      }}
       onClick={() => onRowClick?.(row.original)}
     >
       {isCustomRow?.(row.original) && renderCustomRow 
@@ -218,7 +214,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="relative" style={{ height: isVirtualized ? `${rowVirtualizer.getTotalSize()}px` : 'auto' }}>
+          <TableBody>
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
@@ -231,20 +227,32 @@ export function DataTable<TData, TValue>({
               ))
             ) : rows.length > 0 ? (
               isVirtualized ? (
-                rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                  const row = rows[virtualRow.index]
-                  return (
-                    <MemoizedVirtualRow
-                      key={row.id}
-                      row={row}
-                      virtualRow={virtualRow}
-                      onRowClick={onRowClick}
-                      rowClassName={rowClassName}
-                      isCustomRow={isCustomRow}
-                      renderCustomRow={renderCustomRow}
-                    />
-                  )
-                })
+                <>
+                  {rowVirtualizer.getVirtualItems().length > 0 && (
+                    <tr style={{ height: `${rowVirtualizer.getVirtualItems()[0].start}px` }}>
+                      <td colSpan={columns.length} style={{ padding: 0, border: 0 }} />
+                    </tr>
+                  )}
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const row = rows[virtualRow.index]
+                    return (
+                      <MemoizedVirtualRow
+                        key={row.id}
+                        row={row}
+                        virtualRow={virtualRow}
+                        onRowClick={onRowClick}
+                        rowClassName={rowClassName}
+                        isCustomRow={isCustomRow}
+                        renderCustomRow={renderCustomRow}
+                      />
+                    )
+                  })}
+                  {rowVirtualizer.getVirtualItems().length > 0 && (
+                    <tr style={{ height: `${rowVirtualizer.getTotalSize() - rowVirtualizer.getVirtualItems()[rowVirtualizer.getVirtualItems().length - 1].end}px` }}>
+                      <td colSpan={columns.length} style={{ padding: 0, border: 0 }} />
+                    </tr>
+                  )}
+                </>
               ) : (
                 rows.map((row) => (
                   <React.Fragment key={row.id}>
