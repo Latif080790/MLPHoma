@@ -20,6 +20,7 @@ export type NavIconKey =
   | 'Settings'
   | 'Wrench'
   | 'ShieldCheck'
+  | 'HardHat'
 
 export type NavComponentKey =
   | 'CommandCenter'
@@ -42,6 +43,7 @@ export type NavComponentKey =
   | 'FieldTasks'
   | 'Maintenance'
   | 'QHSE'
+  | 'SubcontractorManagement'
 
 export interface NavRegistryItem {
   id: string
@@ -353,6 +355,21 @@ export const NAV_REGISTRY: NavRegistryItem[] = [
     inSidebar: true,
     inCommandPalette: true,
     componentKey: 'QHSE',
+  },
+  {
+    id: 'subcontractor',
+    path: '/subcontractor',
+    label: 'Subkontraktor',
+    description: 'SPK, opname progres, dan retensi subkontraktor',
+    group: 'Operations',
+    order: 127,
+    iconKey: 'HardHat',
+    colorClass: 'text-orange-600',
+    keywords: ['subkontraktor', 'spk', 'opname', 'mandor', 'retensi'],
+    protected: true,
+    inSidebar: true,
+    inCommandPalette: true,
+    componentKey: 'SubcontractorManagement',
   },
   {
     id: 'settings',
