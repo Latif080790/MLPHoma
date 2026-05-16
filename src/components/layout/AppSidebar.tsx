@@ -22,7 +22,9 @@ import {
     Zap,
     BarChart3,
     Layers,
-    PieChart
+    PieChart,
+    Wrench,
+    ShieldCheck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { approvalService } from '@/services/approvalService'
@@ -47,6 +49,8 @@ const ICON_MAP: Record<NavIconKey, React.ElementType> = {
     Zap,
     Sliders,
     Settings,
+    Wrench,
+    ShieldCheck,
 }
 
 interface AppSidebarProps {

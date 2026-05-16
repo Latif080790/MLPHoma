@@ -18,6 +18,10 @@ const ANOMALY_LABELS: Record<Anomaly['type'], string> = {
     COST_OVERRUN: 'Cost Overrun',
     FROZEN_PROGRESS: 'Frozen Progress',
     ORPHAN_COST: 'Orphan Cost',
+    PRICE_SPIKE: 'Price Spike',
+    SUPPLIER_DELAY: 'Supplier Delay',
+    SCOPE_CREEP: 'Scope Creep',
+    CASH_BURN_RATE: 'Cash Burn Rate',
 }
 
 const ANOMALY_ICONS: Record<Anomaly['severity'], React.ReactNode> = {

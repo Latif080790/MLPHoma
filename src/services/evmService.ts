@@ -35,6 +35,8 @@ export interface PerformanceMetrics {
     eac: number
     etc: number
     vac: number
+    /** false when AC=0 and progress>0 — CPI/EAC are not yet meaningful */
+    acDataAvailable: boolean
 }
 
 export interface EVMInput {
@@ -61,6 +63,9 @@ export function computeEVM(input: EVMInput): PerformanceMetrics {
 
     // Performance indices (guard against division by zero)
     const spi = pv > 0 ? ev / pv : 1
+    // acDataAvailable: false when no actual cost exists yet but work has started
+    // In that case CPI=1 would be misleading — callers should show "N/A" instead
+    const acDataAvailable = ac > 0 || progressPercent === 0
     const cpi = ac > 0 ? ev / ac : 1
 
     // Variances
@@ -83,6 +88,7 @@ export function computeEVM(input: EVMInput): PerformanceMetrics {
         eac: Math.round(eac),
         etc: Math.round(etc),
         vac: Math.round(vac),
+        acDataAvailable,
     }
 }
 

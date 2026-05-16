@@ -18,6 +18,8 @@ export type NavIconKey =
   | 'Zap'
   | 'Sliders'
   | 'Settings'
+  | 'Wrench'
+  | 'ShieldCheck'
 
 export type NavComponentKey =
   | 'CommandCenter'
@@ -38,6 +40,8 @@ export type NavComponentKey =
   | 'FeatureEditor'
   | 'Settings'
   | 'FieldTasks'
+  | 'Maintenance'
+  | 'QHSE'
 
 export interface NavRegistryItem {
   id: string
@@ -319,6 +323,36 @@ export const NAV_REGISTRY: NavRegistryItem[] = [
     inSidebar: true,
     inCommandPalette: true,
     componentKey: 'FeatureEditor',
+  },
+  {
+    id: 'maintenance',
+    path: '/maintenance',
+    label: 'Maintenance',
+    description: 'Asset register, PM schedules, work orders',
+    group: 'Operations',
+    order: 125,
+    iconKey: 'Wrench',
+    colorClass: 'text-amber-600',
+    keywords: ['maintenance', 'aset', 'work order', 'ppm', 'preventive'],
+    protected: true,
+    inSidebar: true,
+    inCommandPalette: true,
+    componentKey: 'Maintenance',
+  },
+  {
+    id: 'qhse',
+    path: '/qhse',
+    label: 'QHSE / K3',
+    description: 'Safety incidents, HSE inspections, IBPR',
+    group: 'Operations',
+    order: 126,
+    iconKey: 'ShieldCheck',
+    colorClass: 'text-green-700',
+    keywords: ['qhse', 'k3', 'safety', 'incident', 'ibpr', 'hse'],
+    protected: true,
+    inSidebar: true,
+    inCommandPalette: true,
+    componentKey: 'QHSE',
   },
   {
     id: 'settings',
