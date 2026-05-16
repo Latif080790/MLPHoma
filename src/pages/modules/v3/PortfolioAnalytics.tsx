@@ -31,8 +31,10 @@ import {
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 import { useProjectStore } from '@/store/projectStore'
+import { useShallow } from 'zustand/react/shallow'
 import { dashboardService, type DashboardStats } from '@/services/dashboardService'
 import { toast } from 'sonner'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 import ModulePageState from '@/components/common/ModulePageState'
 import ModuleListToolbar from '@/components/common/ModuleListToolbar'
 import { Skeleton } from '@/components/common/LoadingSkeleton'
@@ -144,8 +146,11 @@ function daysLeft(endDate?: string) {
 
 export default function PortfolioAnalytics() {
     const navigate = useNavigate()
-    const { projects: projectsMap, setActiveProject } = useProjectStore()
+    const { projects: projectsMap, setActiveProject } = useProjectStore(
+        useShallow(s => ({ projects: s.projects, setActiveProject: s.setActiveProject }))
+    )
     const projects = useMemo(() => Object.values(projectsMap), [projectsMap])
+    const { handleError } = useErrorHandler()
 
     const [data, setData] = useState<ProjectStats[]>([])
     const [exporting, setExporting] = useState(false)
@@ -189,7 +194,7 @@ export default function PortfolioAnalytics() {
         }
     }, [query, healthFilter, sortBy, statusFilter, ownerFilter, endDateFrom, endDateTo])
 
-    const load = async (showBootstrap = false) => {
+    const load = async (showBootstrap = false, signal = { current: false }) => {
         if (projects.length === 0) {
             setData([])
             setBootstrapping(false)
@@ -223,8 +228,11 @@ export default function PortfolioAnalytics() {
             projects.map(p => dashboardService.getProjectStats(p.id))
         )
 
+        if (signal.current) return // component unmounted while fetching
+
         const hasSuccess = results.some((r) => r.status === 'fulfilled')
         if (!hasSuccess) {
+            handleError(new Error('Failed to load portfolio analytics for all projects.'), 'network.fetch')
             setPageError('Failed to load portfolio analytics for all projects.')
             setSrStatus('Failed to load portfolio analytics.')
         }
@@ -255,7 +263,9 @@ export default function PortfolioAnalytics() {
     }
 
     useEffect(() => {
-        void load(true)
+        const signal = { current: false }
+        void load(true, signal)
+        return () => { signal.current = true }
     }, [projects.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
     const visibleRows = useMemo(() => {

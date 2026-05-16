@@ -32,21 +32,16 @@ export default function ResetPassword() {
         return
       }
 
-      // Check URL hash for tokens (handling HashRouter double hash issue)
-      // URL format might be: http://.../#/reset-password#access_token=...
+      // Check URL hash for tokens (Supabase sends tokens in URL fragment)
+      // URL format with BrowserRouter: /reset-password#access_token=TOKEN&refresh_token=TOKEN&...
       const hash = window.location.hash
 
       if (hash && hash.includes('access_token')) {
         try {
-          // Extract tokens manualy
-          const params = new URLSearchParams(hash.substring(hash.indexOf('#', 1) + 1)) // Get part after second # if exists, or just process
-
-          // Fallback: regex match if URLSearchParams fails on complex hash
-          const accessTokenMatch = hash.match(/access_token=([^&]+)/)
-          const refreshTokenMatch = hash.match(/refresh_token=([^&]+)/)
-
-          const accessToken = accessTokenMatch ? accessTokenMatch[1] : params.get('access_token')
-          const refreshToken = refreshTokenMatch ? refreshTokenMatch[1] : params.get('refresh_token')
+          // strip leading '#' for URLSearchParams
+          const params = new URLSearchParams(hash.substring(1))
+          const accessToken = params.get('access_token')
+          const refreshToken = params.get('refresh_token')
 
           if (accessToken && refreshToken) {
             if (!supabase) {

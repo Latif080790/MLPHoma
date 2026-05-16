@@ -18,6 +18,7 @@ function makeChain(result: any) {
   c.select = () => c
   c.eq = () => c
   c.in = () => c
+  c.not = () => c
   c.order = () => c
   c.limit = () => c
   c.single = () => Promise.resolve(result)

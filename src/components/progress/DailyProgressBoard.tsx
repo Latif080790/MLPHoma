@@ -138,7 +138,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                 latitude: userCoords?.lat,
                 longitude: userCoords?.lon,
                 metadata: {
-                    photoExif: photoMetadata,
+                    photoExif: photoMetadata as unknown as Record<string, unknown>[],
                     geofenceVerified: locationValid
                 }
             })

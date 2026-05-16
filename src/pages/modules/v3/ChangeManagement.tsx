@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useProjectStore } from "@/store/projectStore"
 import { useChangeOrderStore } from "@/store/changeOrderStore"
+import { useShallow } from 'zustand/react/shallow'
 import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
 import { ChangeOrderDialog } from "@/components/change-order/ChangeOrderDialog"
@@ -29,7 +30,9 @@ export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
     const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
     const { handleAsync } = useErrorHandler()
-    const { orders, fetchOrders, loading, updateStatus, previewCascade, cascadePreview, previewLoading, clearPreview } = useChangeOrderStore()
+    const { orders, fetchOrders, loading, updateStatus, previewCascade, cascadePreview, previewLoading, clearPreview } = useChangeOrderStore(
+        useShallow(s => ({ orders: s.orders, fetchOrders: s.fetchOrders, loading: s.loading, updateStatus: s.updateStatus, previewCascade: s.previewCascade, cascadePreview: s.cascadePreview, previewLoading: s.previewLoading, clearPreview: s.clearPreview }))
+    )
     const [activeTab, setActiveTab] = useState("log")
     const [dialogOpen, setDialogOpen] = useState(false)
     const [confirmOpen, setConfirmOpen] = useState(false)

@@ -9,6 +9,21 @@
 
 import type { CurvaSAnalysis } from '../types/curvaS'
 
+/**
+ * Matches the `project_daily_metrics` table schema (migration 064).
+ */
+export interface ProjectDailyMetric {
+    id: string
+    project_id: string
+    snapshot_date: string
+    pv: number
+    ev: number
+    ac: number
+    spi: number
+    cpi: number
+    created_at: string
+}
+
 export interface PerformanceMetrics {
     spi: number
     cpi: number
@@ -103,24 +118,30 @@ export interface ForecastResult {
 
 /**
  * Compute project forecasts based on EVM metrics.
+ *
+ * forecastDate uses PMI-standard SPI-adjusted projection:
+ *   Forecast Duration = Planned Duration / SPI
+ * This is more accurate than linear progress-rate extrapolation.
  */
 export function computeForecasts(input: ForecastInput): ForecastResult {
-    const { metrics, progressPercent, daysElapsed } = input
+    const { metrics, startDate, endDate, progressPercent, daysElapsed } = input
 
     const eac = metrics.eac ?? 0
     const etc = metrics.etc ?? 0
     const vac = metrics.vac ?? 0
 
-    // Forecast completion date using progress rate
+    // SPI-adjusted forecast completion date (PMI standard)
     let forecastDate: string | null = null
-    if (progressPercent > 5 && daysElapsed > 0) {
-        const progressRate = progressPercent / daysElapsed  // % per day
-        const remainingProgress = 100 - progressPercent
-        const daysToGo = progressRate > 0 ? Math.ceil(remainingProgress / progressRate) : 0
+    if (progressPercent > 5 && daysElapsed > 0 && startDate && endDate) {
+        const start = new Date(startDate)
+        const end = new Date(endDate)
+        const plannedDuration = Math.round((end.getTime() - start.getTime()) / 86400000)  // ms → days
 
-        if (daysToGo > 0) {
-            const forecast = new Date()
-            forecast.setDate(forecast.getDate() + daysToGo)
+        if (plannedDuration > 0) {
+            const spi = Math.max(metrics.spi ?? 1, 0.1)  // guard: SPI minimum 0.1 to avoid extreme dates
+            const forecastDuration = Math.ceil(plannedDuration / spi)
+            const forecast = new Date(start)
+            forecast.setDate(forecast.getDate() + forecastDuration)
             forecastDate = forecast.toISOString().split('T')[0]
         }
     }

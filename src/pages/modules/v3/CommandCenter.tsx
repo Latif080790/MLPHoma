@@ -1,9 +1,11 @@
 import React, { Suspense, useEffect, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Layout, Zap, FileDown } from 'lucide-react'
 import { differenceInDays, parseISO, isValid } from 'date-fns'
 import { useProjectStore } from '@/store/projectStore'
-import { dashboardService, DashboardStats } from '@/services/dashboardService'
-import { toast } from 'sonner'
+import { useShallow } from 'zustand/react/shallow'
+import { supabase } from '@/lib/supabaseClient'
+import { dashboardService } from '@/services/dashboardService'
 import { ApprovalInbox } from '@/components/dashboard/ApprovalInbox'
 import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
 import { MRPAlertPanel } from '@/components/supply-chain/MRPAlertPanel'
@@ -14,6 +16,7 @@ import ModulePageState from '@/components/common/ModulePageState'
 import { useNavigate } from 'react-router-dom'
 import { lazyRetry } from '@/lib/lazyRetry'
 
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, ModeSwitch, SummaryStrip, WorkspaceHeader, AlertStrip } from '@/components/patterns'
@@ -29,50 +32,52 @@ const CommandCenterCashflowChart = lazyRetry(() => import('@/components/dashboar
 export default function CommandCenter() {
     type PortfolioStats = Awaited<ReturnType<typeof dashboardService.getPortfolioStats>>
     const navigate = useNavigate()
-    const { activeProjectId, projects } = useProjectStore()
-    const [stats, setStats] = useState<DashboardStats | null>(null)
-    const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null)
+    const queryClient = useQueryClient()
+    const { activeProjectId, projects } = useProjectStore(
+        useShallow(s => ({ activeProjectId: s.activeProjectId, projects: s.projects }))
+    )
     const [isPortfolioMode, setIsPortfolioMode] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
 
-    // Load Data
+    // ── react-query: project dashboard stats ─────────────────────────────────
+    const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ReturnType<typeof dashboardService.getProjectStats> extends Promise<infer T> ? T : never>({
+        queryKey: ['dashboard', 'project', activeProjectId],
+        queryFn: () => dashboardService.getProjectStats(activeProjectId!),
+        enabled: !isPortfolioMode && !!activeProjectId,
+        staleTime: 30_000,
+    })
+
+    // ── react-query: portfolio stats ─────────────────────────────────────────
+    const { data: portfolioStats, isLoading: portfolioLoading, error: portfolioError } = useQuery<PortfolioStats>({
+        queryKey: ['dashboard', 'portfolio'],
+        queryFn: () => dashboardService.getPortfolioStats(),
+        enabled: isPortfolioMode,
+        staleTime: 30_000,
+    })
+
+    const loading = isPortfolioMode ? portfolioLoading : statsLoading
+    const pageError = isPortfolioMode
+        ? (portfolioError ? 'Unable to load portfolio telemetry data.' : null)
+        : (statsError ? 'Unable to load command center metrics for the active project.' : null)
+
+    const { handleError: _handleError } = useErrorHandler()
+
+    // Realtime: auto-refresh when timeline_tasks change for the active project
     useEffect(() => {
-        queueMicrotask(() => {
-            setLoading(true)
-            setPageError(null)
-            setSrStatus(isPortfolioMode ? 'Loading portfolio command center telemetry...' : 'Loading project command center telemetry...')
-        })
-        if (isPortfolioMode) {
-            dashboardService.getPortfolioStats()
-                .then((data) => {
-                    setPortfolioStats(data)
-                    setSrStatus('Portfolio command center telemetry loaded.')
-                })
-                .catch(() => {
-                    setPageError('Unable to load portfolio telemetry data.')
-                    toast.error("Failed to load portfolio data")
-                    setSrStatus('Failed to load portfolio telemetry data.')
-                })
-                .finally(() => setLoading(false))
-        } else if (activeProjectId) {
-            dashboardService.getProjectStats(activeProjectId)
-                .then((data) => {
-                    setStats(data)
-                    setSrStatus('Project command center telemetry loaded.')
-                })
-                .catch(() => {
-                    setPageError('Unable to load command center metrics for the active project.')
-                    toast.error("Failed to load project data")
-                    setSrStatus('Failed to load project command center telemetry data.')
-                })
-                .finally(() => setLoading(false))
-        } else {
-            setSrStatus('No active project selected for command center.')
-            queueMicrotask(() => setLoading(false))
-        }
-    }, [activeProjectId, isPortfolioMode])
+        if (!supabase || !activeProjectId) return
+        const channel = supabase
+            .channel(`cmd-center-tasks-${activeProjectId}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'timeline_tasks',
+                filter: `project_id=eq.${activeProjectId}`,
+            }, () => {
+                void queryClient.invalidateQueries({ queryKey: ['dashboard', 'project', activeProjectId] })
+            })
+            .subscribe()
+        return () => { void supabase?.removeChannel(channel) }
+    }, [activeProjectId, queryClient])
 
     const activeProject = projects[activeProjectId || '']
 
@@ -236,8 +241,8 @@ export default function CommandCenter() {
             <TelemetryHUD
                 isPortfolioMode={isPortfolioMode}
                 activeProject={activeProject ? { id: activeProjectId!, name: activeProject.name } : null}
-                stats={stats}
-                portfolioStats={portfolioStats}
+                stats={stats ?? null}
+                portfolioStats={portfolioStats ?? null}
                 srStatus={srStatus}
                 onTogglePortfolio={() => setIsPortfolioMode(!isPortfolioMode)}
             />
@@ -245,15 +250,15 @@ export default function CommandCenter() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[minmax(180px,auto)] mt-4">
                 <PerformanceKPIs
                     isPortfolioMode={isPortfolioMode}
-                    stats={stats}
-                    portfolioStats={portfolioStats}
+                    stats={stats ?? null}
+                    portfolioStats={portfolioStats ?? null}
                     onAnalyzeImpact={() => navigate('/strategy-simulation')}
                 />
 
                 <OperationalAlerts
                     isPortfolioMode={isPortfolioMode}
-                    stats={stats}
-                    portfolioStats={portfolioStats}
+                    stats={stats ?? null}
+                    portfolioStats={portfolioStats ?? null}
                     onViewChange={() => navigate('/change-management')}
                     onViewResources={() => navigate('/portfolio-resources')}
                 />

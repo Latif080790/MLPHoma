@@ -6,13 +6,19 @@
  * Integrates into CommandCenter and SupplyChain pages.
  */
 
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { AlertTriangle, Package, Plus, Truck, Clock, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { useProjectStore } from '../../store/projectStore'
+import { useRabStore } from '../../store/rabStore'
+import { useTimelineStore } from '../../store/timelineStore'
+import { useSupplyChainStore } from '../../store/supplyChainStore'
+import { useShallow } from 'zustand/react/shallow'
+import { supabase } from '../../lib/supabaseClient'
 import { analyzeMaterialShortages, type MaterialAlert, type MRPSummary } from '../../services/mrpAlertService'
+import type { TimelineTask as MRPTimelineTask } from '../../types/timeline'
 import {
     Tooltip,
     TooltipContent,
@@ -108,11 +114,30 @@ interface MRPAlertPanelProps {
 
 export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProps) {
     const activeProjectId = useProjectStore(s => s.activeProjectId)
+    const rabItems = useRabStore(s => activeProjectId ? s.getItems(activeProjectId) : [])
+    const timelineTasks = useTimelineStore(s => activeProjectId ? s.getTasks(activeProjectId) : [])
+    const { inventoryStock, purchaseOrders, fetchPurchaseOrders, fetchInventory } = useSupplyChainStore(
+        useShallow(s => ({ inventoryStock: s.inventoryStock, purchaseOrders: s.purchaseOrders, fetchPurchaseOrders: s.fetchPurchaseOrders, fetchInventory: s.fetchInventory }))
+    )
+
+    // Realtime: auto-refresh when purchase_orders or inventory_transactions change
+    useEffect(() => {
+        if (!supabase || !activeProjectId) return
+        const client = supabase
+        const channel = client
+            .channel(`mrp-supply-${activeProjectId}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_orders', filter: `project_id=eq.${activeProjectId}` },
+                () => { void fetchPurchaseOrders(activeProjectId) })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_transactions', filter: `project_id=eq.${activeProjectId}` },
+                () => { void fetchInventory(activeProjectId) })
+            .subscribe()
+        return () => { void client.removeChannel(channel) }
+    }, [activeProjectId, fetchPurchaseOrders, fetchInventory])
 
     const summary: MRPSummary = useMemo(() => {
         if (!activeProjectId) return { alerts: [], criticalCount: 0, warningCount: 0, infoCount: 0, totalShortfall: 0 }
-        return analyzeMaterialShortages(activeProjectId)
-    }, [activeProjectId])
+        return analyzeMaterialShortages(rabItems, timelineTasks as unknown as MRPTimelineTask[], inventoryStock, purchaseOrders, activeProjectId)
+    }, [activeProjectId, rabItems, timelineTasks, inventoryStock, purchaseOrders])
 
     const { alerts, criticalCount, warningCount, infoCount: _infoCount } = summary
     const totalAlerts = alerts.length

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Truck, Package, ShoppingCart, Warehouse, Plus, FileText, ArrowDown, ArrowUp, PackageCheck, ArrowRightLeft, ClipboardList, ShieldCheck, XCircle } from "lucide-react"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { useProjectStore } from "@/store/projectStore"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import { useAuthStore } from "@/store/authStore"
+import { useErrorHandler } from "@/hooks/useErrorHandler"
 import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
 import { BulkActionBar } from "@/components/common/BulkActionBar"
@@ -26,6 +27,7 @@ import { MaterialTransferPanel } from "@/components/supply-chain/MaterialTransfe
 import { TraceChain, TraceCountBadge } from "@/components/common/TraceChip"
 import { ProcurementTracePanel } from "@/components/supply-chain/ProcurementTracePanel"
 import { MTRPanel } from "@/components/supply-chain/MTRPanel"
+import { MRPAlertPanel } from '@/components/supply-chain/MRPAlertPanel'
 import { SubcontractorPanel } from "@/components/supply-chain/SubcontractorPanel"
 import { MaterialTransferRequestDialog } from "@/components/supply-chain/MaterialTransferRequestDialog"
 import { MaterialTransferApprovalPanel } from "@/components/supply-chain/MaterialTransferApprovalPanel"
@@ -34,6 +36,7 @@ import type { TraceableDocType } from "@/types/traceability"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import ModulePageState from "@/components/common/ModulePageState"
 import ModuleListToolbar from "@/components/common/ModuleListToolbar"
+import { toast } from "sonner"
 
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
@@ -65,6 +68,7 @@ const ORDER_SORT_OPTIONS = [
 export default function SupplyChain() {
     const { activeProjectId } = useProjectStore()
     const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
+    const { handleAsync } = useErrorHandler()
     const {
         materialRequests,
         purchaseOrders,
@@ -553,6 +557,11 @@ export default function SupplyChain() {
                 ]}
                 onImport={handlePoImport}
             />
+
+            {/* MRP Alert Panel — surface material shortage alerts at top of Supply Chain */}
+            <div className="mb-4">
+                <MRPAlertPanel compact />
+            </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 {toolbarEnabled && (

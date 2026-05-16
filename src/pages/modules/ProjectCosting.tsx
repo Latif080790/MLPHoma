@@ -22,8 +22,8 @@ import { useRabStore } from '@/store/rabStore'
 import { useRapStore } from '@/store/rapStore'
 import { useAHSPStore } from '@/store/ahspStore'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { lazyRetry } from '@/lib/lazyRetry'
-import { toast } from 'sonner'
 
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
@@ -69,6 +69,7 @@ export default function ProjectCosting() {
   const projects = useProjectStore(s => s.projects)
   const [activeStep, setActiveStep] = useState<CostingStep>('ahsp')
   const [srStatus, setSrStatus] = useState('AHSP step opened.')
+  const { handleError } = useErrorHandler()
 
   // Store selectors — primitive values to avoid re-render loops
   const ahspCount = useAHSPStore(s => s.ahspItems.length)
@@ -83,9 +84,9 @@ export default function ProjectCosting() {
 
   useEffect(() => {
     if (activeProjectId) {
-      if (!wbsByProj[activeProjectId]) fetchWbs(activeProjectId).catch((e: Error) => toast.error('Failed to load WBS', { description: e.message }))
-      if (!rabByProj[activeProjectId]) fetchRab(activeProjectId).catch((e: Error) => toast.error('Failed to load RAB', { description: e.message }))
-      fetchRap(activeProjectId).catch((e: Error) => toast.error('Failed to load RAP', { description: e.message }))
+      if (!wbsByProj[activeProjectId]) fetchWbs(activeProjectId).catch((e: unknown) => handleError(e, 'network.fetch'))
+      if (!rabByProj[activeProjectId]) fetchRab(activeProjectId).catch((e: unknown) => handleError(e, 'network.fetch'))
+      fetchRap(activeProjectId).catch((e: unknown) => handleError(e, 'network.fetch'))
     }
   }, [activeProjectId, fetchWbs, fetchRab, fetchRap])
 
