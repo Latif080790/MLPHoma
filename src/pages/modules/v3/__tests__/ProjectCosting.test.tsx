@@ -19,37 +19,24 @@ vi.mock('../../../../store/projectStore', () => ({
   useProjectStore: vi.fn(),
 }));
 
+const _ahspState = { ahspItems: [], loading: false, fetchItems: vi.fn().mockResolvedValue([]) }
 vi.mock('../../../../store/ahspStore', () => ({
-  useAHSPStore: vi.fn(() => ({
-    items: {},
-    loading: false,
-    fetchItems: vi.fn(),
-  })),
+  useAHSPStore: vi.fn((sel?: (s: typeof _ahspState) => any) => sel ? sel(_ahspState) : _ahspState),
 }));
 
+const _rabState = { itemsByProject: {}, loading: false, fetchItems: vi.fn().mockResolvedValue([]) }
 vi.mock('../../../../store/rabStore', () => ({
-  useRABStore: vi.fn(() => ({
-    items: {},
-    loading: false,
-    fetchItems: vi.fn(),
-  })),
+  useRabStore: vi.fn((sel?: (s: typeof _rabState) => any) => sel ? sel(_rabState) : _rabState),
 }));
 
+const _rapState = { items: [], loading: false, fetchItems: vi.fn().mockResolvedValue([]) }
 vi.mock('../../../../store/rapStore', () => ({
-  useRAPStore: vi.fn(() => ({
-    items: {},
-    allocations: {},
-    loading: false,
-    fetchData: vi.fn(),
-  })),
+  useRapStore: vi.fn((sel?: (s: typeof _rapState) => any) => sel ? sel(_rapState) : _rapState),
 }));
 
+const _wbsState = { itemsByProject: {}, loading: false, fetchItems: vi.fn().mockResolvedValue([]) }
 vi.mock('../../../../store/wbsStore', () => ({
-  useWBSStore: vi.fn(() => ({
-    nodes: [],
-    loading: false,
-    fetchWBS: vi.fn(),
-  })),
+  useWBSStore: vi.fn((sel?: (s: typeof _wbsState) => any) => sel ? sel(_wbsState) : _wbsState),
 }));
 
 vi.mock('../../../../hooks/useCostingMetrics', () => ({
@@ -96,10 +83,9 @@ describe('ProjectCosting - Sprint 0 Epic S0.1 Regression Tests', () => {
       // Verify empty state renders (not a crash)
       expect(container).toBeTruthy();
       
-      // Should show "no project" message or similar
-      // (Adjust selector based on actual empty state implementation)
-      const emptyState = screen.queryByText(/select.*project/i) || 
-                         screen.queryByText(/no.*project/i);
+      // Should show "Pilih proyek aktif" empty state
+      const emptyState = screen.queryByText(/pilih proyek/i) ||
+                         screen.queryByText(/project costing/i);
       expect(emptyState).toBeTruthy();
     });
 
@@ -119,8 +105,8 @@ describe('ProjectCosting - Sprint 0 Epic S0.1 Regression Tests', () => {
       );
 
       // Verify initial render with no project
-      expect(screen.queryByText(/select.*project/i) || 
-             screen.queryByText(/no.*project/i)).toBeTruthy();
+      expect(screen.queryByText(/pilih proyek/i) ||
+             screen.queryByText(/project costing/i)).toBeTruthy();
 
       // Phase 2: Simulate project selection (switch to active project)
       mockUseProjectStore.mockReturnValue({
