@@ -5,7 +5,8 @@
  */
 
 import React, { Suspense, useEffect } from 'react'
-import { HashRouter, Route, Routes, useLocation } from 'react-router'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import AppToaster from './components/common/Notifications'
@@ -103,6 +104,17 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,       // 30s — KPI data is stale after 30s
+      gcTime: 5 * 60_000,      // 5min garbage collection
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
 export default function App() {
   const initialize = useAuthStore((state) => state.initialize)
   const protectedRoutes = React.useMemo(() => getProtectedRouteItems(), [])
@@ -120,12 +132,12 @@ export default function App() {
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
 
-      // Ctrl+N — context-aware "New item" based on current hash route
+      // Ctrl+N — context-aware "New item" based on current route
       if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === 'n') {
         e.preventDefault()
-        const hash = window.location.hash
+        const route = window.location.pathname
         // Emit a synthetic new-item event modules can listen to
-        const evt = new CustomEvent('app:new-item', { detail: { route: hash } })
+        const evt = new CustomEvent('app:new-item', { detail: { route } })
         window.dispatchEvent(evt)
       }
 
@@ -143,7 +155,8 @@ export default function App() {
   }, [])
 
   return (
-    <HashRouter>
+    <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
       <NetworkProvider>
         {/* Global toaster untuk notifikasi */}
         <AppToaster />
@@ -180,6 +193,7 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
       </NetworkProvider>
-    </HashRouter>
+    </BrowserRouter>
+    </QueryClientProvider>
   )
 }

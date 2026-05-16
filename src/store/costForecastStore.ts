@@ -4,9 +4,10 @@
  */
 import { create } from 'zustand'
 import { forecastingService, type ForecastProjections } from '../services/forecastingService'
+import type { ProjectDailyMetric } from '../services/evmService'
 
 interface ForecastState {
-    history: any[]
+    history: ProjectDailyMetric[]
     projections: ForecastProjections | null
     loading: boolean
     error: string | null
@@ -31,8 +32,8 @@ export const useForecastStore = create<ForecastState>((set, get) => ({
             const projections = await forecastingService.getTrendForecast(projectId)
 
             set({ history: history || [], projections, loading: false })
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false })
         }
     },
 
@@ -40,8 +41,8 @@ export const useForecastStore = create<ForecastState>((set, get) => ({
         set({ loading: true })
         try {
             await forecastingService.generateSnapshot()
-        } catch (err: any) {
-            set({ error: err.message })
+        } catch (err: unknown) {
+            set({ error: err instanceof Error ? err.message : 'Unknown error' })
         } finally {
             set({ loading: false })
         }

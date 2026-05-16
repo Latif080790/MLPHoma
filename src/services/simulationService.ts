@@ -55,7 +55,7 @@ export const simulationService = {
     /**
      * saveSimulation
      */
-    async saveSimulation(projectId: string, name: string, params: any, result: SimulationResult) {
+    async saveSimulation(projectId: string, name: string, params: Record<string, unknown>, result: SimulationResult) {
         const client = assertSupabase()
         const { data, error } = await client
             .from('strategy_simulations')

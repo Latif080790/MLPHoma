@@ -82,10 +82,22 @@ serve(async (req) => {
             else console.log(`Generated ${newLogs.length} daily tool rent logs.`);
         }
 
+        // 4. Task C: Snapshot EVM metrics for all active projects
+        let evmSnapshotError: string | null = null
+        try {
+            const { error: evmErr } = await supabase.rpc('rpc_snapshot_all_projects')
+            if (evmErr) evmSnapshotError = evmErr.message
+            else console.log('EVM snapshot completed for all active projects.')
+        } catch (e) {
+            evmSnapshotError = String(e)
+            console.error('EVM snapshot failed:', e)
+        }
+
         return new Response(
             JSON.stringify({
                 success: true,
                 processed_tasks: overdueTasks?.length || 0,
+                evm_snapshot_error: evmSnapshotError,
                 timestamp: new Date().toISOString()
             }),
             { headers: { "Content-Type": "application/json" } },

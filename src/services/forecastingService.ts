@@ -4,6 +4,7 @@
  * Analyzes historical project_daily_metrics to project future outcomes.
  */
 import { assertSupabase } from '../lib/supabaseClient'
+import type { ProjectDailyMetric } from './evmService'
 
 export interface ForecastProjections {
     eacStandard: number   // BAC / CPI
@@ -19,7 +20,7 @@ export const forecastingService = {
     /**
      * Get historical metrics for a specific project.
      */
-    async getHistory(projectId: string): Promise<any[]> {
+    async getHistory(projectId: string): Promise<ProjectDailyMetric[]> {
         const supabase = assertSupabase()
         const { data, error } = await supabase
             .from('project_daily_metrics')
@@ -87,15 +88,20 @@ export const forecastingService = {
         // Aggressive: Assumes remaining work stays strictly on budget
         const eacAggressive = ac + (bac - ev)
 
-        // 5. Projected Completion Date
+        // 5. Projected Completion Date (SPI-adjusted)
+        // Formula: projected_duration = planned_duration / SPI
+        // If SPI < 1, project is running slower → takes longer than planned
         let projectedCompletion = null
-        if (spi > 0 && project?.end_date) {
-            const remainingDays = Math.ceil((bac - ev) / (ev / (history.length || 1))) // simple velocity-based
-            if (isFinite(remainingDays) && remainingDays > 0) {
-                const forecast = new Date()
-                forecast.setDate(forecast.getDate() + remainingDays)
-                projectedCompletion = forecast.toISOString().split('T')[0]
-            }
+        if (spi > 0 && project?.start_date && project?.end_date) {
+            const startDate = new Date(project.start_date)
+            const endDate = new Date(project.end_date)
+            const plannedDays = Math.max(1, Math.round(
+                (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+            ))
+            const projectedDays = Math.ceil(plannedDays / spi)
+            const projected = new Date(startDate)
+            projected.setDate(projected.getDate() + projectedDays)
+            projectedCompletion = projected.toISOString().split('T')[0]
         }
 
         return {

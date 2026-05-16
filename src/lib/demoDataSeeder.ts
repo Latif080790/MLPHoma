@@ -58,7 +58,8 @@ export async function seedEnterpriseProject(projectId: string) {
     { name: 'Pasang Dinding Hebel', code: '4.1', level: 2, parentCode: '4' },
     { name: 'Plester & aci', code: '4.2', level: 3, parentCode: '4.1' },
   ]
-  await wbsStore.importWBS(projectId, wbsItemsToImport)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await wbsStore.importWBS(projectId, wbsItemsToImport as any)
   const allWbs = wbsStore.itemsByProject[projectId]
 
   // --- 3. Seed AHSP Master Resources & Items ---
@@ -161,7 +162,8 @@ export async function seedEnterpriseProject(projectId: string) {
       dependencies: [{ id: generateId(), predecessorId: t2Id, successorId: t5Id, type: 'SS', lag: 2 }]
     }
   ]
-  timelineStore.importTasks(projectId, tasks)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  timelineStore.importTasks(projectId, tasks as any)
 
   // --- 6. Seed Supply Chain ---
   const mrId = generateId()
@@ -217,15 +219,16 @@ export async function seedEnterpriseProject(projectId: string) {
   })
 
   // --- 8. Seed Risks ---
-  // The riskStore might not have a clearProject, let's assume it has an addRisk action
-  if (typeof riskStore.addRisk === 'function') {
-    await riskStore.addRisk(projectId, {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const riskStoreAny = riskStore as any
+  if (typeof riskStoreAny.addRisk === 'function') {
+    await riskStoreAny.addRisk(projectId, {
       title: 'Keterlambatan Pengiriman Material',
       description: 'Akses jalan menuju site terhambat karena cuaca buruk.',
       severity: 'high',
       status: 'active'
     })
-    await riskStore.addRisk(projectId, {
+    await riskStoreAny.addRisk(projectId, {
       title: 'Kenaikan Harga Beton',
       description: 'Fluktuasi harga pasar semen nasional.',
       severity: 'medium',
@@ -236,22 +239,22 @@ export async function seedEnterpriseProject(projectId: string) {
   // --- 9. Seed TKDN ---
   if (typeof tkdnStore.addItem === 'function') {
     await tkdnStore.addItem({
-      projectId,
+      project_id: projectId,
       name: 'Semen Portland (PC)',
+      category: 'material' as const,
+      origin: 'domestic' as const,
       unit: 'sak',
-      price: 90000,
+      unit_price: 90000,
       quantity: 50,
-      localContentPercentage: 95,
-      materialOrigin: 'local'
     })
     await tkdnStore.addItem({
-      projectId,
+      project_id: projectId,
       name: 'Pasang Dinding Hebel',
+      category: 'labor' as const,
+      origin: 'domestic' as const,
       unit: 'm2',
-      price: 120000,
+      unit_price: 120000,
       quantity: 80,
-      localContentPercentage: 80,
-      materialOrigin: 'local'
     })
   }
 

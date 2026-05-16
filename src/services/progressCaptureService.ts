@@ -41,9 +41,9 @@ export interface ProgressEntry {
     longitude?: number
     /** New Phase 3 Metadata */
     metadata?: {
-        photoExif?: any[]
+        photoExif?: Record<string, unknown>[]
         geofenceVerified?: boolean
-        [key: string]: any
+        [key: string]: unknown
     }
 }
 

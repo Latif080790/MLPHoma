@@ -4,16 +4,14 @@
  */
 
 import React from "react"
+import { useNavigate } from "react-router"
 import { EmptyState } from "../components/common/EmptyState"
 
-/**
- * NotFound
- * Minimal UX to navigate users back.
- */
 export default function NotFound() {
+  const navigate = useNavigate()
   const goto = (path: string) => {
     const normalized = path.startsWith("/") ? path : `/${path}`
-    window.location.hash = `#${normalized}`
+    navigate(normalized)
   }
   return (
     <div className="space-y-6">

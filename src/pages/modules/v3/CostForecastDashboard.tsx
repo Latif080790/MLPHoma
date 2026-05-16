@@ -25,16 +25,39 @@ import {
     Activity
 } from 'lucide-react'
 import { useForecastStore } from '@/store/costForecastStore'
+import { useShallow } from 'zustand/react/shallow'
 import { useProjectStore } from '@/store/projectStore'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { format } from 'date-fns'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function CostForecastDashboard() {
     const activeProjectId = useProjectStore(s => s.activeProjectId)
     const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
-    const { history, projections, loading, fetchHistory, generateSnapshot } = useForecastStore()
+    const { history, projections, loading, fetchHistory, generateSnapshot } = useForecastStore(
+        useShallow(s => ({ history: s.history, projections: s.projections, loading: s.loading, fetchHistory: s.fetchHistory, generateSnapshot: s.generateSnapshot }))
+    )
+    const { handleAsync } = useErrorHandler()
 
     useEffect(() => {
         if (activeProjectId) fetchHistory(activeProjectId)
+    }, [activeProjectId, fetchHistory])
+
+    // Realtime: auto-refresh when a new EVM snapshot is inserted for the active project
+    useEffect(() => {
+        if (!supabase || !activeProjectId) return
+        const channel = supabase
+            .channel(`forecast-metrics-${activeProjectId}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'project_daily_metrics',
+                filter: `project_id=eq.${activeProjectId}`,
+            }, () => {
+                fetchHistory(activeProjectId)
+            })
+            .subscribe()
+        return () => { void supabase?.removeChannel(channel) }
     }, [activeProjectId, fetchHistory])
 
     const chartData = useMemo(() => {

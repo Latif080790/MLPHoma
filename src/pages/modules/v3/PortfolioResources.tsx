@@ -8,7 +8,7 @@ import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 import { AlertTriangle, Boxes, CheckCircle2, Info } from 'lucide-react'
 import { resourceService, ResourceUtilization } from '@/services/resourceService'
-import { toast } from 'sonner'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 import ModulePageState from '@/components/common/ModulePageState'
 import { ExportMenu } from '@/components/shared/ExportMenu'
 
@@ -41,6 +41,7 @@ export default function PortfolioResources() {
     const [loading, setLoading] = useState(true)
     const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
+    const { handleError } = useErrorHandler()
 
     const loadResources = async () => {
         setSrStatus('Loading resource portfolio heatmap...')
@@ -50,9 +51,9 @@ export default function PortfolioResources() {
             const data = await resourceService.getResourcePortfolioHeatmap()
             setResources(data)
             setSrStatus(`Resource heatmap loaded for ${data.length} resource groups.`)
-        } catch {
+        } catch (err: unknown) {
+            handleError(err, 'network.fetch')
             setPageError('Failed to load resource heatmap.')
-            toast.error('Failed to load resource heatmap')
             setSrStatus('Failed to load resource heatmap.')
         } finally {
             setLoading(false)
@@ -60,8 +61,28 @@ export default function PortfolioResources() {
     }
 
     useEffect(() => {
-        void loadResources()
-    }, [])
+        let cancelled = false
+        const run = async () => {
+            setSrStatus('Loading resource portfolio heatmap...')
+            setLoading(true)
+            setPageError(null)
+            try {
+                const data = await resourceService.getResourcePortfolioHeatmap()
+                if (cancelled) return
+                setResources(data)
+                setSrStatus(`Resource heatmap loaded for ${data.length} resource groups.`)
+            } catch (err: unknown) {
+                if (cancelled) return
+                handleError(err, 'network.fetch')
+                setPageError('Failed to load resource heatmap.')
+                setSrStatus('Failed to load resource heatmap.')
+            } finally {
+                if (!cancelled) setLoading(false)
+            }
+        }
+        void run()
+        return () => { cancelled = true }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     if (loading) {
         return (
@@ -136,7 +157,7 @@ export default function PortfolioResources() {
                             data={resources}
                             columns={[
                                 { header: 'Resource', accessor: r => r.resourceName },
-                                { header: 'Type', accessor: r => r.resourceType },
+                                { header: 'Type', accessor: r => r.type },
                                 { header: 'Utilization %', accessor: r => r.totalUsage },
                                 { header: 'Status', accessor: r => r.totalUsage >= 85 ? 'High' : r.totalUsage >= 60 ? 'Medium' : 'Low' },
                             ]}

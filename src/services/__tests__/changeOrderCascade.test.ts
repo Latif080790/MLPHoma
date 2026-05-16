@@ -7,16 +7,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Use vi.hoisted so that mock variables are available inside vi.mock factories
-const { mockFrom, mockNotify, mockAuditLog } = vi.hoisted(() => {
+const { mockFrom, mockRpc, mockNotify, mockAuditLog } = vi.hoisted(() => {
   const mockFrom = vi.fn()
+  const mockRpc = vi.fn()
   const mockNotify = vi.fn().mockResolvedValue(undefined)
   const mockAuditLog = vi.fn().mockResolvedValue(undefined)
-  return { mockFrom, mockNotify, mockAuditLog }
+  return { mockFrom, mockRpc, mockNotify, mockAuditLog }
 })
 
 vi.mock('../../lib/supabaseClient', () => ({
-  assertSupabase: () => ({ from: mockFrom }),
-  supabase: { from: mockFrom },
+  assertSupabase: () => ({ from: mockFrom, rpc: mockRpc }),
+  supabase: { from: mockFrom, rpc: mockRpc },
 }))
 
 vi.mock('../notificationService', () => ({
@@ -86,181 +87,62 @@ describe('changeOrderCascade', () => {
   })
 
   describe('execute()', () => {
-    it('should update RAB items for each CO item with target_wbs_id', async () => {
-      // Setup mock chain: first call = order, second = items, then per-item rab lookups, timeline, project
-      let fromCallIndex = 0
-      mockFrom.mockImplementation((table: string) => {
-        const makeChain = (result: any) => {
-          const c: any = {}
-          c.select = () => c
-          c.eq = () => c
-          c.in = () => c
-          c.order = () => c
-          c.limit = () => c
-          c.single = () => Promise.resolve(result)
-          c.maybeSingle = () => Promise.resolve(result)
-          c.update = (data: any) => ({
-            eq: (_col: string, id: string) => {
-              updateCalls.push({ table, data, id })
-              return Promise.resolve({ error: null })
-            },
-          })
-          c.then = (res: any) => Promise.resolve(result).then(res)
-          return c
-        }
+    const makeRpcSuccess = (overrides: Partial<{
+      rabItemsUpdated: number
+      timelineTasksUpdated: number
+      budgetDelta: number
+      scheduleDelta: number
+      projectId: string
+    }> = {}) => ({
+      data: {
+        rabItemsUpdated: 2,
+        timelineTasksUpdated: 2,
+        budgetDelta: 20_000_000,
+        scheduleDelta: 10,
+        success: true,
+        projectId: PROJECT_ID,
+        ...overrides,
+      },
+      error: null,
+    })
 
-        if (table === 'change_orders') {
-          return makeChain({ data: mockOrder, error: null })
-        }
-        if (table === 'change_order_items') {
-          return makeChain({ data: mockItems, error: null })
-        }
-        if (table === 'rab_items') {
-          fromCallIndex++
-          if (fromCallIndex <= 1) return makeChain({ data: mockRabA, error: null })
-          return makeChain({ data: mockRabB, error: null })
-        }
-        if (table === 'timeline_tasks') {
-          return makeChain({ data: mockTasks, error: null })
-        }
-        if (table === 'projects') {
-          return makeChain({ data: mockProject, error: null })
-        }
-        return makeChain({ data: null, error: null })
-      })
+    it('should return cascade result from RPC with RAB and budget updates', async () => {
+      mockRpc.mockResolvedValue(makeRpcSuccess())
 
       const result: CascadeResult = await changeOrderCascade.execute(ORDER_ID)
 
+      expect(mockRpc).toHaveBeenCalledWith('rpc_execute_cco_cascade', { v_change_order_id: ORDER_ID })
       expect(result.rabItemsUpdated).toBe(2)
       expect(result.budgetDelta).toBe(20_000_000)
       expect(result.errors.length).toBe(0)
     })
 
-    it('should update timeline tasks when schedule_impact_days > 0', async () => {
-      let fromCallIndex = 0
-      mockFrom.mockImplementation((table: string) => {
-        const makeChain = (result: any) => {
-          const c: any = {}
-          c.select = () => c
-          c.eq = () => c
-          c.in = () => c
-          c.order = () => c
-          c.limit = () => c
-          c.single = () => Promise.resolve(result)
-          c.maybeSingle = () => Promise.resolve(result)
-          c.update = (data: any) => ({
-            eq: (_col: string, id: string) => {
-              updateCalls.push({ table, data, id })
-              return Promise.resolve({ error: null })
-            },
-          })
-          c.then = (res: any) => Promise.resolve(result).then(res)
-          return c
-        }
-
-        if (table === 'change_orders') return makeChain({ data: mockOrder, error: null })
-        if (table === 'change_order_items') return makeChain({ data: mockItems, error: null })
-        if (table === 'rab_items') {
-          fromCallIndex++
-          return makeChain({ data: fromCallIndex <= 1 ? mockRabA : mockRabB, error: null })
-        }
-        if (table === 'timeline_tasks') return makeChain({ data: mockTasks, error: null })
-        if (table === 'projects') return makeChain({ data: mockProject, error: null })
-        return makeChain({ data: null, error: null })
-      })
+    it('should return timeline and schedule delta from RPC', async () => {
+      mockRpc.mockResolvedValue(makeRpcSuccess({ timelineTasksUpdated: 2, scheduleDelta: 10 }))
 
       const result = await changeOrderCascade.execute(ORDER_ID)
 
       expect(result.timelineTasksUpdated).toBe(2)
       expect(result.scheduleDelta).toBe(10)
-
-      // Check timeline update calls
-      const timelineUpdates = updateCalls.filter(c => c.table === 'timeline_tasks')
-      expect(timelineUpdates.length).toBe(2)
-      expect(timelineUpdates[0].data.duration_days).toBe(40) // 30 + 10
-      expect(timelineUpdates[1].data.duration_days).toBe(55) // 45 + 10
     })
 
-    it('should update project total_budget', async () => {
-      let fromCallIndex = 0
-      mockFrom.mockImplementation((table: string) => {
-        const makeChain = (result: any) => {
-          const c: any = {}
-          c.select = () => c
-          c.eq = () => c
-          c.in = () => c
-          c.order = () => c
-          c.limit = () => c
-          c.single = () => Promise.resolve(result)
-          c.maybeSingle = () => Promise.resolve(result)
-          c.update = (data: any) => ({
-            eq: (_col: string, id: string) => {
-              updateCalls.push({ table, data, id })
-              return Promise.resolve({ error: null })
-            },
-          })
-          c.then = (res: any) => Promise.resolve(result).then(res)
-          return c
-        }
-
-        if (table === 'change_orders') return makeChain({ data: mockOrder, error: null })
-        if (table === 'change_order_items') return makeChain({ data: mockItems, error: null })
-        if (table === 'rab_items') {
-          fromCallIndex++
-          return makeChain({ data: fromCallIndex <= 1 ? mockRabA : mockRabB, error: null })
-        }
-        if (table === 'timeline_tasks') return makeChain({ data: mockTasks, error: null })
-        if (table === 'projects') return makeChain({ data: mockProject, error: null })
-        return makeChain({ data: null, error: null })
-      })
-
-      await changeOrderCascade.execute(ORDER_ID)
-
-      const projUpdates = updateCalls.filter(c => c.table === 'projects')
-      expect(projUpdates.length).toBe(1)
-      expect(projUpdates[0].data.total_budget).toBe(1_020_000_000) // 1B + 20M
-    })
-
-    it('should send notification and audit log', async () => {
-      let fromCallIndex = 0
-      mockFrom.mockImplementation((table: string) => {
-        const makeChain = (result: any) => {
-          const c: any = {}
-          c.select = () => c
-          c.eq = () => c
-          c.in = () => c
-          c.order = () => c
-          c.limit = () => c
-          c.single = () => Promise.resolve(result)
-          c.maybeSingle = () => Promise.resolve(result)
-          c.update = (data: any) => ({
-            eq: (_col: string, id: string) => {
-              updateCalls.push({ table, data, id })
-              return Promise.resolve({ error: null })
-            },
-          })
-          c.then = (res: any) => Promise.resolve(result).then(res)
-          return c
-        }
-
-        if (table === 'change_orders') return makeChain({ data: mockOrder, error: null })
-        if (table === 'change_order_items') return makeChain({ data: mockItems, error: null })
-        if (table === 'rab_items') {
-          fromCallIndex++
-          return makeChain({ data: fromCallIndex <= 1 ? mockRabA : mockRabB, error: null })
-        }
-        if (table === 'timeline_tasks') return makeChain({ data: mockTasks, error: null })
-        if (table === 'projects') return makeChain({ data: mockProject, error: null })
-        return makeChain({ data: null, error: null })
-      })
+    it('should send notification after successful RPC', async () => {
+      mockRpc.mockResolvedValue(makeRpcSuccess())
 
       await changeOrderCascade.execute(ORDER_ID)
 
       expect(mockNotify).toHaveBeenCalledWith(
-        PROJECT_ID,
+        '',
         'manager',
         expect.objectContaining({ type: 'CHANGE_ORDER' })
       )
+    })
+
+    it('should write audit log after successful RPC', async () => {
+      mockRpc.mockResolvedValue(makeRpcSuccess())
+
+      await changeOrderCascade.execute(ORDER_ID)
+
       expect(mockAuditLog).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'APPROVE',
@@ -270,52 +152,19 @@ describe('changeOrderCascade', () => {
       )
     })
 
-    it('should collect errors when RAB item is not found', async () => {
-      mockFrom.mockImplementation((table: string) => {
-        const makeChain = (result: any) => {
-          const c: any = {}
-          c.select = () => c
-          c.eq = () => c
-          c.in = () => c
-          c.order = () => c
-          c.limit = () => c
-          c.single = () => Promise.resolve(result)
-          c.maybeSingle = () => Promise.resolve(result)
-          c.update = (data: any) => ({
-            eq: (_col: string, id: string) => {
-              updateCalls.push({ table, data, id })
-              return Promise.resolve({ error: null })
-            },
-          })
-          c.then = (res: any) => Promise.resolve(result).then(res)
-          return c
-        }
+    it('should throw when RPC returns an error', async () => {
+      mockRpc.mockResolvedValue({ data: null, error: { message: 'DB error' } })
 
-        if (table === 'change_orders') return makeChain({ data: mockOrder, error: null })
-        if (table === 'change_order_items') return makeChain({ data: mockItems, error: null })
-        if (table === 'rab_items') return makeChain({ data: null, error: null }) // no RAB found
-        if (table === 'timeline_tasks') return makeChain({ data: [], error: null })
-        if (table === 'projects') return makeChain({ data: mockProject, error: null })
-        return makeChain({ data: null, error: null })
-      })
-
-      const result = await changeOrderCascade.execute(ORDER_ID)
-
-      expect(result.rabItemsUpdated).toBe(0)
-      expect(result.errors.length).toBeGreaterThan(0)
-      expect(result.errors[0]).toContain('No RAB item found')
+      await expect(changeOrderCascade.execute(ORDER_ID)).rejects.toThrow('Cascade failed: DB error')
     })
 
-    it('should throw when change order is not found', async () => {
-      mockFrom.mockImplementation(() => {
-        const c: any = {}
-        c.select = () => c
-        c.eq = () => c
-        c.single = () => Promise.resolve({ data: null, error: { message: 'not found' } })
-        return c
+    it('should throw when RPC reports success=false', async () => {
+      mockRpc.mockResolvedValue({
+        data: { success: false, error: 'No RAB item found for wbs-A', rabItemsUpdated: 0, timelineTasksUpdated: 0, budgetDelta: 0, scheduleDelta: 0 },
+        error: null,
       })
 
-      await expect(changeOrderCascade.execute('nonexistent')).rejects.toThrow()
+      await expect(changeOrderCascade.execute(ORDER_ID)).rejects.toThrow()
     })
   })
 

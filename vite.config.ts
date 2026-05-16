@@ -76,6 +76,17 @@ export default defineConfig({
           'date-vendor': ['date-fns'],
           'state-vendor': ['zustand'],
           'auth-vendor': ['@supabase/supabase-js'],
+          'chart-vendor': ['recharts'],
+          'table-vendor': ['@tanstack/react-table', '@tanstack/react-virtual'],
+          'radix-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-accordion',
+          ],
         }
       }
     }

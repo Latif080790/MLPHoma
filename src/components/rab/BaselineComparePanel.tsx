@@ -6,7 +6,7 @@
  * Includes a "Freeze Baseline" action button.
  */
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
@@ -41,31 +41,55 @@ function VarianceBadge({ status }: { status: BaselineVariance['status'] }) {
 export function BaselineComparePanel() {
     const activeProjectId = useProjectStore(s => s.activeProjectId)
     const [refreshKey, setRefreshKey] = useState(0)
+    const [comparison, setComparison] = useState<BaselineComparison | null>(null)
+    const [hasBaseline, setHasBaseline] = useState(false)
+    const [loading, setLoading] = useState(false)
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const comparison: BaselineComparison | null = useMemo(() => {
-        if (!activeProjectId) return null
-        return baselineService.compareToBaseline(activeProjectId)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        if (!activeProjectId) {
+            setComparison(null)
+            setHasBaseline(false)
+            return
+        }
+        setLoading(true)
+        Promise.all([
+            baselineService.compareToBaseline(activeProjectId),
+            baselineService.hasBaseline(activeProjectId),
+        ])
+            .then(([comp, hasBsl]) => {
+                setComparison(comp)
+                setHasBaseline(hasBsl)
+            })
+            .catch(() => {
+                setComparison(null)
+                setHasBaseline(false)
+            })
+            .finally(() => setLoading(false))
     }, [activeProjectId, refreshKey])
 
-    const hasBaseline = activeProjectId ? baselineService.hasBaseline(activeProjectId) : false
-
-    const handleFreeze = () => {
+    const handleFreeze = async () => {
         if (!activeProjectId) return
         const name = prompt('Baseline name (optional):', `Baseline ${new Date().toLocaleDateString('id-ID')}`)
         if (name === null) return // cancelled
-        baselineService.freezeBaseline(activeProjectId, name || undefined)
-        toast.success('RAB Baseline frozen', { description: 'Current RAB values saved as execution baseline.' })
-        setRefreshKey(k => k + 1)
+        try {
+            await baselineService.freezeBaseline(activeProjectId, name || undefined)
+            toast.success('RAB Baseline frozen', { description: 'Current RAB values saved as execution baseline.' })
+            setRefreshKey(k => k + 1)
+        } catch {
+            toast.error('Failed to freeze baseline. Please try again.')
+        }
     }
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (!activeProjectId) return
         if (!confirm('Delete this baseline? This cannot be undone.')) return
-        baselineService.deleteBaseline(activeProjectId)
-        toast.info('Baseline deleted')
-        setRefreshKey(k => k + 1)
+        try {
+            await baselineService.deleteBaseline(activeProjectId)
+            toast.info('Baseline deleted')
+            setRefreshKey(k => k + 1)
+        } catch {
+            toast.error('Failed to delete baseline.')
+        }
     }
 
     if (!activeProjectId) return null

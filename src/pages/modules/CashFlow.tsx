@@ -23,6 +23,10 @@ import { calculateCashFlow } from '../../lib/cashflowCalculator'
 import type { PaymentTerms } from '../../store/projectStore'
 import { ExportMenu } from '@/components/shared/ExportMenu'
 import { toast } from 'sonner'
+import { SummaryCard } from '@/components/cashflow/SummaryCard'
+import CompareControls from '@/components/cashflow/CompareControls'
+import { WhatIfPanel } from '@/components/cashflow/WhatIfPanel'
+import { EmptyState } from '@/components/common/EmptyState'
 
 const EMPTY_ARRAY: never[] = []
 

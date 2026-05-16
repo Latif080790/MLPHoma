@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap, Wallet } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -43,6 +43,7 @@ import { ExcelImportPreviewDialog } from "@/components/common/ExcelImportPreview
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { matchInvoice, getMatchStatusColor, getMatchStatusLabel } from "@/services/invoiceMatchingService"
+import { useShallow } from "zustand/react/shallow"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import type { Invoice } from "@/types/finance"
 import { auditTrail } from "@/lib/auditTrail"
@@ -136,13 +137,20 @@ export default function Finance() {
     const [srStatus, setSrStatus] = useState('')
     // v4 Sprint 2: Bulk selection state
     const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set())
-    const { purchaseOrders, inventoryTransactions } = useSupplyChainStore()
+    const { purchaseOrders, inventoryTransactions } = useSupplyChainStore(
+        useShallow(s => ({ purchaseOrders: s.purchaseOrders, inventoryTransactions: s.inventoryTransactions }))
+    )
 
     const {
         invoices, claims, transactions, loading,
         summary, aging,
         fetchAll, markOverdue, payInvoice, updateClaimStatus, updateInvoiceStatus, createInvoice
-    } = useFinanceStore()
+    } = useFinanceStore(useShallow(s => ({
+        invoices: s.invoices, claims: s.claims, transactions: s.transactions, loading: s.loading,
+        summary: s.summary, aging: s.aging,
+        fetchAll: s.fetchAll, markOverdue: s.markOverdue, payInvoice: s.payInvoice,
+        updateClaimStatus: s.updateClaimStatus, updateInvoiceStatus: s.updateInvoiceStatus, createInvoice: s.createInvoice,
+    })))
 
     // P0.3.3: Invoice table virtualizer
     const invScrollRef = useRef<HTMLDivElement>(null)
