@@ -43,6 +43,8 @@ const TKDNPage = lazyRetry(() => import('./pages/TKDNPage'))
 const FeatureEditor = lazyRetry(() => import('./components/feature/FeatureEditor'))
 const GlobalCommandPalette = lazyRetry(() => import('./components/common/GlobalCommandPalette'))
 const FieldTasks = lazyRetry(() => import('./pages/mobile/FieldTasks'))
+const Maintenance = lazyRetry(() => import('./pages/modules/v3/Maintenance'))
+const QHSE = lazyRetry(() => import('./pages/modules/v3/QHSE'))
 
 // Legacy Modules
 const NotFound = lazyRetry(() => import('./pages/NotFound'))
@@ -72,6 +74,8 @@ const PROTECTED_COMPONENT_MAP: Record<NavComponentKey, React.LazyExoticComponent
   FeatureEditor,
   Settings,
   FieldTasks,
+  Maintenance,
+  QHSE,
 }
 
 /**
