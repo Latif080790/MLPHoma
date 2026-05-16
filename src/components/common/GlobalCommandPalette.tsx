@@ -21,7 +21,7 @@ import {
     Layout, FolderOpen, DollarSign, Calendar, ShoppingCart,
     CreditCard, GitPullRequest, FileText, Settings, PackageCheck,
     BookOpen, BarChart3, Globe, Zap, Layers, Shield, PieChart,
-    Moon, Sun, Wrench, ShieldCheck,
+    Moon, Sun, Wrench, ShieldCheck, HardHat,
 } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { getCommandPaletteItems, type NavIconKey } from '@/config/navRegistry'
@@ -46,6 +46,7 @@ const ICON_MAP: Record<NavIconKey, React.ElementType> = {
     Settings,
     Wrench,
     ShieldCheck,
+    HardHat,
 }
 
 export default function GlobalCommandPalette() {
@@ -76,7 +77,7 @@ export default function GlobalCommandPalette() {
         const root = document.documentElement
         const next = !root.classList.contains('dark')
         root.classList.toggle('dark', next)
-        try { localStorage.setItem('theme', next ? 'dark' : 'light') } catch (_) { /* ignore storage errors */ }
+        try { localStorage.setItem('theme', next ? 'dark' : 'light') } catch { /* ignore storage errors */ }
         setIsDark(next)
         setOpen(false)
     }

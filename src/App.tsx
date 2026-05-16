@@ -45,6 +45,7 @@ const GlobalCommandPalette = lazyRetry(() => import('./components/common/GlobalC
 const FieldTasks = lazyRetry(() => import('./pages/mobile/FieldTasks'))
 const Maintenance = lazyRetry(() => import('./pages/modules/v3/Maintenance'))
 const QHSE = lazyRetry(() => import('./pages/modules/v3/QHSE'))
+const SubcontractorManagement = lazyRetry(() => import('./pages/modules/v3/SubcontractorManagement'))
 
 // Legacy Modules
 const NotFound = lazyRetry(() => import('./pages/NotFound'))
@@ -76,6 +77,7 @@ const PROTECTED_COMPONENT_MAP: Record<NavComponentKey, React.LazyExoticComponent
   FieldTasks,
   Maintenance,
   QHSE,
+  SubcontractorManagement,
 }
 
 /**

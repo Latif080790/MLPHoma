@@ -41,6 +41,10 @@ export type ModuleKey =
   | 'tkdn'
   | 'settings'
   | 'features'
+  | 'subcontractor'
+  | 'maintenance'
+  | 'qhse'
+  | 'field-tasks'
 
 /**
  * MODULE_ROUTES
@@ -80,4 +84,8 @@ export const MODULE_ROUTES: Record<ModuleKey, string> = {
   tkdn: '/tkdn',
   settings: '/settings',
   features: '/features',
+  subcontractor: '/subcontractor',
+  maintenance: '/maintenance',
+  qhse: '/qhse',
+  'field-tasks': '/field-tasks',
 }
