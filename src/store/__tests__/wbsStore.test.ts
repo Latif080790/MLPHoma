@@ -11,7 +11,15 @@ import * as toast from '@/lib/toast'
 // Mock dependencies
 vi.mock('@/lib/supabaseSyncService', () => ({
   syncWBSItem: vi.fn().mockResolvedValue({ success: true }),
+  syncWBSItems: vi.fn().mockResolvedValue({ success: true }),
   syncDelete: vi.fn().mockResolvedValue({ success: true }),
+}))
+
+// Mock timelineStore dynamic import used by wbsStore deleteItem
+vi.mock('../timelineStore', () => ({
+  useTimelineStore: {
+    getState: () => ({ tasksByProject: {} }),
+  },
 }))
 
 vi.mock('@/lib/toast', () => {
@@ -64,7 +72,7 @@ describe('wbsStore', () => {
       expect(items[0].level).toBe(1)
       expect(items[0].parentId).toBeNull()
       expect(items[0].id).toBeDefined()
-      expect(supabaseSyncService.syncWBSItem).toHaveBeenCalled()
+      expect(supabaseSyncService.syncWBSItems).toHaveBeenCalled()
     })
 
     it('should add a child WBS item', () => {
@@ -207,7 +215,7 @@ describe('wbsStore', () => {
   })
 
   describe('deleteItem', () => {
-    it('should delete a WBS item', () => {
+    it('should delete a WBS item', async () => {
       const projectId = 'test-project'
 
       useWBSStore.getState().addItem(projectId, {
@@ -221,13 +229,15 @@ describe('wbsStore', () => {
 
       const item = useWBSStore.getState().itemsByProject[projectId][0]
       useWBSStore.getState().deleteItem(projectId, item.id)
+      // deleteItem uses dynamic import — flush microtask queue
+      await new Promise(resolve => setTimeout(resolve, 0))
 
       const items = useWBSStore.getState().itemsByProject[projectId] || []
       expect(items).toHaveLength(0)
       expect(supabaseSyncService.syncDelete).toHaveBeenCalled()
     })
 
-    it('should delete item and all descendants', () => {
+    it('should delete item and all descendants', async () => {
       const projectId = 'test-project'
 
       // Add parent
@@ -265,6 +275,7 @@ describe('wbsStore', () => {
 
       // Delete parent (should delete children too)
       useWBSStore.getState().deleteItem(projectId, parent.id)
+      await new Promise(resolve => setTimeout(resolve, 0))
 
       const items = useWBSStore.getState().itemsByProject[projectId] || []
       expect(items).toHaveLength(0)  // All descendants should be deleted

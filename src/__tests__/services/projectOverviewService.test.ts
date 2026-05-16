@@ -22,6 +22,7 @@ vi.mock('../../lib/supabaseClient', () => ({
     supabase: null,
     assertSupabase: () => ({
         from: (...args: any[]) => mockFromFn(...args),
+        rpc: vi.fn().mockResolvedValue({ data: { tkdn_score: 0 }, error: null }),
     }),
 }))
 

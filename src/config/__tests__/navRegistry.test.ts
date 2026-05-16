@@ -21,7 +21,9 @@ describe('navRegistry Wave 1 parity', () => {
     const groups = getSidebarGroups()
     expect(groups.map((group) => group.label)).toEqual([
       'Overview',
-      'Project',
+      'Cost Control',
+      'Schedule',
+      'Operations',
       'Portfolio',
       'System',
     ])

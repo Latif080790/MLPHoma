@@ -9,6 +9,25 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+
+// Mirror idb-keyval writes to localStorage so sync readSnapshotsFromStorage can find them
+vi.mock('idb-keyval', () => ({
+  get: vi.fn((key: string) => {
+    const raw = localStorage.getItem(key)
+    return Promise.resolve(raw ? JSON.parse(raw) : undefined)
+  }),
+  set: vi.fn((key: string, value: unknown) => {
+    localStorage.setItem(key, JSON.stringify(value))
+    return Promise.resolve()
+  }),
+  del: vi.fn((key: string) => { localStorage.removeItem(key); return Promise.resolve() }),
+}))
+
+vi.mock('../../lib/supabaseSyncService', () => ({
+  syncFeatureConfig: vi.fn().mockResolvedValue({ success: true }),
+  syncFeatureSnapshot: vi.fn().mockResolvedValue({ success: true }),
+}))
+
 import { useFeatureStore } from '../featureStore'
 import { useAuthStore } from '../authStore'
 import { generateDefaultFeatureConfig } from '../../lib/featureDefaults'
