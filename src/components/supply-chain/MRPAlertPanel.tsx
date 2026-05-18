@@ -114,8 +114,8 @@ interface MRPAlertPanelProps {
 
 export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProps) {
     const activeProjectId = useProjectStore(s => s.activeProjectId)
-    const rabItems = useRabStore(s => activeProjectId ? s.getItems(activeProjectId) : [])
-    const timelineTasks = useTimelineStore(s => activeProjectId ? s.getTasks(activeProjectId) : [])
+    const rabItems = useRabStore(useShallow(s => activeProjectId ? s.getItems(activeProjectId) : []))
+    const timelineTasks = useTimelineStore(useShallow(s => activeProjectId ? s.getTasks(activeProjectId) : []))
     const { inventoryStock, purchaseOrders, fetchPurchaseOrders, fetchInventory } = useSupplyChainStore(
         useShallow(s => ({ inventoryStock: s.inventoryStock, purchaseOrders: s.purchaseOrders, fetchPurchaseOrders: s.fetchPurchaseOrders, fetchInventory: s.fetchInventory }))
     )

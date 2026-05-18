@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Download, LineChart, RefreshCcw, Equal, Calculator, FileSpreadsheet, FileText } from 'lucide-react'
 import { useTimelineStore } from '../../store/timelineStore'
 import { useRabStore } from '../../store/rabStore'
+import { useShallow } from 'zustand/react/shallow'
 import type { RABItem } from '../../types/rab'
 import { toast } from 'sonner'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
@@ -145,7 +146,7 @@ export default function RAPGenerator({ projectId = 'PRJ-2024-001' }: { projectId
   // Chart/export ref
   const exportRef = useRef<HTMLDivElement | null>(null)
 
-  const rabItems = useRabStore((s: { getItems?: (id: string) => RABItem[] }) => s.getItems?.(projectId) ?? [])
+  const rabItems = useRabStore(useShallow((s: { getItems?: (id: string) => RABItem[] }) => s.getItems?.(projectId) ?? []))
 
   /** Import amounts from RAB items linked to tasks */
   const importFromRAB = () => {
