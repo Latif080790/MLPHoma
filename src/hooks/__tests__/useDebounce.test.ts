@@ -8,8 +8,8 @@ import { renderHook, act } from '@testing-library/react'
 import { useDebounce } from '../useDebounce'
 
 describe('useDebounce', () => {
-  beforeEach(() => vi.useFakeTimers())
-  afterEach(() => vi.useRealTimers())
+  beforeEach(() => { vi.useFakeTimers() })
+  afterEach(() => { vi.useRealTimers() })
 
   it('returns the initial value immediately', () => {
     const { result } = renderHook(() => useDebounce('hello', 300))
