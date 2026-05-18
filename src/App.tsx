@@ -38,6 +38,7 @@ const ProjectOverview = lazyRetry(() => import('./pages/modules/v3/ProjectOvervi
 const CostForecastDashboard = lazyRetry(() => import('./pages/modules/v3/CostForecastDashboard'))
 const PortfolioResources = lazyRetry(() => import('./pages/modules/v3/PortfolioResources'))
 const PortfolioAnalytics = lazyRetry(() => import('./pages/modules/v3/PortfolioAnalytics'))
+const BIReportBuilder = lazyRetry(() => import('./pages/modules/v3/BIReportBuilder'))
 const StrategySimulation = lazyRetry(() => import('./pages/modules/v3/StrategySimulation'))
 const TKDNPage = lazyRetry(() => import('./pages/TKDNPage'))
 const FeatureEditor = lazyRetry(() => import('./components/feature/FeatureEditor'))
@@ -70,6 +71,7 @@ const PROTECTED_COMPONENT_MAP: Record<NavComponentKey, React.LazyExoticComponent
   HandoverWizard,
   PortfolioResources,
   PortfolioAnalytics,
+  BIReportBuilder,
   StrategySimulation,
   TKDNPage,
   FeatureEditor,
