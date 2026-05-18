@@ -88,9 +88,10 @@ export default defineConfig({
             '@radix-ui/react-accordion',
           ],
           'animation-vendor': ['motion'],
-          'virtual-vendor': ['@tanstack/react-virtual'],
+          
         }
       }
     }
   },
 })
+
