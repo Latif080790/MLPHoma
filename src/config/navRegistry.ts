@@ -43,6 +43,7 @@ export type NavComponentKey =
   | 'FieldTasks'
   | 'Maintenance'
   | 'QHSE'
+  | 'BIReportBuilder'
   | 'SubcontractorManagement'
 
 export interface NavRegistryItem {
@@ -294,6 +295,21 @@ export const NAV_REGISTRY: NavRegistryItem[] = [
     inSidebar: true,
     inCommandPalette: true,
     componentKey: 'PortfolioAnalytics',
+  },
+  {
+    id: 'bi-report-builder',
+    path: '/bi-report-builder',
+    label: 'BI Report Builder',
+    description: 'Template-driven BI reports',
+    group: 'Portfolio',
+    order: 145,
+    iconKey: 'BarChart3',
+    colorClass: 'text-sky-600',
+    keywords: ['bi', 'report', 'template', 'analytics', 'builder'],
+    protected: true,
+    inSidebar: true,
+    inCommandPalette: true,
+    componentKey: 'BIReportBuilder',
   },
   {
     id: 'strategy-simulation',
