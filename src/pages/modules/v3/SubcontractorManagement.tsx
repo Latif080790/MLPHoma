@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Users, FileText, ClipboardList, TrendingUp, Plus, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
+import { toast } from 'sonner'
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useProjectStore } from '@/store/projectStore'
 import { subcontractorService } from '@/services/subcontractorService'
 import type { SubcontractorInfo, SPK, Opname } from '@/services/subcontractorService'
@@ -102,6 +108,100 @@ function OpnameRow({ opname, spkNumber }: { opname: Opname; spkNumber: string })
   )
 }
 
+// ─── Add Vendor Dialog ─────────────────────────────────────────────────────────
+interface AddVendorDialogProps {
+  open: boolean
+  projectId: string
+  onClose: () => void
+  onSaved: () => void
+}
+
+function AddVendorDialog({ open, projectId, onClose, onSaved }: AddVendorDialogProps) {
+  const [name, setName] = useState('')
+  const [type, setType] = useState<'MANDOR' | 'SUBCON'>('SUBCON')
+  const [specialty, setSpecialty] = useState('')
+  const [phone, setPhone] = useState('')
+  const [bankAccount, setBankAccount] = useState('')
+  const [status, setStatus] = useState<SubcontractorInfo['status']>('ACTIVE')
+  const [saving, setSaving] = useState(false)
+
+  const reset = () => {
+    setName(''); setType('SUBCON'); setSpecialty(''); setPhone(''); setBankAccount(''); setStatus('ACTIVE')
+  }
+
+  const handleClose = () => { reset(); onClose() }
+
+  const handleSubmit = async () => {
+    if (!name.trim()) { toast.error('Nama vendor wajib diisi'); return }
+    setSaving(true)
+    try {
+      await subcontractorService.createSubcon(
+        { name: name.trim(), type, specialty: specialty.trim(), phone: phone.trim(), bankAccount: bankAccount.trim(), rating: 0, status },
+        projectId
+      )
+      reset()
+      onSaved()
+      onClose()
+    } catch (err) {
+      toast.error(`Gagal menyimpan: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Tambah Vendor / Mandor</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <div className="space-y-1.5">
+            <Label>Nama Perusahaan / Mandor *</Label>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="PT Maju Jaya / Pak Budi" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Tipe</Label>
+            <Select value={type} onValueChange={v => setType(v as 'MANDOR' | 'SUBCON')}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SUBCON">Subkontraktor</SelectItem>
+                <SelectItem value="MANDOR">Mandor</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>Spesialisasi</Label>
+            <Input value={specialty} onChange={e => setSpecialty(e.target.value)} placeholder="Bekisting, Besi, MEP, dll." />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Nomor HP / Telp</Label>
+            <Input value={phone} onChange={e => setPhone(e.target.value)} placeholder="0812-xxxx-xxxx" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Rekening Bank</Label>
+            <Input value={bankAccount} onChange={e => setBankAccount(e.target.value)} placeholder="BRI 1234-5678-9012" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Status</Label>
+            <Select value={status} onValueChange={v => setStatus(v as SubcontractorInfo['status'])}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ACTIVE">Aktif</SelectItem>
+                <SelectItem value="INACTIVE">Nonaktif</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={handleClose} disabled={saving}>Batal</Button>
+          <Button onClick={handleSubmit} disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan'}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function SubcontractorManagement() {
   const activeProjectId = useProjectStore(s => s.activeProjectId)
@@ -112,6 +212,7 @@ export default function SubcontractorManagement() {
   const [spks, setSpks] = useState<SPK[]>([])
   const [allOpnames, setAllOpnames] = useState<Opname[]>([])
   const [loading, setLoading] = useState(false)
+  const [showAddVendor, setShowAddVendor] = useState(false)
 
   const activeProject = activeProjectId ? projects[activeProjectId] : null
 
@@ -229,7 +330,10 @@ export default function SubcontractorManagement() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-primary">Daftar Vendor & Mandor</h3>
-                  <button className="flex items-center gap-1.5 rounded-radius-sm bg-brand px-3 py-1.5 text-xs font-medium text-on-brand hover:bg-brand-hover transition-colors">
+                  <button
+                    className="flex items-center gap-1.5 rounded-radius-sm bg-brand px-3 py-1.5 text-xs font-medium text-on-brand hover:bg-brand-hover transition-colors"
+                    onClick={() => setShowAddVendor(true)}
+                  >
                     <Plus size={12} />
                     Tambah Vendor
                   </button>
@@ -323,6 +427,15 @@ export default function SubcontractorManagement() {
           </>
         )}
       </div>
+
+      {activeProjectId && (
+        <AddVendorDialog
+          open={showAddVendor}
+          projectId={activeProjectId}
+          onClose={() => setShowAddVendor(false)}
+          onSaved={loadData}
+        />
+      )}
     </PageShell>
   )
 }

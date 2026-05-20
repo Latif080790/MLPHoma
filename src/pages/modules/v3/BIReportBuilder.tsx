@@ -211,7 +211,11 @@ export default function BIReportBuilder() {
         </div>
 
         <div className="lg:col-span-5">
-          <ReportPreviewTable result={preview} loading={running} />
+          <ReportPreviewTable
+            result={preview}
+            loading={running}
+            chartType={selectedTemplate?.chart_type}
+          />
         </div>
       </div>
     </PageShell>
