@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Users, FileText, ClipboardList, TrendingUp, Plus, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react'
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 import { useProjectStore } from '@/store/projectStore'
 import { subcontractorService } from '@/services/subcontractorService'
-import type { SPK, Opname } from '@/services/subcontractorService'
+import type { SubcontractorInfo, SPK, Opname } from '@/services/subcontractorService'
 import ModulePageState from '@/components/common/ModulePageState'
 
 // ─── Status badges ─────────────────────────────────────────────────────────────
@@ -35,11 +35,11 @@ function fmtIDR(n: number) {
 }
 
 // ─── SPK Card ─────────────────────────────────────────────────────────────────
-function SPKCard({ spk, opnames }: { spk: SPK; opnames: Opname[] }) {
+function SPKCard({ spk, opnames, subcons }: { spk: SPK; opnames: Opname[]; subcons: SubcontractorInfo[] }) {
   const spkOpnames = opnames.filter(o => o.spkId === spk.id && o.status !== 'REJECTED')
   const totalProgress = spkOpnames.reduce((s, o) => s + o.currentPeriodProgressPercentage, 0)
   const totalPaid = spkOpnames.filter(o => o.status === 'APPROVED' || o.status === 'POSTED_TO_FINANCE').reduce((s, o) => s + o.netPayable, 0)
-  const subcon = subcontractorService.getSubcons().find(s => s.id === spk.subconId)
+  const subcon = subcons.find(s => s.id === spk.subconId)
 
   return (
     <div className="rounded-radius-md border border-border-subtle bg-surface p-padding-sm hover:border-border-hover transition-colors">
@@ -108,7 +108,39 @@ export default function SubcontractorManagement() {
   const projects = useProjectStore(s => s.projects)
   const [tab, setTab] = useState<'vendors' | 'spk' | 'opname'>('vendors')
 
+  const [subcons, setSubcons] = useState<SubcontractorInfo[]>([])
+  const [spks, setSpks] = useState<SPK[]>([])
+  const [allOpnames, setAllOpnames] = useState<Opname[]>([])
+  const [loading, setLoading] = useState(false)
+
   const activeProject = activeProjectId ? projects[activeProjectId] : null
+
+  const loadData = useCallback(async () => {
+    if (!activeProjectId) return
+    setLoading(true)
+    try {
+      const [fetchedSubcons, fetchedSpks] = await Promise.all([
+        subcontractorService.getSubcons(),
+        subcontractorService.getSPKs(activeProjectId),
+      ])
+      setSubcons(fetchedSubcons)
+      setSpks(fetchedSpks)
+
+      // Fetch opnames for all SPKs
+      const opnameResults = await Promise.all(
+        fetchedSpks.map(spk => subcontractorService.getOpnamesBySPK(spk.id))
+      )
+      setAllOpnames(opnameResults.flat())
+    } catch (err) {
+      console.error('Failed to load subcontractor data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [activeProjectId])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   if (!activeProjectId || !activeProject) {
     return (
@@ -121,10 +153,6 @@ export default function SubcontractorManagement() {
       />
     )
   }
-
-  const subcons = subcontractorService.getSubcons()
-  const spks = subcontractorService.getSPKs(activeProjectId)
-  const allOpnames = spks.flatMap(spk => subcontractorService.getOpnamesBySPK(spk.id))
 
   const totalContractValue = spks.reduce((s, spk) => s + spk.contractValue, 0)
   const totalPaid = allOpnames
@@ -190,101 +218,109 @@ export default function SubcontractorManagement() {
       </div>
 
       <div className="p-padding-md">
-        {/* Vendor / Mandor Tab */}
-        {tab === 'vendors' && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-primary">Daftar Vendor & Mandor</h3>
-              <button className="flex items-center gap-1.5 rounded-radius-sm bg-brand px-3 py-1.5 text-xs font-medium text-on-brand hover:bg-brand-hover transition-colors">
-                <Plus size={12} />
-                Tambah Vendor
-              </button>
-            </div>
-            <div className="overflow-x-auto rounded-radius-md border border-border-subtle">
-              <table className="w-full text-xs">
-                <thead className="bg-surface-subtle">
-                  <tr>
-                    {['Nama', 'Tipe', 'Spesialisasi', 'Rating', 'Status'].map(h => (
-                      <th key={h} className="px-3 py-2 text-left font-medium text-secondary">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {subcons.map(s => (
-                    <tr key={s.id} className="border-t border-border-subtle hover:bg-surface-subtle/50">
-                      <td className="px-3 py-2 font-medium text-primary">{s.name}</td>
-                      <td className="px-3 py-2 text-secondary">{s.type}</td>
-                      <td className="px-3 py-2 text-secondary">{s.specialty}</td>
-                      <td className="px-3 py-2">
-                        <span className="font-medium">{s.rating}</span>
-                        <span className="text-secondary">/5</span>
-                      </td>
-                      <td className="px-3 py-2"><StatusBadge status={s.status} /></td>
-                    </tr>
-                  ))}
-                  {subcons.length === 0 && (
-                    <tr><td colSpan={5} className="px-3 py-6 text-center text-secondary">Belum ada vendor terdaftar</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+        {loading && (
+          <div className="py-10 text-center text-secondary text-sm">Memuat data...</div>
         )}
 
-        {/* SPK Tab */}
-        {tab === 'spk' && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-primary">Surat Perintah Kerja (SPK)</h3>
-              <button className="flex items-center gap-1.5 rounded-radius-sm bg-brand px-3 py-1.5 text-xs font-medium text-on-brand hover:bg-brand-hover transition-colors">
-                <Plus size={12} />
-                Buat SPK
-              </button>
-            </div>
-            {spks.length === 0 ? (
-              <div className="py-10 text-center text-secondary text-sm">
-                Belum ada SPK untuk proyek ini
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {spks.map(spk => (
-                  <SPKCard key={spk.id} spk={spk} opnames={allOpnames} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Opname Tab */}
-        {tab === 'opname' && (
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-primary">Opname Progress & Tagihan</h3>
-            </div>
-            {allOpnames.length === 0 ? (
-              <div className="py-10 text-center text-secondary text-sm">
-                Belum ada opname. Buat SPK terlebih dahulu.
-              </div>
-            ) : (
-              <div className="overflow-x-auto rounded-radius-md border border-border-subtle">
-                <table className="w-full text-xs">
-                  <thead className="bg-surface-subtle">
-                    <tr>
-                      {['SPK', 'Periode', 'Progress', 'Bruto', 'Retensi', 'Neto', 'Status'].map(h => (
-                        <th key={h} className="px-3 py-2 text-left font-medium text-secondary">{h}</th>
+        {!loading && (
+          <>
+            {/* Vendor / Mandor Tab */}
+            {tab === 'vendors' && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-primary">Daftar Vendor & Mandor</h3>
+                  <button className="flex items-center gap-1.5 rounded-radius-sm bg-brand px-3 py-1.5 text-xs font-medium text-on-brand hover:bg-brand-hover transition-colors">
+                    <Plus size={12} />
+                    Tambah Vendor
+                  </button>
+                </div>
+                <div className="overflow-x-auto rounded-radius-md border border-border-subtle">
+                  <table className="w-full text-xs">
+                    <thead className="bg-surface-subtle">
+                      <tr>
+                        {['Nama', 'Tipe', 'Spesialisasi', 'Rating', 'Status'].map(h => (
+                          <th key={h} className="px-3 py-2 text-left font-medium text-secondary">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subcons.map(s => (
+                        <tr key={s.id} className="border-t border-border-subtle hover:bg-surface-subtle/50">
+                          <td className="px-3 py-2 font-medium text-primary">{s.name}</td>
+                          <td className="px-3 py-2 text-secondary">{s.type}</td>
+                          <td className="px-3 py-2 text-secondary">{s.specialty}</td>
+                          <td className="px-3 py-2">
+                            <span className="font-medium">{s.rating}</span>
+                            <span className="text-secondary">/5</span>
+                          </td>
+                          <td className="px-3 py-2"><StatusBadge status={s.status} /></td>
+                        </tr>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allOpnames.map(opname => {
-                      const spk = spks.find(s => s.id === opname.spkId)
-                      return <OpnameRow key={opname.id} opname={opname} spkNumber={spk?.spkNumber ?? opname.spkId} />
-                    })}
-                  </tbody>
-                </table>
+                      {subcons.length === 0 && (
+                        <tr><td colSpan={5} className="px-3 py-6 text-center text-secondary">Belum ada vendor terdaftar</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
-          </div>
+
+            {/* SPK Tab */}
+            {tab === 'spk' && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-primary">Surat Perintah Kerja (SPK)</h3>
+                  <button className="flex items-center gap-1.5 rounded-radius-sm bg-brand px-3 py-1.5 text-xs font-medium text-on-brand hover:bg-brand-hover transition-colors">
+                    <Plus size={12} />
+                    Buat SPK
+                  </button>
+                </div>
+                {spks.length === 0 ? (
+                  <div className="py-10 text-center text-secondary text-sm">
+                    Belum ada SPK untuk proyek ini
+                  </div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {spks.map(spk => (
+                      <SPKCard key={spk.id} spk={spk} opnames={allOpnames} subcons={subcons} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Opname Tab */}
+            {tab === 'opname' && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-primary">Opname Progress & Tagihan</h3>
+                </div>
+                {allOpnames.length === 0 ? (
+                  <div className="py-10 text-center text-secondary text-sm">
+                    Belum ada opname. Buat SPK terlebih dahulu.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-radius-md border border-border-subtle">
+                    <table className="w-full text-xs">
+                      <thead className="bg-surface-subtle">
+                        <tr>
+                          {['SPK', 'Periode', 'Progress', 'Bruto', 'Retensi', 'Neto', 'Status'].map(h => (
+                            <th key={h} className="px-3 py-2 text-left font-medium text-secondary">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allOpnames.map(opname => {
+                          const spk = spks.find(s => s.id === opname.spkId)
+                          return <OpnameRow key={opname.id} opname={opname} spkNumber={spk?.spkNumber ?? opname.spkId} />
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </PageShell>
