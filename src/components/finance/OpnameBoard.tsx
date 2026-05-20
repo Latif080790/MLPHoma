@@ -5,7 +5,7 @@
  * Shows gross progress, calculates deductions (Retensi, DP repayment), and computes Net Payable.
  */
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,19 +24,17 @@ import { format } from 'date-fns'
 export function OpnameBoard() {
     const { activeProjectId } = useProjectStore()
     const profile = useAuthStore(s => s.profile)
-    const [_refreshKey, setRefreshKey] = useState(0)
 
-    // Only get ACTIVE SPKs for drafting new opnames
-    const spks = activeProjectId ? subcontractorService.getSPKs(activeProjectId) : []
+    const [spks, setSpks] = useState<SPK[]>([])
+    const [opnames, setOpnames] = useState<Opname[]>([])
+
+    // Only ACTIVE SPKs for drafting new opnames
     const activeSpks = spks.filter(s => s.status === 'ACTIVE')
-
-    // All Opnames for viewing history
-    const opnames = activeProjectId ? subcontractorService.getOpnames(activeProjectId) : []
 
     // Create Opname Dialog State
     const [createOpen, setCreateOpen] = useState(false)
     const [selectedSpk, setSelectedSpk] = useState<SPK | null>(null)
-    const [draftOpname, setDraftOpname] = useState<Opname | null>(null)
+    const [draftOpname, setDraftOpname] = useState<Omit<Opname, 'id'> | null>(null)
     const [reqProgress, setReqProgress] = useState<number>(0)
     const [otherDed, setOtherDed] = useState(0)
 
@@ -44,20 +42,38 @@ export function OpnameBoard() {
     const [reviewOpen, setReviewOpen] = useState(false)
     const [reviewOpname, setReviewOpname] = useState<Opname | null>(null)
 
-    if (!activeProjectId) return null
+    const refreshData = useCallback(async () => {
+        if (!activeProjectId) return
+        try {
+            const [fetchedSpks, fetchedOpnames] = await Promise.all([
+                subcontractorService.getSPKs(activeProjectId),
+                subcontractorService.getOpnames(activeProjectId),
+            ])
+            setSpks(fetchedSpks)
+            setOpnames(fetchedOpnames)
+        } catch (err) {
+            console.error('Failed to load opname board data:', err)
+        }
+    }, [activeProjectId])
 
-    const refresh = () => setRefreshKey(k => k + 1)
+    useEffect(() => {
+        refreshData()
+    }, [refreshData])
+
+    if (!activeProjectId) return null
 
     // ─── Create Flow ───
 
-    const handleStartDraft = (spk: SPK) => {
+    const handleStartDraft = async (spk: SPK) => {
         setSelectedSpk(spk)
-        const existing = subcontractorService.getOpnamesBySPK(spk.id).filter(o => o.status !== 'REJECTED')
-        const prev = existing.reduce((a, c) => a + c.currentPeriodProgressPercentage, 0)
-        setReqProgress(prev + 10) // default increment
-        setOtherDed(0)
         try {
-            const draft = subcontractorService.draftOpname(spk.id, prev + 10, 0)
+            const existing = await subcontractorService.getOpnamesBySPK(spk.id)
+            const nonRejected = existing.filter(o => o.status !== 'REJECTED')
+            const prev = nonRejected.reduce((a, c) => a + c.currentPeriodProgressPercentage, 0)
+            const defaultProgress = prev + 10
+            setReqProgress(defaultProgress)
+            setOtherDed(0)
+            const draft = subcontractorService.draftOpname(spk, nonRejected, defaultProgress, 0)
             setDraftOpname(draft)
             setCreateOpen(true)
         } catch (e: unknown) {
@@ -65,55 +81,59 @@ export function OpnameBoard() {
         }
     }
 
-    const handleProgressChange = (val: number) => {
+    const handleProgressChange = async (val: number) => {
         setReqProgress(val)
         if (!selectedSpk) return
         try {
-            const draft = subcontractorService.draftOpname(selectedSpk.id, val, otherDed)
+            const existing = await subcontractorService.getOpnamesBySPK(selectedSpk.id)
+            const nonRejected = existing.filter(o => o.status !== 'REJECTED')
+            const draft = subcontractorService.draftOpname(selectedSpk, nonRejected, val, otherDed)
             setDraftOpname(draft)
         } catch {
             // Just catch visual errors during typing
         }
     }
 
-    const handleDedChange = (val: number) => {
+    const handleDedChange = async (val: number) => {
         setOtherDed(val)
         if (!selectedSpk) return
         try {
-            const draft = subcontractorService.draftOpname(selectedSpk.id, reqProgress, val)
+            const existing = await subcontractorService.getOpnamesBySPK(selectedSpk.id)
+            const nonRejected = existing.filter(o => o.status !== 'REJECTED')
+            const draft = subcontractorService.draftOpname(selectedSpk, nonRejected, reqProgress, val)
             setDraftOpname(draft)
         } catch { /* Intentionally empty - draft calculation is optional */ }
     }
 
-    const handleSaveDraft = () => {
+    const handleSaveDraft = async () => {
         if (!draftOpname) return
         const userName = profile?.full_name || 'System'
-        subcontractorService.saveOpname(draftOpname, userName)
+        await subcontractorService.saveOpname(draftOpname, userName)
         setCreateOpen(false)
         setDraftOpname(null)
-        refresh()
+        await refreshData()
     }
 
     // ─── Workflow Actions ───
 
-    const handleSubmit = (id: string) => {
-        subcontractorService.submitOpname(id)
-        refresh()
+    const handleSubmit = async (id: string) => {
+        await subcontractorService.submitOpname(id)
+        await refreshData()
     }
 
-    const handleApprove = () => {
+    const handleApprove = async () => {
         if (!reviewOpname) return
         const userName = profile?.full_name || 'System'
-        subcontractorService.approveOpname(reviewOpname.id, userName)
+        await subcontractorService.approveOpname(reviewOpname.id, userName)
         setReviewOpen(false)
-        refresh()
+        await refreshData()
     }
 
-    const handlePostToAP = (id: string) => {
+    const handlePostToAP = async (id: string) => {
         const userName = profile?.full_name || 'System'
         try {
-            subcontractorService.postToFinance(id, userName)
-            refresh()
+            await subcontractorService.postToFinance(id, userName)
+            await refreshData()
         } catch (e: unknown) {
             toast.error((e as Error).message)
         }
@@ -141,7 +161,7 @@ export function OpnameBoard() {
                                         </Button>
                                     </div>
                                 ), size: 100 }
-                            ]}
+                            ] as ColumnDef<SPK>[]}
                         />
                     </CardContent>
                 </Card>
@@ -157,9 +177,9 @@ export function OpnameBoard() {
                             data={opnames.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
                             emptyMessage="No progress claims recorded."
                             columns={[
-                                { 
-                                    id: 'spk', 
-                                    header: 'SPK / Period', 
+                                {
+                                    id: 'spk',
+                                    header: 'SPK / Period',
                                     cell: ({ row }) => {
                                         const op = row.original;
                                         const parentSpk = spks.find(s => s.id === op.spkId);
@@ -231,7 +251,7 @@ export function OpnameBoard() {
                                     },
                                     size: 120
                                 }
-                            ]}
+                            ] as ColumnDef<Opname>[]}
                         />
                     </CardContent>
                 </Card>

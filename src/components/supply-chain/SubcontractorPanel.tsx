@@ -5,7 +5,7 @@
  * Typically fits into the Supply Chain or Schedule & Ops modules.
  */
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -21,8 +21,8 @@ import { Plus, Users, HardHat, FileSignature, Search, ShieldCheck, Play } from '
 
 export function SubcontractorPanel() {
     const { activeProjectId } = useProjectStore()
-    const [subcons, setSubcons] = useState<SubcontractorInfo[]>(subcontractorService.getSubcons())
-    const [spks, setSpks] = useState<SPK[]>(activeProjectId ? subcontractorService.getSPKs(activeProjectId) : [])
+    const [subcons, setSubcons] = useState<SubcontractorInfo[]>([])
+    const [spks, setSpks] = useState<SPK[]>([])
     const profile = useAuthStore(s => s.profile)
 
     const [viewMode, setViewMode] = useState<'SUBCONS' | 'SPKS'>('SUBCONS')
@@ -43,16 +43,29 @@ export function SubcontractorPanel() {
     const [spkDp, setSpkDp] = useState(20)
     const [spkRetensi, setSpkRetensi] = useState(5)
 
+    const refreshData = useCallback(async () => {
+        if (!activeProjectId) return
+        try {
+            const [fetchedSubcons, fetchedSpks] = await Promise.all([
+                subcontractorService.getSubcons(),
+                subcontractorService.getSPKs(activeProjectId),
+            ])
+            setSubcons(fetchedSubcons)
+            setSpks(fetchedSpks)
+        } catch (err) {
+            console.error('Failed to load panel data:', err)
+        }
+    }, [activeProjectId])
+
+    useEffect(() => {
+        refreshData()
+    }, [refreshData])
+
     if (!activeProjectId) return null
 
-    const refreshData = () => {
-        setSubcons(subcontractorService.getSubcons())
-        if (activeProjectId) setSpks(subcontractorService.getSPKs(activeProjectId))
-    }
-
-    const handleCreateSubcon = () => {
+    const handleCreateSubcon = async () => {
         if (!newSubconName || !newSubconSpecialty) return
-        subcontractorService.createSubcon({
+        await subcontractorService.createSubcon({
             name: newSubconName,
             type: newSubconType,
             specialty: newSubconSpecialty,
@@ -60,15 +73,15 @@ export function SubcontractorPanel() {
             bankAccount: '-',
             rating: 5,
             status: 'ACTIVE'
-        })
+        }, activeProjectId)
         setSubconOpen(false)
-        refreshData()
+        await refreshData()
     }
 
-    const handleCreateSPK = () => {
+    const handleCreateSPK = async () => {
         if (!spkSubconId || !spkDesc || spkContractVal <= 0) return
         const userName = profile?.full_name || 'System'
-        subcontractorService.createSPK({
+        await subcontractorService.createSPK({
             projectId: activeProjectId,
             wbsId: spkWbsId || 'WBS-OH', // Mock if not selected
             subconId: spkSubconId,
@@ -80,13 +93,13 @@ export function SubcontractorPanel() {
             endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // +30 days mock
         }, userName)
         setSpkOpen(false)
-        refreshData()
+        await refreshData()
     }
 
-    const handleActivateSPK = (id: string) => {
+    const handleActivateSPK = async (id: string) => {
         const userName = profile?.full_name || 'System'
-        subcontractorService.activateSPK(id, userName)
-        refreshData()
+        await subcontractorService.activateSPK(id, userName)
+        await refreshData()
     }
 
     return (
