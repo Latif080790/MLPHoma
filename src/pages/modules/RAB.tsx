@@ -161,7 +161,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
         description="Manage budget items and calculations"
         accent="emerald"
         actions={
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             {/* Peer awareness in this module */}
             {otherPeers.length > 0 && (
               <div className="flex items-center gap-2 pr-2 border-r border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-right-2 duration-300">
@@ -169,8 +169,8 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
                 <PresenceAvatars users={otherPeers} />
               </div>
             )}
-            
-            <div className="flex items-center gap-2">
+
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -336,13 +336,13 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
         </div>
 
         <Card className="panel-compact">
-          <CardContent className="p-0">
+          <CardContent className="p-0 overflow-x-auto">
             {loading.ahspItems ? (
               <CardSkeleton />
             ) : (
               <>
                 {items.length > 0 && summary.subtotal === 0 && (
-                  <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                  <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
                     <span className="font-medium">
                       ⚠ {items.length} item belum memiliki unit price — Grand Total = Rp 0.
                     </span>

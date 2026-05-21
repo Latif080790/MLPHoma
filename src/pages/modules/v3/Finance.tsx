@@ -918,7 +918,7 @@ export default function Finance() {
                                 Reset Filters
                             </Button>
                         </div>
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-wrap justify-end gap-2">
                         <Button size="sm" variant="outline" className="gap-2" onClick={() => setBillingDialogOpen(true)}>
                             <Zap size={14} /> Auto-Generate Billing
                         </Button>
