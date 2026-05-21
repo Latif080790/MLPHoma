@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,6 +27,7 @@ import { GlobalContextBar, WorkflowStepper, WorkspaceHeader } from '@/components
 
 import { HandoverSummary, OutstandingIssue, handoverService } from '@/services/handoverService'
 import { prerequisiteCheckService, HandoverReadiness } from '@/services/prerequisiteCheckService'
+import { SignOffPanel, type Stakeholder, type SignOff } from '@/components/handover/SignOffPanel'
 
 export default function HandoverWizard() {
     type InventoryItem = HandoverSummary['inventory'][number]
@@ -47,6 +48,22 @@ export default function HandoverWizard() {
     const [srStatus, setSrStatus] = useState('')
     const [readiness, setReadiness] = useState<HandoverReadiness | null>(null)
     const [checkingReadiness, setCheckingReadiness] = useState(false)
+
+    // Sign-off state — stakeholders derived from project team; signOffs persisted to Supabase
+    const [signOffs, setSignOffs] = useState<SignOff[]>([])
+
+    const handleStakeholderSignOff = useCallback((stakeholderId: string, notes: string) => {
+        setSignOffs(prev => {
+            const existing = prev.findIndex(s => s.stakeholderId === stakeholderId)
+            const updated = { stakeholderId, signedAt: new Date().toISOString(), notes }
+            if (existing >= 0) {
+                const copy = [...prev]
+                copy[existing] = updated
+                return copy
+            }
+            return [...prev, updated]
+        })
+    }, [])
 
     useEffect(() => {
         if (!projectId) {
@@ -173,6 +190,11 @@ export default function HandoverWizard() {
             />
         )
     }
+
+    // Stakeholders for sign-off — derived from project data
+    const signOffStakeholders: Stakeholder[] = [
+        { id: project.id, name: project.name, role: 'Project Owner' },
+    ]
 
     const wizardSteps = [
         { id: '1', title: 'Summary', status: (step > 1 ? 'complete' : step === 1 ? 'active' : 'inactive') as 'complete' | 'active' | 'inactive' },
@@ -359,6 +381,15 @@ export default function HandoverWizard() {
                                             <p className="text-sm text-green-700">All physical and financial prerequisites have been verified.</p>
                                         </div>
                                     )}
+
+                                    <div className="pt-4 border-t">
+                                        <SignOffPanel
+                                            handoverId={projectId ?? 'unknown'}
+                                            stakeholders={signOffStakeholders}
+                                            signOffs={signOffs}
+                                            onSignOff={handleStakeholderSignOff}
+                                        />
+                                    </div>
 
                                     <div className="pt-6 border-t">
                                         <h3 className="font-medium text-red-600 mb-2">Danger Zone</h3>
