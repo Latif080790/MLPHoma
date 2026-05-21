@@ -66,8 +66,7 @@ export function calculateCashFlow(
     // ------------------------------------------------------------------
     // 2. INFLOW (Theoretical + Actual AR Commitments)
     // ------------------------------------------------------------------
-    // 1. DP in first period? Or separate?
-    // Let's assume DP is received in first period.
+    // 1. DP received in first period
     let periodInflow = 0
     if (idx === 0) {
       periodInflow += dpAmount
@@ -84,14 +83,13 @@ export function calculateCashFlow(
     // Deduct retention
     const netBill = grossBill * (1 - retentionPct)
 
-    // Deduct DP recovery? 
-    // Usually DP is recovered pro-rata. 
-    // Recovery = (progressDelta / 100) * dpAmount
+    // DP recovery pro-rata: deducted from each billing period until fully recovered
     const dpRecovery = (progressDelta / 100) * dpAmount
 
     const finalBill = Math.max(0, netBill - dpRecovery)
 
-    periodInflow = finalBill
+    // Use += to preserve DP inflow added above for the first period
+    periodInflow += finalBill
 
     // Add rigid AR Expectations (Unpaid Claims due in this period)
     const claimsDueThisPeriod = claims.filter(c => {

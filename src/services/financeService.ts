@@ -2,11 +2,25 @@
 
 import { generateId } from '../lib/idGenerator'
 import { assertSupabase } from '../lib/supabaseClient'
-import { Invoice, ClientClaim, FinanceTransaction } from '../types/finance'
+import { Invoice, ClientClaim, FinanceTransaction, InvoiceStatus } from '../types/finance'
 import { auditTrail } from '../lib/auditTrail'
+import { auditService } from './auditService'
 import { supplyChainService } from './supplyChainService'
 import { notificationService } from './notificationService'
 import { matchInvoice } from './invoiceMatchingService'
+
+/**
+ * Valid invoice status transitions.
+ * Maps each status to the set of statuses it can transition to.
+ * Terminal states (PAID) map to an empty array — no further transitions allowed.
+ */
+const INVOICE_STATUS_TRANSITIONS: Record<InvoiceStatus, InvoiceStatus[]> = {
+    UNPAID:          ['PARTIAL', 'PAID', 'OVERDUE', 'PENDING_PAYMENT'],
+    PARTIAL:         ['PAID', 'OVERDUE', 'PENDING_PAYMENT'],
+    OVERDUE:         ['PAID', 'PENDING_PAYMENT'],
+    PENDING_PAYMENT: ['PAID', 'UNPAID'],
+    PAID:            [],   // terminal — no further transitions
+}
 
 export const financeService = {
     // --- Invoices (AP) ---
@@ -52,42 +66,89 @@ export const financeService = {
             )
         }
         
-        // 3-Way Match Check for Alerts
+        // 3-Way Match Check for Alerts (intentionally fire-and-forget — must not block invoice creation)
         if (data.po_id && data.project_id) {
-            Promise.all([
+            void Promise.all([
                 supplyChainService.getPurchaseOrders(data.project_id),
                 supplyChainService.getInventoryTransactions(data.project_id)
             ]).then(([pos, grns]) => {
                 const matchResult = matchInvoice(data as Invoice, pos, grns)
                 if (matchResult.status === 'mismatch' || matchResult.status === 'partial') {
-                    // Check if variance > 5%
                     const highVariance = matchResult.discrepancies.find(d => !d.tolerable && d.variance > 5)
                     if (highVariance && userId) {
-                        notificationService.createNotification({
-                            userId, // Send to creator for now, or PM
+                        void notificationService.createNotification({
+                            userId,
                             title: 'Invoice Variance Alert',
                             message: `Invoice ${data.invoice_number} exceeds PO limit by ${highVariance.variance.toFixed(1)}%. Review required.`,
                             type: 'BUDGET_CRITICAL',
                             severity: 'critical',
                             metadata: { linkUrl: '/finance' },
                             projectId: data.project_id
-                        }).catch(console.error)
+                        }).catch(err => console.error('[financeService] 3-way match notification failed', data.invoice_number, err))
                     }
                 }
-            }).catch(err => console.warn('[financeService] 3-way match alert check failed', err))
+            }).catch(err => console.warn('[financeService] 3-way match check failed for invoice', data.invoice_number, err))
         }
 
         return data
     },
 
-    async updateInvoiceStatus(id: string, status: string) {
+    async updateInvoiceStatus(id: string, newStatus: string, userId?: string, userName?: string): Promise<void> {
         const client = assertSupabase()
+
+        // 1. Fetch current invoice to get its existing status and invoice_number
+        const { data: current, error: fetchError } = await client
+            .from('finance_invoices')
+            .select('status, invoice_number')
+            .eq('id', id)
+            .single()
+
+        if (fetchError) throw fetchError
+
+        const currentStatus = current.status as InvoiceStatus
+        const invoiceNumber = current.invoice_number as string
+
+        // 2. Validate that the transition is permitted
+        const allowedNext = INVOICE_STATUS_TRANSITIONS[currentStatus]
+        if (allowedNext === undefined) {
+            throw new Error(
+                `[financeService] Unknown current invoice status "${currentStatus}" for invoice ${invoiceNumber}`
+            )
+        }
+        if (!allowedNext.includes(newStatus as InvoiceStatus)) {
+            throw new Error(
+                `[financeService] Invalid status transition for invoice ${invoiceNumber}: ` +
+                `"${currentStatus}" → "${newStatus}". ` +
+                `Allowed next statuses: ${allowedNext.length ? allowedNext.join(', ') : '(none — terminal state)'}`
+            )
+        }
+
+        // 3. Persist the status change
         const { error } = await client
             .from('finance_invoices')
-            .update({ status })
+            .update({ status: newStatus })
             .eq('id', id)
 
         if (error) throw error
+
+        // 4. Audit trail — must never block the main operation
+        try {
+            await auditService.log({
+                userId,
+                userName: userName ?? 'System',
+                action: 'STATUS_CHANGE',
+                entity: 'finance_invoices',
+                entityType: 'INVOICE',
+                entityId: id,
+                details: {
+                    from: currentStatus,
+                    to: newStatus,
+                    invoice_number: invoiceNumber,
+                },
+            })
+        } catch (auditErr) {
+            console.warn('[financeService] updateInvoiceStatus audit log failed:', auditErr)
+        }
     },
 
     // --- Claims (AR) ---

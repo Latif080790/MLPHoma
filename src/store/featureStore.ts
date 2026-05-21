@@ -28,6 +28,7 @@ import {
 } from '@/lib/validationSchemas'
 import { syncFeatureConfig, syncFeatureSnapshot } from '@/lib/supabaseSyncService'
 import { get as idbGet, set as idbSet } from 'idb-keyval'
+import { featureConfigService } from '../services/featureConfigService'
 
 /**
  * Shape of a saved snapshot/version for a project's feature config.
@@ -49,6 +50,10 @@ export interface FeatureSnapshot {
 interface FeatureStoreState {
   /** Mapping projectId -> FeatureConfig */
   configs: Record<string, FeatureConfig>
+  /** Whether an async Supabase operation is in progress */
+  loading: boolean
+  /** Last async error message, if any */
+  error: string | null
   /** Load configuration for a project (from localStorage or generate default) */
   loadConfig: (projectId: string) => FeatureConfig
   /** Replace full config for project */
@@ -65,6 +70,17 @@ interface FeatureStoreState {
   saveSnapshot: (projectId: string, name?: string) => FeatureSnapshot
   restoreSnapshot: (projectId: string, snapshotId: string) => FeatureConfig | null
   deleteSnapshot: (projectId: string, snapshotId: string) => void
+
+  /**
+   * Async Supabase-backed operations (consolidated from featureConfigStore).
+   * These provide loading/error state tracking and direct DB persistence.
+   */
+  /** Fetch config from Supabase; initialises with defaults if not found */
+  fetchConfig: (projectId: string) => Promise<FeatureConfig>
+  /** Apply a partial update to the current config, syncing to Supabase (optimistic with rollback) */
+  updateConfig: (projectId: string, updates: Partial<FeatureConfig>) => Promise<void>
+  /** Reset config to factory defaults and persist to Supabase */
+  resetToDefaults: (projectId: string) => Promise<void>
 }
 
 /**
@@ -207,6 +223,8 @@ function writeSnapshotsToStorage(projectId: string, snaps: FeatureSnapshot[]) {
  */
 export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
   configs: {},
+  loading: false,
+  error: null,
 
   loadConfig: (projectId: string) => {
     if (!projectId) throw new Error('loadConfig requires projectId')
@@ -397,6 +415,63 @@ export const useFeatureStore = create<FeatureStoreState>((set, get) => ({
     if (!projectId) return
     const snaps = readSnapshotsFromStorage(projectId).filter((s) => s.id !== snapshotId)
     writeSnapshotsToStorage(projectId, snaps)
+  },
+
+  // ── Async Supabase-backed methods (consolidated from featureConfigStore) ──
+
+  fetchConfig: async (projectId: string) => {
+    set({ loading: true, error: null })
+    try {
+      let config = await featureConfigService.getFeatureConfig(projectId)
+
+      if (!config) {
+        // Initialise with defaults if not yet persisted in Supabase
+        config = generateDefaultFeatureConfig(projectId)
+        await featureConfigService.createFeatureConfig(projectId, config)
+      }
+
+      set((state) => ({
+        configs: { ...state.configs, [projectId]: config as FeatureConfig },
+        loading: false,
+      }))
+      writeToStorage(projectId, config as FeatureConfig)
+      return config as FeatureConfig
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error'
+      set({ error: message, loading: false })
+      toast.error('Failed to load feature configuration', message)
+      throw err
+    }
+  },
+
+  updateConfig: async (projectId: string, updates: Partial<FeatureConfig>) => {
+    const current = get().configs[projectId]
+    if (!current) return
+
+    const newConfig = { ...current, ...updates }
+
+    // Optimistic update
+    set((state) => ({
+      configs: { ...state.configs, [projectId]: newConfig },
+    }))
+    writeToStorage(projectId, newConfig)
+
+    try {
+      await featureConfigService.updateFeatureConfig(projectId, newConfig)
+    } catch (err: unknown) {
+      // Rollback
+      set((state) => ({
+        configs: { ...state.configs, [projectId]: current },
+      }))
+      writeToStorage(projectId, current)
+      toast.error('Failed to save configuration')
+    }
+  },
+
+  resetToDefaults: async (projectId: string) => {
+    const defaultConfig = generateDefaultFeatureConfig(projectId)
+    await get().updateConfig(projectId, defaultConfig)
+    toast.success('Configuration reset to defaults')
   },
 }))
 

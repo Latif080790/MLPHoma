@@ -80,4 +80,49 @@ export interface QHSESummary {
     criticalHazards: number
     avgInspectionScore: number
     trir: number  // Total Recordable Incident Rate
+    openCorrectiveActions?: number
+    overdueCorrectiveActions?: number
+}
+
+// ------------------------------------------------------------------
+// Corrective Actions
+// ------------------------------------------------------------------
+
+export type CorrectiveActionStatus = 'OPEN' | 'IN_PROGRESS' | 'PENDING_VERIFICATION' | 'VERIFIED' | 'CLOSED' | 'OVERDUE'
+export type CorrectiveActionSource = 'INCIDENT' | 'INSPECTION' | 'IBPR' | 'AUDIT' | 'MANUAL'
+
+export interface CorrectiveAction {
+    id: string
+    projectId: string
+
+    /** Human-readable reference number */
+    caNumber: string
+    title: string
+    description?: string
+
+    /** What triggered this corrective action */
+    source: CorrectiveActionSource
+    sourceId?: string   // ID of incident / inspection / ibpr entry
+    sourceRef?: string  // Human-readable reference (e.g. "INC-2601-0042")
+
+    status: CorrectiveActionStatus
+
+    priority: IncidentSeverity   // LOW | MEDIUM | HIGH | CRITICAL
+
+    /** Person responsible for completing the action */
+    assignedTo?: string
+    assignedToName?: string
+
+    dueDate: string
+    completedDate?: string
+    verifiedDate?: string
+    verifiedBy?: string
+
+    /** Evidence / attachments uploaded after completion */
+    evidenceUrls?: string[]
+    closureNotes?: string
+
+    createdBy?: string
+    createdAt: string
+    updatedAt: string
 }
