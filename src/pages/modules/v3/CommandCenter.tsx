@@ -17,6 +17,8 @@ import { useNavigate } from 'react-router-dom'
 import { lazyRetry } from '@/lib/lazyRetry'
 
 import { useErrorHandler } from '@/hooks/useErrorHandler'
+import { approvalService } from '@/services/approvalService'
+import { Badge } from '@/components/ui/badge'
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, ModeSwitch, SummaryStrip, WorkspaceHeader, AlertStrip } from '@/components/patterns'
@@ -54,6 +56,17 @@ export default function CommandCenter() {
         enabled: isPortfolioMode,
         staleTime: 30_000,
     })
+
+    // ── react-query: overdue / escalated approvals for SLA indicators ────────
+    const { data: overdueApprovals = [] } = useQuery({
+        queryKey: ['approvals', 'overdue', activeProjectId],
+        queryFn: () => approvalService.getOverdueApprovals(activeProjectId ?? undefined),
+        enabled: !isPortfolioMode && !!activeProjectId,
+        staleTime: 60_000,
+    })
+
+    const overdueCount = overdueApprovals.length
+    const escalatedCount = overdueApprovals.filter(a => a.status === 'ESCALATED').length
 
     const loading = isPortfolioMode ? portfolioLoading : statsLoading
     const pageError = isPortfolioMode
@@ -172,6 +185,7 @@ export default function CommandCenter() {
                     status: (dayCounter.remaining < 0 ? 'danger' : dayCounter.remaining < dayCounter.total * 0.2 ? 'warning' : 'success') as 'success' | 'warning' | 'danger',
                 }]
                 : []),
+            { label: 'SLA Breach', value: overdueCount, status: (overdueCount > 0 ? 'danger' : 'success') as 'danger' | 'success' },
         ] : []
 
     const criticalCount = isPortfolioMode ? (portfolioStats?.globalAlertCounts?.CRITICAL || 0) : (stats?.alertCounts?.CRITICAL || 0)
@@ -227,12 +241,23 @@ export default function CommandCenter() {
                 summaryItems.length > 0 ? <SummaryStrip items={summaryItems} variant="chips" /> : undefined
             }
             alert={
-                criticalCount > 0 ? (
-                    <AlertStrip
-                        severity="danger"
-                        message={`${criticalCount} critical alert${criticalCount > 1 ? 's' : ''} require immediate attention`}
-                        action={{ label: 'View Risks', onClick: () => navigate('/change-management') }}
-                    />
+                (overdueCount > 0 || criticalCount > 0) ? (
+                    <>
+                        {overdueCount > 0 && (
+                            <AlertStrip
+                                severity="danger"
+                                message={`${overdueCount} approval request melewati SLA deadline — butuh tindakan segera`}
+                                action={{ label: 'Lihat Approval', onClick: () => navigate('/approvals') }}
+                            />
+                        )}
+                        {criticalCount > 0 && (
+                            <AlertStrip
+                                severity="danger"
+                                message={`${criticalCount} critical alert${criticalCount > 1 ? 's' : ''} require immediate attention`}
+                                action={{ label: 'View Risks', onClick: () => navigate('/change-management') }}
+                            />
+                        )}
+                    </>
                 ) : undefined
             }
         >
@@ -277,6 +302,13 @@ export default function CommandCenter() {
 
                 {/* F. APPROVAL INBOX & MRP ALERTS (Side by Side) */}
                 <div className="md:col-span-2">
+                    <div className="flex items-center gap-2 mb-1">
+                        {escalatedCount > 0 && (
+                            <Badge variant="destructive" className="text-xs px-1.5 py-0 h-4 font-semibold tracking-wide">
+                                {escalatedCount} ESCALATED
+                            </Badge>
+                        )}
+                    </div>
                     <ApprovalQueueWidget projectId={activeProjectId} />
                 </div>
                 <div className="md:col-span-2">

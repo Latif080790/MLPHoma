@@ -12,7 +12,7 @@
 
 import { addDays, differenceInDays, parseISO, format } from 'date-fns'
 import type { TimelineTask } from '../store/timelineStore'
-import { useTimelineStore } from '../store/timelineStore'
+import type { DependencyType } from '../types/timeline'
 
 export interface CPMNode extends TimelineTask {
     earlyStart: number // days from project start
@@ -32,8 +32,9 @@ export const criticalPathService = {
     calculateCPM(tasks: TimelineTask[], projectStartDate: Date, forcePrediction: boolean = false): CPMNode[] {
         if (!tasks.length) return []
 
+        interface Edge { neighborId: string; type: DependencyType; lag: number }
         const nodes: Record<string, CPMNode> = {}
-        const adjacencyList: Record<string, string[]> = {}
+        const adjacencyList: Record<string, Edge[]> = {}
         const reverseAdjacencyList: Record<string, string[]> = {}
 
         // 1. Initialize nodes & graph
@@ -43,15 +44,17 @@ export const criticalPathService = {
             // PREDICTIVE LOGIC: Inflate duration if behind schedule and prediction is forced
             let predictedDuration = plannedDuration
             if (forcePrediction && task.progress < 100) {
-                // If we are halfway through time but only 10% done, predict it takes much longer
+                const MAX_PREDICTED_MULTIPLIER = 3
                 const timePassed = differenceInDays(new Date(), parseISO(task.startDate))
                 if (timePassed > 0 && task.progress > 0) {
                     const daysPerPercent = timePassed / task.progress
                     const remainingPercent = 100 - task.progress
-                    predictedDuration = timePassed + (remainingPercent * daysPerPercent)
+                    const rawPrediction = timePassed + (remainingPercent * daysPerPercent)
+                    // Cap at 3x planned to prevent extreme inflation from very low progress values
+                    predictedDuration = Math.min(rawPrediction, plannedDuration * MAX_PREDICTED_MULTIPLIER)
                 } else if (timePassed > 0 && task.progress === 0) {
-                    // Completely stalled
-                    predictedDuration = plannedDuration + timePassed
+                    // Completely stalled — cap at 3x planned
+                    predictedDuration = Math.min(plannedDuration + timePassed, plannedDuration * MAX_PREDICTED_MULTIPLIER)
                 }
             }
 
@@ -74,7 +77,11 @@ export const criticalPathService = {
         tasks.forEach(task => {
             task.dependencies?.forEach(dep => {
                 if (nodes[dep.predecessorId]) {
-                    adjacencyList[dep.predecessorId].push(task.id) // predecessor -> task
+                    adjacencyList[dep.predecessorId].push({
+                        neighborId: task.id,
+                        type: dep.type ?? 'FS',
+                        lag: dep.lag ?? 0
+                    }) // predecessor -> task
                     reverseAdjacencyList[task.id].push(dep.predecessorId)
                 }
             })
@@ -95,11 +102,34 @@ export const criticalPathService = {
             const currNode = nodes[currId]
             currNode.earlyFinish = currNode.earlyStart + currNode.predictedDurationDays
 
-            adjacencyList[currId].forEach(neighborId => {
-                const neighbor = nodes[neighborId]
-                neighbor.earlyStart = Math.max(neighbor.earlyStart, currNode.earlyFinish)
-                inDegree[neighborId]--
-                if (inDegree[neighborId] === 0) queue.push(neighborId)
+            adjacencyList[currId].forEach(edge => {
+                const neighbor = nodes[edge.neighborId]
+                const lag = edge.lag ?? 0
+                switch (edge.type) {
+                    case 'SS':
+                        // Successor can start when predecessor starts (+ lag)
+                        neighbor.earlyStart = Math.max(neighbor.earlyStart, currNode.earlyStart + lag)
+                        break
+                    case 'FF':
+                        // Successor must finish when predecessor finishes (+ lag)
+                        neighbor.earlyFinish = Math.max(neighbor.earlyFinish, currNode.earlyFinish + lag)
+                        // Recalculate earlyStart from the constrained earlyFinish
+                        neighbor.earlyStart = Math.max(neighbor.earlyStart, neighbor.earlyFinish - neighbor.predictedDurationDays)
+                        break
+                    case 'SF':
+                        // Successor must finish when predecessor starts (+ lag)
+                        neighbor.earlyFinish = Math.max(neighbor.earlyFinish, currNode.earlyStart + lag)
+                        // Recalculate earlyStart from the constrained earlyFinish
+                        neighbor.earlyStart = Math.max(neighbor.earlyStart, neighbor.earlyFinish - neighbor.predictedDurationDays)
+                        break
+                    case 'FS':
+                    default:
+                        // Successor can start when predecessor finishes (+ lag)
+                        neighbor.earlyStart = Math.max(neighbor.earlyStart, currNode.earlyFinish + lag)
+                        break
+                }
+                inDegree[edge.neighborId]--
+                if (inDegree[edge.neighborId] === 0) queue.push(edge.neighborId)
             })
         }
 
@@ -120,8 +150,8 @@ export const criticalPathService = {
 
             if (adjacencyList[currId].length > 0) {
                 let minLF = Infinity
-                adjacencyList[currId].forEach(neighborId => {
-                    minLF = Math.min(minLF, nodes[neighborId].lateStart)
+                adjacencyList[currId].forEach(edge => {
+                    minLF = Math.min(minLF, nodes[edge.neighborId].lateStart)
                 })
                 currNode.lateFinish = minLF
             }
@@ -142,13 +172,12 @@ export const criticalPathService = {
     /**
      * Get diagnostic summary of the critical path
      */
-    getProjectHealth(projectId: string): {
+    getProjectHealth(projectId: string, tasks: TimelineTask[]): {
         cpmNodes: CPMNode[],
         criticalPathLength: number,
         predictedDelayDays: number,
         criticalBottlenecks: string[]
     } {
-        const tasks = useTimelineStore.getState().getTasks(projectId)
         if (!tasks.length) return { cpmNodes: [], criticalPathLength: 0, predictedDelayDays: 0, criticalBottlenecks: [] }
 
         // Needs the actual project start, finding earliest task date

@@ -2,11 +2,72 @@
  * notificationService.ts
  * Service layer for the Notification Engine.
  * Handles CRUD + Supabase Realtime subscription for live notifications.
+ *
+ * Channel support:
+ *  - 'in_app'  — persisted to `notifications` table (always active)
+ *  - 'email'   — queued via triggerEmailNotification() placeholder (Phase 1b)
+ *  - 'push'    — queued via triggerPushNotification() placeholder (Phase 1b)
+ *
+ * Deep-link / groupKey fields are stored inside the existing JSONB `metadata`
+ * column — no database migration is required.
  */
 
 import { assertSupabase, supabase } from '../lib/supabaseClient'
 import { generateId } from '../lib/idGenerator'
 import type { AppNotification, CreateNotificationInput } from '../types/notification'
+
+// ------------------------------------------------------------------
+// Private channel helpers (Phase 1b placeholders)
+// ------------------------------------------------------------------
+
+/**
+ * Dispatches email channel via the 'notification-dispatcher' Edge Function.
+ * Silently no-ops when VITE_SUPABASE_FUNCTIONS_URL is not configured.
+ */
+async function triggerEmailNotification(
+    userId: string,
+    payload: { title: string; message: string; deepLink?: string }
+): Promise<void> {
+    try {
+        const client = assertSupabase()
+        await client.functions.invoke('notification-dispatcher', {
+            body: {
+                userId,
+                title: payload.title,
+                message: payload.message,
+                channels: ['email'],
+                deepLink: payload.deepLink,
+            },
+        })
+    } catch (e) {
+        // Non-blocking — email failure should never break the caller
+        console.warn('[notification] email dispatch failed:', e)
+    }
+}
+
+/**
+ * Dispatches push channel via the 'notification-dispatcher' Edge Function.
+ * Silently no-ops when VITE_SUPABASE_FUNCTIONS_URL is not configured.
+ */
+async function triggerPushNotification(
+    userId: string,
+    payload: { title: string; message: string; deepLink?: string }
+): Promise<void> {
+    try {
+        const client = assertSupabase()
+        await client.functions.invoke('notification-dispatcher', {
+            body: {
+                userId,
+                title: payload.title,
+                message: payload.message,
+                channels: ['push'],
+                deepLink: payload.deepLink,
+            },
+        })
+    } catch (e) {
+        console.warn('[notification] push dispatch failed:', e)
+    }
+}
 
 // ------------------------------------------------------------------
 // Row ↔ Domain Mappers
@@ -75,11 +136,18 @@ export const notificationService = {
     },
 
     /**
-     * Create a notification (can target a specific user)
+     * Create a notification (can target a specific user).
+     * deepLink and groupKey are merged into the metadata JSONB column so no
+     * database migration is required.
      */
     async createNotification(input: CreateNotificationInput): Promise<AppNotification> {
         const client = assertSupabase()
         const id = generateId('notif')
+
+        // Merge deep-link / groupKey into metadata without altering the schema
+        const enrichedMetadata: Record<string, unknown> = { ...(input.metadata ?? {}) }
+        if (input.deepLink) enrichedMetadata.deepLink = input.deepLink
+        if (input.groupKey) enrichedMetadata.groupKey = input.groupKey
 
         const { data, error } = await client
             .from('notifications')
@@ -91,7 +159,7 @@ export const notificationService = {
                 severity: input.severity,
                 title: input.title,
                 message: input.message,
-                metadata: input.metadata ?? {},
+                metadata: enrichedMetadata,
                 entity_type: input.entityType || null,
                 entity_id: input.entityId || null,
                 is_read: false,
@@ -104,6 +172,61 @@ export const notificationService = {
     },
 
     /**
+     * Send a notification to a specific user.
+     *
+     * Channels default to ['in_app']. Pass `channels: ['in_app', 'email']` or
+     * `['in_app', 'push']` to trigger additional delivery paths.
+     * Email/push dispatch is queued via placeholder helpers until the
+     * 'notification-dispatcher' Edge Function is deployed in Phase 1b.
+     */
+    async notifyUser(
+        userId: string,
+        payload: Omit<CreateNotificationInput, 'userId'>
+    ): Promise<void> {
+        const channels = payload.channels ?? ['in_app']
+
+        // Always write to the in_app table
+        await notificationService.createNotification({ ...payload, userId })
+
+        if (channels.includes('email')) {
+            await triggerEmailNotification(userId, payload)
+        }
+        if (channels.includes('push')) {
+            await triggerPushNotification(userId, payload)
+        }
+    },
+
+    /**
+     * Send the same notification to multiple specific users.
+     * Each user receives their own persisted row and channel triggers.
+     */
+    async notifyUsers(
+        userIds: string[],
+        payload: Omit<CreateNotificationInput, 'userId'>
+    ): Promise<void> {
+        await Promise.all(
+            userIds.map((uid) => notificationService.notifyUser(uid, payload))
+        )
+    },
+
+    /**
+     * Convenience wrapper: send a notification with email delivery forced on.
+     * Use this for important approvals where email confirmation is required.
+     */
+    async notifyWithEmail(
+        userId: string,
+        payload: Omit<CreateNotificationInput, 'userId'>
+    ): Promise<void> {
+        const channels: ('in_app' | 'email' | 'push')[] = Array.from(
+            new Set([...(payload.channels ?? ['in_app']), 'email'])
+        )
+        await notificationService.notifyUser(userId, { ...payload, channels })
+    },
+
+    /**
+     * @deprecated Use notifyUser() with a specific assigned approver ID instead.
+     * notifyByRole() broadcasts to ALL users with a role which causes notification spam.
+     *
      * Broadcast notification to all users with a specific role in a project
      */
     async notifyByRole(
@@ -180,6 +303,31 @@ export const notificationService = {
             .eq('id', notificationId)
 
         if (error) throw error
+    },
+
+    /**
+     * Fetch notifications for a specific user filtered by notification type.
+     * Useful for SLA dashboards that need to surface only approval or budget alerts.
+     */
+    async getByType(
+        projectId: string,
+        userId: string,
+        type: string
+    ): Promise<AppNotification[]> {
+        const client = assertSupabase()
+        const { data, error } = await client
+            .from('notifications')
+            .select('*')
+            .eq('project_id', projectId)
+            .eq('user_id', userId)
+            .eq('type', type)
+            .order('created_at', { ascending: false })
+
+        if (error) {
+            console.warn('[notification] getByType error:', error.message)
+            return []
+        }
+        return (data || []).map(rowToNotification)
     },
 
     /**

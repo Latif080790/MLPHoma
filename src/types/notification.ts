@@ -55,6 +55,21 @@ export interface CreateNotificationInput {
     metadata?: Record<string, unknown>
     entityType?: string
     entityId?: string
+    /**
+     * Delivery channels. Defaults to ['in_app'] when omitted.
+     * 'email' and 'push' are queued for Edge Function dispatch (Phase 1b).
+     */
+    channels?: ('in_app' | 'email' | 'push')[]
+    /**
+     * Deep-link path within the app, e.g. '/finance?invoice=inv-123'.
+     * Stored inside metadata.deepLink (no schema migration required).
+     */
+    deepLink?: string
+    /**
+     * Grouping key for deduplication, e.g. 'budget-warning:project-123'.
+     * Stored inside metadata.groupKey (no schema migration required).
+     */
+    groupKey?: string
 }
 
 /**
