@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+const mockFromFn = vi.fn()
+const mockRpcFn = vi.fn()
+
 vi.mock('../../lib/supabaseClient', () => ({
   supabase: null,
   assertSupabase: () => ({ from: mockFromFn, rpc: mockRpcFn }),
 }))
-
-const mockFromFn = vi.fn()
-const mockRpcFn = vi.fn()
 
 import { costDashboardService } from '../../services/costDashboardService'
 
@@ -55,6 +55,25 @@ describe('costDashboardService', () => {
       expect(snap.costTypeBreakdown.labor).toBe(450)
       expect(snap.rapPlanned).toBe(1200)
       expect(snap.actualCost).toBe(300)
+      expect(snap.latestCpi).toBeCloseTo(3.0, 1)
+      expect(snap.latestSpi).toBeCloseTo(0.9, 1)
+    })
+
+    it('correctly isolates overhead items from non-overhead items', async () => {
+      mockFromFn
+        .mockReturnValueOnce(makeChain({
+          data: [
+            { final_total: 800, cost_material: 800, cost_labor: 0, cost_equipment: 0, cost_subcon: 0, is_overhead: false },
+            { final_total: 200, cost_material: 0, cost_labor: 0, cost_equipment: 0, cost_subcon: 0, is_overhead: true },
+          ], error: null,
+        }))
+        .mockReturnValueOnce(makeChain({ data: [], error: null }))
+        .mockReturnValueOnce(makeChain({ data: null, error: null }))
+
+      const snap = await costDashboardService.getDashboardSnapshot('proj-overhead')
+      expect(snap.rabTotal).toBe(1000)
+      expect(snap.costTypeBreakdown.overhead).toBe(200)
+      expect(snap.costTypeBreakdown.material).toBe(800)
     })
 
     it('computes burn rate as actualCost/rabTotal * 100', async () => {
