@@ -55,6 +55,7 @@ export function BurnRateSparkline({ history, limit = 12 }: BurnRateSparklineProp
     <ResponsiveContainer width="100%" height={64}>
       <AreaChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
         <defs>
+          {/* Note: gradient ids are page-scoped; uniquify if multiple instances render simultaneously */}
           <linearGradient id="sparkAC" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
             <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />

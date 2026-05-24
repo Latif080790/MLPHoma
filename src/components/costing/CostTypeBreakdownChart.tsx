@@ -47,7 +47,7 @@ export function CostTypeBreakdownChart({ breakdown, totalRab }: CostTypeBreakdow
     )
   }
 
-  const total = slices.reduce((s, x) => s + x.value, 0) || totalRab || 1
+  const total = slices.reduce((s, x) => s + x.value, 0) || 1
 
   return (
     <div className="flex flex-col gap-4">

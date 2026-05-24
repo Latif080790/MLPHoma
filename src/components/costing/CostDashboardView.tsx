@@ -4,7 +4,7 @@
  * Composes KPI strip, cost type breakdown, EVM area chart, and EAC projections.
  */
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { format } from 'date-fns'
 import {
@@ -48,12 +48,15 @@ export function CostDashboardView() {
   }, [activeProjectId, fetchSnapshot, fetchHistory])
 
   // Build EVM chart data from history
-  const evmChartData = (history || []).map((m) => ({
-    date: format(new Date(m.snapshot_date), 'dd/MM'),
-    PV: m.pv,
-    EV: m.ev,
-    AC: m.ac,
-  }))
+  const evmChartData = useMemo(
+    () => (history || []).map((m) => ({
+      date: (() => { try { return format(new Date(m.snapshot_date), 'dd/MM') } catch { return '' } })(),
+      PV: Number(m.pv),
+      EV: Number(m.ev),
+      AC: Number(m.ac),
+    })),
+    [history]
+  )
 
   return (
     <div className="flex flex-col gap-4">

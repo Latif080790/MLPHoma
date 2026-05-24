@@ -14,13 +14,7 @@ interface CostKPIStripProps {
   loading: boolean
 }
 
-function cpiColor(value: number): string {
-  if (value < 0.9) return 'text-red-500'
-  if (value < 0.95) return 'text-amber-500'
-  return 'text-green-500'
-}
-
-function spiColor(value: number): string {
+function performanceIndexColor(value: number): string {
   if (value < 0.9) return 'text-red-500'
   if (value < 0.95) return 'text-amber-500'
   return 'text-green-500'
@@ -70,14 +64,14 @@ export function CostKPIStrip({ snapshot, loading }: CostKPIStripProps) {
       value: snapshot.latestCpi !== null ? cpi.toFixed(3) : '—',
       sub: 'Cost Performance Index',
       testId: 'kpi-cpi-value',
-      colorClass: snapshot.latestCpi !== null ? cpiColor(cpi) : 'text-muted-foreground',
+      colorClass: snapshot.latestCpi !== null ? performanceIndexColor(cpi) : 'text-muted-foreground',
     },
     {
       label: 'SPI',
       value: snapshot.latestSpi !== null ? spi.toFixed(3) : '—',
       sub: 'Schedule Performance Index',
       testId: 'kpi-spi-value',
-      colorClass: snapshot.latestSpi !== null ? spiColor(spi) : 'text-muted-foreground',
+      colorClass: snapshot.latestSpi !== null ? performanceIndexColor(spi) : 'text-muted-foreground',
     },
   ]
 
