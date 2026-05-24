@@ -5,6 +5,7 @@
 import { create } from 'zustand'
 import { forecastingService, type ForecastProjections } from '../services/forecastingService'
 import type { ProjectDailyMetric } from '../services/evmService'
+import type { CostDashboardSnapshot } from '../services/costDashboardService'
 
 interface ForecastState {
     history: ProjectDailyMetric[]
@@ -14,6 +15,10 @@ interface ForecastState {
     
     fetchHistory: (projectId: string) => Promise<void>
     generateSnapshot: () => Promise<void>
+
+    snapshot: CostDashboardSnapshot | null
+    snapshotLoading: boolean
+    fetchSnapshot: (projectId: string) => Promise<void>
 }
 
 export const useForecastStore = create<ForecastState>((set, get) => ({
@@ -46,5 +51,18 @@ export const useForecastStore = create<ForecastState>((set, get) => ({
         } finally {
             set({ loading: false })
         }
-    }
+    },
+
+    snapshot: null,
+    snapshotLoading: false,
+    fetchSnapshot: async (projectId: string) => {
+        set({ snapshotLoading: true })
+        try {
+            const { costDashboardService } = await import('../services/costDashboardService')
+            const snapshot = await costDashboardService.getDashboardSnapshot(projectId)
+            set({ snapshot, snapshotLoading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, snapshotLoading: false })
+        }
+    },
 }))
