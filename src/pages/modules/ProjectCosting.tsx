@@ -21,13 +21,16 @@ import { useWBSStore } from '@/store/wbsStore'
 import { useRabStore } from '@/store/rabStore'
 import { useRapStore } from '@/store/rapStore'
 import { useAHSPStore } from '@/store/ahspStore'
+import { useForecastStore } from '@/store/costForecastStore'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { lazyRetry } from '@/lib/lazyRetry'
+import { useShallow } from 'zustand/react/shallow'
 
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
-import { GlobalContextBar, WorkspaceHeader, WorkflowStepper, SummaryStrip, AlertStrip } from '@/components/patterns'
+import { GlobalContextBar, WorkspaceHeader, WorkflowStepper, SummaryStrip, AlertStrip, ModeSwitch } from '@/components/patterns'
+import { CostDashboardView, CostKPIStrip } from '@/components/costing'
 
 const AHSP = lazyRetry(() => import('@/pages/modules/AHSP/index'))
 const WBS = lazyRetry(() => import('@/pages/modules/WBS'))
@@ -68,8 +71,14 @@ export default function ProjectCosting() {
   const activeProjectId = useProjectStore(s => s.activeProjectId)
   const projects = useProjectStore(s => s.projects)
   const [activeStep, setActiveStep] = useState<CostingStep>('ahsp')
+  const [activeMode, setActiveMode] = useState<'dashboard' | 'pipeline'>('dashboard')
   const [srStatus, setSrStatus] = useState('AHSP step opened.')
   const { handleError } = useErrorHandler()
+
+  // Forecast store — snapshot data for dashboard mode
+  const { snapshot, snapshotLoading, fetchSnapshot } = useForecastStore(
+    useShallow(s => ({ snapshot: s.snapshot, snapshotLoading: s.snapshotLoading, fetchSnapshot: s.fetchSnapshot }))
+  )
 
   // Store selectors — primitive values to avoid re-render loops
   const ahspCount = useAHSPStore(s => s.ahspItems.length)
@@ -87,8 +96,9 @@ export default function ProjectCosting() {
       if (!wbsByProj[activeProjectId]) fetchWbs(activeProjectId).catch((e: unknown) => handleError(e, 'network.fetch'))
       if (!rabByProj[activeProjectId]) fetchRab(activeProjectId).catch((e: unknown) => handleError(e, 'network.fetch'))
       fetchRap(activeProjectId).catch((e: unknown) => handleError(e, 'network.fetch'))
+      fetchSnapshot(activeProjectId).catch((e: unknown) => handleError(e, 'network.fetch'))
     }
-  }, [activeProjectId, fetchWbs, fetchRab, fetchRap])
+  }, [activeProjectId, fetchWbs, fetchRab, fetchRap, fetchSnapshot])
 
   const activeProject = activeProjectId ? projects[activeProjectId] : null
 
@@ -220,11 +230,24 @@ export default function ProjectCosting() {
         />
       }
       navigation={
-        <WorkflowStepper
-          steps={workflowSteps}
-          activeStepId={activeStep}
-          onStepClick={handleStepChange}
-        />
+        <div className="flex flex-col gap-2">
+          <ModeSwitch
+            options={[
+              { value: 'dashboard', label: 'Dashboard', icon: <BarChart2 size={14} /> },
+              { value: 'pipeline', label: 'Pipeline', icon: <GitBranch size={14} /> },
+            ]}
+            value={activeMode}
+            onChange={(m) => setActiveMode(m as 'dashboard' | 'pipeline')}
+            size="sm"
+          />
+          {activeMode === 'pipeline' && (
+            <WorkflowStepper
+              steps={workflowSteps}
+              activeStepId={activeStep}
+              onStepClick={handleStepChange}
+            />
+          )}
+        </div>
       }
       header={
         <WorkspaceHeader
@@ -233,7 +256,9 @@ export default function ProjectCosting() {
         />
       }
       summary={
-        <SummaryStrip items={summaryItems} variant="chips" />
+        activeMode === 'dashboard'
+          ? <CostKPIStrip snapshot={snapshot} loading={snapshotLoading} />
+          : <SummaryStrip items={summaryItems} variant="chips" />
       }
       alert={
         emptySteps.length > 0 ? (
@@ -246,50 +271,58 @@ export default function ProjectCosting() {
     >
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
 
-      {/* Budget Health KPIs */}
-      <BudgetHealthPanel
-        projectId={activeProjectId}
-        projectBudget={activeProject.budget ?? 0}
-      />
+      {activeMode === 'dashboard' ? (
+        /* ── Dashboard Mode ──────────────────────────────────────────────── */
+        <CostDashboardView />
+      ) : (
+        /* ── Pipeline Mode ───────────────────────────────────────────────── */
+        <>
+          {/* Budget Health KPIs */}
+          <BudgetHealthPanel
+            projectId={activeProjectId}
+            projectBudget={activeProject.budget ?? 0}
+          />
 
-      {/* Guided onboarding — shown when pipeline is fully empty */}
-      {emptySteps.length === 4 && (
-        <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-900/10 p-6 mt-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Pipeline Costing Belum Diisi</p>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                  Ikuti urutan berikut untuk membangun rencana anggaran proyek:
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {STEP_CONFIG.filter(s => s.id !== 'resource').map((step, i, arr) => (
-                  <React.Fragment key={step.id}>
-                    <button
-                      type="button"
-                      onClick={() => handleStepChange(step.id)}
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 px-3 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
-                    >
-                      {step.icon}
-                      {step.label}
-                    </button>
-                    {i < arr.length - 1 && (
-                      <ArrowRight size={14} className="text-amber-400 self-center" />
-                    )}
-                  </React.Fragment>
-                ))}
+          {/* Guided onboarding — shown when pipeline is fully empty */}
+          {emptySteps.length === 4 && (
+            <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-900/10 p-6 mt-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Pipeline Costing Belum Diisi</p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                      Ikuti urutan berikut untuk membangun rencana anggaran proyek:
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {STEP_CONFIG.filter(s => s.id !== 'resource').map((step, i, arr) => (
+                      <React.Fragment key={step.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleStepChange(step.id)}
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 px-3 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+                        >
+                          {step.icon}
+                          {step.label}
+                        </button>
+                        {i < arr.length - 1 && (
+                          <ArrowRight size={14} className="text-amber-400 self-center" />
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Step Content */}
-      <div className="min-h-[420px] mt-[var(--space-4)]">
-        {renderContent()}
-      </div>
+          {/* Step Content */}
+          <div className="min-h-[420px] mt-[var(--space-4)]">
+            {renderContent()}
+          </div>
+        </>
+      )}
     </PageShell>
   )
 }
