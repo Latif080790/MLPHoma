@@ -300,3 +300,68 @@ export async function analyzeProductivity(projectId: string): Promise<Productivi
         variance: parseFloat((avgDailyProg - standardDailyProg).toFixed(2))
     }
 }
+
+// ── Advanced EVM Calculations ──────────────────────────────────
+
+export interface TCPIResult {
+  tcpiBac: number
+  tcpiEac: number
+  feasibility: 'achievable' | 'challenging' | 'unrealistic'
+}
+
+export function computeTCPI(p: {
+  bac: number; ev: number; ac: number; eac: number
+}): TCPIResult {
+  const bacDenom = p.bac - p.ac
+  const eacDenom = p.eac - p.ac
+  const tcpiBac = bacDenom === 0 ? 1 : (p.bac - p.ev) / bacDenom
+  const tcpiEac = eacDenom === 0 ? 1 : (p.bac - p.ev) / eacDenom
+  const feasibility = tcpiBac > 1.1 ? 'unrealistic' : tcpiBac > 1.0 ? 'challenging' : 'achievable'
+  return {
+    tcpiBac: parseFloat(tcpiBac.toFixed(4)),
+    tcpiEac: parseFloat(tcpiEac.toFixed(4)),
+    feasibility,
+  }
+}
+
+export interface AdvancedEACResult {
+  eac1: number
+  eac2: number
+  eac3: number
+  recommendedEac: number
+  vac: number
+}
+
+export function computeAdvancedEAC(p: {
+  bac: number; ev: number; ac: number; etc: number
+}): AdvancedEACResult {
+  const cpi  = p.ac > 0 ? p.ev / p.ac : 1
+  const eac1 = p.ac + p.etc
+  const eac2 = cpi > 0 ? p.bac / cpi : p.bac
+  const eac3 = p.ac + (cpi > 0 ? (p.bac - p.ev) / cpi : (p.bac - p.ev))
+  const recommendedEac = Math.max(eac1, eac2, eac3)
+  const vac = p.bac - recommendedEac
+  return { eac1, eac2, eac3, recommendedEac, vac }
+}
+
+export interface ConfidenceIntervalResult {
+  lower: number
+  upper: number
+  range: number
+  confidence: 'low' | 'medium' | 'high'
+}
+
+export function computeConfidenceInterval(p: {
+  cpi: number; progressPct: number; snapshotCount: number
+}): ConfidenceIntervalResult {
+  const baseVariance = 0.15 / Math.max(1, Math.sqrt(p.snapshotCount))
+  const lower = p.cpi * (1 - baseVariance)
+  const upper = p.cpi * (1 + baseVariance)
+  const confidence = p.progressPct >= 30 ? 'high' : p.progressPct >= 10 ? 'medium' : 'low'
+  return {
+    lower: parseFloat(lower.toFixed(4)),
+    upper: parseFloat(upper.toFixed(4)),
+    range: parseFloat((upper - lower).toFixed(4)),
+    confidence,
+  }
+}
