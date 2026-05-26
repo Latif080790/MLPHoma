@@ -457,11 +457,9 @@ export const useRabStore = create<RabState>((set, get) => {
           if (!hasUnsaved) return si
           const local = localItemMap.get(si.id)
           if (!local) return si
-          // Prefer local when it has a newer edit timestamp
-          if (local.updatedAt && si.updatedAt && local.updatedAt > si.updatedAt) {
-            return { ...local, snapshotPrice: si.snapshotPrice, snapshot_price: si.snapshot_price }
-          }
-          return si
+          // User has unsaved edits — prefer local for all fields.
+          // Always take snapshotPrice from Supabase so lock state stays in sync.
+          return { ...local, snapshotPrice: si.snapshotPrice, snapshot_price: si.snapshot_price }
         })
         const localOnlyItems = localItems.filter(i => !supabaseIdSet.has(i.id))
         const merged = [...mergedSupabase, ...localOnlyItems]
