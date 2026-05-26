@@ -568,10 +568,10 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
       >
         {/* ── WBS Tree Panel ──────────────────────────────── */}
         <div className="w-[224px] flex-shrink-0 bg-white border-r border-slate-200 flex flex-col">
-          {/* Dark header */}
-          <div className="px-3 py-2 bg-slate-800 flex items-center justify-between flex-shrink-0">
-            <span className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-              <GitBranch size={11} className="text-blue-400" /> WBS Structure
+          {/* Clean white header — matches Variant D reference */}
+          <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+              <GitBranch size={11} className="text-slate-400" /> WBS Structure
             </span>
             <div className="flex items-center gap-1">
               <span className="text-xs font-mono text-slate-400">{items.length} nodes</span>
@@ -579,7 +579,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
                 onClick={handleExpandAll}
                 disabled={!items.length}
                 title="Expand all"
-                className="text-slate-400 hover:text-slate-200 px-1 py-0.5 rounded hover:bg-slate-700 transition-colors disabled:opacity-30"
+                className="text-slate-400 hover:text-slate-700 p-0.5 rounded hover:bg-slate-100 transition-colors disabled:opacity-30"
               >
                 <ChevronsUpDown size={11} />
               </button>
@@ -587,53 +587,44 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
                 onClick={handleCollapseAll}
                 disabled={!expandedIds.size}
                 title="Collapse all"
-                className="text-slate-400 hover:text-slate-200 px-1 py-0.5 rounded hover:bg-slate-700 transition-colors disabled:opacity-30"
+                className="text-slate-400 hover:text-slate-700 p-0.5 rounded hover:bg-slate-100 transition-colors disabled:opacity-30"
               >
                 <ChevronsDownUp size={11} />
               </button>
             </div>
           </div>
 
-          {/* Search */}
-          <div className="px-2 py-1.5 border-b border-slate-100 flex-shrink-0">
+          {/* Search — compact single line */}
+          <div className="px-2 pt-1.5 pb-1 border-b border-slate-100 flex-shrink-0">
             <div className="relative">
-              <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <Search size={10} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
               <input
                 type="text"
                 value={treeSearch}
                 onChange={e => setTreeSearch(e.target.value)}
                 placeholder="Cari kode / nama..."
-                className="w-full pl-6 pr-6 py-1 text-xs border border-slate-200 rounded focus:outline-none focus:border-blue-400 bg-slate-50"
+                className="w-full pl-5 pr-5 py-1 text-xs border border-slate-150 rounded bg-slate-50 focus:outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-300"
               />
               {treeSearch && (
-                <button onClick={() => setTreeSearch('')} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                <button onClick={() => setTreeSearch('')} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
                   <X size={10} />
                 </button>
               )}
             </div>
           </div>
 
-          {/* KPI mini bar */}
-          {items.length > 0 && (
-            <div className="px-2 py-1.5 border-b border-slate-100 flex-shrink-0">
-              <WBSKpiBar items={items} rabLinkedCount={kpiData.rabLinkedCount} totalBudget={kpiData.totalBudget} />
-            </div>
-          )}
-
-          {/* Add root button */}
-          <button
-            onClick={() => handleAddItem(null)}
-            className="mx-2 my-1.5 flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-600 px-2 py-1 rounded hover:bg-blue-50 transition-colors flex-shrink-0"
-          >
-            <Plus size={11} /> Add Root Item
-          </button>
-
-          {/* Tree */}
+          {/* Tree — fills remaining height */}
           <div className="flex-1 overflow-y-auto">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 py-8">
                 <Layers size={24} className="opacity-20" />
-                <div className="text-xs text-center">Belum ada WBS node</div>
+                <p className="text-xs text-center text-slate-400">Belum ada WBS node</p>
+                <button
+                  onClick={() => handleAddItem(null)}
+                  className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <Plus size={11} /> Add Root Item
+                </button>
               </div>
             ) : (
               <WBSTree
