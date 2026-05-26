@@ -444,9 +444,9 @@ export const useRabStore = create<RabState>((set, get) => {
         const supabaseItems: RABItem[] = data.map((row) => mapDbRowToRabItem(row as Record<string, unknown>))
 
         // Merge with existing local items.
-        // When the user has unsaved edits (hasUnsavedChanges), local items win for matching IDs
-        // provided their updatedAt is newer — this prevents in-progress edits from being
-        // overwritten by a Supabase re-fetch (e.g. triggered by the realtime subscription).
+        // When the user has unsaved edits (hasUnsavedChanges), local items always win for
+        // matching IDs — this prevents in-progress edits from being overwritten by a Supabase
+        // re-fetch triggered by the realtime subscription or component remount.
         // snapshotPrice is always taken from Supabase so lock state stays in sync.
         const localItems = get().itemsByProject[projectId] || []
         const hasUnsaved = get().hasUnsavedChanges[projectId]
