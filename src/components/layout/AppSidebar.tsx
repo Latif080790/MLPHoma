@@ -205,7 +205,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                                                     size={16}
                                                     className={cn(
                                                         "flex-shrink-0",
-                                                        isActive ? "text-blue-600 dark:text-blue-400" : item.colorClass
+                                                        isActive ? "text-nl-orange" : item.colorClass
                                                     )}
                                                 />
                                                 {!collapsed && (
