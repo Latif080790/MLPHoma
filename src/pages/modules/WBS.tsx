@@ -649,49 +649,49 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
         {/* ── RAB Table Panel ─────────────────────────────── */}
         <div className="flex-1 flex flex-col bg-white overflow-hidden">
           {/* RAB header */}
-          <div className="px-4 py-2 border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
-            <div>
-              <div className="font-semibold text-sm text-slate-800">
+          <div className="px-3 py-1.5 border-b border-slate-200 flex items-center gap-2 flex-shrink-0 min-h-0">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className="font-semibold text-xs text-slate-700 truncate">
                 {selectedNode ? selectedNode.name : 'Rencana Anggaran Biaya (RAB)'}
-              </div>
+              </span>
               {selectedNode && (
-                <div className="text-xs text-slate-400 font-mono">{selectedNode.code}</div>
+                <span className="text-xs text-slate-400 font-mono flex-shrink-0">{selectedNode.code}</span>
+              )}
+              {filterWbsId && (
+                <button
+                  onClick={() => { setFilterWbsId(null); selectItem(null) }}
+                  className="text-xs text-slate-400 hover:text-slate-700 flex items-center gap-0.5 px-1 py-0.5 rounded hover:bg-slate-100 flex-shrink-0"
+                >
+                  <X size={10} /> All
+                </button>
               )}
             </div>
-            {filterWbsId && (
-              <button
-                onClick={() => { setFilterWbsId(null); selectItem(null) }}
-                className="text-xs text-slate-400 hover:text-slate-700 flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-slate-100"
-              >
-                <X size={11} /> Show all
-              </button>
-            )}
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={() => setShowBoQImport(true)}
-                className="flex items-center gap-1.5 text-xs text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all"
+                className="flex items-center gap-1 text-xs text-slate-600 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
               >
-                <FileUp size={12} /> BoQ Import
+                <FileUp size={11} /> BoQ
               </button>
               <button
                 onClick={() => document.getElementById('wbs-import-v2')?.click()}
-                className="flex items-center gap-1.5 text-xs text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all"
+                className="flex items-center gap-1 text-xs text-slate-500 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
               >
-                <Upload size={12} /> Import
+                <Upload size={11} />
                 <input id="wbs-import-v2" type="file" accept=".json" onChange={handleImport} className="hidden" />
               </button>
               <button
                 onClick={handleExport}
                 disabled={!items.length}
-                className="flex items-center gap-1.5 text-xs text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all disabled:opacity-40"
+                className="flex items-center gap-1 text-xs text-slate-500 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all disabled:opacity-40"
               >
-                <Download size={12} /> Export
+                <Download size={11} />
               </button>
               <button
                 onClick={() => handleAddItem(null)}
-                className="flex items-center gap-1.5 text-xs bg-blue-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-all"
+                className="flex items-center gap-1 text-xs bg-blue-600 text-white font-semibold px-2.5 py-1 rounded hover:bg-blue-700 transition-all"
               >
-                <Plus size={12} /> Add Item
+                <Plus size={11} /> WBS Item
               </button>
             </div>
           </div>

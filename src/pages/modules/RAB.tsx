@@ -252,38 +252,43 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
       style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
     >
       {/* ── Top action bar ─────────────────────────────────────── */}
-      <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="px-3 py-1.5 bg-white border-b border-slate-200 flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           {currentZone && (
-            <span className="flex items-center gap-1.5 text-xs text-slate-500">
-              <MapPin size={11} />
-              {currentZone.name}
+            <span className="flex items-center gap-1 text-xs text-slate-400">
+              <MapPin size={10} /> {currentZone.name}
             </span>
           )}
           {isLocked && (
-            <span className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
-              <Lock size={11} /> Locked
+            <span className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+              <Lock size={10} /> Locked
+            </span>
+          )}
+          {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
+            <span className="text-xs text-slate-400 font-mono">
+              OH {overheadPct}% · P {profitPct}% · PPN {taxRate}%
             </span>
           )}
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           {otherPeers.length > 0 && <PresenceAvatars users={otherPeers} />}
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="flex items-center gap-1.5 text-xs text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all disabled:opacity-50"
+            className="flex items-center gap-1 text-xs text-slate-500 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 transition-all disabled:opacity-50"
           >
-            <CloudUpload size={13} />
+            <CloudUpload size={11} />
             {syncing ? 'Syncing…' : 'Sync'}
           </button>
           <button
             onClick={() => setShowSettings(s => !s)}
-            className="flex items-center gap-1.5 text-xs text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all"
+            className={`flex items-center gap-1 text-xs px-2 py-1 rounded border transition-all ${
+              showSettings
+                ? 'bg-slate-100 border-slate-300 text-slate-700'
+                : 'text-slate-500 border-slate-200 hover:border-slate-300'
+            }`}
           >
-            <Settings2 size={13} />
-            {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
-              <span className="text-xs font-bold text-slate-500">OH {overheadPct}%</span>
-            )}
+            <Settings2 size={11} /> Rates
           </button>
         </div>
       </div>
@@ -318,16 +323,16 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
       )}
 
       {/* ── KPI strip ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-px bg-slate-200 border-b border-slate-200 flex-shrink-0">
+      <div className="grid grid-cols-4 divide-x divide-slate-200 border-b border-slate-200 flex-shrink-0">
         {([
-          { label: 'TOTAL ITEMS', value: items.length.toString(), cls: 'text-slate-900' },
-          { label: 'SUBTOTAL', value: formatIDR(summary.subtotal), cls: 'text-slate-900' },
-          { label: 'OH + PROFIT + TAX', value: formatIDR(summary.overhead + summary.profit + summary.tax), cls: summary.subtotal > 0 ? 'text-slate-900' : 'text-slate-400' },
-          { label: 'FINAL TOTAL', value: formatIDR(summary.total), cls: 'text-blue-600' },
+          { label: 'Items', value: items.length.toString(), cls: 'text-slate-800' },
+          { label: 'Subtotal', value: formatIDR(summary.subtotal), cls: 'text-slate-800' },
+          { label: 'OH + Profit + PPN', value: formatIDR(summary.overhead + summary.profit + summary.tax), cls: summary.subtotal > 0 ? 'text-slate-700' : 'text-slate-400' },
+          { label: 'Final Total', value: formatIDR(summary.total), cls: 'text-blue-600' },
         ] as const).map(({ label, value, cls }) => (
-          <div key={label} className="bg-white px-4 py-3">
-            <div className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</div>
-            <div className={`font-bold text-xl font-mono mt-0.5 ${cls}`}>{value}</div>
+          <div key={label} className="bg-white px-3 py-2">
+            <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 leading-none mb-0.5">{label}</div>
+            <div className={`font-bold text-sm font-mono leading-tight ${cls}`}>{value}</div>
           </div>
         ))}
       </div>
