@@ -6,9 +6,10 @@ import { useProjectStore } from '@/store/projectStore'
 
 interface EVMGuardPanelProps {
   projectId: string | null
+  className?: string
 }
 
-export function EVMGuardPanel({ projectId }: EVMGuardPanelProps) {
+export function EVMGuardPanel({ projectId, className }: EVMGuardPanelProps) {
   const snapshot = useForecastStore(s => s.snapshot)
   const project = useProjectStore(s => (projectId ? s.projects[projectId] : null))
 
@@ -56,7 +57,7 @@ export function EVMGuardPanel({ projectId }: EVMGuardPanelProps) {
   }, [evm])
 
   return (
-    <div className="w-[272px] flex-shrink-0 bg-white border-l border-slate-200 flex flex-col overflow-hidden">
+    <div className={`bg-white border-l border-slate-200 flex flex-col overflow-hidden h-full ${className ?? ''}`}>
       {/* Header */}
       <div className="px-4 py-2.5 border-b border-slate-100 flex items-center gap-1.5 flex-shrink-0">
         <Shield size={12} className="text-blue-500" />
