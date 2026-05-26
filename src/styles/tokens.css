@@ -1,14 +1,16 @@
 /*
  * ============================================================================
- * MLPHoma Design Token System v1.0
+ * MLPHoma Design Token System v2.0  (Sprint 2 — Typography & Color)
  * ============================================================================
  * Source of truth for all visual tokens across the entire product.
- * Based on: MLPHoma Design Token Rules v1.0
- * 
- * Token layers:
- *   1. Foundation tokens  — raw scales (neutral, spacing, radius, etc.)
- *   2. Semantic tokens     — context-aware (surface, text, status, etc.)
- *   3. Component aliases   — component-specific (button, table, nav, etc.)
+ * Based on: MLPHoma Design Token Rules v1.0 + Visual Refinement v5
+ *
+ * Changes in v2.0:
+ *   - Neutral palette: Slate (blue-tinted 210-229°) → Zinc (true neutral 240° 4-6%)
+ *   - Added --font-family-display (Geist) + font-feature-settings tokens
+ *   - Letter-spacing: added --letter-spacing-display (-0.035em) for headings 24px+
+ *   - Status pills: added dot/glow tokens for dimensional pills
+ *   - Easing: added --motion-easing-spring (Linear-style)
  * ============================================================================
  */
 
@@ -17,21 +19,21 @@
      1. FOUNDATION TOKENS — Raw Scales
      ========================================================================== */
 
-  /* --- Neutral Scale --- */
+  /* --- Neutral Scale (Zinc — true neutral, 240° hue, low saturation) --- */
   --neutral-0: 0 0% 100%;           /* pure white / base canvas */
-  --neutral-25: 210 40% 99%;
-  --neutral-50: 210 40% 98%;
-  --neutral-100: 210 40% 96%;
-  --neutral-150: 214 32% 93%;
-  --neutral-200: 214 32% 91%;
-  --neutral-300: 213 27% 84%;
-  --neutral-400: 215 20% 65%;
-  --neutral-500: 215 16% 47%;
-  --neutral-600: 215 19% 35%;
-  --neutral-700: 217 33% 17%;
-  --neutral-800: 222 47% 11%;
-  --neutral-900: 224 71% 4%;
-  --neutral-950: 229 84% 5%;         /* near-black */
+  --neutral-25: 0 0% 99%;
+  --neutral-50: 0 0% 98%;
+  --neutral-100: 240 5% 96%;
+  --neutral-150: 240 5% 93%;
+  --neutral-200: 240 6% 90%;
+  --neutral-300: 240 5% 84%;
+  --neutral-400: 240 5% 65%;
+  --neutral-500: 240 4% 46%;
+  --neutral-600: 240 5% 34%;
+  --neutral-700: 240 5% 17%;
+  --neutral-800: 240 4% 11%;
+  --neutral-900: 240 6% 4%;
+  --neutral-950: 240 10% 4%;         /* near-black */
 
   /* --- Brand Primary Scale --- */
   --brand-primary-900: 221 83% 30%;
@@ -89,13 +91,38 @@
   --radius-xl: 20px;
   --radius-full: 9999px;
 
-  /* --- Shadow Scale --- */
+  /* --- Shadow Scale (layered — 2-3 offset+blur pairs for realistic depth) --- */
   --shadow-none: none;
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.08);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-sm:
+    0 1px 3px 0 rgb(0 0 0 / 0.06),
+    0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.07),
+    0 2px 4px -2px rgb(0 0 0 / 0.05),
+    0 0 0 1px rgb(0 0 0 / 0.03);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.08),
+    0 4px 6px -4px rgb(0 0 0 / 0.06),
+    0 0 0 1px rgb(0 0 0 / 0.03);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.08),
+    0 8px 10px -6px rgb(0 0 0 / 0.06),
+    0 0 0 1px rgb(0 0 0 / 0.03);
+
+  /* --- Glow Shadows (brand CTA elevation) --- */
+  --shadow-glow-orange:
+    0 0 0 1px rgb(249 115 22 / 0.12),
+    0 8px 24px -4px rgb(249 115 22 / 0.20);
+  --shadow-glow-orange-hover:
+    0 0 0 1px rgb(249 115 22 / 0.20),
+    0 12px 32px -4px rgb(249 115 22 / 0.28);
+  --shadow-glow-blue:
+    0 0 0 1px rgb(29 95 204 / 0.12),
+    0 8px 24px -4px rgb(29 95 204 / 0.18);
+
+  /* --- Focus Ring --- */
+  --shadow-focus-ring: 0 0 0 2px hsl(var(--background)), 0 0 0 4px rgb(249 115 22 / 0.40);
 
   /* --- Border Width Scale --- */
   --border-width-none: 0px;
@@ -104,8 +131,14 @@
   --border-width-strong: 3px;
 
   /* --- Font Families --- */
+  --font-family-display: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-family-base: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-family-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* --- Font Feature Settings --- */
+  --font-features-default: 'kern' 1;
+  --font-features-tabular: 'tnum' 1, 'kern' 1;  /* tabular numbers for currency/data */
+  --font-features-display: 'cv02' 1, 'cv11' 1, 'kern' 1;  /* character variants for display */
 
   /* --- Font Weights --- */
   --font-weight-regular: 400;
@@ -135,6 +168,7 @@
   --letter-spacing-tight: -0.01em;
   --letter-spacing-normal: 0em;
   --letter-spacing-wide: 0.05em;
+  --letter-spacing-display: -0.035em;  /* for headings 24px+ with Geist */
 
   /* --- Motion / Duration --- */
   --motion-duration-fast: 120ms;
@@ -147,6 +181,7 @@
   --motion-easing-decelerate: cubic-bezier(0, 0, 0, 1);
   --motion-easing-accelerate: cubic-bezier(0.3, 0, 1, 1);
   --motion-easing-emphasis: cubic-bezier(0.2, 0, 0, 1.2);
+  --motion-easing-spring: cubic-bezier(0.16, 1, 0.3, 1);  /* Linear-style spring */
 
   /* --- Z-Index Scale --- */
   --z-base: 0;
@@ -174,7 +209,7 @@
   --color-surface-panel-active: var(--neutral-100);
   --color-surface-subtle: var(--neutral-50);
   --color-surface-elevated: var(--neutral-0);
-  --color-surface-overlay: 222 47% 11%;  /* with opacity */
+  --color-surface-overlay: 240 4% 11%;  /* with opacity — updated to Zinc */
   --color-surface-inverse: var(--neutral-800);
 
   /* --- Text Tokens --- */
@@ -207,26 +242,31 @@
   --color-status-success-fg: 142 72% 29%;
   --color-status-success-bg: 138 76% 95%;
   --color-status-success-border: 142 69% 58%;
+  --color-status-success-dot: 142 72% 36%;      /* glow dot for dimensional pills */
 
   /* Warning / Watch */
   --color-status-warning-fg: 45 93% 37%;
   --color-status-warning-bg: 48 96% 95%;
   --color-status-warning-border: 45 93% 58%;
+  --color-status-warning-dot: 45 93% 42%;
 
   /* Danger / Critical / Blocked / Overrun */
   --color-status-danger-fg: 0 72% 51%;
   --color-status-danger-bg: 0 86% 97%;
   --color-status-danger-border: 0 84% 60%;
+  --color-status-danger-dot: 0 72% 51%;
 
   /* Info / Draft / In Progress */
   --color-status-info-fg: 221 83% 43%;
   --color-status-info-bg: 214 100% 95%;
   --color-status-info-border: 221 83% 53%;
+  --color-status-info-dot: 221 83% 48%;
 
   /* Locked / Neutral / Read-only / Archived */
   --color-status-locked-fg: var(--neutral-600);
   --color-status-locked-bg: var(--neutral-100);
   --color-status-locked-border: var(--neutral-300);
+  --color-status-locked-dot: var(--neutral-500);
 
   /* --- Category Tokens --- */
   --color-category-material: 200 95% 45%;
@@ -378,4 +418,34 @@
   --nav-item-active-bg: 221 83% 15%;
   --nav-item-active-text: var(--brand-primary-300);
   --nav-item-hover-bg: var(--neutral-700);
+
+  /* --- Shadow Overrides (Dark) — stronger for dark canvas depth --- */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.30);
+  --shadow-sm:
+    0 1px 3px 0 rgb(0 0 0 / 0.40),
+    0 1px 2px -1px rgb(0 0 0 / 0.30);
+  --shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.45),
+    0 2px 4px -2px rgb(0 0 0 / 0.35),
+    0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.50),
+    0 4px 6px -4px rgb(0 0 0 / 0.40),
+    0 0 0 1px rgb(255 255 255 / 0.04);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.55),
+    0 8px 10px -6px rgb(0 0 0 / 0.45),
+    0 0 0 1px rgb(255 255 255 / 0.05);
+
+  /* --- Glow Overrides (Dark) — more vivid on dark canvas --- */
+  --shadow-glow-orange:
+    0 0 0 1px rgb(249 115 22 / 0.20),
+    0 8px 24px -4px rgb(249 115 22 / 0.30);
+  --shadow-glow-orange-hover:
+    0 0 0 1px rgb(249 115 22 / 0.30),
+    0 12px 32px -4px rgb(249 115 22 / 0.40);
+  --shadow-glow-blue:
+    0 0 0 1px rgb(29 95 204 / 0.20),
+    0 8px 24px -4px rgb(29 95 204 / 0.28);
+  --shadow-focus-ring: 0 0 0 2px rgb(9 9 11), 0 0 0 4px rgb(249 115 22 / 0.55);
 }

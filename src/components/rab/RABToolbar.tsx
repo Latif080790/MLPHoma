@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
 import {
-  Calculator, CheckCircle2, History, Layers, Lock,
-  LockKeyhole, Plus, Search, Trash2, X, Zap,
-  Download, Upload, CalendarClock, ChevronDown, ListFilter, Percent
+  CheckCircle2, Layers, Lock, LockKeyhole, Plus, Search, Trash2, X, Zap,
+  Download, Upload, ChevronDown, ListFilter, Percent, MoreHorizontal,
 } from 'lucide-react'
 import { VisibilityState } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,19 +21,14 @@ import {
 } from '@/components/ui/popover'
 
 interface RABToolbarProps {
-  // Search & Filters
   searchQuery: string
   onSearchChange: (val: string) => void
   activeTab: 'direct' | 'overhead'
   onTabChange: (tab: 'direct' | 'overhead') => void
-  
-  // States
   isLocked: boolean
   draftCount: number
   selectedCount: number
   scenarioVersion?: string | null
-  
-  // Actions
   onAddItem: () => void
   onBulkDelete: () => void
   onBulkOverhead?: (percent: number) => void
@@ -49,259 +42,221 @@ interface RABToolbarProps {
   onPublish: () => void
   onSwitchScenario: (version: string | null) => void
   onSaveScenario: () => void
-  
-  // Data for Scenarios
-  // Data for Scenarios
   scenarios: any[]
-  
-  // Column Visibility
-  availableColumns?: { id: string, label: string }[]
+  availableColumns?: { id: string; label: string }[]
   columnVisibility?: VisibilityState
   onColumnVisibilityChange?: (columnId: string, isVisible: boolean) => void
 }
 
-/**
- * RABToolbar
- * 
- * Extracted toolbar from RABTable monolith.
- * Consolidates search, view toggles, and all action buttons.
- */
 export const RABToolbar: React.FC<RABToolbarProps> = ({
-  searchQuery,
-  onSearchChange,
-  activeTab,
-  onTabChange,
-  isLocked,
-  draftCount,
-  selectedCount,
-  scenarioVersion,
-  onAddItem,
-  onBulkDelete,
-  onBulkOverhead,
-  onGenerateWBS,
-  onDownloadTemplate,
-  onImportExcel,
-  onAutoSchedule,
-  onPriceDrift,
-  onToggleLock,
-  onShowHistory,
-  onPublish,
-  onSwitchScenario,
-  onSaveScenario,
-  scenarios,
-  availableColumns = [],
-  columnVisibility = {},
-  onColumnVisibilityChange
+  searchQuery, onSearchChange, activeTab, onTabChange,
+  isLocked, draftCount, selectedCount, scenarioVersion,
+  onAddItem, onBulkDelete, onBulkOverhead,
+  onDownloadTemplate, onImportExcel, onPriceDrift, onToggleLock,
+  onPublish, onSwitchScenario, onSaveScenario, scenarios,
+  availableColumns = [], columnVisibility = {}, onColumnVisibilityChange,
 }) => {
   const [overheadPct, setOverheadPct] = useState('')
   const [bulkPopoverOpen, setBulkPopoverOpen] = useState(false)
 
   return (
-    <div className="flex flex-col gap-4 mb-4 lg:flex-row lg:items-center lg:justify-between sticky top-0 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md p-4 -m-4 border-b border-slate-200 dark:border-slate-800 transition-all">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        {/* Search */}
-        <div className="relative w-full sm:w-64">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <Input
-            value={searchQuery}
-            onChange={e => onSearchChange(e.target.value)}
-            placeholder="Search items, codes..."
-            className="h-9 pl-9 pr-8 text-xs bg-white/50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800"
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => onSearchChange('')} 
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
+    <div className="flex items-center gap-1.5 flex-nowrap px-3 py-2 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
 
-        {/* Tab Switcher */}
-        <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
-          <button
-            onClick={() => onTabChange('direct')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              activeTab === 'direct' 
-                ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' 
-                : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Direct Costs
+      {/* Search */}
+      <div className="relative flex-shrink-0 w-40">
+        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Input
+          value={searchQuery}
+          onChange={e => onSearchChange(e.target.value)}
+          placeholder="Search items, codes..."
+          className="h-7 pl-8 pr-7 text-xs bg-white border-slate-200"
+        />
+        {searchQuery && (
+          <button onClick={() => onSearchChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+            <X size={11} />
           </button>
-          <button
-            onClick={() => onTabChange('overhead')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-              activeTab === 'overhead' 
-                ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' 
-                : 'text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            Overhead
-          </button>
-        </div>
+        )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {/* Column Manager */}
-        {availableColumns.length > 0 && onColumnVisibilityChange && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 text-xs gap-2 border-slate-200 dark:border-slate-800 hidden md:flex">
-                <ListFilter className="h-3.5 w-3.5 text-slate-400" />
-                Kolom
-                <ChevronDown className="h-3 w-3 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-slate-500">
-                Atur Visibilitas Kolom
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {availableColumns.map(col => {
-                const isVisible = columnVisibility[col.id] !== false
-                return (
-                  <DropdownMenuItem 
-                    key={col.id} 
-                    className="flex items-center justify-between cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      onColumnVisibilityChange(col.id, !isVisible)
-                    }}
-                  >
-                    <span>{col.label}</span>
-                    {isVisible && <CheckCircle2 className="h-3.5 w-3.5 text-blue-500" />}
-                  </DropdownMenuItem>
-                )
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+      {/* DC / Overhead toggle */}
+      <div className="flex bg-white border border-slate-200 rounded-md p-0.5 flex-shrink-0">
+        <button
+          onClick={() => onTabChange('direct')}
+          className={`px-2.5 py-1 text-xs font-semibold rounded transition-all ${
+            activeTab === 'direct' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Direct
+        </button>
+        <button
+          onClick={() => onTabChange('overhead')}
+          className={`px-2.5 py-1 text-xs font-semibold rounded transition-all ${
+            activeTab === 'overhead' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          OH
+        </button>
+      </div>
 
-        {/* Scenarios Dropdown */}
+      <div className="w-px h-4 bg-slate-200 flex-shrink-0 mx-0.5" />
+
+      {/* Column visibility */}
+      {availableColumns.length > 0 && onColumnVisibilityChange && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 text-xs gap-2 border-slate-200 dark:border-slate-800">
-              <Layers className="h-3.5 w-3.5 text-slate-400" />
-              {scenarioVersion ? `v${scenarioVersion}` : 'Live RAB'}
-              <ChevronDown className="h-3 w-3 opacity-50" />
+            <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-slate-200 flex-shrink-0">
+              <ListFilter size={11} className="text-slate-400" />
+              Kolom
+              <ChevronDown size={10} className="opacity-50" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-slate-500">Project Scenarios</DropdownMenuLabel>
+          <DropdownMenuContent align="start" className="w-44">
+            <DropdownMenuLabel className="text-xs uppercase tracking-wider text-slate-500 py-1">Visibilitas Kolom</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onSwitchScenario(null)} className="flex items-center justify-between">
-              <span>Live RAB</span>
-              {!scenarioVersion && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
-            </DropdownMenuItem>
-            {scenarios.map(s => (
-              <DropdownMenuItem key={s.id} onClick={() => onSwitchScenario(s.version)} className="flex items-center justify-between">
-                <span>Scenario v{s.version}</span>
-                {scenarioVersion === s.version && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onSaveScenario} className="text-blue-600 font-semibold focus:text-blue-700">
-              <Plus className="h-3.5 w-3.5 mr-2" />
-              Store current as Scenario
-            </DropdownMenuItem>
+            {availableColumns.map(col => {
+              const isVisible = columnVisibility[col.id] !== false
+              return (
+                <DropdownMenuItem
+                  key={col.id}
+                  className="flex items-center justify-between cursor-pointer text-xs"
+                  onClick={e => { e.preventDefault(); onColumnVisibilityChange(col.id, !isVisible) }}
+                >
+                  <span>{col.label}</span>
+                  {isVisible && <CheckCircle2 size={12} className="text-blue-500" />}
+                </DropdownMenuItem>
+              )
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
+      )}
 
-        <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1 hidden lg:block" />
+      {/* Scenario / Baseline version */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-slate-200 flex-shrink-0">
+            <Layers size={11} className="text-slate-400" />
+            {scenarioVersion ? `v${scenarioVersion}` : 'vBaseline'}
+            <ChevronDown size={10} className="opacity-50" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-52">
+          <DropdownMenuLabel className="text-xs uppercase tracking-wider text-slate-500 py-1">Scenarios</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => onSwitchScenario(null)} className="flex items-center justify-between text-xs">
+            <span>Live RAB</span>
+            {!scenarioVersion && <CheckCircle2 size={12} className="text-emerald-500" />}
+          </DropdownMenuItem>
+          {scenarios.map(s => (
+            <DropdownMenuItem key={s.id} onClick={() => onSwitchScenario(s.version)} className="flex items-center justify-between text-xs">
+              <span>Scenario v{s.version}</span>
+              {scenarioVersion === s.version && <CheckCircle2 size={12} className="text-emerald-500" />}
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onSaveScenario} className="text-blue-600 font-semibold text-xs">
+            <Plus size={12} className="mr-1.5" />
+            Simpan sebagai Scenario
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-        {/* Primary Actions */}
-        {selectedCount > 0 && (
-          <>
-            {onBulkOverhead && (
-              <Popover open={bulkPopoverOpen} onOpenChange={setBulkPopoverOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-9 text-xs gap-2 text-indigo-600 border-indigo-100 hover:bg-indigo-50 dark:text-indigo-400 dark:border-indigo-900">
-                    <Percent className="h-3.5 w-3.5" />
-                    Markup ({selectedCount})
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-64 p-4">
-                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1">Terapkan Markup Overhead</p>
-                  <p className="text-[10px] text-slate-500 mb-3">
-                    Kalikan unit price {selectedCount} item terpilih dengan factor (1 + %)
-                  </p>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Input
-                        type="number"
-                        min={-100}
-                        max={500}
-                        step={0.5}
-                        placeholder="mis. 15"
-                        value={overheadPct}
-                        onChange={e => setOverheadPct(e.target.value)}
-                        className="h-8 text-xs pr-7"
-                      />
-                      <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">%</span>
-                    </div>
-                    <Button
-                      size="sm"
-                      className="h-8 text-xs"
-                      onClick={() => {
-                        const pct = parseFloat(overheadPct)
-                        if (isNaN(pct)) return
-                        onBulkOverhead(pct)
-                        setOverheadPct('')
-                        setBulkPopoverOpen(false)
-                      }}
-                    >
-                      Terapkan
-                    </Button>
+      <div className="w-px h-4 bg-slate-200 flex-shrink-0 mx-0.5" />
+
+      {/* Overflow: Template + Import + Analyze Drift */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-slate-200 flex-shrink-0">
+            <MoreHorizontal size={13} className="text-slate-400" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-44">
+          <DropdownMenuLabel className="text-xs uppercase tracking-wider text-slate-500 py-1">Actions</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onImportExcel} className="text-xs gap-2">
+            <Upload size={12} className="text-emerald-600" /> Import Excel
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onDownloadTemplate} className="text-xs gap-2">
+            <Download size={12} className="text-emerald-600" /> Download Template
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onPriceDrift} className="text-xs gap-2">
+            <Zap size={12} className="text-blue-600" /> Analyze Drift
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Lock */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onToggleLock}
+        className={`h-7 px-2 text-xs gap-1 flex-shrink-0 ${
+          isLocked
+            ? 'text-emerald-600 border-emerald-200 bg-emerald-50'
+            : 'text-slate-500 border-slate-200 hover:border-amber-200 hover:text-amber-600'
+        }`}
+      >
+        {isLocked ? <LockKeyhole size={11} /> : <Lock size={11} />}
+        {isLocked ? 'Locked' : 'Lock'}
+      </Button>
+
+      {/* Bulk actions when items selected */}
+      {selectedCount > 0 && (
+        <>
+          {onBulkOverhead && (
+            <Popover open={bulkPopoverOpen} onOpenChange={setBulkPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 text-indigo-600 border-indigo-100 hover:bg-indigo-50 flex-shrink-0">
+                  <Percent size={11} />
+                  Markup ({selectedCount})
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-56 p-3">
+                <p className="text-xs font-semibold text-slate-700 mb-1">Terapkan Markup Overhead</p>
+                <p className="text-xs text-slate-500 mb-2">Kalikan unit price {selectedCount} item × (1 + %)</p>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input type="number" min={-100} max={500} step={0.5} placeholder="15" value={overheadPct}
+                      onChange={e => setOverheadPct(e.target.value)} className="h-7 text-xs pr-6" />
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">%</span>
                   </div>
-                </PopoverContent>
-              </Popover>
-            )}
-            <Button variant="destructive" size="sm" onClick={onBulkDelete} className="h-9 text-xs gap-2">
-              <Trash2 className="h-3.5 w-3.5" />
-              Delete ({selectedCount})
-            </Button>
-          </>
-        )}
-
-        <Button variant="outline" size="sm" onClick={onDownloadTemplate} className="h-9 text-xs gap-2 text-emerald-600 hover:bg-emerald-50 border-emerald-100">
-          <Download className="h-3.5 w-3.5" />
-          Template
-        </Button>
-
-        <Button variant="outline" size="sm" onClick={onImportExcel} className="h-9 text-xs gap-2 text-emerald-600 hover:bg-emerald-50 border-emerald-100">
-          <Upload className="h-3.5 w-3.5" />
-          Import
-        </Button>
-
-        <Button variant="outline" size="sm" onClick={onPriceDrift} className="h-9 text-xs gap-2 text-blue-600 hover:bg-blue-50 border-blue-100">
-          <Zap className="h-3.5 w-3.5" />
-          Analyze Drift
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onToggleLock}
-          className={`h-9 text-xs gap-2 ${isLocked ? 'text-emerald-600 border-emerald-200 bg-emerald-50' : 'text-amber-600 border-amber-200 hover:bg-amber-50'}`}
-        >
-          {isLocked ? <LockKeyhole className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}
-          {isLocked ? 'Locked' : 'Lock Baseline'}
-        </Button>
-
-        {draftCount > 0 ? (
-          <Button id="btn-publish-drafts" onClick={onPublish} size="sm" className="h-9 text-xs gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-200 dark:shadow-none">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Publish ({draftCount})
+                  <Button size="sm" className="h-7 text-xs" onClick={() => {
+                    const pct = parseFloat(overheadPct)
+                    if (isNaN(pct)) return
+                    onBulkOverhead(pct)
+                    setOverheadPct('')
+                    setBulkPopoverOpen(false)
+                  }}>
+                    Apply
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+          <Button variant="destructive" size="sm" onClick={onBulkDelete} className="h-7 px-2 text-xs gap-1 flex-shrink-0">
+            <Trash2 size={11} />
+            Del ({selectedCount})
           </Button>
-        ) : (
-          <Button onClick={onAddItem} size="sm" className="h-9 text-xs gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-200 dark:shadow-none">
-            <Plus className="h-3.5 w-3.5" />
-            Add Item
-          </Button>
-        )}
-      </div>
+        </>
+      )}
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Primary CTA: Add Item or Publish */}
+      {draftCount > 0 ? (
+        <Button id="btn-publish-drafts" onClick={onPublish} size="sm"
+          className="h-7 px-3 text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-700 shadow shadow-emerald-200 flex-shrink-0">
+          <CheckCircle2 size={12} />
+          Publish ({draftCount})
+        </Button>
+      ) : (
+        <Button onClick={onAddItem} size="sm"
+          className="h-7 px-3 text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 shadow shadow-blue-200 flex-shrink-0">
+          <Plus size={12} />
+          Add Item
+        </Button>
+      )}
     </div>
   )
 }

@@ -144,13 +144,13 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[92vh] max-w-5xl overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="max-h-[92vh] w-[95vw] !max-w-4xl overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="space-y-3 pb-4">
           <div className="flex items-center justify-center gap-3">
-            <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-3 shadow-lg">
+            <div className="rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 p-3 shadow-md">
               <Sparkles className="h-6 w-6 text-white sm:h-7 sm:w-7" />
             </div>
-            <DialogTitle className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-xl font-black text-transparent sm:text-3xl">
+            <DialogTitle className="bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-lg font-bold text-transparent sm:text-lg">
               Pilih Mode Pembuatan AHSP
             </DialogTitle>
           </div>
@@ -159,7 +159,7 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[340px_1fr]">
           <div className="space-y-3">
             {modes.map((mode) => {
               const isActive = selectedMode === mode.id
@@ -171,17 +171,17 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                   key={mode.id}
                   type="button"
                   onClick={() => setSelectedMode(mode.id)}
-                  className={`w-full rounded-2xl border-2 p-4 text-left transition-all duration-200 ${colors.bg} ${colors.border} ${isActive ? 'shadow-lg' : 'shadow-sm'}`}
+                  className={`w-full rounded-lg border-2 p-4 text-left transition-all duration-200 ${colors.bg} ${colors.border} ${isActive ? 'shadow-md' : 'shadow-sm'}`}
                 >
                   <div className="mb-3 flex items-start justify-between">
-                    <div className={`${colors.icon} rounded-xl p-2.5 text-white shadow-md`}>
+                    <div className={`${colors.icon} rounded-lg p-2.5 text-white shadow-md`}>
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className={`${colors.badge} rounded-full px-2 py-1 text-xs font-black text-white`}>
+                    <span className={`${colors.badge} rounded-full px-2 py-1 text-xs font-bold text-white`}>
                       {mode.badge}
                     </span>
                   </div>
-                  <div className={`text-base font-black sm:text-lg ${colors.text}`}>{mode.title}</div>
+                  <div className={`text-base font-bold sm:text-lg ${colors.text}`}>{mode.title}</div>
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{mode.subtitle}</div>
                   <p className="mt-2 text-xs leading-relaxed text-slate-600">{mode.description}</p>
                 </button>
@@ -189,7 +189,7 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
             })}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
             {(() => {
               const colors = getColorClasses(selectedModeData.color, true)
               const Icon = selectedModeData.icon
@@ -198,18 +198,18 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                 <>
                   <div className="mb-4 flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
-                      <div className={`${colors.icon} rounded-xl p-3 text-white shadow-md`}>
+                      <div className={`${colors.icon} rounded-lg p-3 text-white shadow-md`}>
                         <Icon className="h-6 w-6" />
                       </div>
                       <div>
-                        <h3 className={`text-xl font-black ${colors.text}`}>{selectedModeData.title}</h3>
+                        <h3 className={`text-lg font-bold ${colors.text}`}>{selectedModeData.title}</h3>
                         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{selectedModeData.subtitle}</p>
                       </div>
                     </div>
                     <Badge className={`${colors.badge} text-white`}>{selectedModeData.badge}</Badge>
                   </div>
 
-                  <ul className="mb-4 grid gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                  <ul className="mb-4 grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
                     {selectedModeData.features.map((feature, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-xs text-slate-700">
                         <ChevronRight className={`mt-0.5 h-4 w-4 ${colors.text} flex-shrink-0`} />
@@ -219,9 +219,9 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                   </ul>
 
                   {selectedMode === 'sni' && (
-                    <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3">
+                    <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
                       <div className="mb-2 flex items-center justify-between">
-                        <p className="text-xs font-black uppercase tracking-widest text-blue-700">Sumber dari Total AHSP Item</p>
+                        <p className="text-xs font-bold uppercase tracking-widest text-blue-700">Sumber dari Total AHSP Item</p>
                         <Badge variant="outline" className="border-blue-300 text-blue-700">{sniItemsPreview.length} item</Badge>
                       </div>
 
@@ -229,11 +229,11 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                         <div className="mb-3 grid grid-cols-2 gap-2">
                           <div className="rounded-lg border border-blue-100 bg-white p-2">
                             <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Rata-rata Harga</p>
-                            <p className="text-xs font-black text-slate-800">{formatIDR(averageSNIPrice)}</p>
+                            <p className="text-xs font-bold text-slate-800">{formatIDR(averageSNIPrice)}</p>
                           </div>
                           <div className="rounded-lg border border-blue-100 bg-white p-2">
                             <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Total Komponen</p>
-                            <p className="text-xs font-black text-slate-800">
+                            <p className="text-xs font-bold text-slate-800">
                               {sniItemsPreview.reduce((sum, item) => sum + item.componentCount, 0)}
                             </p>
                           </div>
@@ -258,7 +258,7 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                         ) : (
                           sniItemsPreview.map((item) => (
                             <div key={item.id} className="rounded-lg border border-blue-100 bg-white p-2.5">
-                              <p className="text-xs font-black text-slate-900">{item.code} - {item.name}</p>
+                              <p className="text-xs font-bold text-slate-900">{item.code} - {item.name}</p>
                               <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600">
                                 <span className="rounded bg-slate-100 px-1.5 py-0.5">{item.category}</span>
                                 <span>{item.unit}</span>

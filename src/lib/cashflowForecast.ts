@@ -336,5 +336,5 @@ export function formatCurrency(amount: number): string {
     if (amount >= 1000) {
         return `Rp ${(amount / 1000).toFixed(0)}K`
     }
-    return `Rp ${amount.toLocaleString()}`
+    return `Rp ${amount.toLocaleString('id-ID')}`
 }

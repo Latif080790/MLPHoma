@@ -158,10 +158,10 @@ export async function checkBudgetAvailability(
     const exceeds = requested > remaining
     const overageAmount = exceeds ? (requested - remaining) : 0
 
-    // Check if close to threshold (requires approval)
+    // Check if close to or past threshold (requires approval) — includes exceeded case (wouldRemain < 0)
     const wouldRemain = remaining - requested
     const thresholdAmount = totalBudget * (APPROVAL_THRESHOLD_PERCENT / 100)
-    const needsApproval = wouldRemain > 0 && wouldRemain < thresholdAmount
+    const needsApproval = wouldRemain < thresholdAmount
 
     if (exceeds) hasExceeded = true
     if (needsApproval) requiresApproval = true
@@ -187,7 +187,7 @@ export async function checkBudgetAvailability(
   const approvalItems = results.filter(r => {
     const wouldRemain = r.remaining - r.requested
     const thresholdAmount = r.totalBudget * (APPROVAL_THRESHOLD_PERCENT / 100)
-    return !r.exceeds && wouldRemain > 0 && wouldRemain < thresholdAmount
+    return !r.exceeds && wouldRemain < thresholdAmount
   })
 
   // Build summary message
@@ -240,72 +240,76 @@ export function formatBudgetCheckMessage(result: BudgetCheckResult): string {
 }
 
 /**
- * Increment committed cost for RAP item after PO approval
- * (Called after PO is created to lock budget)
+ * Atomically check budget availability AND commit in a single DB round-trip.
+ * Uses rpc_check_and_commit_budget which acquires a row-level lock (FOR UPDATE)
+ * preventing the race condition where two POs pass the check before either commits.
+ * Fixes BUDGET-01.
+ */
+export async function atomicCheckAndCommitBudget(
+  rapItemId: string,
+  amount: number,
+  poId?: string
+): Promise<{ success: boolean; error?: string; remaining?: number }> {
+  const { data, error } = await assertSupabase()
+    .rpc('rpc_check_and_commit_budget', {
+      p_rap_item_id: rapItemId,
+      p_amount:      amount,
+      p_po_id:       poId ?? null,
+    })
+
+  if (error) {
+    throw new Error(`atomicCheckAndCommitBudget RPC failed: ${error.message}`)
+  }
+
+  if (data?.success) {
+    // Audit trail for successful commit
+    try {
+      await auditService.log({
+        action: 'BUDGET_CHANGE',
+        entity: 'rap_items',
+        entityType: 'RAP_ITEM',
+        entityId: rapItemId,
+        details: { type: 'COMMIT', amount, poId, remaining: data.remaining },
+      })
+    } catch { /* audit is non-blocking */ }
+  }
+
+  return data as { success: boolean; error?: string; remaining?: number }
+}
+
+/**
+ * Increment committed cost for RAP item after PO approval.
+ * @deprecated Use atomicCheckAndCommitBudget() instead to avoid race conditions.
+ * Kept for backward compatibility with callers that have already validated budget.
  */
 export async function commitBudget(
   rapItemId: string,
   amount: number
 ): Promise<void> {
-  const { data: rapItem, error: fetchError } = await assertSupabase()
-    .from('rap_items')
-    .select('committed_cost')
-    .eq('id', rapItemId)
-    .single()
-
-  if (fetchError) {
-    throw new Error(`Failed to fetch RAP item for commit: ${fetchError.message}`)
+  const result = await atomicCheckAndCommitBudget(rapItemId, amount)
+  if (!result.success) {
+    throw new Error(result.error ?? 'Failed to commit budget')
   }
-
-  const newCommitted = (rapItem.committed_cost || 0) + amount
-
-  const { error: updateError } = await assertSupabase()
-    .from('rap_items')
-    .update({ committed_cost: newCommitted })
-    .eq('id', rapItemId)
-
-  if (updateError) {
-    throw new Error(`Failed to commit budget: ${updateError.message}`)
-  }
-
-  // Audit trail
-  try {
-    await auditService.log({
-      action: 'BUDGET_CHANGE',
-      entity: 'rap_items',
-      entityType: 'RAP_ITEM',
-      entityId: rapItemId,
-      details: { type: 'COMMIT', amount, previousCommitted: rapItem.committed_cost || 0, newCommitted },
-    })
-  } catch { /* audit is non-blocking */ }
 }
 
 /**
- * Release committed cost (e.g., after PO cancellation)
+ * Release committed cost atomically (e.g., after PO cancellation).
+ * Uses rpc_release_budget which acquires a row-level lock.
  */
 export async function releaseBudget(
   rapItemId: string,
-  amount: number
+  amount: number,
+  poId?: string
 ): Promise<void> {
-  const { data: rapItem, error: fetchError } = await assertSupabase()
-    .from('rap_items')
-    .select('committed_cost')
-    .eq('id', rapItemId)
-    .single()
+  const { data, error } = await assertSupabase()
+    .rpc('rpc_release_budget', {
+      p_rap_item_id: rapItemId,
+      p_amount:      amount,
+      p_po_id:       poId ?? null,
+    })
 
-  if (fetchError) {
-    throw new Error(`Failed to fetch RAP item for release: ${fetchError.message}`)
-  }
-
-  const newCommitted = Math.max(0, (rapItem.committed_cost || 0) - amount)
-
-  const { error: updateError } = await assertSupabase()
-    .from('rap_items')
-    .update({ committed_cost: newCommitted })
-    .eq('id', rapItemId)
-
-  if (updateError) {
-    throw new Error(`Failed to release budget: ${updateError.message}`)
+  if (error) {
+    throw new Error(`releaseBudget RPC failed: ${error.message}`)
   }
 
   // Audit trail
@@ -315,7 +319,7 @@ export async function releaseBudget(
       entity: 'rap_items',
       entityType: 'RAP_ITEM',
       entityId: rapItemId,
-      details: { type: 'RELEASE', amount, previousCommitted: rapItem.committed_cost || 0, newCommitted },
+      details: { type: 'RELEASE', amount, poId, newCommitted: data?.newCommitted },
     })
   } catch { /* audit is non-blocking */ }
 }

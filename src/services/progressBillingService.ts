@@ -14,6 +14,7 @@ import { assertSupabase } from '../lib/supabaseClient'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
 import { financeService } from './financeService'
+import { approvalService } from './approvalService'
 
 // ---------- Types ----------
 
@@ -171,18 +172,29 @@ export const progressBillingService = {
                 claimId = newClaim.id
             }
 
-            // Notify Finance team
+            // Auto-route to approval workflow (PROGRESS_CLAIM entity type)
             try {
-                await notificationService.notifyByRole(input.projectId, 'admin', {
-                    type: 'BILLING_MILESTONE',
-                    title: `Client Claim Siap: Rp ${billing.netAmount.toLocaleString('id-ID')}`,
-                    message: `Progress ${input.overallProgress.toFixed(1)}% → Claim ${billing.netAmount.toLocaleString('id-ID')} (setelah retensi 5%) siap disubmit.`,
-                    severity: 'info',
+                const periodLabel = `${input.periodStart} – ${input.periodEnd}`
+                const formatter = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
+                await approvalService.createApproval({
                     projectId: input.projectId,
-                    metadata: { claimId, amount: billing.netAmount },
+                    entityType: 'PROGRESS_CLAIM',
+                    entityId: claimId!,
+                    title: `Progress Claim ${periodLabel}`,
+                    description: `Klaim termin progress ${input.overallProgress.toFixed(1)}% untuk periode ${periodLabel}.`,
+                    approverRole: 'manager',
+                    impactSummary: {
+                        grossAmount: billing.grossAmount,
+                        retentionAmount: billing.retentionAmount,
+                        netAmount: billing.netAmount,
+                        progress: input.overallProgress,
+                        period: periodLabel,
+                        formattedNet: formatter.format(billing.netAmount),
+                    },
                 })
             } catch (e) {
-                console.warn('Notification failed:', e)
+                // Non-blocking — claim exists; approval routing failure is logged
+                console.warn('[progressBilling] Auto-approval routing failed:', e)
             }
 
             // Audit
@@ -229,5 +241,136 @@ export const progressBillingService = {
             periodEnd,
             overallProgress: progressPct,
         })
+    },
+
+    // ------------------------------------------------------------------
+    // Payment Certificate
+    // ------------------------------------------------------------------
+
+    /**
+     * Generate a Payment Certificate as a downloadable HTML blob.
+     * Triggered after PROGRESS_CLAIM approval — produces a signed-off PDF-ready document.
+     *
+     * The function returns a Blob of text/html which the caller can then:
+     *   const url = URL.createObjectURL(blob)
+     *   window.open(url)
+     * or pass to a print dialog.
+     */
+    async generatePaymentCertificate(claimId: string): Promise<Blob> {
+        const client = assertSupabase()
+
+        // Load claim details
+        const { data: claim, error: claimErr } = await client
+            .from('client_claims')
+            .select('*, projects(name, contract_value)')
+            .eq('id', claimId)
+            .single()
+
+        if (claimErr || !claim) {
+            throw new Error(`Payment certificate: claim not found — ${claimErr?.message ?? claimId}`)
+        }
+
+        const fmt = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 })
+        const projectName = (claim.projects as { name?: string } | null)?.name ?? claim.project_id
+        const grossAmount = Number(claim.amount) / (1 - 0.05)   // reverse the 5% retention to get gross
+        const retentionAmount = grossAmount - Number(claim.amount)
+        const netAmount = Number(claim.amount)
+        const issuedAt = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+
+        const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment Certificate — ${claim.claim_number}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 12px; color: #1e293b; margin: 40px; }
+    h1 { font-size: 18px; text-align: center; margin: 0 0 4px; }
+    .subtitle { text-align: center; color: #64748b; margin: 0 0 24px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    th, td { padding: 8px 10px; border: 1px solid #e2e8f0; }
+    th { background: #f1f5f9; text-align: left; }
+    .amount { text-align: right; font-family: monospace; }
+    .total-row td { font-weight: bold; background: #f8fafc; }
+    .net-row td { font-weight: bold; font-size: 14px; background: #eff6ff; color: #1e40af; }
+    .sig-row { margin-top: 40px; display: flex; gap: 40px; }
+    .sig-box { flex: 1; border-top: 1px solid #cbd5e1; padding-top: 8px; text-align: center; }
+    .footer { margin-top: 32px; font-size: 10px; color: #94a3b8; text-align: center; }
+    @media print { .no-print { display: none; } }
+  </style>
+</head>
+<body>
+  <h1>SERTIFIKAT PEMBAYARAN</h1>
+  <p class="subtitle">Payment Certificate — ${claim.claim_number}</p>
+
+  <table>
+    <tr><th style="width:35%">Proyek</th><td>${projectName}</td></tr>
+    <tr><th>No. Klaim</th><td>${claim.claim_number}</td></tr>
+    <tr><th>Periode</th><td>${claim.period_start ?? '—'} s/d ${claim.period_end ?? '—'}</td></tr>
+    <tr><th>Progress (%)</th><td>${Number(claim.progress_percentage ?? 0).toFixed(2)}%</td></tr>
+    <tr><th>Tanggal Terbit</th><td>${issuedAt}</td></tr>
+  </table>
+
+  <table>
+    <thead>
+      <tr><th>Keterangan</th><th class="amount">Jumlah (IDR)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Nilai Tagihan Bruto</td><td class="amount">${fmt.format(grossAmount)}</td></tr>
+      <tr><td>Retensi 5%</td><td class="amount">(${fmt.format(retentionAmount)})</td></tr>
+      <tr class="net-row"><td>Nilai Tagihan Neto</td><td class="amount">${fmt.format(netAmount)}</td></tr>
+    </tbody>
+  </table>
+
+  ${claim.notes ? `<p style="font-size:11px;color:#64748b;margin-bottom:32px;"><em>${claim.notes}</em></p>` : ''}
+
+  <div class="sig-row">
+    <div class="sig-box">
+      <p>Diajukan oleh</p>
+      <br/><br/><br/>
+      <p>____________________________</p>
+      <p>Project Manager</p>
+    </div>
+    <div class="sig-box">
+      <p>Disetujui oleh</p>
+      <br/><br/><br/>
+      <p>____________________________</p>
+      <p>Finance Manager</p>
+    </div>
+    <div class="sig-box">
+      <p>Diterima oleh</p>
+      <br/><br/><br/>
+      <p>____________________________</p>
+      <p>Pemberi Kerja / Klien</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    Dokumen ini digenerate otomatis oleh MLPHoma pada ${new Date().toISOString()}. Claim ID: ${claimId}.
+  </div>
+
+  <div class="no-print" style="margin-top:24px;text-align:center;">
+    <button onclick="window.print()" style="padding:10px 24px;background:#1e3a5f;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;">
+      Cetak / Simpan PDF
+    </button>
+  </div>
+</body>
+</html>`
+
+        return new Blob([html], { type: 'text/html' })
+    },
+
+    /**
+     * Trigger a browser download of the Payment Certificate for a given claim.
+     * Convenience wrapper around generatePaymentCertificate.
+     */
+    async downloadPaymentCertificate(claimId: string, claimNumber?: string): Promise<void> {
+        const blob = await this.generatePaymentCertificate(claimId)
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `payment-certificate-${claimNumber ?? claimId}.html`
+        link.click()
+        URL.revokeObjectURL(url)
     },
 }

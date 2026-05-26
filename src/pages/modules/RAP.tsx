@@ -6,7 +6,8 @@ import { useRabStore } from '@/store/rabStore'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
 import ModulePageState from '@/components/common/ModulePageState'
 import { TableSkeleton } from '@/components/common/LoadingSkeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EVMGuardPanel } from '@/components/costing'
+import { formatIDR } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -129,9 +130,14 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
       toast.error('No RAB items found to import')
       return
     }
-    await initFromRab(projectId, rabItems)
-    setConfirmImportOpen(false)
-    toast.success('RAB items imported to RAP')
+    try {
+      await initFromRab(projectId, rabItems)
+      setConfirmImportOpen(false)
+      toast.success('RAB items imported to RAP')
+    } catch (error) {
+      // Error is already toasted by the store, just prevent success toast
+      console.error('Import failed', error)
+    }
   }
 
   const handleApplyProfitSimulation = async () => {
@@ -175,6 +181,256 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
     updateItem({ id: itemId, [field]: num })
   }
 
+  // ── Shared table block (used in both layouts) ───────────────────
+  const rapTableBlock = (
+    <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+      {unlinkedAHSPCount > 0 && (
+        <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50/70 px-4 py-2 text-xs dark:border-amber-800 dark:bg-amber-900/20">
+          <Link2Off size={13} className="shrink-0 text-amber-600" />
+          <span className="text-amber-700 dark:text-amber-300">
+            <strong>{unlinkedAHSPCount} dari {projectItems.length} item</strong> belum terhubung ke AHSP — item ini tidak akan dihitung di Resource Plan.
+            Re-sync dari RAB untuk mengisi link AHSP secara otomatis.
+          </span>
+        </div>
+      )}
+      <div className="max-h-full overflow-auto relative">
+        <Table>
+          <TableHeader className="sticky-glass-tablehead">
+            <TableRow className="border-b border-slate-200 dark:border-slate-800 hover:bg-transparent">
+              <TableHead className="h-8 w-[300px] bg-transparent text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Item Name</TableHead>
+              <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Total Budget</TableHead>
+              <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Committed</TableHead>
+              <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Actual Cost</TableHead>
+              <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Remaining</TableHead>
+              <TableHead className="h-8 w-[100px] bg-transparent text-center text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading && projectItems.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="p-4">
+                  <TableSkeleton rows={6} columns={6} />
+                </TableCell>
+              </TableRow>
+            ) : filteredItems.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-slate-400 bg-slate-50/20">
+                  <div className="flex flex-col items-center gap-3">
+                    <LayoutList className="h-10 w-10 text-emerald-400/50" />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        {items.length === 0 ? 'Belum ada item RAP' : 'Tidak ada item yang cocok'}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {items.length === 0 ? 'Import dari RAB untuk mengisi daftar RAP budget.' : 'Ubah kata kunci pencarian Anda.'}
+                      </p>
+                    </div>
+                    {items.length === 0 && (
+                      <Button size="sm" variant="default" className="h-9 gap-2 text-xs mt-1" onClick={openImportConfirm} disabled={isLoading || draftCount > 0}>
+                        <Plus size={14} />
+                        Import dari RAB
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredItems.map((item) => {
+                const totalBudget = item.total_budget || (item.qty_budget * item.unit_price_budget) || 0
+                const committedCost = item.committed_cost || 0
+                const actualCost = item.actual_cost || 0
+                const totalBurn = committedCost + actualCost
+                const burnRatio = totalBudget > 0 ? (totalBurn / totalBudget) : 0
+                const utilizationPct = Math.round(burnRatio * 100)
+                let statusColor = 'bg-emerald-500'
+                let statusText = 'Safe'
+                let rowClass = 'group hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                if (burnRatio >= 1.0) {
+                  statusColor = 'bg-red-500 animate-pulse'
+                  statusText = 'CRITICAL'
+                  rowClass = 'group bg-red-50/30 dark:bg-red-900/10 hover:bg-red-50/50 dark:hover:bg-red-900/20'
+                } else if (burnRatio >= 0.9) {
+                  statusColor = 'bg-amber-500'
+                  statusText = 'Danger'
+                  rowClass = 'group bg-amber-50/30 dark:bg-amber-900/10 hover:bg-amber-50/50 dark:hover:bg-amber-900/20'
+                } else if (burnRatio >= 0.75) {
+                  statusColor = 'bg-yellow-400'
+                  statusText = 'Warning'
+                }
+                const remaining = totalBudget - totalBurn
+                return (
+                  <TableRow key={item.id} className={`${rowClass} border-b border-slate-100 dark:border-slate-800 transition-colors`}>
+                    <TableCell className="py-2 font-medium">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-semibold">{item.name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Vol: {item.qty_budget}</span>
+                          {item.ahsp_id ? (
+                            <span className="inline-flex items-center gap-0.5 text-xs text-emerald-600 dark:text-emerald-400">
+                              <Link2 size={10} />
+                              <span className="font-mono">{item.ahsp_items?.name || item.ahsp_id.slice(-6)}</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 text-xs text-amber-500 dark:text-amber-400">
+                              <Link2Off size={10} />
+                              <span>No AHSP</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right font-medium text-slate-700 dark:text-slate-300 font-mono text-xs py-2">
+                      {Math.round(totalBudget).toLocaleString('id-ID')}
+                    </TableCell>
+                    <TableCell className="text-right py-1.5 px-2">
+                      <Input
+                        type="number"
+                        value={committedCost || ''}
+                        onChange={e => handleInlineEdit(item.id, 'committed_cost', e.target.value)}
+                        className="h-8 w-full text-right font-mono text-xs border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white focus:border-blue-500 shadow-none text-blue-700"
+                        placeholder="0"
+                      />
+                    </TableCell>
+                    <TableCell className="text-right py-1.5 px-2">
+                      <Input
+                        type="number"
+                        value={actualCost || ''}
+                        onChange={e => handleInlineEdit(item.id, 'actual_cost', e.target.value)}
+                        className="h-8 w-full text-right font-mono text-xs border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white focus:border-amber-500 shadow-none text-amber-700"
+                        placeholder="0"
+                      />
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-xs font-mono py-2 text-slate-900 dark:text-slate-100">
+                      {Math.round(remaining).toLocaleString('id-ID')}
+                    </TableCell>
+                    <TableCell className="text-center py-2">
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <div className={`h-2 w-12 rounded-full ${statusColor}`} title={`${statusText}: ${utilizationPct}% used`} />
+                        <Badge
+                          variant={statusText === 'CRITICAL' ? 'destructive' : statusText === 'Danger' ? 'secondary' : 'outline'}
+                          className="h-4 px-1.5 text-xs font-semibold uppercase tracking-wider"
+                        >
+                          {statusText}
+                        </Badge>
+                        <span className="text-xs font-mono text-slate-400">{utilizationPct}%</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            )}
+          </TableBody>
+          {filteredItems.length > 0 && (
+            <TableFooter className="sticky bottom-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md z-20 border-t-2 border-slate-200 dark:border-slate-700">
+              <TableRow className="hover:bg-transparent">
+                <TableCell className="py-2 text-right font-bold text-xs text-slate-500 uppercase tracking-wider">Totals</TableCell>
+                <TableCell className="text-right font-bold font-mono text-xs text-slate-700 dark:text-slate-200 py-2">{Math.round(totals.totalBudget).toLocaleString('id-ID')}</TableCell>
+                <TableCell className="text-right font-bold font-mono text-xs text-blue-600 py-2">{Math.round(totals.totalCommitted).toLocaleString('id-ID')}</TableCell>
+                <TableCell className="text-right font-bold font-mono text-xs text-amber-600 py-2">{Math.round(totals.totalActual).toLocaleString('id-ID')}</TableCell>
+                <TableCell className={`text-right font-bold font-mono text-xs py-2 ${totals.totalRemaining < 0 ? 'text-red-600' : 'text-emerald-600'}`}>{Math.round(totals.totalRemaining).toLocaleString('id-ID')}</TableCell>
+                <TableCell className="py-2" />
+              </TableRow>
+            </TableFooter>
+          )}
+        </Table>
+      </div>
+    </div>
+  )
+
+  // ── Embedded: Variant D layout ────────────────────────────────
+  if (embedded) {
+    return (
+      <div
+        className="flex flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
+        style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
+      >
+        {/* ── Top action bar ─────────────────────────────────── */}
+        <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            {projectId && <ProfitHealthWidget projectId={projectId} compact />}
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="relative max-w-[180px]">
+              <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Cari item..."
+                className="w-full pl-6 pr-3 py-1 text-xs border border-slate-200 rounded bg-slate-50 focus:outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-300"
+              />
+            </div>
+            <button
+              onClick={openImportConfirm}
+              disabled={isLoading || draftCount > 0}
+              className="flex items-center gap-1.5 text-xs text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all disabled:opacity-50"
+            >
+              <Plus size={12} />
+              {items.length > 0 ? 'Re-sync RAB' : 'Import RAB'}
+            </button>
+          </div>
+        </div>
+
+        {/* ── 5-column KPI strip ─────────────────────────────── */}
+        <div className="grid grid-cols-5 gap-px bg-slate-200 border-b border-slate-200 flex-shrink-0">
+          {([
+            { label: 'TOTAL BUDGET', value: formatIDR(totals.totalBudget), cls: 'text-slate-900' },
+            { label: 'COMMITTED', value: formatIDR(totals.totalCommitted), cls: 'text-blue-600' },
+            { label: 'ACTUAL COST', value: formatIDR(totals.totalActual), cls: 'text-amber-600' },
+            { label: 'REMAINING', value: formatIDR(totals.totalRemaining), cls: totals.totalRemaining < 0 ? 'text-red-600' : 'text-emerald-600' },
+            {
+              label: 'EFISIENSI',
+              value: totals.totalBudget === 0 ? '—' : `${totals.efficiency}%`,
+              cls: totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600',
+            },
+          ] as const).map(({ label, value, cls }) => (
+            <div key={label} className="bg-white px-3 py-2.5">
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</div>
+              <div className={`font-bold text-base font-mono mt-0.5 ${cls}`}>{value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Profit simulation slim bar ──────────────────────── */}
+        <div className="px-4 py-2 bg-emerald-50/50 border-b border-emerald-100 flex items-center gap-3 flex-shrink-0">
+          <TrendingUp size={12} className="text-emerald-600 flex-shrink-0" />
+          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Profit Target</span>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Input
+                type="number"
+                value={targetProfit}
+                onChange={e => setTargetProfit(Number(e.target.value))}
+                className="h-6 w-14 text-xs font-mono pr-4 py-0"
+              />
+              <Percent size={10} className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400" />
+            </div>
+            <Button
+              size="sm"
+              className="h-6 px-2 text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 border-0"
+              onClick={handleApplyProfitSimulation}
+              disabled={isSimulating || !items.length}
+            >
+              <ShieldCheck size={11} className="mr-1" />
+              Apply
+            </Button>
+          </div>
+          {draftCount > 0 && (
+            <span className="text-xs text-amber-600 ml-2">{draftCount} RAB draft belum publish</span>
+          )}
+        </div>
+
+        {/* ── Main: table + EVM guard ─────────────────────────── */}
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex-1 flex flex-col bg-white overflow-auto">
+            {rapTableBlock}
+          </div>
+          <EVMGuardPanel projectId={projectId} />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4 density-compact">
       {!embedded && (<ModuleHeader
@@ -213,13 +469,13 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
               </Tooltip>
             </TooltipProvider>
             <ExportMenu
-              data={projectItems}
+              data={projectItems as unknown as Record<string, unknown>[]}
               columns={[
-                { header: 'Item Name', accessor: r => r.name || (r as Record<string, {name?: string}>).ahsp_items?.name || (r as Record<string, {name?: string}>).rab_items?.name || '' },
-                { header: 'Total Budget', accessor: r => r.total_budget || 0 },
-                { header: 'Committed Cost', accessor: r => r.committed_cost || 0 },
-                { header: 'Actual Cost', accessor: r => r.actual_cost || 0 },
-                { header: 'Remaining', accessor: r => (r.total_budget || 0) - (r.committed_cost || 0) - (r.actual_cost || 0) },
+                { header: 'Item Name',      accessor: (r: Record<string, unknown>) => String(r.name ?? (r.ahsp_items as {name?: string})?.name ?? (r.rab_items as {name?: string})?.name ?? '') },
+                { header: 'Total Budget',   accessor: (r: Record<string, unknown>) => (r.total_budget    as number) || 0 },
+                { header: 'Committed Cost', accessor: (r: Record<string, unknown>) => (r.committed_cost  as number) || 0 },
+                { header: 'Actual Cost',    accessor: (r: Record<string, unknown>) => (r.actual_cost     as number) || 0 },
+                { header: 'Remaining',      accessor: (r: Record<string, unknown>) => ((r.total_budget as number) || 0) - ((r.committed_cost as number) || 0) - ((r.actual_cost as number) || 0) },
               ]}
               filename={`RAP_Budget_${projectId}`}
               size="sm"
@@ -300,168 +556,9 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
             )}
           </div>
 
-          <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
-            {/* AHSP linkage warning — items without ahsp_id won't show in Resource Plan */}
-            {unlinkedAHSPCount > 0 && (
-              <div className="flex items-center gap-2 border-b border-amber-100 bg-amber-50/70 px-4 py-2 text-xs dark:border-amber-800 dark:bg-amber-900/20">
-                <Link2Off size={13} className="shrink-0 text-amber-600" />
-                <span className="text-amber-700 dark:text-amber-300">
-                  <strong>{unlinkedAHSPCount} dari {projectItems.length} item</strong> belum terhubung ke AHSP — item ini tidak akan dihitung di Resource Plan.
-                  Re-sync dari RAB untuk mengisi link AHSP secara otomatis.
-                </span>
-              </div>
-            )}
-            <div className="max-h-[600px] overflow-auto relative">
-              <Table>
-                <TableHeader className="sticky-glass-tablehead">
-                  <TableRow className="border-b border-slate-200 dark:border-slate-800 hover:bg-transparent">
-                    <TableHead className="h-8 w-[300px] bg-transparent text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Item Name</TableHead>
-                    <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Total Budget</TableHead>
-                    <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Committed</TableHead>
-                    <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Actual Cost</TableHead>
-                    <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Remaining</TableHead>
-                    <TableHead className="h-8 w-[100px] bg-transparent text-center text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading && projectItems.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="p-4">
-                        <TableSkeleton rows={6} columns={6} />
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredItems.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-12 text-slate-400 bg-slate-50/20">
-                        {/* Task 38: Enhanced import CTA */}
-                        <div className="flex flex-col items-center gap-3">
-                          <LayoutList className="h-10 w-10 text-emerald-400/50" />
-                          <div>
-                            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                              {items.length === 0 ? 'Belum ada item RAP' : 'Tidak ada item yang cocok'}
-                            </p>
-                            <p className="text-xs text-slate-400 mt-1">
-                              {items.length === 0 ? 'Import dari RAB untuk mengisi daftar RAP budget.' : 'Ubah kata kunci pencarian Anda.'}
-                            </p>
-                          </div>
-                          {items.length === 0 && (
-                            <Button size="sm" variant="default" className="h-9 gap-2 text-xs mt-1" onClick={openImportConfirm} disabled={isLoading || draftCount > 0}>
-                              <Plus size={14} />
-                              Import dari RAB
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredItems.map((item) => {
-                      // Traffic Light Logic (Budget Guard)
-                      const totalBudget = item.total_budget || (item.qty_budget * item.unit_price_budget) || 0
-                      const committedCost = item.committed_cost || 0
-                      const actualCost = item.actual_cost || 0
-                      const totalBurn = committedCost + actualCost
+          {rapTableBlock}
 
-                      const burnRatio = totalBudget > 0 ? (totalBurn / totalBudget) : 0
-                      const utilizationPct = Math.round(burnRatio * 100)
 
-                      let statusColor = 'bg-emerald-500' // Safe (< 90%)
-                      let statusText = 'Safe'
-                      let rowClass = 'group hover:bg-slate-50 dark:hover:bg-slate-800/50'
-
-                      if (burnRatio >= 1.0) {
-                        statusColor = 'bg-red-500 animate-pulse' // Critical Overbudget (> 100%)
-                        statusText = 'CRITICAL'
-                        rowClass = 'group bg-red-50/30 dark:bg-red-900/10 hover:bg-red-50/50 dark:hover:bg-red-900/20'
-                      } else if (burnRatio >= 0.9) {
-                        statusColor = 'bg-amber-500' // Danger Zone (90-100%)
-                        statusText = 'Danger'
-                        rowClass = 'group bg-amber-50/30 dark:bg-amber-900/10 hover:bg-amber-50/50 dark:hover:bg-amber-900/20'
-                      } else if (burnRatio >= 0.75) {
-                        statusColor = 'bg-yellow-400' // Warning (75-90%)
-                        statusText = 'Warning'
-                      }
-
-                      // Calculated remaining (Total Budget - Committed - Actual)
-                      const remaining = totalBudget - totalBurn
-
-                      return (
-                        <TableRow key={item.id} className={`${rowClass} border-b border-slate-100 dark:border-slate-800 transition-colors`}>
-                          <TableCell className="py-2 font-medium">
-                            <div className="flex flex-col">
-                              <span className="text-xs font-semibold">{item.name || item.ahsp_items?.name || item.rab_items?.name || 'Unnamed Item'}</span>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-xs text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Vol: {item.qty_budget}</span>
-                                {item.ahsp_id ? (
-                                  <span className="inline-flex items-center gap-0.5 text-xs text-emerald-600 dark:text-emerald-400">
-                                    <Link2 size={10} />
-                                    <span className="font-mono">{item.ahsp_items?.name || item.ahsp_id.slice(-6)}</span>
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-0.5 text-xs text-amber-500 dark:text-amber-400">
-                                    <Link2Off size={10} />
-                                    <span>No AHSP</span>
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right font-medium text-slate-700 dark:text-slate-300 font-mono text-xs py-2">
-                            {Math.round(totalBudget).toLocaleString('id-ID')}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-xs text-blue-600 dark:text-blue-400 py-2">
-                            {/* Task 35: Inline edit committed cost */}
-                            <Input
-                              type="number"
-                              value={committedCost || ''}
-                              onChange={e => handleInlineEdit(item.id, 'committed_cost', e.target.value)}
-                              className="h-6 w-24 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-blue-200 focus:border-blue-500 shadow-none text-blue-600 inline-flex ml-auto"
-                            />
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-xs text-amber-600 dark:text-amber-400 py-2">
-                            {/* Task 35: Inline edit actual cost */}
-                            <Input
-                              type="number"
-                              value={actualCost || ''}
-                              onChange={e => handleInlineEdit(item.id, 'actual_cost', e.target.value)}
-                              className="h-6 w-24 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-amber-200 focus:border-amber-500 shadow-none text-amber-600 inline-flex ml-auto"
-                            />
-                          </TableCell>
-                          <TableCell className="text-right font-bold text-xs font-mono py-2 text-slate-900 dark:text-slate-100">
-                            {Math.round(remaining).toLocaleString('id-ID')}
-                          </TableCell>
-                          <TableCell className="text-center py-2">
-                            <div className="flex flex-col items-center justify-center gap-1">
-                              <div className={`h-2 w-12 rounded-full ${statusColor}`} title={`${statusText}: ${utilizationPct}% used (Committed + Actual)`} />
-                              <Badge
-                                variant={statusText === 'CRITICAL' ? 'destructive' : statusText === 'Danger' ? 'secondary' : 'outline'}
-                                className="h-4 px-1.5 text-xs font-semibold uppercase tracking-wider"
-                              >
-                                {statusText}
-                              </Badge>
-                              <span className="text-xs font-mono text-slate-400">{utilizationPct}%</span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })
-                  )}
-                </TableBody>
-                {/* Task 37: Sticky footer with totals */}
-                {filteredItems.length > 0 && (
-                  <TableFooter className="sticky bottom-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md z-20 border-t-2 border-slate-200 dark:border-slate-700">
-                    <TableRow className="hover:bg-transparent">
-                      <TableCell className="py-2 text-right font-bold text-xs text-slate-500 uppercase tracking-wider">Totals</TableCell>
-                      <TableCell className="text-right font-bold font-mono text-xs text-slate-700 dark:text-slate-200 py-2">{Math.round(totals.totalBudget).toLocaleString('id-ID')}</TableCell>
-                      <TableCell className="text-right font-bold font-mono text-xs text-blue-600 py-2">{Math.round(totals.totalCommitted).toLocaleString('id-ID')}</TableCell>
-                      <TableCell className="text-right font-bold font-mono text-xs text-amber-600 py-2">{Math.round(totals.totalActual).toLocaleString('id-ID')}</TableCell>
-                      <TableCell className={`text-right font-bold font-mono text-xs py-2 ${totals.totalRemaining < 0 ? 'text-red-600' : 'text-emerald-600'}`}>{Math.round(totals.totalRemaining).toLocaleString('id-ID')}</TableCell>
-                      <TableCell className="py-2" />
-                    </TableRow>
-                  </TableFooter>
-                )}
-              </Table>
-            </div>
-          </div>
         </div>
 
         {/* ── Collapsible Scheduler ──────────────────────────────── */}

@@ -16,7 +16,7 @@ import {
 } from '../lib/supabaseClient'
 import { MaterialRequest, PurchaseOrder, InventoryTransaction, MrStatus, PoStatus, PoItem } from '../types/supply-chain'
 import { generateId } from '../lib/idGenerator'
-import { checkBudgetAvailability, commitBudget, CheckableItem } from './budgetGuardService'
+import { checkBudgetAvailability, atomicCheckAndCommitBudget, releaseBudget, CheckableItem } from './budgetGuardService'
 import { eventBus } from '../lib/eventBus'
 
 // Local augmented row types for Supabase join results
@@ -119,7 +119,7 @@ export const supplyChainService = {
 
         const poId = generateId()
 
-        // 2. Create Header
+        // 2. Create PO header
         const { error: poError } = await upsertPurchaseOrder({
             id: poId,
             ...rowData,
@@ -128,7 +128,7 @@ export const supplyChainService = {
 
         if (poError) throw poError
 
-        // 3. Create Items
+        // 3. Create line items
         try {
             await Promise.all(mappedItems.map(item =>
                 upsertPoItem({
@@ -137,18 +137,43 @@ export const supplyChainService = {
                     ...item
                 })
             ))
-
-            // 4. Commit Budget for each RAP-linked item
-            for (const item of mappedItems) {
-                if (item.rap_item_id) {
-                    const amount = item.quantity * item.unit_price
-                    await commitBudget(item.rap_item_id, amount)
-                }
-            }
-
         } catch (itemError) {
-            console.error("Failed to insert PO items", itemError)
+            // Items failed — PO header exists but has no items, mark it cancelled to avoid orphan
+            try {
+                await assertSupabase()
+                    .from('purchase_orders')
+                    .update({ status: 'CANCELLED' })
+                    .eq('id', poId)
+            } catch { /* best-effort cleanup */ }
             throw itemError
+        }
+
+        // 4. Atomic check-and-commit budget for each RAP-linked item.
+        // If any commit fails, release all previously committed amounts to prevent orphaned locks.
+        const committed: Array<{ rapItemId: string; amount: number }> = []
+        for (const item of mappedItems) {
+            if (!item.rap_item_id) continue
+            const amount = item.quantity * item.unit_price
+            const result = await atomicCheckAndCommitBudget(item.rap_item_id, amount, poId)
+            if (!result.success) {
+                // Roll back all commits made so far in this loop
+                for (const prev of committed) {
+                    try {
+                        await releaseBudget(prev.rapItemId, prev.amount, poId)
+                    } catch (releaseErr) {
+                        console.error('[supplyChain] Budget rollback failed for', prev.rapItemId, releaseErr)
+                    }
+                }
+                // Mark PO as cancelled since budget could not be secured
+                try {
+                    await assertSupabase()
+                        .from('purchase_orders')
+                        .update({ status: 'CANCELLED' })
+                        .eq('id', poId)
+                } catch { /* best-effort */ }
+                throw new Error(result.error ?? `Budget check failed for item: ${item.item_name}`)
+            }
+            committed.push({ rapItemId: item.rap_item_id, amount })
         }
 
         return poId
@@ -210,23 +235,16 @@ export const supplyChainService = {
             }
         }
 
-        // Handle Rejection / Cancellation — rollback committed_cost
+        // Handle Rejection / Cancellation — atomically release committed_cost
         if (status === 'REJECTED' || status === 'CANCELLED') {
             const items = await this.getPoItems(id)
             for (const item of items) {
-                if (item.rapItemId) {
-                    const { data: rapItem } = await assertSupabase()
-                        .from('rap_items')
-                        .select('committed_cost')
-                        .eq('id', item.rapItemId)
-                        .single()
-
-                    if (rapItem) {
-                        const newCommitted = Math.max(0, (rapItem.committed_cost || 0) - item.totalPrice)
-                        await assertSupabase()
-                            .from('rap_items')
-                            .update({ committed_cost: newCommitted })
-                            .eq('id', item.rapItemId)
+                if (item.rapItemId && item.totalPrice > 0) {
+                    try {
+                        await releaseBudget(item.rapItemId, item.totalPrice, id)
+                    } catch (releaseErr) {
+                        // Log but don't throw — status update should still proceed
+                        console.error('[supplyChain] releaseBudget failed for item', item.rapItemId, releaseErr)
                     }
                 }
             }

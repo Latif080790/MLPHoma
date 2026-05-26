@@ -25,16 +25,39 @@ import {
     Activity
 } from 'lucide-react'
 import { useForecastStore } from '@/store/costForecastStore'
+import { useShallow } from 'zustand/react/shallow'
 import { useProjectStore } from '@/store/projectStore'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { format } from 'date-fns'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function CostForecastDashboard() {
     const activeProjectId = useProjectStore(s => s.activeProjectId)
     const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
-    const { history, projections, loading, fetchHistory, generateSnapshot } = useForecastStore()
+    const { history, projections, loading, fetchHistory, generateSnapshot } = useForecastStore(
+        useShallow(s => ({ history: s.history, projections: s.projections, loading: s.loading, fetchHistory: s.fetchHistory, generateSnapshot: s.generateSnapshot }))
+    )
+    const { handleAsync } = useErrorHandler()
 
     useEffect(() => {
         if (activeProjectId) fetchHistory(activeProjectId)
+    }, [activeProjectId, fetchHistory])
+
+    // Realtime: auto-refresh when a new EVM snapshot is inserted for the active project
+    useEffect(() => {
+        if (!supabase || !activeProjectId) return
+        const channel = supabase
+            .channel(`forecast-metrics-${activeProjectId}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'project_daily_metrics',
+                filter: `project_id=eq.${activeProjectId}`,
+            }, () => {
+                fetchHistory(activeProjectId)
+            })
+            .subscribe()
+        return () => { void supabase?.removeChannel(channel) }
     }, [activeProjectId, fetchHistory])
 
     const chartData = useMemo(() => {
@@ -79,7 +102,7 @@ export default function CostForecastDashboard() {
         >
 
             {/* TOP METRICS (EAC Projections) */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <Card className="border-indigo-100 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:rotate-12 transition-transform">
                         <TrendingUp size={48} className="text-indigo-600" />
@@ -106,7 +129,22 @@ export default function CostForecastDashboard() {
                         <p className="text-2xl font-mono font-black text-amber-700">
                             {projections?.eacConservative.toLocaleString()}
                         </p>
-                        <p className="text-xs text-slate-400 mt-1 font-bold">CPI x SPI weighted penalty</p>
+                        <p className="text-xs text-slate-400 mt-1 font-bold">CPI × SPI weighted penalty</p>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-emerald-100 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:rotate-12 transition-transform">
+                        <BarChart3 size={48} className="text-emerald-600" />
+                    </div>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-black uppercase text-slate-400">Aggressive EAC</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-mono font-black text-emerald-700">
+                            {projections?.eacAggressive.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1 font-bold">Remaining work at budget rate</p>
                     </CardContent>
                 </Card>
 

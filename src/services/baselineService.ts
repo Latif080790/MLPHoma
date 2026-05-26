@@ -5,13 +5,14 @@
  * Freezes the current RAB state as a baseline when project execution begins.
  * Supports comparison between baseline and current items to detect variance.
  *
- * Storage: localStorage (project-scoped)
+ * Storage: Supabase (rab_baselines table) — persistent across devices/sessions
  */
 
 import { useRabStore } from '../store/rabStore'
 import { generateId } from '../lib/idGenerator'
 import { auditService } from './auditService'
 import { useAuthStore } from '../store/authStore'
+import { assertSupabase } from '../lib/supabaseClient'
 
 // ─── Types ───
 
@@ -74,30 +75,16 @@ export interface BaselineComparison {
     unchangedCount: number
 }
 
-// ─── Storage ───
-
-const STORAGE_KEY = 'mlphoma:baselines'
-
-function loadBaselines(): Record<string, BaselineSnapshot> {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        return raw ? JSON.parse(raw) : {}
-    } catch { return {} }
-}
-
-function saveBaselines(baselines: Record<string, BaselineSnapshot>) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(baselines))
-}
-
 // ─── Service ───
 
 export const baselineService = {
 
     /**
      * Freeze the current RAB as baseline for a project.
-     * Only one baseline per project (overwrites previous).
+     * Only one baseline per project (upserts previous).
      */
-    freezeBaseline(projectId: string, name?: string): BaselineSnapshot {
+    async freezeBaseline(projectId: string, name?: string): Promise<BaselineSnapshot> {
+        const client = assertSupabase()
         const rabItems = useRabStore.getState().getItems(projectId)
 
         const baselineItems: BaselineItem[] = rabItems.map(item => ({
@@ -113,25 +100,36 @@ export const baselineService = {
         }))
 
         const totalCost = baselineItems.reduce((sum, i) => sum + i.totalPrice, 0)
+        const now = new Date().toISOString()
 
         const snapshot: BaselineSnapshot = {
             id: generateId('bsl'),
             projectId,
             name: name || `Baseline ${new Date().toLocaleDateString('id-ID')}`,
-            frozenAt: new Date().toISOString(),
+            frozenAt: now,
             itemCount: baselineItems.length,
             totalCost,
             items: baselineItems,
         }
 
-        // Save
-        const baselines = loadBaselines()
-        baselines[projectId] = snapshot
-        saveBaselines(baselines)
+        const { error } = await client
+            .from('rab_baselines')
+            .upsert({
+                id: snapshot.id,
+                project_id: projectId,
+                name: snapshot.name,
+                frozen_at: now,
+                item_count: snapshot.itemCount,
+                total_cost: totalCost,
+                items: baselineItems,
+                updated_at: now,
+            }, { onConflict: 'project_id' })
+
+        if (error) throw error
 
         // Log audit
         const { user, profile } = useAuthStore.getState()
-        auditService.log({
+        await auditService.log({
             userId: user?.id,
             userName: profile?.full_name || user?.email,
             action: 'SNAPSHOT',
@@ -152,26 +150,56 @@ export const baselineService = {
     /**
      * Get the frozen baseline for a project.
      */
-    getBaseline(projectId: string): BaselineSnapshot | null {
-        const baselines = loadBaselines()
-        return baselines[projectId] || null
+    async getBaseline(projectId: string): Promise<BaselineSnapshot | null> {
+        const client = assertSupabase()
+        const { data, error } = await client
+            .from('rab_baselines')
+            .select('*')
+            .eq('project_id', projectId)
+            .maybeSingle()
+
+        if (error) {
+            console.warn('[baseline] getBaseline error:', error.message)
+            return null
+        }
+        if (!data) return null
+
+        return {
+            id: data.id,
+            projectId: data.project_id,
+            name: data.name,
+            frozenAt: data.frozen_at,
+            itemCount: data.item_count,
+            totalCost: data.total_cost,
+            items: (data.items as BaselineItem[]) || [],
+        }
+    },
+
+    /**
+     * Check if a project has a frozen baseline.
+     */
+    async hasBaseline(projectId: string): Promise<boolean> {
+        const client = assertSupabase()
+        const { count } = await client
+            .from('rab_baselines')
+            .select('id', { count: 'exact', head: true })
+            .eq('project_id', projectId)
+        return (count ?? 0) > 0
     },
 
     /**
      * Compare current RAB items against the frozen baseline.
      */
-    compareToBaseline(projectId: string): BaselineComparison | null {
-        const baseline = this.getBaseline(projectId)
+    async compareToBaseline(projectId: string): Promise<BaselineComparison | null> {
+        const baseline = await this.getBaseline(projectId)
         if (!baseline) return null
 
         const currentItems = useRabStore.getState().getItems(projectId)
         const variances: BaselineVariance[] = []
 
-        // Map baseline items by ID for quick lookup
         const baselineMap = new Map(baseline.items.map(i => [i.id, i]))
         const currentMap = new Map(currentItems.map(i => [i.id, i]))
 
-        // Check baseline items (changed or removed)
         for (const bItem of baseline.items) {
             const cItem = currentMap.get(bItem.id)
 
@@ -199,8 +227,7 @@ export const baselineService = {
             const totalChangePercent = bItem.totalPrice !== 0
                 ? (totalChange / bItem.totalPrice) * 100
                 : (currentTotal > 0 ? 100 : 0)
-
-            const isUnchanged = Math.abs(totalChange) < 1 // ±Rp 1 tolerance
+            const isUnchanged = Math.abs(totalChange) < 1
 
             variances.push({
                 itemId: bItem.id,
@@ -219,7 +246,6 @@ export const baselineService = {
             })
         }
 
-        // Check for new items (in current but not in baseline)
         for (const cItem of currentItems) {
             if (!baselineMap.has(cItem.id)) {
                 const currentTotal = (cItem.volume || 0) * (cItem.unit_price || 0)
@@ -262,18 +288,14 @@ export const baselineService = {
     },
 
     /**
-     * Check if a project has a frozen baseline.
-     */
-    hasBaseline(projectId: string): boolean {
-        return !!this.getBaseline(projectId)
-    },
-
-    /**
      * Delete the baseline for a project.
      */
-    deleteBaseline(projectId: string): void {
-        const baselines = loadBaselines()
-        delete baselines[projectId]
-        saveBaselines(baselines)
+    async deleteBaseline(projectId: string): Promise<void> {
+        const client = assertSupabase()
+        const { error } = await client
+            .from('rab_baselines')
+            .delete()
+            .eq('project_id', projectId)
+        if (error) throw error
     },
 }

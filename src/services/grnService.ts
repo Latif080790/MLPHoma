@@ -9,6 +9,10 @@ import { generateId } from '../lib/idGenerator'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
 import { supplyChainService } from './supplyChainService'
+// TODO: trigger 3-way match when financeService exposes performThreeWayMatch(poId)
+// import { financeService } from './financeService'
+import { matchInvoice } from './invoiceMatchingService'
+import type { Invoice } from '../types/finance'
 import type { GoodsReceipt, CreateGrnInput, GrnStatus, GrnItem } from '../types/grn'
 
 // ─── Local row types ──────────────────────────────────────────────────────────
@@ -251,7 +255,7 @@ export const grnService = {
 
                     const taxAmount = grnTotal * 0.11 // PPN 11%
 
-                    await client.from('invoices').insert({
+                    const { data: newInvoice } = await client.from('invoices').insert({
                         id: generateId('inv'),
                         project_id: grn.projectId,
                         po_id: grn.poId,
@@ -263,7 +267,32 @@ export const grnService = {
                         total_amount: grnTotal + taxAmount,
                         due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                         status: 'UNPAID',
-                    })
+                    }).select().single()
+
+                    // Auto 3-way match: PO ↔ GRN ↔ Invoice triggered immediately on GRN verification.
+                    // TODO: replace with financeService.performThreeWayMatch(grn.poId) once that method is exposed.
+                    if (newInvoice) {
+                        void Promise.all([
+                            supplyChainService.getPurchaseOrders(grn.projectId),
+                            supplyChainService.getInventoryTransactions(grn.projectId),
+                        ]).then(([pos, invTxns]) => {
+                            const matchResult = matchInvoice(newInvoice as Invoice, pos, invTxns)
+                            if (matchResult.status === 'mismatch' || matchResult.status === 'partial') {
+                                const highVariance = matchResult.discrepancies.find(d => !d.tolerable && d.variance > 5)
+                                if (highVariance) {
+                                    void notificationService.notifyByRole(grn.projectId, 'manager', {
+                                        projectId: grn.projectId,
+                                        type: 'BUDGET_CRITICAL',
+                                        severity: 'critical',
+                                        title: `3-Way Match Alert: ${newInvoice.invoice_number}`,
+                                        message: `GRN ${grn.grnNumber} invoice exceeds PO by ${highVariance.variance.toFixed(1)}%. Review required.`,
+                                        entityType: 'INVOICE',
+                                        entityId: newInvoice.id,
+                                    }).catch(err => console.warn('[GRN] 3-way match notification failed:', err))
+                                }
+                            }
+                        }).catch(err => console.warn('[GRN] Auto 3-way match failed for GRN', grn.grnNumber, err))
+                    }
                 }
 
                 // 2. Check if PO is fully received across all GRNs

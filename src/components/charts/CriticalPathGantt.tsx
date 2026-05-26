@@ -26,7 +26,7 @@ export function CriticalPathGantt() {
 
     const cpmData = useMemo(() => {
         if (!activeProjectId || projectTasks.length === 0) return null
-        return criticalPathService.getProjectHealth(activeProjectId)
+        return criticalPathService.getProjectHealth(activeProjectId, projectTasks)
     }, [activeProjectId, projectTasks])
 
     const displayNodes = useMemo(() => {

@@ -4,15 +4,21 @@
  */
 import { create } from 'zustand'
 import { forecastingService, type ForecastProjections } from '../services/forecastingService'
+import type { ProjectDailyMetric } from '../services/evmService'
+import type { CostDashboardSnapshot } from '../services/costDashboardService'
 
 interface ForecastState {
-    history: any[]
+    history: ProjectDailyMetric[]
     projections: ForecastProjections | null
     loading: boolean
     error: string | null
     
     fetchHistory: (projectId: string) => Promise<void>
     generateSnapshot: () => Promise<void>
+
+    snapshot: CostDashboardSnapshot | null
+    snapshotLoading: boolean
+    fetchSnapshot: (projectId: string) => Promise<void>
 }
 
 export const useForecastStore = create<ForecastState>((set, get) => ({
@@ -31,8 +37,8 @@ export const useForecastStore = create<ForecastState>((set, get) => ({
             const projections = await forecastingService.getTrendForecast(projectId)
 
             set({ history: history || [], projections, loading: false })
-        } catch (err: any) {
-            set({ error: err.message, loading: false })
+        } catch (err: unknown) {
+            set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false })
         }
     },
 
@@ -40,10 +46,23 @@ export const useForecastStore = create<ForecastState>((set, get) => ({
         set({ loading: true })
         try {
             await forecastingService.generateSnapshot()
-        } catch (err: any) {
-            set({ error: err.message })
+        } catch (err: unknown) {
+            set({ error: err instanceof Error ? err.message : 'Unknown error' })
         } finally {
             set({ loading: false })
         }
-    }
+    },
+
+    snapshot: null,
+    snapshotLoading: false,
+    fetchSnapshot: async (projectId: string) => {
+        set({ snapshotLoading: true })
+        try {
+            const { costDashboardService } = await import('../services/costDashboardService')
+            const snapshot = await costDashboardService.getDashboardSnapshot(projectId)
+            set({ snapshot, snapshotLoading: false })
+        } catch (err: unknown) {
+            set({ error: (err as Error).message, snapshotLoading: false })
+        }
+    },
 }))

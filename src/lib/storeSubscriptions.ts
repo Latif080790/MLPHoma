@@ -83,6 +83,11 @@ export function initStoreSubscriptions() {
   const debouncedRabToTimeline = debounce(() => {
     console.debug('[Sync 2/4] RAB items changed. Propagating costs to Timeline.')
     useTimelineStore.getState().syncTaskCostsFromRAB()
+    // v4 Sprint 3 — Item 14: Cross-module real-time toast
+    toast('RAB diperbarui → Timeline disinkronkan', {
+      description: 'Perubahan anggaran telah dipropagasi ke task Gantt.',
+      duration: 3000,
+    })
   }, 300)
 
   // useRabStore does NOT use subscribeWithSelector — use 1-arg subscribe with closure comparison
@@ -103,6 +108,11 @@ export function initStoreSubscriptions() {
 
     console.debug('[Sync 3/4] Timeline changed. Recalculating RAP distribution.')
     useRapStore.getState().recalculateDistribution(activeProjectId)
+    // v4 Sprint 3 — Item 14: Cross-module real-time toast
+    toast('Jadwal diperbarui → RAP disinkronkan', {
+      description: 'Distribusi anggaran bulanan diperbarui dari perubahan timeline.',
+      duration: 3000,
+    })
 
     // After RAP distribution updates, trigger CurvaS rebuild via the
     // rapStore bottom-of-file subscription (Subscription 4 — handled in rapStore.ts)

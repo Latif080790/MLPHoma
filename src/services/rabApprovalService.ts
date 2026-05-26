@@ -33,7 +33,13 @@ export const rabApprovalService = {
     const supabase = assertSupabase()
     
     // Build update payload dynamically
-    const payload: any = {
+    const payload: {
+      status: RABApproval['status']
+      current_step: number
+      approval_chain: RABApproval['approvalChain']
+      updated_at: string
+      rejection_reason?: string
+    } = {
       status,
       current_step: currentStep,
       approval_chain: approvalChain,

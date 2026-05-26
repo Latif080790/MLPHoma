@@ -18,6 +18,8 @@ import { checkBudgetAvailability, formatBudgetCheckMessage, commitBudget, Budget
 import { approvalService } from "@/services/approvalService"
 import { useAuthStore } from "@/store/authStore"
 import { BudgetGuardDialog } from "./BudgetGuardDialog"
+import { tkdnService } from "@/services/tkdnService"
+import type { TKDNSummary } from "@/types/tkdn"
 
 const poItemSchema = z.object({
     rap_item_id: z.string().optional(),
@@ -47,6 +49,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
     const [isCheckingBudget, setIsCheckingBudget] = useState(false)
     const [budgetGuardOpen, setBudgetGuardOpen] = useState(false)
     const [pendingSubmission, setPendingSubmission] = useState<PoFormValues | null>(null)
+    const [tkdnSummary, setTkdnSummary] = useState<TKDNSummary | null>(null)
 
     const form = useForm<PoFormValues>({
         resolver: zodResolver(poSchema),
@@ -125,6 +128,14 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
     }
 
     async function onSubmit(data: PoFormValues) {
+        // TKDN Gate: hard block if project TKDN is below mandatory target (BUMN procurement policy)
+        if (tkdnSummary && !tkdnSummary.meets_target) {
+            toast.error('TKDN Gate: PO diblokir', {
+                description: `TKDN project ${tkdnSummary.tkdn_percentage.toFixed(1)}% di bawah target wajib ${tkdnSummary.target_percentage}% — tingkatkan kandungan lokal sebelum pengadaan dapat dilanjutkan.`
+            })
+            return
+        }
+
         if (isCheckingBudget) {
             toast.info('Budget check is still running, please wait...')
             return
@@ -159,10 +170,20 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
     const searchedItems = form.watch("items")
     const totalEstimated = searchedItems?.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.unit_price) || 0)), 0) || 0
 
-    // Fetch RAP items when dialog opens
+    // Fetch RAP items and TKDN summary when dialog opens
     React.useEffect(() => {
         if (open && projectId) {
             fetchItems(projectId)
+            // TKDN Gate: fetch project TKDN compliance status (non-blocking)
+            tkdnService.getItems(projectId)
+                .then(items => {
+                    if (items.length > 0) {
+                        setTkdnSummary(tkdnService.calculateSummary(items))
+                    } else {
+                        setTkdnSummary(null)
+                    }
+                })
+                .catch(() => setTkdnSummary(null))
         }
     }, [open, projectId, fetchItems])
 
@@ -249,6 +270,19 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                         )}
                         <AlertDescription className="text-sm">
                             {formatBudgetCheckMessage(budgetCheck)}
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {/* TKDN COMPLIANCE GATE — non-blocking warning */}
+                {tkdnSummary && !tkdnSummary.meets_target && (
+                    <Alert className="border-orange-300 bg-orange-50 dark:bg-orange-950/20">
+                        <AlertTriangle className="h-4 w-4 text-orange-600" />
+                        <AlertDescription className="text-sm text-orange-800 dark:text-orange-300">
+                            <strong>TKDN Compliance Warning:</strong> Project TKDN score is{' '}
+                            <strong>{tkdnSummary.tkdn_percentage.toFixed(1)}%</strong> — below the{' '}
+                            {tkdnSummary.target_percentage}% target. PO creation is still allowed, but ensure
+                            domestic content is prioritized per procurement policy.
                         </AlertDescription>
                     </Alert>
                 )}

@@ -1,18 +1,24 @@
 import React, { Suspense, useEffect, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Layout, Zap, FileDown } from 'lucide-react'
 import { differenceInDays, parseISO, isValid } from 'date-fns'
 import { useProjectStore } from '@/store/projectStore'
-import { dashboardService, DashboardStats } from '@/services/dashboardService'
-import { toast } from 'sonner'
+import { useShallow } from 'zustand/react/shallow'
+import { supabase } from '@/lib/supabaseClient'
+import { dashboardService } from '@/services/dashboardService'
 import { ApprovalInbox } from '@/components/dashboard/ApprovalInbox'
 import { CriticalPathWarningPanel } from '@/components/dashboard/CriticalPathWarningPanel'
 import { MRPAlertPanel } from '@/components/supply-chain/MRPAlertPanel'
+import { AnomalyWidget } from '@/components/common/AnomalyWidget'
 import { AuditLogViewer } from '@/components/audit/AuditLogViewer'
 import { ApprovalQueueWidget } from '@/components/dashboard/ApprovalQueueWidget'
 import ModulePageState from '@/components/common/ModulePageState'
 import { useNavigate } from 'react-router-dom'
 import { lazyRetry } from '@/lib/lazyRetry'
 
+import { useErrorHandler } from '@/hooks/useErrorHandler'
+import { approvalService } from '@/services/approvalService'
+import { Badge } from '@/components/ui/badge'
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, ModeSwitch, SummaryStrip, WorkspaceHeader, AlertStrip } from '@/components/patterns'
@@ -28,50 +34,63 @@ const CommandCenterCashflowChart = lazyRetry(() => import('@/components/dashboar
 export default function CommandCenter() {
     type PortfolioStats = Awaited<ReturnType<typeof dashboardService.getPortfolioStats>>
     const navigate = useNavigate()
-    const { activeProjectId, projects } = useProjectStore()
-    const [stats, setStats] = useState<DashboardStats | null>(null)
-    const [portfolioStats, setPortfolioStats] = useState<PortfolioStats | null>(null)
+    const queryClient = useQueryClient()
+    const { activeProjectId, projects } = useProjectStore(
+        useShallow(s => ({ activeProjectId: s.activeProjectId, projects: s.projects }))
+    )
     const [isPortfolioMode, setIsPortfolioMode] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
 
-    // Load Data
+    // ── react-query: project dashboard stats ─────────────────────────────────
+    const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<ReturnType<typeof dashboardService.getProjectStats> extends Promise<infer T> ? T : never>({
+        queryKey: ['dashboard', 'project', activeProjectId],
+        queryFn: () => dashboardService.getProjectStats(activeProjectId!),
+        enabled: !isPortfolioMode && !!activeProjectId,
+        staleTime: 30_000,
+    })
+
+    // ── react-query: portfolio stats ─────────────────────────────────────────
+    const { data: portfolioStats, isLoading: portfolioLoading, error: portfolioError } = useQuery<PortfolioStats>({
+        queryKey: ['dashboard', 'portfolio'],
+        queryFn: () => dashboardService.getPortfolioStats(),
+        enabled: isPortfolioMode,
+        staleTime: 30_000,
+    })
+
+    // ── react-query: overdue / escalated approvals for SLA indicators ────────
+    const { data: overdueApprovals = [] } = useQuery({
+        queryKey: ['approvals', 'overdue', activeProjectId],
+        queryFn: () => approvalService.getOverdueApprovals(activeProjectId ?? undefined),
+        enabled: !isPortfolioMode && !!activeProjectId,
+        staleTime: 60_000,
+    })
+
+    const overdueCount = overdueApprovals.length
+    const escalatedCount = overdueApprovals.filter(a => a.status === 'ESCALATED').length
+
+    const loading = isPortfolioMode ? portfolioLoading : statsLoading
+    const pageError = isPortfolioMode
+        ? (portfolioError ? 'Unable to load portfolio telemetry data.' : null)
+        : (statsError ? 'Unable to load command center metrics for the active project.' : null)
+
+    const { handleError: _handleError } = useErrorHandler()
+
+    // Realtime: auto-refresh when timeline_tasks change for the active project
     useEffect(() => {
-        queueMicrotask(() => {
-            setLoading(true)
-            setPageError(null)
-            setSrStatus(isPortfolioMode ? 'Loading portfolio command center telemetry...' : 'Loading project command center telemetry...')
-        })
-        if (isPortfolioMode) {
-            dashboardService.getPortfolioStats()
-                .then((data) => {
-                    setPortfolioStats(data)
-                    setSrStatus('Portfolio command center telemetry loaded.')
-                })
-                .catch(() => {
-                    setPageError('Unable to load portfolio telemetry data.')
-                    toast.error("Failed to load portfolio data")
-                    setSrStatus('Failed to load portfolio telemetry data.')
-                })
-                .finally(() => setLoading(false))
-        } else if (activeProjectId) {
-            dashboardService.getProjectStats(activeProjectId)
-                .then((data) => {
-                    setStats(data)
-                    setSrStatus('Project command center telemetry loaded.')
-                })
-                .catch(() => {
-                    setPageError('Unable to load command center metrics for the active project.')
-                    toast.error("Failed to load project data")
-                    setSrStatus('Failed to load project command center telemetry data.')
-                })
-                .finally(() => setLoading(false))
-        } else {
-            setSrStatus('No active project selected for command center.')
-            queueMicrotask(() => setLoading(false))
-        }
-    }, [activeProjectId, isPortfolioMode])
+        if (!supabase || !activeProjectId) return
+        const channel = supabase
+            .channel(`cmd-center-tasks-${activeProjectId}`)
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'timeline_tasks',
+                filter: `project_id=eq.${activeProjectId}`,
+            }, () => {
+                void queryClient.invalidateQueries({ queryKey: ['dashboard', 'project', activeProjectId] })
+            })
+            .subscribe()
+        return () => { void supabase?.removeChannel(channel) }
+    }, [activeProjectId, queryClient])
 
     const activeProject = projects[activeProjectId || '']
 
@@ -166,6 +185,7 @@ export default function CommandCenter() {
                     status: (dayCounter.remaining < 0 ? 'danger' : dayCounter.remaining < dayCounter.total * 0.2 ? 'warning' : 'success') as 'success' | 'warning' | 'danger',
                 }]
                 : []),
+            { label: 'SLA Breach', value: overdueCount, status: (overdueCount > 0 ? 'danger' : 'success') as 'danger' | 'success' },
         ] : []
 
     const criticalCount = isPortfolioMode ? (portfolioStats?.globalAlertCounts?.CRITICAL || 0) : (stats?.alertCounts?.CRITICAL || 0)
@@ -221,12 +241,23 @@ export default function CommandCenter() {
                 summaryItems.length > 0 ? <SummaryStrip items={summaryItems} variant="chips" /> : undefined
             }
             alert={
-                criticalCount > 0 ? (
-                    <AlertStrip
-                        severity="danger"
-                        message={`${criticalCount} critical alert${criticalCount > 1 ? 's' : ''} require immediate attention`}
-                        action={{ label: 'View Risks', onClick: () => navigate('/change-management') }}
-                    />
+                (overdueCount > 0 || criticalCount > 0) ? (
+                    <>
+                        {overdueCount > 0 && (
+                            <AlertStrip
+                                severity="danger"
+                                message={`${overdueCount} approval request melewati SLA deadline — butuh tindakan segera`}
+                                action={{ label: 'Lihat Approval', onClick: () => navigate('/approvals') }}
+                            />
+                        )}
+                        {criticalCount > 0 && (
+                            <AlertStrip
+                                severity="danger"
+                                message={`${criticalCount} critical alert${criticalCount > 1 ? 's' : ''} require immediate attention`}
+                                action={{ label: 'View Risks', onClick: () => navigate('/change-management') }}
+                            />
+                        )}
+                    </>
                 ) : undefined
             }
         >
@@ -235,8 +266,8 @@ export default function CommandCenter() {
             <TelemetryHUD
                 isPortfolioMode={isPortfolioMode}
                 activeProject={activeProject ? { id: activeProjectId!, name: activeProject.name } : null}
-                stats={stats}
-                portfolioStats={portfolioStats}
+                stats={stats ?? null}
+                portfolioStats={portfolioStats ?? null}
                 srStatus={srStatus}
                 onTogglePortfolio={() => setIsPortfolioMode(!isPortfolioMode)}
             />
@@ -244,15 +275,15 @@ export default function CommandCenter() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[minmax(180px,auto)] mt-4">
                 <PerformanceKPIs
                     isPortfolioMode={isPortfolioMode}
-                    stats={stats}
-                    portfolioStats={portfolioStats}
+                    stats={stats ?? null}
+                    portfolioStats={portfolioStats ?? null}
                     onAnalyzeImpact={() => navigate('/strategy-simulation')}
                 />
 
                 <OperationalAlerts
                     isPortfolioMode={isPortfolioMode}
-                    stats={stats}
-                    portfolioStats={portfolioStats}
+                    stats={stats ?? null}
+                    portfolioStats={portfolioStats ?? null}
                     onViewChange={() => navigate('/change-management')}
                     onViewResources={() => navigate('/portfolio-resources')}
                 />
@@ -271,6 +302,13 @@ export default function CommandCenter() {
 
                 {/* F. APPROVAL INBOX & MRP ALERTS (Side by Side) */}
                 <div className="md:col-span-2">
+                    <div className="flex items-center gap-2 mb-1">
+                        {escalatedCount > 0 && (
+                            <Badge variant="destructive" className="text-xs px-1.5 py-0 h-4 font-semibold tracking-wide">
+                                {escalatedCount} ESCALATED
+                            </Badge>
+                        )}
+                    </div>
                     <ApprovalQueueWidget projectId={activeProjectId} />
                 </div>
                 <div className="md:col-span-2">
@@ -278,6 +316,9 @@ export default function CommandCenter() {
                 </div>
                 <div className="md:col-span-2">
                     <MRPAlertPanel compact />
+                </div>
+                <div className="md:col-span-2">
+                    <AnomalyWidget projectId={activeProjectId} compact />
                 </div>
 
                 {/* G. CRITICAL PATH WARNING PANEL */}

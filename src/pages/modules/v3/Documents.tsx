@@ -1,7 +1,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2, Eye } from "lucide-react"
+import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2, Eye, Link2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -81,6 +81,9 @@ export default function Documents() {
     const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
     const [pendingDeleteDoc, setPendingDeleteDoc] = useState<ProjectDocument | null>(null)
     const [previewDoc, setPreviewDoc] = useState<ProjectDocument | null>(null)
+    const [linkDoc, setLinkDoc] = useState<ProjectDocument | null>(null)
+    const [linkEntityType, setLinkEntityType] = useState<NonNullable<ProjectDocument['linked_entity_type']>>('task')
+    const [linkEntityId, setLinkEntityId] = useState('')
     const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
 
@@ -113,6 +116,30 @@ export default function Documents() {
             })
         }
     }, [activeProjectId, loadDocs])
+
+    const handleSaveLink = useCallback(async () => {
+        if (!linkDoc) return
+        if (!linkEntityId.trim()) {
+            toast.error('Entity ID wajib diisi')
+            return
+        }
+        setSrStatus('Saving entity link...')
+
+        const success = await handleAsync(async () => {
+            await documentService.updateDocumentLink(linkDoc.id, linkEntityType, linkEntityId.trim())
+            return true
+        }, 'document.general')
+
+        if (success) {
+            setDocuments((current) => current.map((doc) => doc.id === linkDoc.id ? { ...doc, linked_entity_type: linkEntityType, linked_entity_id: linkEntityId.trim() } : doc))
+            setLinkDoc(null)
+            setLinkEntityId('')
+            toast.success('Link entity disimpan')
+            setSrStatus('Entity link saved successfully.')
+        } else {
+            setSrStatus('Failed to save entity link.')
+        }
+    }, [linkDoc, linkEntityId, linkEntityType, handleAsync])
 
     useEffect(() => {
         try {
@@ -510,6 +537,20 @@ export default function Documents() {
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                aria-label="Link entity"
+                                                className="text-neutral-400 hover:text-indigo-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
+                                                onClick={() => {
+                                                    setLinkDoc(doc)
+                                                    setLinkEntityType(doc.linked_entity_type || 'task')
+                                                    setLinkEntityId(doc.linked_entity_id || '')
+                                                }}
+                                                title="Link to entity"
+                                            >
+                                                <Link2 size={14} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 aria-label="Hapus dokumen"
                                                 className="text-neutral-400 hover:text-red-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                                                 onClick={() => setPendingDeleteDoc(doc)}
@@ -548,6 +589,14 @@ export default function Documents() {
                                             )}
                                         </div>
                                         <p className="text-xs text-neutral-500">{doc.category} • v{doc.version_number}</p>
+                                        {doc.linked_entity_type && (
+                                            <div className="flex items-center gap-1 mt-1">
+                                                <Link2 className="h-3 w-3 text-blue-500" />
+                                                <span className="text-xs text-blue-600 dark:text-blue-400 capitalize">
+                                                    Linked: {doc.linked_entity_type.replace('_', ' ')}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className="text-xs text-neutral-400 mt-1">
                                             {format(new Date(doc.created_at), 'dd MMM yyyy')}
                                             {doc.file_size ? ` • ${(doc.file_size / 1024).toFixed(0)} KB` : ''}
@@ -686,6 +735,45 @@ export default function Documents() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Entity Link Dialog */}
+            <Dialog open={!!linkDoc} onOpenChange={(open) => { if (!open) setLinkDoc(null) }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Link Document to Entity</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="grid gap-2">
+                            <Label>Entity Type</Label>
+                            <Select value={linkEntityType} onValueChange={(val: any) => setLinkEntityType(val)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="task">Task (WBS)</SelectItem>
+                                    <SelectItem value="rab_item">RAB Item</SelectItem>
+                                    <SelectItem value="approval">Approval</SelectItem>
+                                    <SelectItem value="milestone">Milestone</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Entity ID</Label>
+                            <Input 
+                                value={linkEntityId} 
+                                onChange={e => setLinkEntityId(e.target.value)} 
+                                placeholder="e.g. TSK-001 or WBS ID" 
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setLinkDoc(null)}>Cancel</Button>
+                        <Button onClick={() => { void handleSaveLink() }} disabled={!linkEntityId.trim() || loading}>
+                            Save Link
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </PageShell>
     )
 }

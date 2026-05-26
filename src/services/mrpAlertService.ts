@@ -6,11 +6,16 @@
  * to proactively detect upcoming material shortages.
  *
  * Used by: MRPAlertPanel, CommandCenter, SupplyChain
+ *
+ * Architecture: Pure compute function `analyzeMaterialShortages` accepts data
+ * as parameters (fully testable, no store coupling).
+ * Callers (MRPAlertPanel) are responsible for reading their own store data
+ * and passing it in — keeping this service side-effect-free.
  */
 
-import { useRabStore } from '../store/rabStore'
-import { useTimelineStore } from '../store/timelineStore'
-import { useSupplyChainStore } from '../store/supplyChainStore'
+import type { RABItem } from '../types/rab'
+import type { TimelineTask } from '../types/timeline'
+import type { InventoryStock, PurchaseOrder } from '../types/supply-chain'
 
 // ─── Types ───
 
@@ -52,24 +57,26 @@ export interface MRPSummary {
 const CRITICAL_DAYS = 3
 const WARNING_DAYS = 7
 
-// ─── Core Engine ───
+// ─── Core Engine (Pure — no store coupling) ───
 
 /**
- * Analyze material shortages for a given project.
- * Pulls data from RAB store (planned volumes), Timeline store (scheduled tasks),
- * Supply Chain store (inventory + POs), and computes alerts.
+ * Pure compute function. Accepts data as parameters — no store coupling.
+ * This is the testable, SSR-safe version.
+ *
+ * @param rabItems - Planned RAB items (materials + volumes)
+ * @param timelineTasks - Scheduled tasks (for due-date awareness)
+ * @param inventoryStock - Current warehouse stock
+ * @param purchaseOrders - All purchase orders (any status)
+ * @param projectId - Used to filter POs by project
  */
-export function analyzeMaterialShortages(projectId: string): MRPSummary {
-    // 1. Get RAB items (planned material needs)
-    const rabItems = useRabStore.getState().getItems(projectId)
-
-    // 2. Get timeline tasks (upcoming schedule)
-    const timelineTasks = useTimelineStore.getState().getTasks(projectId)
-
-    // 3. Get supply chain data (inventory + POs)
-    const { inventoryStock, purchaseOrders } = useSupplyChainStore.getState()
-
-    // 4. Aggregate material requirements from RAB
+export function analyzeMaterialShortages(
+    rabItems: RABItem[],
+    timelineTasks: TimelineTask[],
+    inventoryStock: InventoryStock[],
+    purchaseOrders: PurchaseOrder[],
+    projectId: string,
+): MRPSummary {
+    // 1. Aggregate material requirements from RAB
     const materialNeeds = new Map<string, {
         totalNeeded: number
         unit: string
@@ -104,18 +111,16 @@ export function analyzeMaterialShortages(projectId: string): MRPSummary {
         materialNeeds.set(name, existing)
     }
 
-    // 5. Calculate stock and pending PO for each material
+    // 2. Calculate stock and pending PO for each material
     const alerts: MaterialAlert[] = []
     let idCounter = 0
 
     for (const [materialName, need] of materialNeeds.entries()) {
-        // Find matching inventory stock (case-insensitive)
         const stock = inventoryStock.find(
             s => s.materialName.trim().toLowerCase() === materialName
         )
         const currentStock = stock?.current ?? stock?.currentStock ?? 0
 
-        // Find pending PO quantities for this material
         let pendingPO = 0
         for (const po of purchaseOrders) {
             if (po.projectId !== projectId) continue
@@ -133,10 +138,8 @@ export function analyzeMaterialShortages(projectId: string): MRPSummary {
         const effectiveAvailable = currentStock + pendingPO
         const shortfall = need.totalNeeded - effectiveAvailable
 
-        // Only alert if there's a shortfall
         if (shortfall <= 0) continue
 
-        // Calculate days until needed
         let daysUntilNeeded: number | null = null
         if (need.dueDate) {
             const due = new Date(need.dueDate)
@@ -144,13 +147,11 @@ export function analyzeMaterialShortages(projectId: string): MRPSummary {
             daysUntilNeeded = Math.max(0, Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
         }
 
-        // Classify severity
         let severity: AlertSeverity = 'info'
         if (daysUntilNeeded !== null) {
             if (daysUntilNeeded <= CRITICAL_DAYS) severity = 'critical'
             else if (daysUntilNeeded <= WARNING_DAYS) severity = 'warning'
         } else {
-            // No schedule linked — classify by shortfall ratio
             const ratio = shortfall / Math.max(need.totalNeeded, 1)
             if (ratio > 0.5) severity = 'warning'
             if (ratio > 0.8) severity = 'critical'
@@ -172,7 +173,6 @@ export function analyzeMaterialShortages(projectId: string): MRPSummary {
         })
     }
 
-    // Sort: critical first, then warning, then info
     const severityOrder: Record<AlertSeverity, number> = { critical: 0, warning: 1, info: 2 }
     alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
 
@@ -184,3 +184,5 @@ export function analyzeMaterialShortages(projectId: string): MRPSummary {
         totalShortfall: alerts.reduce((sum, a) => sum + a.shortfall, 0),
     }
 }
+
+

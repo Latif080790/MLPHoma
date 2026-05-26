@@ -9,6 +9,7 @@
 import React, { useMemo } from 'react'
 import { useRabStore } from '../../store/rabStore'
 import { formatIDR } from '../../lib/utils'
+import { useShallow } from 'zustand/react/shallow'
 
 interface RABSummaryProps {
   projectId: string
@@ -16,7 +17,7 @@ interface RABSummaryProps {
 }
 
 export default function RABSummary({ projectId, taxRate = 0.11 }: RABSummaryProps) {
-  const items = useRabStore((s) => s.getItems(projectId))
+  const items = useRabStore(useShallow((s) => s.getItems(projectId)))
 
   const summary = useMemo(() => {
     const subtotal = items.reduce(

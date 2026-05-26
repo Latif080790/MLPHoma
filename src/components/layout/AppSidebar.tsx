@@ -22,7 +22,10 @@ import {
     Zap,
     BarChart3,
     Layers,
-    PieChart
+    PieChart,
+    Wrench,
+    ShieldCheck,
+    HardHat
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { approvalService } from '@/services/approvalService'
@@ -47,6 +50,9 @@ const ICON_MAP: Record<NavIconKey, React.ElementType> = {
     Zap,
     Sliders,
     Settings,
+    Wrench,
+    ShieldCheck,
+    HardHat,
 }
 
 interface AppSidebarProps {
@@ -199,7 +205,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                                                     size={16}
                                                     className={cn(
                                                         "flex-shrink-0",
-                                                        isActive ? "text-blue-600 dark:text-blue-400" : item.colorClass
+                                                        isActive ? "text-nl-orange" : item.colorClass
                                                     )}
                                                 />
                                                 {!collapsed && (

@@ -56,8 +56,8 @@ describe('rapStore', () => {
 
       const plan = useRapStore.getState().getPlan('P-001')
       expect(plan).toHaveLength(2)
-      expect(plan[0]).toEqual({ date: '2025-01-01', planned: 300000, actual: 230000 })
-      expect(plan[1]).toEqual({ date: '2025-02-01', planned: 300000, actual: 250000 })
+      expect(plan[0]).toEqual({ period: '2025-01', planned: 300000, actual: 230000 })
+      expect(plan[1]).toEqual({ period: '2025-02', planned: 300000, actual: 250000 })
     })
 
     it('should filter by projectId', () => {

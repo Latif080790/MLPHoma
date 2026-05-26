@@ -8,6 +8,7 @@
 import { create } from 'zustand'
 import { authService, type ProfileData } from '../lib/authService'
 import type { User, Session } from '@supabase/supabase-js'
+import { initPushSubscription, removePushSubscription } from '../lib/pushService'
 
 /**
  * AuthState interface
@@ -119,8 +120,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             profile: fetchedProfile || null,
             role: newRole
           })
+
+          // Subscribe to push notifications after sign-in
+          initPushSubscription(user.id)
         } else {
-          // User signed out
+          // User signed out — remove push subscription before clearing state
+          const currentUser = get().user
+          if (currentUser) {
+            removePushSubscription(currentUser.id)
+          }
+
           set({
             user: null,
             session: null,
@@ -233,6 +242,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     try {
       set({ loading: true, error: null })
+
+      // Remove push subscription before signing out
+      const currentUser = get().user
+      if (currentUser) {
+        removePushSubscription(currentUser.id)
+      }
 
       const { error } = await authService.signOut()
 

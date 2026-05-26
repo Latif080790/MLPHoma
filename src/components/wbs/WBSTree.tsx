@@ -169,12 +169,41 @@ function WBSTreeItem({
       <div
         ref={itemRef}
         draggable
+        tabIndex={0}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          switch (e.key) {
+            case 'Enter':
+            case ' ':
+              e.preventDefault()
+              if (hasChildren) onToggleExpand(item.id)
+              else onSelect(item)
+              break
+            case 'ArrowRight':
+              e.preventDefault()
+              if (hasChildren && !isExpanded) onToggleExpand(item.id)
+              break
+            case 'ArrowLeft':
+              e.preventDefault()
+              if (isExpanded && hasChildren) onToggleExpand(item.id)
+              break
+            case 'Delete':
+            case 'Backspace':
+              e.preventDefault()
+              onDelete(item)
+              break
+            case 'F2':
+              e.preventDefault()
+              onEdit(item)
+              break
+          }
+        }}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         className={`
           group relative flex items-center gap-2 rounded-lg px-2 py-2 transition-colors
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-inset
           ${rowBg}
           ${item.isDragging ? 'opacity-50' : ''}
           ${item.isDropTarget ? 'border-2 border-dashed border-blue-400' : ''}

@@ -133,9 +133,19 @@
     @apply bg-background text-foreground;
   }
 
-  /* Standardized focus ring — WCAG 2.4.7 compliance */
+  /* Brand ::selection — orange tint */
+  ::selection {
+    background-color: rgb(249 115 22 / 0.18);
+    color: inherit;
+  }
+  ::-moz-selection {
+    background-color: rgb(249 115 22 / 0.18);
+    color: inherit;
+  }
+
+  /* Standardized focus ring — WCAG 2.4.7 + brand orange */
   *:focus-visible {
-    outline: 2px solid hsl(var(--ring));
+    outline: 2px solid rgb(249 115 22 / 0.70);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -143,11 +153,42 @@
 
 /* Glassmorphism Utilities */
 .glass {
-  @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-sm;
+  @apply bg-white/70 backdrop-blur-md backdrop-saturate-150 border border-white/30 shadow-sm;
 }
 
 .dark .glass {
-  @apply bg-slate-900/70 border-white/10;
+  background-color: rgb(9 9 11 / 0.75);
+  border-color: rgb(255 255 255 / 0.08);
+}
+
+/* Glass card — elevated panel with border glow */
+.glass-card {
+  @apply rounded-xl border bg-white/60 backdrop-blur-sm backdrop-saturate-150 shadow-sm transition-all duration-200;
+  border-color: rgb(255 255 255 / 0.50);
+}
+
+.dark .glass-card {
+  background-color: rgb(24 24 27 / 0.70);
+  border-color: rgb(255 255 255 / 0.07);
+}
+
+/* Glass sidebar panel */
+.glass-sidebar {
+  @apply bg-white/90 backdrop-blur-sm border-r border-black/5;
+}
+
+.dark .glass-sidebar {
+  background-color: rgb(9 9 11 / 0.92);
+  border-color: rgb(255 255 255 / 0.06);
+}
+
+/* Frosted overlay — for modals/drawers */
+.glass-overlay {
+  @apply bg-black/20 backdrop-blur-sm;
+}
+
+.dark .glass-overlay {
+  background-color: rgb(0 0 0 / 0.50);
 }
 
 /* Dense Engineering Utilities */
@@ -205,5 +246,10 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50 transition-colors;
+  @apply rounded-full transition-colors;
+  background-color: rgb(249 115 22 / 0.22);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(249 115 22 / 0.40);
 }

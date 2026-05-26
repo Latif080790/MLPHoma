@@ -71,13 +71,37 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router', 'react-router-dom'],
-          'ui-vendor': ['lucide-react', 'sonner', 'clsx', 'tailwind-merge'],
+          // react-vendor: React runtime + router + UI utilities that depend on React
+          // (lucide-react, sonner, clsx, tailwind-merge co-located here to avoid
+          //  the ui-vendor → react-vendor → ui-vendor circular chunk warning)
+          'react-vendor': [
+            'react',
+            'react-dom',
+            'react-router',
+            'react-router-dom',
+            'lucide-react',
+            'sonner',
+            'clsx',
+            'tailwind-merge',
+          ],
           'date-vendor': ['date-fns'],
           'state-vendor': ['zustand'],
           'auth-vendor': ['@supabase/supabase-js'],
+          'chart-vendor': ['recharts'],
+          'table-vendor': ['@tanstack/react-table', '@tanstack/react-virtual'],
+          'radix-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-accordion',
+          ],
+          'animation-vendor': ['motion'],
         }
       }
     }
   },
 })
+

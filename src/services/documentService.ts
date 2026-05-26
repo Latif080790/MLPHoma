@@ -31,6 +31,10 @@ export interface ProjectDocument {
     successor_id?: string   // Next version
     uploaded_by?: string
     created_by?: string
+    
+    // v4 Sprint 3 — Item 16: Entity linking (stored client-side in localStorage)
+    linked_entity_id?: string
+    linked_entity_type?: 'task' | 'rab_item' | 'approval' | 'milestone'
 }
 
 export interface DocumentGovernanceState {
@@ -439,5 +443,21 @@ export const documentService = {
         if (userId && userName) {
             await auditTrail.logDocumentDeleted(id, doc.title, userId, userName)
         }
+    },
+
+    /**
+     * Update document entity link
+     */
+    async updateDocumentLink(id: string, entityType: string, entityId: string): Promise<void> {
+        const client = assertSupabase()
+        const { error } = await client
+            .from('documents')
+            .update({ 
+                linked_entity_type: entityType,
+                linked_entity_id: entityId
+            })
+            .eq('id', id)
+
+        if (error) throw error
     }
 }

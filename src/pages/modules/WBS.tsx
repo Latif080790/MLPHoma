@@ -19,9 +19,10 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { PanelGroup, Panel, PanelResizeHandle } from 'react-resizable-panels'
 import { RABTable } from '@/components/rab/RABTable'
+import { EVMGuardPanel } from '@/components/costing'
 import BoQImportDialog from '@/components/rab/BoQImportDialog'
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,8 +36,14 @@ import {
 import {
   Download, Upload, AlertTriangle, FileText, Plus, FileUp,
   Search, ChevronsDownUp, ChevronsUpDown, X, Layers, Calculator,
-  Link2, PanelLeft, PanelRight, Trash2,
+  Link2, PanelLeft, PanelRight, Trash2, GitBranch, HelpCircle,
 } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { formatIDR } from '@/lib/utils'
 import { toast } from 'sonner'
 import type { WBSItem } from '@/types/wbs'
@@ -148,6 +155,8 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
   const [filterWbsId, setFilterWbsId] = useState<string | null>(null)
   // Mobile panel toggle
   const [mobilePanel, setMobilePanel] = useState<'tree' | 'rab'>('tree')
+
+  const selectedNode = filterWbsId ? (items.find(i => i.id === filterWbsId) ?? null) : null
 
   /**
    * Handle adding new item
@@ -559,24 +568,174 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
         </div>
       </div>
 
-      {/* Desktop Split Pane Layout */}
-      <div className="hidden md:block flex-1 rounded-xl border bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900 border-neutral-200">
-        <PanelGroup direction="horizontal">
-          {/* Left Panel: WBS Tree */}
-          <Panel defaultSize={35} minSize={20} className="flex flex-col relative bg-white dark:bg-neutral-900">
-            {treePanel}
-          </Panel>
+      {/* Desktop Variant D Layout — WBS Tree | RAB Table | EVM Guard (resizable) */}
+      <div
+        className="hidden md:flex md:rounded-xl md:border md:border-slate-200 md:shadow-sm md:overflow-hidden"
+        style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
+      >
+        <ResizablePanelGroup direction="horizontal" className="h-full">
 
-          {/* Resizer Handle */}
-          <PanelResizeHandle className="w-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-blue-500/50 active:bg-blue-500 transition-colors mx-auto flex flex-col justify-center items-center cursor-col-resize group">
-            <div className="h-8 w-1 rounded-full bg-neutral-300 dark:bg-neutral-600 group-hover:bg-white transition-colors" />
-          </PanelResizeHandle>
+          {/* ── WBS Tree Panel ──────────────────── */}
+          <ResizablePanel defaultSize={22} minSize={16} maxSize={38}>
+            <div className="bg-white flex flex-col h-full border-r border-slate-200">
 
-          {/* Right Panel: RAB Table */}
-          <Panel defaultSize={65} minSize={30} className="flex flex-col relative bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800">
-            {rabPanel}
-          </Panel>
-        </PanelGroup>
+              {/* Panel header */}
+              <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <GitBranch size={11} className="text-slate-400" /> WBS
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle size={10} className="text-slate-300 hover:text-slate-500 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-[220px] text-xs">
+                        Work Breakdown Structure — hierarki pekerjaan proyek. Klik node untuk filter RAB di panel kanan.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleAddItem(null)}
+                    className="flex items-center gap-0.5 text-xs bg-blue-600 text-white font-semibold px-2 py-0.5 rounded hover:bg-blue-700 transition-all mr-1"
+                    title="Add root WBS item"
+                  >
+                    <Plus size={10} /> Item
+                  </button>
+                  <span className="text-xs font-mono text-slate-400">{items.length}</span>
+                  <button onClick={handleExpandAll} disabled={!items.length} title="Expand all"
+                    className="text-slate-400 hover:text-slate-700 p-0.5 rounded hover:bg-slate-100 transition-colors disabled:opacity-30">
+                    <ChevronsUpDown size={11} />
+                  </button>
+                  <button onClick={handleCollapseAll} disabled={!expandedIds.size} title="Collapse all"
+                    className="text-slate-400 hover:text-slate-700 p-0.5 rounded hover:bg-slate-100 transition-colors disabled:opacity-30">
+                    <ChevronsDownUp size={11} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Search */}
+              <div className="px-2 pt-1.5 pb-1 border-b border-slate-100 flex-shrink-0">
+                <div className="relative">
+                  <Search size={10} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={treeSearch}
+                    onChange={e => setTreeSearch(e.target.value)}
+                    placeholder="Cari kode / nama..."
+                    className="w-full pl-5 pr-5 py-1 text-xs border border-slate-200 rounded bg-slate-50 focus:outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-300"
+                  />
+                  {treeSearch && (
+                    <button onClick={() => setTreeSearch('')} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500">
+                      <X size={10} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* KPI mini strip */}
+              {items.length > 0 && (
+                <div className="px-2 py-1.5 border-b border-slate-100 flex-shrink-0">
+                  <WBSKpiBar items={items} rabLinkedCount={kpiData.rabLinkedCount} totalBudget={kpiData.totalBudget} />
+                </div>
+              )}
+
+              {/* Tree */}
+              <div className="flex-1 overflow-y-auto">
+                {items.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2 py-8">
+                    <Layers size={24} className="opacity-20" />
+                    <p className="text-xs text-center text-slate-400">Belum ada WBS node</p>
+                    <button onClick={() => handleAddItem(null)} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                      <Plus size={11} /> Add Root Item
+                    </button>
+                  </div>
+                ) : (
+                  <WBSTree
+                    items={items}
+                    selectedId={selectedId}
+                    expandedIds={expandedIds}
+                    loading={loading}
+                    filterText={treeSearch}
+                    budgetByWbs={kpiData.budgetByWbs}
+                    onItemClick={(item) => { selectItem(item.id); setFilterWbsId(item.id) }}
+                    onToggleExpand={toggleExpanded}
+                    onAddItem={handleAddItem}
+                    onEditItem={handleEditItem}
+                    onDeleteItem={handleDeleteItem}
+                    onMoveItem={handleMoveItem}
+                    maxNestingLevel={8}
+                  />
+                )}
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle className="bg-slate-100 hover:bg-orange-100 data-[resize-handle-active]:bg-orange-200 transition-colors" />
+
+          {/* ── RAB Table Panel ──────────────────── */}
+          <ResizablePanel defaultSize={56} minSize={35}>
+            <div className={`flex flex-col bg-white overflow-hidden h-full transition-all ${
+              filterWbsId ? 'border-l-2 border-l-orange-400' : ''
+            }`}>
+
+              {/* RAB panel header */}
+              <div
+                className={`px-3 py-1.5 border-b flex items-center gap-2 flex-shrink-0 transition-colors ${
+                  filterWbsId ? 'border-orange-200 bg-orange-50/40' : 'border-slate-200 bg-white'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                  <span className="font-semibold text-xs text-slate-700 truncate">
+                    {selectedNode ? selectedNode.name : 'Rencana Anggaran Biaya (RAB)'}
+                  </span>
+                  {selectedNode && (
+                    <span className="text-xs text-slate-400 font-mono flex-shrink-0">{selectedNode.code}</span>
+                  )}
+                  {filterWbsId && (
+                    <button
+                      onClick={() => { setFilterWbsId(null); selectItem(null) }}
+                      className="text-xs text-slate-400 hover:text-slate-700 flex items-center gap-0.5 px-1 py-0.5 rounded hover:bg-slate-100 flex-shrink-0"
+                    >
+                      <X size={10} /> All
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <button onClick={() => setShowBoQImport(true)}
+                    className="flex items-center gap-1 text-xs text-slate-600 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                    <FileUp size={11} /> BoQ
+                  </button>
+                  <button onClick={() => document.getElementById('wbs-import-v2')?.click()}
+                    className="flex items-center gap-1 text-xs text-slate-500 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                    <Upload size={11} />
+                    <input id="wbs-import-v2" type="file" accept=".json" onChange={handleImport} className="hidden" />
+                  </button>
+                  <button onClick={handleExport} disabled={!items.length}
+                    className="flex items-center gap-1 text-xs text-slate-500 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all disabled:opacity-40">
+                    <Download size={11} />
+                  </button>
+                </div>
+              </div>
+
+              {/* RAB table — subtle tint when filtered by WBS node */}
+              <div
+                className="flex-1 overflow-auto transition-colors"
+                style={filterWbsId ? { background: 'rgba(249,115,22,0.015)' } : {}}
+              >
+                <RABTable projectId={projectId} filterWbsId={filterWbsId ?? undefined} />
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle className="bg-slate-100 hover:bg-orange-100 data-[resize-handle-active]:bg-orange-200 transition-colors" />
+
+          {/* ── EVM Guard Panel ──────────────────── */}
+          <ResizablePanel defaultSize={22} minSize={16} maxSize={30}>
+            <EVMGuardPanel projectId={projectId || null} />
+          </ResizablePanel>
+
+        </ResizablePanelGroup>
       </div>
 
       {/* WBS Editor Modal (Task 21: supports keepOpen "Tambah lagi") */}

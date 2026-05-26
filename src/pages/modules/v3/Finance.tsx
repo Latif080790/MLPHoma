@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap, Wallet } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -37,7 +37,13 @@ import { CashflowForecastWidget } from "@/components/finance/CashflowForecastWid
 import { approvalService } from "@/services/approvalService"
 import { useAuthStore } from "@/store/authStore"
 import { InvoiceMatchDialog } from "@/components/finance/InvoiceMatchDialog"
+import { AnomalyWidget } from "@/components/common/AnomalyWidget"
+import { BulkActionBar } from "@/components/common/BulkActionBar"
+import { ExcelImportPreviewDialog } from "@/components/common/ExcelImportPreviewDialog"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Checkbox } from "@/components/ui/checkbox"
 import { matchInvoice, getMatchStatusColor, getMatchStatusLabel } from "@/services/invoiceMatchingService"
+import { useShallow } from "zustand/react/shallow"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import type { Invoice } from "@/types/finance"
 import { auditTrail } from "@/lib/auditTrail"
@@ -127,14 +133,24 @@ export default function Finance() {
     })
     const [pendingInvoicePayment, setPendingInvoicePayment] = useState<{ id: string; project_id: string; total_amount: number; invoice_number: string; vendor_name?: string } | null>(null)
     const [matchDialogInvoice, setMatchDialogInvoice] = useState<Invoice | null>(null)
+    const [invoiceImportOpen, setInvoiceImportOpen] = useState(false)
     const [srStatus, setSrStatus] = useState('')
-    const { purchaseOrders, inventoryTransactions } = useSupplyChainStore()
+    // v4 Sprint 2: Bulk selection state
+    const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<Set<string>>(new Set())
+    const { purchaseOrders, inventoryTransactions } = useSupplyChainStore(
+        useShallow(s => ({ purchaseOrders: s.purchaseOrders, inventoryTransactions: s.inventoryTransactions }))
+    )
 
     const {
         invoices, claims, transactions, loading,
         summary, aging,
-        fetchAll, markOverdue, payInvoice, updateClaimStatus
-    } = useFinanceStore()
+        fetchAll, markOverdue, payInvoice, updateClaimStatus, updateInvoiceStatus, createInvoice
+    } = useFinanceStore(useShallow(s => ({
+        invoices: s.invoices, claims: s.claims, transactions: s.transactions, loading: s.loading,
+        summary: s.summary, aging: s.aging,
+        fetchAll: s.fetchAll, markOverdue: s.markOverdue, payInvoice: s.payInvoice,
+        updateClaimStatus: s.updateClaimStatus, updateInvoiceStatus: s.updateInvoiceStatus, createInvoice: s.createInvoice,
+    })))
 
     // P0.3.3: Invoice table virtualizer
     const invScrollRef = useRef<HTMLDivElement>(null)
@@ -192,6 +208,43 @@ export default function Finance() {
                 return bPeriod - aPeriod
             })
     }, [claims, arQuery, arStatusFilter, arSortBy, arPeriodFrom, arPeriodTo])
+
+    const handleInvoiceImport = useCallback(async (rows: Record<string, unknown>[]) => {
+        if (!activeProjectId) return
+        const invoiceRows = rows
+            .map((row) => ({
+                vendor_name: String(row.vendor_name ?? '').trim(),
+                invoice_number: String(row.invoice_number ?? '').trim(),
+                description: String(row.description ?? '').trim(),
+                amount: Number(row.amount ?? 0),
+                tax_amount: Number(row.tax_amount ?? 0),
+                due_date: String(row.due_date ?? '').trim(),
+            }))
+            .filter((row) => row.vendor_name && row.invoice_number && row.due_date)
+
+        if (!invoiceRows.length) {
+            toast.error('Tidak ada baris invoice yang valid')
+            return
+        }
+
+        for (const row of invoiceRows) {
+            await createInvoice({
+                project_id: activeProjectId,
+                vendor_name: row.vendor_name,
+                invoice_number: row.invoice_number,
+                description: row.description || undefined,
+                amount: row.amount,
+                tax_amount: row.tax_amount,
+                total_amount: row.amount + row.tax_amount,
+                due_date: row.due_date,
+                status: 'UNPAID',
+            })
+        }
+
+        toast.success(`Imported ${invoiceRows.length} invoices`)
+        setInvoiceImportOpen(false)
+        await fetchAll(activeProjectId)
+    }, [activeProjectId, createInvoice, fetchAll])
 
     const apVendorOptions = useMemo(() => {
         return Array.from(new Set(
@@ -310,6 +363,53 @@ export default function Finance() {
         }
     }
 
+    // v4 Sprint 2: Bulk payment request handler
+    const handleBulkPayRequest = async () => {
+        if (!activeProjectId || selectedInvoiceIds.size === 0) return
+        const targets = filteredInvoices.filter(
+            inv => selectedInvoiceIds.has(inv.id) && inv.status !== 'PAID' && inv.status !== 'PENDING_PAYMENT'
+        )
+        setSrStatus(`Requesting payment for ${targets.length} invoices...`)
+        for (const inv of targets) {
+            await handleAsync(async () => {
+                const { user, profile } = useAuthStore.getState()
+                await approvalService.createApproval({
+                    projectId: inv.project_id,
+                    entityType: 'PAYMENT',
+                    entityId: inv.id,
+                    title: `Payment: ${inv.vendor_name || 'Vendor'} Inv#${inv.invoice_number}`,
+                    description: `Bulk payment approval for Rp ${inv.total_amount.toLocaleString()}`,
+                    requesterId: user?.id || 'unknown',
+                    requesterName: profile?.full_name || user?.email || 'Finance',
+                    approverRole: 'manager',
+                    impactSummary: { amount: inv.total_amount, vendor: inv.vendor_name }
+                })
+                useFinanceStore.getState().updateInvoiceStatus(inv.id, 'PENDING_PAYMENT', inv.project_id)
+                return true
+            }, 'approval.general')
+        }
+        toast.success(`${targets.length} payment requests submitted`)
+        setSrStatus(`${targets.length} payment approval requests submitted.`)
+        setSelectedInvoiceIds(new Set())
+    }
+
+    // v4 Sprint 2: Toggle individual / all selection
+    const toggleInvoiceSelection = (id: string) => {
+        setSelectedInvoiceIds(prev => {
+            const next = new Set(prev)
+            if (next.has(id)) { next.delete(id) } else { next.add(id) }
+            return next
+        })
+    }
+    const isAllInvoicesSelected = filteredInvoices.length > 0 && filteredInvoices.every(inv => selectedInvoiceIds.has(inv.id))
+    const toggleAllInvoices = () => {
+        if (isAllInvoicesSelected) {
+            setSelectedInvoiceIds(new Set())
+        } else {
+            setSelectedInvoiceIds(new Set(filteredInvoices.map(inv => inv.id)))
+        }
+    }
+
     const claimActions = (claim: ClientClaim) => {
         const transitions: Record<string, { label: string; next: ClientClaim['status']; icon: React.ReactNode }> = {
             DRAFT: { label: 'Submit', next: 'SUBMITTED', icon: <Send size={12} /> },
@@ -386,10 +486,9 @@ export default function Finance() {
     // ── Export column definitions ─────────────────────────────────────────────
     const invoiceExportCols: ExportColumn<Invoice>[] = [
         { header: 'Invoice #', accessor: r => r.invoice_number ?? '' },
-        { header: 'Vendor', accessor: r => r.vendor ?? '' },
-        { header: 'Amount', accessor: r => r.amount ?? 0 },
+        { header: 'Vendor', accessor: r => r.vendor_name ?? '' },
+        { header: 'Amount', accessor: r => r.total_amount ?? 0 },
         { header: 'Status', accessor: r => r.status ?? '' },
-        { header: 'Issue Date', accessor: r => r.issue_date ?? '' },
         { header: 'Due Date', accessor: r => r.due_date ?? '' },
     ]
 
@@ -434,11 +533,18 @@ export default function Finance() {
                         icon: <Plus className="h-3.5 w-3.5" />,
                         onClick: () => setInvoiceDialogOpen(true),
                     }}
-                    secondaryActions={[{
-                        label: 'Create Claim',
-                        icon: <FileText className="h-3.5 w-3.5" />,
-                        onClick: () => setClaimDialogOpen(true),
-                    }]}
+                    secondaryActions={[
+                        {
+                            label: 'Import Excel',
+                            icon: <FileText className="h-3.5 w-3.5" />,
+                            onClick: () => setInvoiceImportOpen(true),
+                        },
+                        {
+                            label: 'Create Claim',
+                            icon: <FileText className="h-3.5 w-3.5" />,
+                            onClick: () => setClaimDialogOpen(true),
+                        },
+                    ]}
                     extraContent={
                         <ExportMenu
                             data={activeTab === 'ar' ? filteredClaims as any[] : filteredInvoices}
@@ -468,6 +574,7 @@ export default function Finance() {
 
                 {/* --- OVERVIEW --- */}
                 <TabsContent value="overview" className="space-y-6">
+                    <AnomalyWidget projectId={activeProjectId} />
                     <div className="grid gap-4 md:grid-cols-2">
                         {/* Recent Invoices */}
                         <Card>
@@ -620,6 +727,21 @@ export default function Finance() {
                             <Plus size={14} /> Record Invoice
                         </Button>
                     </div>
+
+                    {/* v4 Sprint 2: Bulk Action Bar */}
+                    <BulkActionBar
+                        selectedCount={selectedInvoiceIds.size}
+                        label="invoices selected"
+                        onClear={() => setSelectedInvoiceIds(new Set())}
+                        actions={[
+                            {
+                                label: 'Request Payment',
+                                icon: <Send size={12} />,
+                                onClick: handleBulkPayRequest,
+                                disabled: filteredInvoices.filter(inv => selectedInvoiceIds.has(inv.id) && inv.status !== 'PAID' && inv.status !== 'PENDING_PAYMENT').length === 0,
+                            },
+                        ]}
+                    />
                     {filteredInvoices.length === 0 ? (
                         <EmptyState title="No Invoices Found" description="No invoice matches current search/filter." imageKeyword="invoice" />
                     ) : (
@@ -628,6 +750,13 @@ export default function Finance() {
                                 <Table>
                                     <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
                                         <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                            <TableHead className="w-10 p-3">
+                                                <Checkbox
+                                                    checked={isAllInvoicesSelected}
+                                                    onCheckedChange={toggleAllInvoices}
+                                                    aria-label="Select all invoices"
+                                                />
+                                            </TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Inv Number</TableHead>
                                             <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Trace</TableHead>
@@ -655,7 +784,15 @@ export default function Finance() {
                                             const upstreamCount = inv.po_id ? 1 : 0
 
                                             return (
-                                                <TableRow key={inv.id} data-index={vRow.index} ref={virtualInvoiceRows.measureElement} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
+                                                <TableRow key={inv.id} data-index={vRow.index} ref={virtualInvoiceRows.measureElement} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''} ${selectedInvoiceIds.has(inv.id) ? 'bg-orange-50/60 dark:bg-orange-900/10' : ''}`}>
+                                                    {/* v4 Sprint 2: checkbox */}
+                                                    <TableCell className="p-3 w-10" onClick={e => e.stopPropagation()}>
+                                                        <Checkbox
+                                                            checked={selectedInvoiceIds.has(inv.id)}
+                                                            onCheckedChange={() => toggleInvoiceSelection(inv.id)}
+                                                            aria-label={`Select invoice ${inv.invoice_number}`}
+                                                        />
+                                                    </TableCell>
                                                     <TableCell className="p-3 font-medium text-slate-700 dark:text-slate-300">{inv.vendor_name}</TableCell>
                                                     <TableCell className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">{inv.invoice_number}</TableCell>
                                                     <TableCell className="p-3">
@@ -688,12 +825,37 @@ export default function Finance() {
                                                             )
                                                         })()}
                                                     </TableCell>
+                                                    {/* v4 Sprint 2: inline status edit via Popover */}
                                                     <TableCell className="p-3 text-center">
-                                                        <Badge variant={
-                                                            inv.status === 'PAID' ? 'default' :
-                                                                inv.status === 'OVERDUE' ? 'destructive' :
-                                                                    'secondary'
-                                                        } className="text-xs font-normal px-2 py-0.5">{inv.status}</Badge>
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <button className="cursor-pointer hover:opacity-80 transition-opacity" aria-label={`Change invoice status (currently ${inv.status})`}>
+                                                                    <Badge variant={
+                                                                        inv.status === 'PAID' ? 'default' :
+                                                                            inv.status === 'OVERDUE' ? 'destructive' :
+                                                                                'secondary'
+                                                                    } className="text-xs font-normal px-2 py-0.5">
+                                                                        {inv.status}
+                                                                    </Badge>
+                                                                </button>
+                                                            </PopoverTrigger>
+                                                            <PopoverContent className="w-44 p-1" align="center">
+                                                                <p className="text-xs font-semibold text-zinc-500 px-2 py-1">Change Status</p>
+                                                                {(['UNPAID', 'PARTIAL', 'PENDING_PAYMENT', 'PAID'] as const).map(s => (
+                                                                    <button
+                                                                        key={s}
+                                                                        className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                                                                        onClick={() => {
+                                                                            if (!activeProjectId) return
+                                                                            updateInvoiceStatus(inv.id, s, activeProjectId)
+                                                                            toast.success(`Invoice ${inv.invoice_number} → ${s}`)
+                                                                        }}
+                                                                    >
+                                                                        {s}
+                                                                    </button>
+                                                                ))}
+                                                            </PopoverContent>
+                                                        </Popover>
                                                     </TableCell>
                                                     <TableCell className="p-3 text-right">
                                                         {inv.status !== 'PAID' && inv.status !== 'PENDING_PAYMENT' && (
@@ -756,7 +918,7 @@ export default function Finance() {
                                 Reset Filters
                             </Button>
                         </div>
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-wrap justify-end gap-2">
                         <Button size="sm" variant="outline" className="gap-2" onClick={() => setBillingDialogOpen(true)}>
                             <Zap size={14} /> Auto-Generate Billing
                         </Button>
@@ -933,6 +1095,21 @@ export default function Finance() {
                 open={claimDialogOpen}
                 onOpenChange={setClaimDialogOpen}
                 projectId={activeProjectId!}
+            />
+            <ExcelImportPreviewDialog
+                open={invoiceImportOpen}
+                onOpenChange={setInvoiceImportOpen}
+                title="Import Invoice Excel"
+                description="Map Excel columns to AP invoice fields, preview rows, then create invoices in bulk."
+                targetFields={[
+                    { key: 'vendor_name', label: 'Vendor Name', required: true },
+                    { key: 'invoice_number', label: 'Invoice Number', required: true },
+                    { key: 'description', label: 'Description' },
+                    { key: 'amount', label: 'Amount', required: true, transform: (raw) => Number(String(raw).replace(/[^0-9.-]/g, '')) },
+                    { key: 'tax_amount', label: 'Tax Amount', transform: (raw) => Number(String(raw).replace(/[^0-9.-]/g, '')) },
+                    { key: 'due_date', label: 'Due Date', required: true },
+                ]}
+                onImport={handleInvoiceImport}
             />
             <InvoiceMatchDialog
                 open={!!matchDialogInvoice}

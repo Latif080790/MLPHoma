@@ -5,7 +5,8 @@
  */
 
 import React, { Suspense, useEffect } from 'react'
-import { HashRouter, Route, Routes, useLocation } from 'react-router'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import AppToaster from './components/common/Notifications'
@@ -18,6 +19,7 @@ import { NetworkProvider } from './providers/NetworkProvider'
 import { getProtectedRouteItems, type NavComponentKey } from './config/navRegistry'
 import { lazyRetry } from './lib/lazyRetry'
 import { initStoreSubscriptions } from './lib/storeSubscriptions'
+import { KeyboardShortcutsPanel } from './components/common/KeyboardShortcutsPanel'
 
 // Lazy-loaded page components with auto-retry for stale chunk recovery
 const ProjectManagement = lazyRetry(() => import('./pages/modules/ProjectManagement'))
@@ -36,11 +38,15 @@ const ProjectOverview = lazyRetry(() => import('./pages/modules/v3/ProjectOvervi
 const CostForecastDashboard = lazyRetry(() => import('./pages/modules/v3/CostForecastDashboard'))
 const PortfolioResources = lazyRetry(() => import('./pages/modules/v3/PortfolioResources'))
 const PortfolioAnalytics = lazyRetry(() => import('./pages/modules/v3/PortfolioAnalytics'))
+const BIReportBuilder = lazyRetry(() => import('./pages/modules/v3/BIReportBuilder'))
 const StrategySimulation = lazyRetry(() => import('./pages/modules/v3/StrategySimulation'))
 const TKDNPage = lazyRetry(() => import('./pages/TKDNPage'))
 const FeatureEditor = lazyRetry(() => import('./components/feature/FeatureEditor'))
 const GlobalCommandPalette = lazyRetry(() => import('./components/common/GlobalCommandPalette'))
 const FieldTasks = lazyRetry(() => import('./pages/mobile/FieldTasks'))
+const Maintenance = lazyRetry(() => import('./pages/modules/v3/Maintenance'))
+const QHSE = lazyRetry(() => import('./pages/modules/v3/QHSE'))
+const SubcontractorManagement = lazyRetry(() => import('./pages/modules/v3/SubcontractorManagement'))
 
 // Legacy Modules
 const NotFound = lazyRetry(() => import('./pages/NotFound'))
@@ -65,11 +71,15 @@ const PROTECTED_COMPONENT_MAP: Record<NavComponentKey, React.LazyExoticComponent
   HandoverWizard,
   PortfolioResources,
   PortfolioAnalytics,
+  BIReportBuilder,
   StrategySimulation,
   TKDNPage,
   FeatureEditor,
   Settings,
   FieldTasks,
+  Maintenance,
+  QHSE,
+  SubcontractorManagement,
 }
 
 /**
@@ -102,6 +112,17 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,       // 30s — KPI data is stale after 30s
+      gcTime: 5 * 60_000,      // 5min garbage collection
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
 export default function App() {
   const initialize = useAuthStore((state) => state.initialize)
   const protectedRoutes = React.useMemo(() => getProtectedRouteItems(), [])
@@ -112,8 +133,38 @@ export default function App() {
     initStoreSubscriptions()
   }, [initialize])
 
+  // v4 Sprint 3 — Item 18: Context-aware global keyboard shortcuts
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      // Ignore when typing in inputs
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+
+      // Ctrl+N — context-aware "New item" based on current route
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === 'n') {
+        e.preventDefault()
+        const route = window.location.pathname
+        // Emit a synthetic new-item event modules can listen to
+        const evt = new CustomEvent('app:new-item', { detail: { route } })
+        window.dispatchEvent(evt)
+      }
+
+      // Ctrl+S — trigger form save
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === 's') {
+        e.preventDefault()
+        window.dispatchEvent(new CustomEvent('app:save'))
+      }
+
+      // G+H, G+P, G+S, G+F — navigate
+      // (handled by GlobalCommandPalette / existing nav)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
   return (
-    <HashRouter>
+    <QueryClientProvider client={queryClient}>
+    <BrowserRouter>
       <NetworkProvider>
         {/* Global toaster untuk notifikasi */}
         <AppToaster />
@@ -121,6 +172,8 @@ export default function App() {
         <Suspense fallback={null}>
           <GlobalCommandPalette />
         </Suspense>
+        {/* Keyboard shortcuts overlay (Shift+?) */}
+        <KeyboardShortcutsPanel />
         {/* Error boundary membungkus seluruh routing */}
         <ErrorBoundary>
           <Suspense fallback={<PageSkeleton />}>
@@ -148,6 +201,7 @@ export default function App() {
           </Suspense>
         </ErrorBoundary>
       </NetworkProvider>
-    </HashRouter>
+    </BrowserRouter>
+    </QueryClientProvider>
   )
 }

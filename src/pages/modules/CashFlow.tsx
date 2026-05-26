@@ -19,10 +19,14 @@ import { useCurvaSStore } from '../../store/curvaSStore'
 import { useFinanceStore } from '../../store/financeStore'
 import CashChart from '../../components/cashflow/CashChart'
 import PeriodTable from '../../components/cashflow/PeriodTable'
-import { calculateCashFlow } from '../../lib/cashflowCalculator'
+import { calculateCashFlow } from '../../services/cashflowCalculator'
 import type { PaymentTerms } from '../../store/projectStore'
 import { ExportMenu } from '@/components/shared/ExportMenu'
 import { toast } from 'sonner'
+import { SummaryCard } from '@/components/cashflow/SummaryCard'
+import CompareControls from '@/components/cashflow/CompareControls'
+import { WhatIfPanel } from '@/components/cashflow/WhatIfPanel'
+import { EmptyState } from '@/components/common/EmptyState'
 
 const EMPTY_ARRAY: never[] = []
 

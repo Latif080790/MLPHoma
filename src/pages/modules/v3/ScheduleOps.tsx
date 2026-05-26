@@ -24,14 +24,13 @@ import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, ModeSwitch, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { usePresence } from '@/hooks/usePresence'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { PresenceAvatars } from '@/components/common/PresenceAvatars'
 import { useAuthStore } from '@/store/authStore'
 import { CPMWorkerStatus } from '@/components/charts/CPMWorkerStatus'
 
 const WBS = lazyRetry(() => import('../WBS'))
-const Timeline = lazyRetry(() => import('../Timeline'))
-const CurvaS = lazyRetry(() => import('../CurvaS'))
-const Progress = lazyRetry(() => import('../Progress'))
+const CostForecastDashboard = lazyRetry(() => import('./CostForecastDashboard'))
 const RiskRegister = lazyRetry(() => import('@/components/risk/RiskRegister'))
 const TimelineScenarioPanel = lazyRetry(() => import('@/components/modules/TimelineScenarioPanel').then((m) => ({ default: m.TimelineScenarioPanel })))
 const ResourceUsageDialog = lazyRetry(() => import('@/components/progress/ResourceUsageDialog').then((m) => ({ default: m.ResourceUsageDialog })))
@@ -92,6 +91,7 @@ export default function ScheduleOps() {
     // B.7: use reactive selector instead of getState() in JSX
     const activeProjectName = useProjectStore(s => activeProjectId ? (s.projects[activeProjectId]?.name || 'Project') : 'Project')
     const { isCPMCalculating, getTasks } = useTimelineStore()
+    const { handleAsync } = useErrorHandler()
     const taskCount = activeProjectId ? (getTasks(activeProjectId)?.length || 0) : 0
     const completedCount = activeProjectId
         ? (getTasks(activeProjectId)?.filter(t => t.status === 'completed').length || 0)
@@ -276,7 +276,7 @@ export default function ScheduleOps() {
                     <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[500px]">
                         <ErrorBoundary errorMessage="Timeline failed to render">
                             <Suspense fallback={<TabFallback minHeight={500} />}>
-                                <Timeline embedded />
+                                <CriticalPathGantt />
                             </Suspense>
                         </ErrorBoundary>
                     </div>
@@ -308,13 +308,6 @@ export default function ScheduleOps() {
                                 <DailyProgressBoard />
                             </Suspense>
                         </ErrorBoundary>
-                        <div className="mt-[var(--space-6)]">
-                            <ErrorBoundary errorMessage="Progress module failed to render">
-                                <Suspense fallback={<TabFallback minHeight={300} />}>
-                                    <Progress embedded />
-                                </Suspense>
-                            </ErrorBoundary>
-                        </div>
                     </Card>
                 </TabsContent>
 
@@ -345,7 +338,7 @@ export default function ScheduleOps() {
                     <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
                         <ErrorBoundary errorMessage="Curva-S failed to render">
                             <Suspense fallback={<TabFallback minHeight={420} />}>
-                                <CurvaS embedded />
+                                <CostForecastDashboard />
                             </Suspense>
                         </ErrorBoundary>
                     </div>

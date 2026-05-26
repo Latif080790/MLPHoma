@@ -52,7 +52,7 @@ describe('financeService', () => {
       const calls: { method: string; table: string; data?: any }[] = []
 
       mockFromImpl = (table: string) => {
-        if (table === 'invoices') {
+        if (table === 'finance_invoices') {
           return {
             select: () => ({
               eq: () => ({
@@ -86,7 +86,7 @@ describe('financeService', () => {
       await financeService.payInvoice('inv-1', 'P1', 10_000_000)
 
       const selectCall = calls.find(c => c.method === 'select-invoice')
-      const updateCall = calls.find(c => c.method === 'update' && c.table === 'invoices')
+      const updateCall = calls.find(c => c.method === 'update' && c.table === 'finance_invoices')
       const insertCall = calls.find(c => c.method === 'insert' && c.table === 'finance_transactions')
 
       expect(selectCall).toBeDefined()
@@ -103,7 +103,7 @@ describe('financeService', () => {
       let selectCalled = false
 
       mockFromImpl = (table: string) => {
-        if (table === 'client_claims') {
+        if (table === 'finance_claims') {
           return {
             select: () => ({
               eq: () => ({

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useProjectStore } from "@/store/projectStore"
+import { useShallow } from 'zustand/react/shallow'
 import { EmptyState } from "@/components/common/EmptyState"
 import { toast } from "sonner"
 import { settingsService } from "@/services/settingsService"
@@ -28,7 +29,9 @@ export default function Settings() {
     }
 
     const navigate = useNavigate()
-    const { activeProjectId, projects, updateProject } = useProjectStore()
+    const { activeProjectId, projects, updateProject } = useProjectStore(
+        useShallow(s => ({ activeProjectId: s.activeProjectId, projects: s.projects, updateProject: s.updateProject }))
+    )
     const { handleAsync } = useErrorHandler()
     const audit = useRabStore(s => s.audit)
     const [project, setProject] = useState<SettingsProject | null>(null)
