@@ -659,7 +659,9 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
 
           {/* ── RAB Table Panel ──────────────────── */}
           <ResizablePanel defaultSize={56} minSize={35}>
-            <div className="flex flex-col bg-white overflow-hidden h-full">
+            <div className={`flex flex-col bg-white overflow-hidden h-full transition-all ${
+              filterWbsId ? 'border-l-2 border-l-orange-400' : ''
+            }`}>
 
               {/* RAB panel header */}
               <div
