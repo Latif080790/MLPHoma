@@ -271,11 +271,17 @@ export default function ProjectCosting() {
 
           <button
             type="button"
+            onClick={() => {
+              if (activeProjectId) {
+                fetchSnapshot(activeProjectId).catch((e: unknown) => handleError(e, 'network.fetch'))
+              }
+            }}
             className="transition-colors rounded p-0.5"
             style={{ color: 'rgba(255,255,255,0.2)' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.2)')}
-            aria-label="Refresh"
+            aria-label="Refresh cost data"
+            title="Refresh cost data"
           >
             <RefreshCw size={11} />
           </button>
