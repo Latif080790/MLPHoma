@@ -574,7 +574,14 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
               <GitBranch size={11} className="text-slate-400" /> WBS Structure
             </span>
             <div className="flex items-center gap-1">
-              <span className="text-xs font-mono text-slate-400">{items.length} nodes</span>
+              <button
+                onClick={() => handleAddItem(null)}
+                className="flex items-center gap-0.5 text-xs bg-blue-600 text-white font-semibold px-2 py-0.5 rounded hover:bg-blue-700 transition-all mr-1"
+                title="Add root WBS item"
+              >
+                <Plus size={10} /> Item
+              </button>
+              <span className="text-xs font-mono text-slate-400">{items.length}</span>
               <button
                 onClick={handleExpandAll}
                 disabled={!items.length}
@@ -612,6 +619,17 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
               )}
             </div>
           </div>
+
+          {/* KPI mini strip — desktop only, shows when nodes exist */}
+          {items.length > 0 && (
+            <div className="px-2 py-1.5 border-b border-slate-100 flex-shrink-0">
+              <WBSKpiBar
+                items={items}
+                rabLinkedCount={kpiData.rabLinkedCount}
+                totalBudget={kpiData.totalBudget}
+              />
+            </div>
+          )}
 
           {/* Tree — fills remaining height */}
           <div className="flex-1 overflow-y-auto">
@@ -686,12 +704,6 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
                 className="flex items-center gap-1 text-xs text-slate-500 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all disabled:opacity-40"
               >
                 <Download size={11} />
-              </button>
-              <button
-                onClick={() => handleAddItem(null)}
-                className="flex items-center gap-1 text-xs bg-blue-600 text-white font-semibold px-2.5 py-1 rounded hover:bg-blue-700 transition-all"
-              >
-                <Plus size={11} /> WBS Item
               </button>
             </div>
           </div>
