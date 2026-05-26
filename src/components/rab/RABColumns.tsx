@@ -1,16 +1,69 @@
+import React, { useState, useEffect, useRef } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Link } from 'react-router-dom'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { 
-  ChevronDown, ChevronRight, Info, Trash2, Link2, 
-  MapPin, Settings2, Info as InfoIcon 
+import {
+  ChevronDown, ChevronRight, Info, Trash2, Link2,
+  MapPin, Settings2, Info as InfoIcon
 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { CurrencyCell } from '../shared/CurrencyCell'
 import { StatusBadge } from '../shared/StatusBadge'
+
+/**
+ * Editable number cell that uses local state while focused.
+ * Calls onCommit only on blur or Enter, preventing store updates (and the
+ * cascade of re-renders they trigger) on every keystroke.
+ */
+function NumberInputCell({
+  value: externalValue,
+  disabled,
+  onCommit,
+}: {
+  value: number | undefined
+  disabled?: boolean
+  onCommit: (val: string) => void
+}) {
+  const toDisplay = (v: number | undefined) => (v != null && v !== 0 ? String(v) : '')
+  const [local, setLocal] = useState(() => toDisplay(externalValue))
+  const focused = useRef(false)
+
+  // Sync external value into local state only when the cell isn't being edited
+  useEffect(() => {
+    if (!focused.current) {
+      setLocal(toDisplay(externalValue))
+    }
+  }, [externalValue])
+
+  return (
+    <Input
+      type="number"
+      value={local}
+      disabled={disabled}
+      className="h-7 text-right text-xs bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 transition-all font-mono disabled:opacity-50"
+      onChange={(e) => setLocal(e.target.value)}
+      onFocus={() => { focused.current = true }}
+      onBlur={() => {
+        focused.current = false
+        onCommit(local)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          onCommit(local)
+          e.currentTarget.blur()
+        }
+        if (e.ctrlKey && e.key === 's') {
+          e.preventDefault()
+          onCommit(local)
+          document.getElementById('btn-publish-drafts')?.click()
+        }
+      }}
+    />
+  )
+}
 
 /**
  * RABColumns
@@ -155,21 +208,9 @@ export const getRABColumns = (
     enableSorting: true,
     sortingFn: 'basic',
     cell: ({ row }) => (
-      <Input
-        type="number"
-        value={row.original.volume || ''}
-        className="h-7 text-right text-xs bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 transition-all font-mono"
-        onChange={(e) => onVolumeChange(row.original.id, e.target.value)}
-        onKeyDown={(e) => {
-          if (e.ctrlKey && e.key === 's') {
-            e.preventDefault()
-            const saveBtn = document.getElementById('btn-publish-drafts')
-            if (saveBtn) saveBtn.click()
-          }
-          if (e.key === 'Enter') {
-            e.currentTarget.blur() // exit edit mode mentally
-          }
-        }}
+      <NumberInputCell
+        value={row.original.volume}
+        onCommit={(val) => onVolumeChange(row.original.id, val)}
       />
     ),
     size: 100,
@@ -192,22 +233,10 @@ export const getRABColumns = (
     enableSorting: true,
     sortingFn: 'basic',
     cell: ({ row }) => (
-      <Input
-        type="number"
-        value={row.original.unit_price || ''}
+      <NumberInputCell
+        value={row.original.unit_price}
         disabled={projectLocked || !!row.original.snapshot_price}
-        className="h-7 text-right text-xs font-mono bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 transition-all disabled:opacity-50"
-        onChange={(e) => onPriceChange(row.original.id, e.target.value)}
-        onKeyDown={(e) => {
-          if (e.ctrlKey && e.key === 's') {
-            e.preventDefault()
-            const saveBtn = document.getElementById('btn-publish-drafts')
-            if (saveBtn) saveBtn.click()
-          }
-          if (e.key === 'Enter') {
-            e.currentTarget.blur()
-          }
-        }}
+        onCommit={(val) => onPriceChange(row.original.id, val)}
       />
     ),
     size: 140,
