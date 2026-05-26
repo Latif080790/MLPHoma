@@ -1,11 +1,4 @@
-/**
- * CostKPIStrip.tsx
- * 6-card KPI surface for the Enterprise Cost Dashboard.
- * Shows: RAB Budget, RAP Planned, Actual Cost, Committed, CPI, SPI
- */
-
 import React from 'react'
-import { Card, CardContent } from '@/components/ui/card'
 import { formatIDR } from '@/lib/utils'
 import type { CostDashboardSnapshot } from '@/services/costDashboardService'
 
@@ -14,22 +7,29 @@ interface CostKPIStripProps {
   loading: boolean
 }
 
-function performanceIndexColor(value: number): string {
-  if (value < 0.9) return 'text-red-500'
-  if (value < 0.95) return 'text-amber-500'
-  return 'text-green-500'
+function performanceColor(v: number): string {
+  if (v < 0.9) return 'text-red-500'
+  if (v < 0.95) return 'text-amber-500'
+  return 'text-emerald-600'
+}
+
+function Delta({ v }: { v: number }) {
+  const d = (v - 1).toFixed(2)
+  const pos = v >= 1
+  return (
+    <span className={`text-xs font-mono font-semibold ${pos ? 'text-emerald-500' : 'text-red-500'}`}>
+      {pos ? '▲' : '▼'}{Math.abs(Number(d))}
+    </span>
+  )
 }
 
 export function CostKPIStrip({ snapshot, loading }: CostKPIStripProps) {
   if (loading || snapshot === null) {
     return (
-      <div className="flex flex-row overflow-x-auto gap-3 flex-wrap">
+      <div className="grid grid-cols-3 lg:grid-cols-6 rounded-lg border border-slate-200 overflow-hidden">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            role="status"
-            className="animate-pulse rounded-xl border bg-card h-24 min-w-[140px] flex-1"
-          />
+          <div key={i} role="status"
+            className={`animate-pulse bg-slate-50 h-[68px] ${i > 0 ? 'border-l border-slate-200' : ''}`} />
         ))}
       </div>
     )
@@ -38,7 +38,7 @@ export function CostKPIStrip({ snapshot, loading }: CostKPIStripProps) {
   const cpi = snapshot.latestCpi ?? 0
   const spi = snapshot.latestSpi ?? 0
 
-  const cards = [
+  const cells = [
     {
       label: 'RAB Budget',
       value: formatIDR(snapshot.rabTotal),
@@ -52,46 +52,55 @@ export function CostKPIStrip({ snapshot, loading }: CostKPIStripProps) {
     {
       label: 'Actual Cost',
       value: formatIDR(snapshot.actualCost),
-      sub: `Burn Rate ${snapshot.burnRatePercent.toFixed(1)}%`,
+      sub: `Burn ${snapshot.burnRatePercent.toFixed(1)}%`,
+      warn: snapshot.burnRatePercent > 90,
     },
     {
       label: 'Committed',
       value: formatIDR(snapshot.committedCost),
-      sub: 'Komitmen Belum Terealisasi',
+      sub: 'Belum Terealisasi',
     },
     {
       label: 'CPI',
       value: snapshot.latestCpi !== null ? cpi.toFixed(3) : '—',
-      sub: 'Cost Performance Index',
+      sub: 'Cost Performance',
+      colorClass: snapshot.latestCpi !== null ? performanceColor(cpi) : undefined,
+      delta: snapshot.latestCpi !== null ? <Delta v={cpi} /> : null,
       testId: 'kpi-cpi-value',
-      colorClass: snapshot.latestCpi !== null ? performanceIndexColor(cpi) : 'text-muted-foreground',
     },
     {
       label: 'SPI',
       value: snapshot.latestSpi !== null ? spi.toFixed(3) : '—',
-      sub: 'Schedule Performance Index',
+      sub: 'Schedule Performance',
+      colorClass: snapshot.latestSpi !== null ? performanceColor(spi) : undefined,
+      delta: snapshot.latestSpi !== null ? <Delta v={spi} /> : null,
       testId: 'kpi-spi-value',
-      colorClass: snapshot.latestSpi !== null ? performanceIndexColor(spi) : 'text-muted-foreground',
     },
   ]
 
   return (
-    <div className="flex flex-row overflow-x-auto gap-3 flex-wrap">
-      {cards.map((card) => (
-        <Card key={card.label} className="min-w-[140px] flex-1">
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground mb-1">{card.label}</p>
+    <div className="grid grid-cols-3 lg:grid-cols-6 rounded-lg border border-slate-200 overflow-hidden bg-white">
+      {cells.map((cell, i) => (
+        <div
+          key={cell.label}
+          className={`px-3 py-3 ${i > 0 ? 'border-l border-slate-200' : ''}`}
+        >
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+            {cell.label}
+          </p>
+          <div className="flex items-baseline gap-1.5 flex-wrap">
             <p
-              className={`text-lg font-semibold leading-tight ${card.colorClass ?? ''}`}
-              data-testid={card.testId}
+              className={`text-sm font-bold font-mono leading-tight ${
+                cell.colorClass ?? (cell.warn ? 'text-amber-600' : 'text-slate-800')
+              }`}
+              data-testid={cell.testId}
             >
-              {card.value}
+              {cell.value}
             </p>
-            {card.sub && (
-              <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
-            )}
-          </CardContent>
-        </Card>
+            {cell.delta}
+          </div>
+          <p className="text-xs text-slate-400 mt-1 leading-none">{cell.sub}</p>
+        </div>
       ))}
     </div>
   )
