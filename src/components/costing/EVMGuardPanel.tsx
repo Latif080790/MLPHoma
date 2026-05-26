@@ -1,5 +1,11 @@
 import { useMemo } from 'react'
-import { Shield, TrendingUp, AlertTriangle, Info } from 'lucide-react'
+import { Shield, TrendingUp, AlertTriangle, Info, HelpCircle } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { formatIDR } from '@/lib/utils'
 import { useForecastStore } from '@/store/costForecastStore'
 import { useProjectStore } from '@/store/projectStore'
@@ -64,6 +70,17 @@ export function EVMGuardPanel({ projectId, className }: EVMGuardPanelProps) {
         <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
           EVM &amp; Budget Guard
         </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <HelpCircle size={10} className="text-slate-300 hover:text-slate-500 cursor-help ml-auto" />
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-[240px] text-xs">
+              Earned Value Management: CPI ≥ 1.00 = on-budget, SPI ≥ 1.00 = on-schedule.
+              EAC = estimasi biaya akhir proyek berdasarkan performa saat ini.
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <div className="overflow-y-auto flex-1 p-4 space-y-4">
