@@ -282,20 +282,22 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
                     <TableCell className="text-right font-medium text-slate-700 dark:text-slate-300 font-mono text-xs py-2">
                       {Math.round(totalBudget).toLocaleString('id-ID')}
                     </TableCell>
-                    <TableCell className="text-right font-mono text-xs text-blue-600 dark:text-blue-400 py-2">
+                    <TableCell className="text-right py-1.5 px-2">
                       <Input
                         type="number"
                         value={committedCost || ''}
                         onChange={e => handleInlineEdit(item.id, 'committed_cost', e.target.value)}
-                        className="h-6 w-24 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-blue-200 focus:border-blue-500 shadow-none text-blue-600 inline-flex ml-auto"
+                        className="h-8 w-full text-right font-mono text-xs border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white focus:border-blue-500 shadow-none text-blue-700"
+                        placeholder="0"
                       />
                     </TableCell>
-                    <TableCell className="text-right font-mono text-xs text-amber-600 dark:text-amber-400 py-2">
+                    <TableCell className="text-right py-1.5 px-2">
                       <Input
                         type="number"
                         value={actualCost || ''}
                         onChange={e => handleInlineEdit(item.id, 'actual_cost', e.target.value)}
-                        className="h-6 w-24 text-right font-mono text-xs border-transparent bg-transparent hover:bg-white focus:bg-white hover:border-amber-200 focus:border-amber-500 shadow-none text-amber-600 inline-flex ml-auto"
+                        className="h-8 w-full text-right font-mono text-xs border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white focus:border-amber-500 shadow-none text-amber-700"
+                        placeholder="0"
                       />
                     </TableCell>
                     <TableCell className="text-right font-bold text-xs font-mono py-2 text-slate-900 dark:text-slate-100">
@@ -340,7 +342,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
     return (
       <div
         className="flex flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
-        style={{ height: 'calc(100vh - 340px)', minHeight: '480px' }}
+        style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
       >
         {/* ── Top action bar ─────────────────────────────────── */}
         <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
@@ -467,13 +469,13 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
               </Tooltip>
             </TooltipProvider>
             <ExportMenu
-              data={projectItems}
+              data={projectItems as unknown as Record<string, unknown>[]}
               columns={[
-                { header: 'Item Name', accessor: (r: Record<string, unknown>) => String(r.name ?? (r.ahsp_items as {name?: string})?.name ?? (r.rab_items as {name?: string})?.name ?? '') },
-                { header: 'Total Budget', accessor: r => r.total_budget || 0 },
-                { header: 'Committed Cost', accessor: r => r.committed_cost || 0 },
-                { header: 'Actual Cost', accessor: r => r.actual_cost || 0 },
-                { header: 'Remaining', accessor: r => (r.total_budget || 0) - (r.committed_cost || 0) - (r.actual_cost || 0) },
+                { header: 'Item Name',      accessor: (r: Record<string, unknown>) => String(r.name ?? (r.ahsp_items as {name?: string})?.name ?? (r.rab_items as {name?: string})?.name ?? '') },
+                { header: 'Total Budget',   accessor: (r: Record<string, unknown>) => (r.total_budget    as number) || 0 },
+                { header: 'Committed Cost', accessor: (r: Record<string, unknown>) => (r.committed_cost  as number) || 0 },
+                { header: 'Actual Cost',    accessor: (r: Record<string, unknown>) => (r.actual_cost     as number) || 0 },
+                { header: 'Remaining',      accessor: (r: Record<string, unknown>) => ((r.total_budget as number) || 0) - ((r.committed_cost as number) || 0) - ((r.actual_cost as number) || 0) },
               ]}
               filename={`RAP_Budget_${projectId}`}
               size="sm"

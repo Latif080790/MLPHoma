@@ -30,6 +30,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from '@/components/ui/dialog'
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
@@ -755,32 +758,52 @@ export default function ResourcePlan({ embedded = false, onSwitchToRap }: { embe
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>Target Resource</Label>
-              <select
-                className="w-full p-2 text-sm border border-slate-200 rounded-md focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                value={levelingTarget}
-                onChange={(e) => setLevelingTarget(e.target.value as ResourceType)}
-              >
-                <option value="labor">Tenaga Kerja (Labor)</option>
-                <option value="equipment">Peralatan (Equipment)</option>
-                <option value="material">Material</option>
-                <option value="subcontractor">Subkontraktor</option>
-              </select>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Target Resource</Label>
+              <Select value={levelingTarget} onValueChange={(v) => setLevelingTarget(v as ResourceType)}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="labor">Tenaga Kerja (Labor)</SelectItem>
+                  <SelectItem value="equipment">Peralatan (Equipment)</SelectItem>
+                  <SelectItem value="material">Material</SelectItem>
+                  <SelectItem value="subcontractor">Subkontraktor</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Batas Maksumum Harian per Hari (Nilai Rp)</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-500">Rp</span>
-                <Input
-                  type="number"
-                  value={levelingMaxVolume}
-                  onChange={(e) => setLevelingMaxVolume(Number(e.target.value))}
-                  min={1000}
-                />
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Batas Maksimum Harian (Nilai Rp)
+              </Label>
+              <Input
+                type="number"
+                value={levelingMaxVolume}
+                onChange={(e) => setLevelingMaxVolume(Math.max(1000, Number(e.target.value)))}
+                min={1000}
+                step={1000000}
+                className="h-9 font-mono text-sm"
+                placeholder="5000000"
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-400">
+                  ≈ {formatIDR(levelingMaxVolume)} / hari
+                </p>
+                <div className="flex gap-1">
+                  {[1_000_000, 5_000_000, 10_000_000].map(v => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setLevelingMaxVolume(v)}
+                      className="px-2 py-0.5 text-xs rounded border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 font-mono transition-colors"
+                    >
+                      {v >= 1_000_000 ? `${v / 1_000_000}M` : `${v / 1_000}K`}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <p className="text-xs text-slate-500">
-                Jika pada satu hari alokasi <strong>{TYPE_LABEL[levelingTarget]}</strong> melebihi {formatIDR(levelingMaxVolume)}, sistem akan mencari tugas non-kritis dan menggesernya 1 hari tanpa memundurkan akhir proyek.
+              <p className="text-xs text-slate-500 bg-slate-50 rounded-lg p-2.5 border border-slate-100 leading-relaxed">
+                Jika alokasi <strong className="text-slate-700">{TYPE_LABEL[levelingTarget]}</strong> pada satu hari melebihi batas ini, sistem akan menggeser tugas non-kritis 1 hari menggunakan Total Float.
               </p>
             </div>
           </div>

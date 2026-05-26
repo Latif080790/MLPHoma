@@ -564,7 +564,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
       {/* Desktop Variant D Layout — WBS Tree | RAB Table | EVM Guard */}
       <div
         className="hidden md:flex rounded-xl border border-slate-200 shadow-sm overflow-hidden"
-        style={{ height: 'calc(100vh - 340px)', minHeight: '480px' }}
+        style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
       >
         {/* ── WBS Tree Panel ──────────────────────────────── */}
         <div className="w-[224px] flex-shrink-0 bg-white border-r border-slate-200 flex flex-col">

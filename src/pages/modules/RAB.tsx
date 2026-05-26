@@ -7,6 +7,7 @@
 import React, { useMemo, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
+import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
 import { Calculator, CloudUpload, Lock, MapPin, Settings2 } from 'lucide-react'
 import { useRabStore } from '@/store/rabStore'
@@ -248,7 +249,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
   return (
     <div
       className="flex flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
-      style={{ height: 'calc(100vh - 340px)', minHeight: '480px' }}
+      style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
     >
       {/* ── Top action bar ─────────────────────────────────────── */}
       <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
@@ -300,14 +301,14 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
               { label: 'Profit (%)', value: profitPct, setter: (v: number) => { setProfitPct(v); persistRates(overheadPct, v, taxRate) } },
               { label: 'PPN (%)', value: taxRate, setter: (v: number) => { setTaxRate(v); persistRates(overheadPct, profitPct, v) } },
             ].map(({ label, value, setter }) => (
-              <label key={label} className="block">
-                <span className="mb-1 block text-xs text-slate-500">{label}</span>
-                <input
+              <div key={label} className="flex flex-col gap-1">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
+                <Input
                   type="number" min="0" max="100" step="0.1" value={value}
                   onChange={e => setter(Math.max(0, Math.min(100, Number(e.target.value))))}
-                  className="w-24 rounded border border-slate-200 bg-white px-2 py-1 text-xs focus:border-blue-400 focus:outline-none"
+                  className="h-8 w-24 text-sm font-mono"
                 />
-              </label>
+              </div>
             ))}
             <div className="flex items-end">
               <Button size="sm" className="h-7 text-xs" onClick={() => setShowSettings(false)}>Apply</Button>

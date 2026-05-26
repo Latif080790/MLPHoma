@@ -5,17 +5,19 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { Save, RotateCcw } from 'lucide-react'
+import { Save, RotateCcw, GitBranch, Layers } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Textarea } from '../ui/textarea'
 import { Label } from '../ui/label'
+import { Checkbox } from '../ui/checkbox'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '../ui/dialog'
 import type { WBSItem } from '../../types/wbs'
 
@@ -153,6 +155,7 @@ export function WBSEditor({
         onClose()
       } else {
         // Reset form for next entry
+        toast.success('Item WBS ditambahkan', { description: formData.name })
         setFormData(prev => ({
           ...prev,
           name: '',
@@ -179,128 +182,113 @@ export function WBSEditor({
     }
   }
 
+  const parentItem = formData.parentId ? existingItems.find(i => i.id === formData.parentId) : null
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {item ? 'Edit WBS Item' : 'Add New WBS Item'}
+          <DialogTitle className="flex items-center gap-2">
+            <GitBranch size={16} className="text-indigo-500" />
+            {item ? 'Edit WBS Item' : 'Tambah WBS Item'}
           </DialogTitle>
+          <DialogDescription>
+            {parentItem
+              ? `Child dari: ${parentItem.code ? `[${parentItem.code}] ` : ''}${parentItem.name}`
+              : 'Item baru di level root'}
+          </DialogDescription>
         </DialogHeader>
+
+        {/* Hierarchy context strip */}
+        <div className="flex items-center gap-2 -mt-1 px-1">
+          {item?.code && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 font-mono text-xs font-bold text-indigo-700">
+              {item.code}
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600">
+            <Layers size={10} />
+            Level {formData.level}
+          </span>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name field */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Nama Item <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              placeholder="Enter WBS item name"
-              className={errors.name ? 'border-red-500' : ''}
+              placeholder="Contoh: Pekerjaan Pondasi"
+              className={errors.name ? 'border-red-500 focus-visible:ring-red-400' : ''}
               disabled={isSubmitting}
+              autoFocus
             />
             {errors.name && (
-              <p className="text-sm text-red-500">{errors.name}</p>
-            )}
-          </div>
-
-          {/* Code display — auto-generated, never editable */}
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">WBS Code</Label>
-            {item?.code ? (
-              <div className="inline-flex items-center px-2.5 py-1 rounded bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800">
-                <span className="font-mono text-sm font-bold text-indigo-700 dark:text-indigo-300">{item.code}</span>
-              </div>
-            ) : (
-              <p className="text-xs text-neutral-400 italic">Otomatis ditetapkan sesuai posisi hierarki</p>
+              <p className="text-xs text-red-500">{errors.name}</p>
             )}
           </div>
 
           {/* Description field */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Deskripsi
+            </Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Enter optional description"
-              rows={3}
+              placeholder="Opsional — deskripsi singkat item ini"
+              rows={2}
               className={errors.description ? 'border-red-500' : ''}
               disabled={isSubmitting}
             />
             {errors.description && (
-              <p className="text-sm text-red-500">{errors.description}</p>
+              <p className="text-xs text-red-500">{errors.description}</p>
             )}
-          </div>
-
-          {/* Parent info */}
-          {formData.parentId && (
-            <div className="space-y-2">
-              <Label>Parent Item</Label>
-              <div className="p-2 bg-neutral-50 dark:bg-neutral-800 rounded text-sm">
-                {(() => {
-                  const parent = existingItems.find(i => i.id === formData.parentId)
-                  return parent ? `${parent.code} - ${parent.name}` : 'Unknown'
-                })()}
-              </div>
-            </div>
-          )}
-
-          {/* Level info */}
-          <div className="space-y-2">
-            <Label>Level</Label>
-            <div className="p-2 bg-neutral-50 dark:bg-neutral-800 rounded text-sm">
-              Level {formData.level}
-            </div>
           </div>
 
           {/* Error message */}
           {errors.submit && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
               {errors.submit}
             </div>
           )}
 
-          {/* Add another checkbox (only for new items) */}
+          {/* Add another toggle (only for new items) */}
           {!item && (
-            <label className="flex items-center gap-2 pt-2 text-sm text-neutral-600 dark:text-neutral-400 cursor-pointer select-none">
-              <input
-                type="checkbox"
+            <div className="flex items-center gap-2 pt-1">
+              <Checkbox
+                id="addAnother"
                 checked={addAnother}
-                onChange={e => setAddAnother(e.target.checked)}
-                className="h-4 w-4 rounded border-neutral-300"
+                onCheckedChange={(checked) => setAddAnother(!!checked)}
               />
-              <RotateCcw size={13} className="text-neutral-400" />
-              Tambah lagi setelah simpan
-            </label>
+              <label htmlFor="addAnother" className="flex items-center gap-1.5 text-sm text-slate-600 cursor-pointer select-none">
+                <RotateCcw size={12} className="text-slate-400" />
+                Tambah lagi setelah simpan
+              </label>
+            </div>
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancel
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+              Batal
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="min-w-[80px]"
-            >
+            <Button type="submit" disabled={isSubmitting} className="min-w-[100px]">
               {isSubmitting ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Saving...
-                </div>
+                <span className="flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                  Menyimpan...
+                </span>
               ) : (
-                <>
-                  <Save size={16} className="mr-2" />
-                  {item ? 'Update' : addAnother ? 'Add & Continue' : 'Add'}
-                </>
+                <span className="flex items-center gap-1.5">
+                  <Save size={14} />
+                  {item ? 'Update' : addAnother ? 'Tambah & Lanjut' : 'Tambah'}
+                </span>
               )}
             </Button>
           </div>

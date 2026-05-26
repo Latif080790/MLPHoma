@@ -1,21 +1,17 @@
 /**
- * ProjectCosting v2.tsx
- * ─────────────────────────────────────────────────────────────────────────────
- * Integrated costing workspace: AHSP → WBS → RAB → RAP → Resource
- * 
- * REDESIGNED with enterprise design system:
- *   L1: GlobalContextBar  → project context + health
- *   L2: WorkflowStepper   → 5-step costing pipeline (replaces CostingFlowIndicator)
- *   L3: WorkspaceHeader   → title + active step description
- *   L4: SummaryStrip      → budget health KPIs
- *   Alert: AlertStrip     → empty-data warnings
- *   L6: Step Content      → lazy-loaded submodule
+ * ProjectCosting v3 — Industrial Command Center layout
+ * L1: CommandBar (dark)  — project identity + pipeline health
+ * L2: UnifiedTabBar       — Dashboard | AHSP → WBS → RAB → RAP → Resource
+ * L3: BudgetStrip         — 4-cell KPI (pipeline mode only)
+ * L4: Content             — fills remaining viewport height
  */
 
 import React, { Suspense, useState, useEffect, useMemo } from 'react'
-import { Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench, ArrowRight, AlertCircle } from 'lucide-react'
+import {
+  Calculator, BookOpen, GitBranch, DollarSign, BarChart2, Wrench,
+  ArrowRight, AlertCircle, CheckCircle2, RefreshCw,
+} from 'lucide-react'
 import ModulePageState from '@/components/common/ModulePageState'
-import { BudgetHealthPanel } from '@/components/modules/BudgetHealthPanel'
 import { useProjectStore } from '@/store/projectStore'
 import { useWBSStore } from '@/store/wbsStore'
 import { useRabStore } from '@/store/rabStore'
@@ -26,11 +22,8 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { lazyRetry } from '@/lib/lazyRetry'
 import { useShallow } from 'zustand/react/shallow'
-
-// ── Enterprise Pattern Imports ──────────────────────────────────────────────
-import { PageShell } from '@/components/layouts'
-import { GlobalContextBar, WorkspaceHeader, WorkflowStepper, SummaryStrip, AlertStrip, ModeSwitch } from '@/components/patterns'
-import { CostDashboardView, CostKPIStrip } from '@/components/costing'
+import { CostDashboardView } from '@/components/costing'
+import { formatIDR } from '@/lib/utils'
 
 const AHSP = lazyRetry(() => import('@/pages/modules/AHSP/index'))
 const WBS = lazyRetry(() => import('@/pages/modules/WBS'))
@@ -40,53 +33,43 @@ const ResourcePlan = lazyRetry(() => import('@/pages/modules/ResourcePlan'))
 
 type CostingStep = 'ahsp' | 'wbs' | 'rab' | 'rap' | 'resource'
 
-// ─── Step Pipeline Configuration ────────────────────────────────────────────
-const STEP_CONFIG: Array<{
-  id: CostingStep
-  label: string
-  description: string
-  icon: React.ReactNode
-}> = [
-  { id: 'ahsp', label: 'AHSP', description: 'Katalog harga satuan pekerjaan', icon: <BookOpen size={14} /> },
-  { id: 'wbs', label: 'WBS', description: 'Struktur pekerjaan & hierarki', icon: <GitBranch size={14} /> },
-  { id: 'rab', label: 'RAB', description: 'Rencana anggaran biaya baseline', icon: <DollarSign size={14} /> },
-  { id: 'rap', label: 'RAP', description: 'Anggaran pelaksanaan operasional', icon: <BarChart2 size={14} /> },
-  { id: 'resource', label: 'Resource', description: 'Perencanaan kebutuhan resource', icon: <Wrench size={14} /> },
+const STEP_CONFIG: Array<{ id: CostingStep; label: string; description: string; icon: React.ReactNode }> = [
+  { id: 'ahsp',     label: 'AHSP',     description: 'Katalog harga satuan pekerjaan',    icon: <BookOpen   size={12} /> },
+  { id: 'wbs',      label: 'WBS',      description: 'Struktur pekerjaan & hierarki',     icon: <GitBranch  size={12} /> },
+  { id: 'rab',      label: 'RAB',      description: 'Rencana anggaran biaya baseline',   icon: <DollarSign size={12} /> },
+  { id: 'rap',      label: 'RAP',      description: 'Anggaran pelaksanaan operasional',  icon: <BarChart2  size={12} /> },
+  { id: 'resource', label: 'Resource', description: 'Perencanaan kebutuhan resource',    icon: <Wrench     size={12} /> },
 ]
 
-// ─── TabFallback ─────────────────────────────────────────────────────────────
 function TabFallback() {
   return (
-    <div className="space-y-space-3 p-padding-md" style={{ minHeight: 420 }}>
-      <div className="h-6 w-1/3 animate-pulse rounded-radius-sm bg-surface-subtle" />
-      {[1, 2, 3, 4, 5, 6].map(i => (
-        <div key={i} className="h-8 animate-pulse rounded-radius-sm bg-surface-subtle" style={{ width: `${90 - i * 8}%` }} />
+    <div className="flex flex-col gap-2 p-4">
+      <div className="h-6 w-1/3 animate-pulse rounded bg-slate-100" />
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} className="h-8 animate-pulse rounded bg-slate-100" style={{ width: `${90 - i * 8}%` }} />
       ))}
-      <div className="mt-6 h-48 animate-pulse rounded-radius-sm bg-surface-subtle opacity-60" />
+      <div className="mt-4 h-48 animate-pulse rounded bg-slate-100 opacity-60" />
     </div>
   )
 }
 
 export default function ProjectCosting() {
   const activeProjectId = useProjectStore(s => s.activeProjectId)
-  const projects = useProjectStore(s => s.projects)
+  const projects        = useProjectStore(s => s.projects)
   const [activeStep, setActiveStep] = useState<CostingStep>('ahsp')
   const [activeMode, setActiveMode] = useState<'dashboard' | 'pipeline'>('dashboard')
-  const [srStatus, setSrStatus] = useState('AHSP step opened.')
+  const [srStatus, setSrStatus]     = useState('AHSP step opened.')
   const { handleError } = useErrorHandler()
 
-  // Forecast store — snapshot data for dashboard mode
-  const { snapshot, snapshotLoading, fetchSnapshot } = useForecastStore(
-    useShallow(s => ({ snapshot: s.snapshot, snapshotLoading: s.snapshotLoading, fetchSnapshot: s.fetchSnapshot }))
+  const { snapshot, fetchSnapshot } = useForecastStore(
+    useShallow(s => ({ snapshot: s.snapshot, fetchSnapshot: s.fetchSnapshot }))
   )
 
-  // Store selectors — primitive values to avoid re-render loops
   const ahspCount = useAHSPStore(s => s.ahspItems.length)
   const wbsByProj = useWBSStore(s => s.itemsByProject)
   const rabByProj = useRabStore(s => s.itemsByProject)
-  const rapItems = useRapStore(s => s.items)
+  const rapItems  = useRapStore(s => s.items)
 
-  // Proactive fetching
   const { fetchItems: fetchWbs } = useWBSStore()
   const { fetchItems: fetchRab } = useRabStore()
   const { fetchItems: fetchRap } = useRapStore()
@@ -102,79 +85,19 @@ export default function ProjectCosting() {
 
   const activeProject = activeProjectId ? projects[activeProjectId] : null
 
-  // ─── Compute step counts & states ─────────────────────────────────────────
   const wbsCount = activeProjectId ? (wbsByProj[activeProjectId]?.length ?? 0) : 0
   const rabCount = activeProjectId ? (rabByProj[activeProjectId]?.length ?? 0) : 0
   const rapCount = activeProjectId ? rapItems.filter(i => i.project_id === activeProjectId).length : 0
 
-  const workflowSteps = useMemo(() => {
-    const counts: Record<CostingStep, number | null> = {
-      ahsp: ahspCount,
-      wbs: wbsCount,
-      rab: rabCount,
-      rap: rapCount,
-      resource: null,
-    }
+  const stepCounts: Record<CostingStep, number> = useMemo(() => ({
+    ahsp: ahspCount, wbs: wbsCount, rab: rabCount, rap: rapCount, resource: 1,
+  }), [ahspCount, wbsCount, rabCount, rapCount])
 
-    // Prerequisite chain: WBS needs AHSP, RAB needs WBS, RAP needs RAB
-    const prereqs: Partial<Record<CostingStep, CostingStep>> = {
-      wbs: 'ahsp',
-      rab: 'wbs',
-      rap: 'rab',
-    }
+  const emptySteps = useMemo(() =>
+    STEP_CONFIG.filter(s => s.id !== 'resource' && stepCounts[s.id] === 0).map(s => s.label),
+    [stepCounts]
+  )
 
-    return STEP_CONFIG.map(step => {
-      const count = counts[step.id]
-      const hasData = count === null || count > 0
-      const isActive = activeStep === step.id
-      const prereqStep = prereqs[step.id]
-      const prereqMissing = prereqStep !== undefined && counts[prereqStep] === 0
-
-      // Determine step status
-      let status: 'inactive' | 'active' | 'complete' | 'warning' = 'inactive'
-      if (isActive) status = 'active'
-      else if (!hasData && step.id !== 'resource') status = 'warning'
-      else if (hasData && count !== null && count > 0) status = 'complete'
-
-      const prereqLabel = prereqStep ? STEP_CONFIG.find(s => s.id === prereqStep)?.label : undefined
-
-      return {
-        id: step.id,
-        title: step.label,
-        description: prereqMissing && !isActive
-          ? `Lengkapi ${prereqLabel} terlebih dahulu`
-          : count !== null ? `${count} items` : step.description,
-        status,
-        icon: step.icon,
-        count: count ?? undefined,
-        disabled: prereqMissing && !isActive,
-      }
-    })
-  }, [activeStep, ahspCount, wbsCount, rabCount, rapCount])
-
-  // ─── Summary Strip KPIs ───────────────────────────────────────────────────
-  const summaryItems = useMemo(() => [
-    { label: 'AHSP Items', value: ahspCount, status: ahspCount > 0 ? 'success' as const : 'warning' as const },
-    { label: 'WBS Items', value: wbsCount, status: wbsCount > 0 ? 'success' as const : 'warning' as const },
-    { label: 'RAB Lines', value: rabCount, status: rabCount > 0 ? 'success' as const : 'warning' as const },
-    { label: 'RAP Lines', value: rapCount, status: rapCount > 0 ? 'success' as const : 'info' as const },
-  ], [ahspCount, wbsCount, rabCount, rapCount])
-
-  // ─── Empty step alerts ────────────────────────────────────────────────────
-  const stepCounts: Record<CostingStep, number> = {
-    ahsp: ahspCount,
-    wbs: wbsCount,
-    rab: rabCount,
-    rap: rapCount,
-    resource: 1, // resource not checked for empty alert
-  }
-
-  const emptySteps = STEP_CONFIG
-    .filter(s => s.id !== 'resource')
-    .filter(s => stepCounts[s.id] === 0)
-    .map(s => s.label)
-
-  // ─── Guard: No active project ─────────────────────────────────────────────
   if (!activeProjectId || !activeProject) {
     return (
       <ModulePageState
@@ -189,14 +112,16 @@ export default function ProjectCosting() {
 
   const handleStepChange = (stepId: string) => {
     setActiveStep(stepId as CostingStep)
-    const stepLabel = STEP_CONFIG.find(s => s.id === stepId)?.label || stepId
-    setSrStatus(`${stepLabel} step dibuka.`)
+    setActiveMode('pipeline')
+    setSrStatus(`${STEP_CONFIG.find(s => s.id === stepId)?.label ?? stepId} step dibuka.`)
   }
 
-  const currentStep = STEP_CONFIG.find(s => s.id === activeStep)!
-
   const renderContent = () => {
-    const wrap = (label: string, Component: React.LazyExoticComponent<React.ComponentType>, props?: Record<string, unknown>) => (
+    const wrap = (
+      label: string,
+      Component: React.LazyExoticComponent<React.ComponentType>,
+      props?: Record<string, unknown>
+    ) => (
       <ErrorBoundary errorMessage={`${label} module failed to render`}>
         <Suspense fallback={<TabFallback />}>
           <Component {...(props ?? {})} />
@@ -204,125 +129,188 @@ export default function ProjectCosting() {
       </ErrorBoundary>
     )
     switch (activeStep) {
-      case 'ahsp': return wrap('AHSP', AHSP as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
-      case 'wbs': return wrap('WBS', WBS as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
-      case 'rab': return wrap('RAB', RAB as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
-      case 'rap': return wrap('RAP', RAP as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
+      case 'ahsp':     return wrap('AHSP',          AHSP         as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
+      case 'wbs':      return wrap('WBS',           WBS          as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
+      case 'rab':      return wrap('RAB',           RAB          as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
+      case 'rap':      return wrap('RAP',           RAP          as React.LazyExoticComponent<React.ComponentType>, { embedded: true })
       case 'resource': return wrap('Resource Plan', ResourcePlan as React.LazyExoticComponent<React.ComponentType>, { embedded: true, onSwitchToRap: () => setActiveStep('rap') })
     }
   }
 
+  // ── BudgetStrip data ──────────────────────────────────────────────────────
+  const budget    = activeProject.budget ?? 0
+  const rabPct    = budget > 0 && snapshot ? Math.round((snapshot.rabTotal    / budget) * 100) : null
+  const actualPct = budget > 0 && snapshot ? Math.round((snapshot.actualCost  / budget) * 100) : null
+  const cpi       = snapshot?.latestCpi ?? null
+
+  const budgetCells: Array<{ label: string; value: string; sub: string; warn: boolean }> = [
+    {
+      label: 'Budget',
+      value: budget > 0 ? formatIDR(budget) : '—',
+      sub:   activeProject.status ?? 'Project',
+      warn:  false,
+    },
+    {
+      label: 'RAB / Budget',
+      value: rabPct    !== null ? `${rabPct}%`    : '—',
+      sub:   snapshot  ? formatIDR(snapshot.rabTotal)   : '—',
+      warn:  rabPct    !== null && rabPct > 105,
+    },
+    {
+      label: 'Actual Spent',
+      value: actualPct !== null ? `${actualPct}%` : '—',
+      sub:   snapshot  ? formatIDR(snapshot.actualCost) : '—',
+      warn:  actualPct !== null && actualPct > 90,
+    },
+    {
+      label: 'CPI',
+      value: cpi !== null ? cpi.toFixed(2) : '—',
+      sub:   cpi !== null ? (cpi >= 1 ? 'On Budget' : 'Over Budget') : 'No data',
+      warn:  cpi !== null && cpi < 1,
+    },
+  ]
+
+  const pipelineHealthBadge =
+    emptySteps.length === 0 ? 'bg-emerald-500/20 text-emerald-400' :
+    emptySteps.length <= 2  ? 'bg-amber-500/20  text-amber-400'   :
+                               'bg-red-500/20    text-red-400'
+
   return (
-    <PageShell
-      contextBar={
-        <GlobalContextBar
-          projectName={activeProject.name}
-          packageName={activeProject.code || undefined}
-          versionLabel={activeProject.status || undefined}
-          syncStatus="synced"
-          healthItems={[
-            {
-              label: 'Pipeline',
-              level: emptySteps.length === 0 ? 'good' : emptySteps.length <= 2 ? 'warning' : 'critical',
-              value: `${4 - emptySteps.length}/4`,
-            },
-          ]}
-        />
-      }
-      navigation={
-        <div className="flex flex-col gap-2">
-          <ModeSwitch
-            options={[
-              { value: 'dashboard', label: 'Dashboard', icon: <BarChart2 size={14} /> },
-              { value: 'pipeline', label: 'Pipeline', icon: <GitBranch size={14} /> },
-            ]}
-            value={activeMode}
-            onChange={(m) => setActiveMode(m as 'dashboard' | 'pipeline')}
-            size="sm"
-          />
-          {activeMode === 'pipeline' && (
-            <WorkflowStepper
-              steps={workflowSteps}
-              activeStepId={activeStep}
-              onStepClick={handleStepChange}
-            />
-          )}
-        </div>
-      }
-      header={
-        <WorkspaceHeader
-          title={`Costing — ${currentStep.label}`}
-          subtitle={currentStep.description}
-        />
-      }
-      summary={
-        activeMode === 'dashboard'
-          ? <CostKPIStrip snapshot={snapshot} loading={snapshotLoading} />
-          : <SummaryStrip items={summaryItems} variant="chips" />
-      }
-      alert={
-        emptySteps.length > 0 ? (
-          <AlertStrip
-            severity="info"
-            message={`${emptySteps.join(', ')} belum memiliki data — mulai dari ${emptySteps[0]} untuk melengkapi pipeline`}
-          />
-        ) : undefined
-      }
-    >
+    <div className="flex flex-col h-full overflow-hidden bg-slate-50">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
 
-      {activeMode === 'dashboard' ? (
-        /* ── Dashboard Mode ──────────────────────────────────────────────── */
-        <CostDashboardView />
-      ) : (
-        /* ── Pipeline Mode ───────────────────────────────────────────────── */
-        <>
-          {/* Budget Health KPIs */}
-          <BudgetHealthPanel
-            projectId={activeProjectId}
-            projectBudget={activeProject.budget ?? 0}
-          />
+      {/* ── L1: CommandBar ──────────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 h-11 bg-slate-900 flex items-center px-4 gap-3 z-10">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-sm font-bold text-white truncate">{activeProject.name}</span>
+          {activeProject.code && (
+            <span className="px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-nl-orange/20 text-nl-orange border border-nl-orange/30 flex-shrink-0 leading-none">
+              {activeProject.code}
+            </span>
+          )}
+          <span className={`px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0 leading-none ${pipelineHealthBadge}`}>
+            Pipeline {4 - emptySteps.length}/4
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+          <span className="text-xs text-slate-400">Synced</span>
+          <RefreshCw size={11} className="text-slate-500 ml-1" />
+        </div>
+      </div>
 
-          {/* Guided onboarding — shown when pipeline is fully empty */}
-          {emptySteps.length === 4 && (
-            <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50/60 dark:border-amber-800 dark:bg-amber-900/10 p-6 mt-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle size={18} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Pipeline Costing Belum Diisi</p>
-                    <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+      {/* ── L2: UnifiedTabBar ───────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 bg-white border-b border-slate-200 flex items-stretch h-10 overflow-x-auto z-10">
+        {/* Dashboard */}
+        <button
+          type="button"
+          onClick={() => setActiveMode('dashboard')}
+          className={`flex items-center gap-1.5 px-4 h-full text-xs font-semibold border-r border-slate-200 flex-shrink-0 transition-colors ${
+            activeMode === 'dashboard'
+              ? 'text-nl-orange border-b-2 border-b-nl-orange bg-orange-50/50'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+          }`}
+        >
+          <BarChart2 size={12} />
+          Dashboard
+        </button>
+
+        {/* Pipeline label */}
+        <div className="flex items-center px-3 flex-shrink-0">
+          <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Pipeline</span>
+        </div>
+
+        {/* Step tabs */}
+        {STEP_CONFIG.map((step, i) => {
+          const count   = stepCounts[step.id]
+          const hasData = step.id === 'resource' || count > 0
+          const isActive = activeMode === 'pipeline' && activeStep === step.id
+          return (
+            <React.Fragment key={step.id}>
+              {i > 0 && (
+                <div className="flex items-center text-slate-300 flex-shrink-0 px-0.5">
+                  <ArrowRight size={11} />
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => handleStepChange(step.id)}
+                className={`flex items-center gap-1.5 px-3 h-full text-xs font-medium flex-shrink-0 transition-colors ${
+                  isActive
+                    ? 'text-slate-900 border-b-2 border-b-nl-orange bg-slate-50'
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <span className={isActive ? 'text-nl-orange' : 'text-slate-400'}>{step.icon}</span>
+                {step.label}
+                {step.id !== 'resource' && (
+                  <span className={`w-4 h-4 rounded-full text-xs flex items-center justify-center flex-shrink-0 ${
+                    hasData ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                  }`}>
+                    {hasData ? <CheckCircle2 size={10} /> : '!'}
+                  </span>
+                )}
+              </button>
+            </React.Fragment>
+          )
+        })}
+      </div>
+
+      {/* ── L3: BudgetStrip (pipeline only) ────────────────────────────────── */}
+      {activeMode === 'pipeline' && (
+        <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-slate-200 bg-white border-b border-slate-200">
+          {budgetCells.map(cell => (
+            <div key={cell.label} className="flex flex-col justify-center px-3 py-1.5">
+              <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider leading-none mb-0.5">
+                {cell.label}
+              </div>
+              <div className={`text-sm font-bold font-mono leading-tight ${cell.warn ? 'text-red-600' : 'text-slate-800'}`}>
+                {cell.value}
+              </div>
+              <div className="text-xs text-slate-400 truncate leading-none mt-0.5">{cell.sub}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── L4: Content ─────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        {activeMode === 'dashboard' ? (
+          <CostDashboardView />
+        ) : (
+          <>
+            {emptySteps.length === 4 && (
+              <div className="m-4 rounded-xl border border-dashed border-amber-300 bg-amber-50/60 p-5">
+                <div className="flex items-start gap-3">
+                  <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-amber-800">Pipeline Costing Belum Diisi</p>
+                    <p className="text-xs text-amber-700">
                       Ikuti urutan berikut untuk membangun rencana anggaran proyek:
                     </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {STEP_CONFIG.filter(s => s.id !== 'resource').map((step, i, arr) => (
-                      <React.Fragment key={step.id}>
-                        <button
-                          type="button"
-                          onClick={() => handleStepChange(step.id)}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-700 px-3 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
-                        >
-                          {step.icon}
-                          {step.label}
-                        </button>
-                        {i < arr.length - 1 && (
-                          <ArrowRight size={14} className="text-amber-400 self-center" />
-                        )}
-                      </React.Fragment>
-                    ))}
+                    <div className="flex flex-wrap gap-2">
+                      {STEP_CONFIG.filter(s => s.id !== 'resource').map((step, i, arr) => (
+                        <React.Fragment key={step.id}>
+                          <button
+                            type="button"
+                            onClick={() => handleStepChange(step.id)}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 transition-colors"
+                          >
+                            {step.icon}
+                            {step.label}
+                          </button>
+                          {i < arr.length - 1 && <ArrowRight size={12} className="text-amber-400 self-center" />}
+                        </React.Fragment>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Step Content */}
-          <div className="min-h-[420px] mt-[var(--space-4)]">
+            )}
             {renderContent()}
-          </div>
-        </>
-      )}
-    </PageShell>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
