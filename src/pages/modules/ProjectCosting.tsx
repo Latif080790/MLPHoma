@@ -170,54 +170,142 @@ export default function ProjectCosting() {
     },
   ]
 
-  const pipelineHealthBadge =
-    emptySteps.length === 0 ? 'bg-emerald-500/20 text-emerald-400' :
-    emptySteps.length <= 2  ? 'bg-amber-500/20  text-amber-400'   :
-                               'bg-red-500/20    text-red-400'
-
   return (
     <div className="flex flex-col h-full overflow-hidden bg-slate-50">
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{srStatus}</div>
 
       {/* ── L1: CommandBar ──────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 h-11 bg-slate-900 flex items-center px-4 gap-3 z-10">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-sm font-bold text-white truncate">{activeProject.name}</span>
+      <div
+        className="flex-shrink-0 h-12 flex items-center px-4 z-10 relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, #0e1628 0%, #0b1120 100%)',
+          boxShadow: 'inset 0 -1px 0 rgba(234,88,12,0.18), 0 1px 0 rgba(0,0,0,0.4)',
+        }}
+      >
+        {/* Scan-line texture — technical grid feel */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none select-none"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)',
+            backgroundSize: '100% 8px',
+          }}
+        />
+
+        {/* Left: project identity */}
+        <div className="flex items-center gap-3 flex-1 min-w-0 relative">
+          {/* Code callsign — no box, just pure orange mono */}
           {activeProject.code && (
-            <span className="px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-nl-orange/20 text-nl-orange border border-nl-orange/30 flex-shrink-0 leading-none">
+            <span
+              className="flex-shrink-0 font-mono text-xs font-bold tracking-[0.12em] border-l-2 pl-2 leading-none"
+              style={{ color: '#f97316', borderColor: 'rgba(249,115,22,0.7)' }}
+            >
               {activeProject.code}
             </span>
           )}
-          <span className={`px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0 leading-none ${pipelineHealthBadge}`}>
-            Pipeline {4 - emptySteps.length}/4
+
+          {/* Thin separator */}
+          <div className="w-px h-4 flex-shrink-0" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+          {/* Project name */}
+          <span className="text-sm font-semibold tracking-tight truncate" style={{ color: 'rgba(248,250,252,0.92)' }}>
+            {activeProject.name}
           </span>
+
+          {/* Pipeline segment progress */}
+          <div className="hidden sm:flex items-center gap-1 flex-shrink-0 ml-1" role="progressbar" aria-label={`Pipeline ${4 - emptySteps.length}/4 complete`}>
+            {STEP_CONFIG.filter(s => s.id !== 'resource').map(step => {
+              const done = stepCounts[step.id] > 0
+              return (
+                <div
+                  key={step.id}
+                  title={`${step.label}: ${done ? 'complete' : 'empty'}`}
+                  className="transition-all duration-500"
+                  style={{
+                    width: 20,
+                    height: 2,
+                    borderRadius: 1,
+                    background: done ? '#f97316' : 'rgba(255,255,255,0.12)',
+                    boxShadow: done ? '0 0 6px rgba(249,115,22,0.5)' : 'none',
+                  }}
+                />
+              )
+            })}
+            <span
+              className="text-xs font-mono ml-1.5 font-bold tabular-nums"
+              style={{ color: 'rgba(255,255,255,0.28)', letterSpacing: '0.05em' }}
+            >
+              {4 - emptySteps.length}/4
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-          <span className="text-xs text-slate-400">Synced</span>
-          <RefreshCw size={11} className="text-slate-500 ml-1" />
+
+        {/* Right: status + sync */}
+        <div className="flex items-center gap-3 flex-shrink-0 relative">
+          {/* Project status label */}
+          {activeProject.status && (
+            <span
+              className="hidden lg:block text-xs font-mono uppercase"
+              style={{ color: 'rgba(255,255,255,0.22)', letterSpacing: '0.1em' }}
+            >
+              {activeProject.status}
+            </span>
+          )}
+
+          {/* Thin separator */}
+          <div className="hidden lg:block w-px h-4" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+          {/* Sync indicator */}
+          <div className="flex items-center gap-1.5">
+            <span className="relative flex h-1.5 w-1.5 flex-shrink-0" aria-hidden="true">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-50" style={{ background: '#4ade80' }} />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: '#22c55e' }} />
+            </span>
+            <span
+              className="text-xs font-mono font-bold tracking-widest"
+              style={{ color: 'rgba(255,255,255,0.25)', letterSpacing: '0.12em' }}
+            >
+              LIVE
+            </span>
+          </div>
+
+          <button
+            type="button"
+            className="transition-colors rounded p-0.5"
+            style={{ color: 'rgba(255,255,255,0.2)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.5)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.2)')}
+            aria-label="Refresh"
+          >
+            <RefreshCw size={11} />
+          </button>
         </div>
       </div>
 
       {/* ── L2: UnifiedTabBar ───────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 bg-white border-b border-slate-200 flex items-stretch h-10 overflow-x-auto z-10">
+      <div
+        className="flex-shrink-0 flex items-stretch h-10 overflow-x-auto z-10"
+        style={{ background: '#f4f6fb', borderBottom: '1px solid #e2e6ef' }}
+      >
         {/* Dashboard */}
         <button
           type="button"
           onClick={() => setActiveMode('dashboard')}
-          className={`flex items-center gap-1.5 px-4 h-full text-xs font-semibold border-r border-slate-200 flex-shrink-0 transition-colors ${
+          className={`flex items-center gap-1.5 px-4 h-full text-xs font-semibold flex-shrink-0 transition-all relative ${
             activeMode === 'dashboard'
-              ? 'text-nl-orange border-b-2 border-b-nl-orange bg-orange-50/50'
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+              ? 'text-[#ea6b0a] bg-white'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
           }`}
+          style={activeMode === 'dashboard' ? { boxShadow: 'inset 0 -2px 0 #f97316' } : {}}
         >
           <BarChart2 size={12} />
           Dashboard
         </button>
 
-        {/* Pipeline label */}
-        <div className="flex items-center px-3 flex-shrink-0">
-          <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Pipeline</span>
+        {/* Separator + Pipeline label */}
+        <div className="flex items-center gap-0 flex-shrink-0">
+          <div className="w-px h-5 mx-2" style={{ background: '#dde1ea' }} />
+          <span className="text-xs font-bold uppercase tracking-[0.1em] text-slate-400/70 pr-2 leading-none">Pipeline</span>
         </div>
 
         {/* Step tabs */}
@@ -228,26 +316,29 @@ export default function ProjectCosting() {
           return (
             <React.Fragment key={step.id}>
               {i > 0 && (
-                <div className="flex items-center text-slate-300 flex-shrink-0 px-0.5">
-                  <ArrowRight size={11} />
+                <div className="flex items-center flex-shrink-0" style={{ color: '#c8cedc', padding: '0 2px' }}>
+                  <ArrowRight size={10} />
                 </div>
               )}
               <button
                 type="button"
                 onClick={() => handleStepChange(step.id)}
-                className={`flex items-center gap-1.5 px-3 h-full text-xs font-medium flex-shrink-0 transition-colors ${
-                  isActive
-                    ? 'text-slate-900 border-b-2 border-b-nl-orange bg-slate-50'
-                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                className={`flex items-center gap-1.5 px-3 h-full text-xs font-medium flex-shrink-0 transition-all relative ${
+                  isActive ? 'text-slate-900 bg-white' : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
                 }`}
+                style={isActive ? { boxShadow: 'inset 0 -2px 0 #f97316' } : {}}
               >
-                <span className={isActive ? 'text-nl-orange' : 'text-slate-400'}>{step.icon}</span>
+                <span style={{ color: isActive ? '#f97316' : '#94a3b8' }}>{step.icon}</span>
                 {step.label}
                 {step.id !== 'resource' && (
-                  <span className={`w-4 h-4 rounded-full text-xs flex items-center justify-center flex-shrink-0 ${
-                    hasData ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
-                  }`}>
-                    {hasData ? <CheckCircle2 size={10} /> : '!'}
+                  <span
+                    className="flex items-center justify-center w-3.5 h-3.5 rounded-full flex-shrink-0"
+                    style={hasData
+                      ? { background: 'rgba(34,197,94,0.12)', color: '#16a34a' }
+                      : { background: 'rgba(245,158,11,0.12)', color: '#d97706' }
+                    }
+                  >
+                    {hasData ? <CheckCircle2 size={9} /> : <span className="font-black leading-none" style={{ fontSize: 9 }}>!</span>}
                   </span>
                 )}
               </button>
@@ -258,16 +349,31 @@ export default function ProjectCosting() {
 
       {/* ── L3: BudgetStrip (pipeline only) ────────────────────────────────── */}
       {activeMode === 'pipeline' && (
-        <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-slate-200 bg-white border-b border-slate-200">
-          {budgetCells.map(cell => (
-            <div key={cell.label} className="flex flex-col justify-center px-3 py-1.5">
-              <div className="text-xs text-slate-400 font-semibold uppercase tracking-wider leading-none mb-0.5">
+        <div
+          className="flex-shrink-0 grid grid-cols-4"
+          style={{ borderBottom: '1px solid #e2e6ef', background: '#f8f9fd' }}
+        >
+          {budgetCells.map((cell, i) => (
+            <div
+              key={cell.label}
+              className="flex flex-col justify-center px-3 py-2"
+              style={i > 0 ? { borderLeft: '1px solid #e2e6ef' } : {}}
+            >
+              <div
+                className="text-xs font-bold uppercase leading-none mb-0.5"
+                style={{ color: '#9aa3b5', letterSpacing: '0.08em' }}
+              >
                 {cell.label}
               </div>
-              <div className={`text-sm font-bold font-mono leading-tight ${cell.warn ? 'text-red-600' : 'text-slate-800'}`}>
+              <div
+                className="text-sm font-bold font-mono leading-tight"
+                style={{ color: cell.warn ? '#dc2626' : '#1e293b' }}
+              >
                 {cell.value}
               </div>
-              <div className="text-xs text-slate-400 truncate leading-none mt-0.5">{cell.sub}</div>
+              <div className="text-xs truncate leading-none mt-0.5" style={{ color: '#9aa3b5' }}>
+                {cell.sub}
+              </div>
             </div>
           ))}
         </div>
