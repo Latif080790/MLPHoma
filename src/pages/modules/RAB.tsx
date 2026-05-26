@@ -23,6 +23,7 @@ import { PriceDriftBanner } from '@/components/rab/PriceDriftBanner'
 import { usePresence } from '@/hooks/usePresence'
 import { PresenceAvatars } from '@/components/common/PresenceAvatars'
 import { assertSupabase } from '@/lib/supabaseClient'
+import { EVMGuardPanel } from '@/components/costing'
 
 const EMPTY_ARRAY: RABItem[] = []
 
@@ -153,208 +154,206 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
     )
   }
 
-  return (
-    <div className="space-y-4 density-compact">
-      {!embedded && (<ModuleHeader
-        icon={<Calculator size={18} />}
-        title="RAB Builder"
-        description="Manage budget items and calculations"
-        accent="emerald"
-        actions={
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Peer awareness in this module */}
-            {otherPeers.length > 0 && (
-              <div className="flex items-center gap-2 pr-2 border-r border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-right-2 duration-300">
-                <span className="text-xs uppercase font-bold text-slate-400 tracking-wider hidden lg:block">Active Peers:</span>
-                <PresenceAvatars users={otherPeers} />
+  if (!embedded) {
+    // ── Standalone (non-embedded) layout — unchanged ──────────────
+    return (
+      <div className="space-y-4 density-compact">
+        <ModuleHeader
+          icon={<Calculator size={18} />}
+          title="RAB Builder"
+          description="Manage budget items and calculations"
+          accent="emerald"
+          actions={
+            <div className="flex flex-wrap items-center gap-4">
+              {otherPeers.length > 0 && (
+                <div className="flex items-center gap-2 pr-2 border-r border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-right-2 duration-300">
+                  <span className="text-xs uppercase font-bold text-slate-400 tracking-wider hidden lg:block">Active Peers:</span>
+                  <PresenceAvatars users={otherPeers} />
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-2">
+                <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setShowSettings(s => !s)}>
+                  <Settings2 className="h-3.5 w-3.5" />
+                  Rates
+                </Button>
+                <Button onClick={handleSync} disabled={syncing} variant="outline" className="h-8 gap-2 text-xs">
+                  <CloudUpload className="h-4 w-4" />
+                  {syncing ? 'Syncing...' : 'Sync'}
+                </Button>
               </div>
+            </div>
+          }
+        />
+        {showSettings && (
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">RAB Rate Configuration</span>
+              <button type="button" onClick={() => setShowSettings(false)} className="text-xs text-slate-400 hover:text-slate-600">✕ Tutup</button>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <label className="block min-w-[140px]">
+                <span className="mb-1 block text-xs text-slate-500">Overhead (%)</span>
+                <input type="number" min="0" max="100" step="0.1" value={overheadPct} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setOverheadPct(v); persistRates(v, profitPct, taxRate) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
+              </label>
+              <label className="block min-w-[140px]">
+                <span className="mb-1 block text-xs text-slate-500">Profit (%)</span>
+                <input type="number" min="0" max="100" step="0.1" value={profitPct} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setProfitPct(v); persistRates(overheadPct, v, taxRate) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
+              </label>
+              <label className="block min-w-[140px]">
+                <span className="mb-1 block text-xs text-slate-500">PPN / Tax (%)</span>
+                <input type="number" min="0" max="100" step="0.1" value={taxRate} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setTaxRate(v); persistRates(overheadPct, profitPct, v) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
+              </label>
+              <div className="flex items-end"><Button size="sm" className="h-8 text-xs" onClick={() => setShowSettings(false)}>Apply</Button></div>
+            </div>
+          </div>
+        )}
+        <div className="space-y-4">
+          {isLocked && (
+            <div className="flex items-center gap-2.5 rounded-lg border border-red-200 bg-red-50/60 px-4 py-3 text-sm">
+              <Lock size={15} className="shrink-0 text-red-600" />
+              <span className="font-semibold text-red-700">Baseline RAB Terkunci</span>
+              <span className="text-red-600">— RAB bersifat read-only.</span>
+            </div>
+          )}
+          <PriceDriftBanner projectId={currentProject.id} isLocked={isLocked} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="hover-interactive">
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Items</CardTitle></CardHeader>
+              <CardContent><div className="text-2xl font-bold">{items.length}</div></CardContent>
+            </Card>
+            <Card className="hover-interactive">
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Subtotal</CardTitle></CardHeader>
+              <CardContent><div className="text-2xl font-bold">{formatIDR(summary.subtotal)}</div></CardContent>
+            </Card>
+            <Card className="hover-interactive">
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">OH + Profit + Tax</CardTitle></CardHeader>
+              <CardContent><div className="text-2xl font-bold">{formatIDR(summary.overhead + summary.profit + summary.tax)}</div></CardContent>
+            </Card>
+            <Card className="bg-primary/5 border-primary/20 hover-interactive">
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-primary">Final Total</CardTitle></CardHeader>
+              <CardContent><div className="text-2xl font-bold text-primary">{formatIDR(summary.total)}</div></CardContent>
+            </Card>
+          </div>
+          <Card className="panel-compact">
+            <CardContent className="p-0 overflow-x-auto">
+              {loading.ahspItems ? <CardSkeleton /> : <RABTable projectId={currentProject.id} />}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Embedded: Variant D layout ────────────────────────────────
+  return (
+    <div
+      className="flex flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
+      style={{ height: 'calc(100vh - 340px)', minHeight: '480px' }}
+    >
+      {/* ── Top action bar ─────────────────────────────────────── */}
+      <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          {currentZone && (
+            <span className="flex items-center gap-1.5 text-xs text-slate-500">
+              <MapPin size={11} />
+              {currentZone.name}
+            </span>
+          )}
+          {isLocked && (
+            <span className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+              <Lock size={11} /> Locked
+            </span>
+          )}
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          {otherPeers.length > 0 && <PresenceAvatars users={otherPeers} />}
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-1.5 text-xs text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all disabled:opacity-50"
+          >
+            <CloudUpload size={13} />
+            {syncing ? 'Syncing…' : 'Sync'}
+          </button>
+          <button
+            onClick={() => setShowSettings(s => !s)}
+            className="flex items-center gap-1.5 text-xs text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all"
+          >
+            <Settings2 size={13} />
+            {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
+              <span className="text-xs font-bold text-slate-500">OH {overheadPct}%</span>
             )}
+          </button>
+        </div>
+      </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 gap-1.5 text-xs"
-                onClick={() => setShowSettings(s => !s)}
-              >
-                <Settings2 className="h-3.5 w-3.5" />
-                Rates
-                {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
-                  <span className="ml-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 px-1.5 text-xs font-bold">
-                    OH {overheadPct}% · P {profitPct}% · T {taxRate}%
-                  </span>
-                )}
-              </Button>
-              <Button onClick={handleSync} disabled={syncing} variant="outline" className="h-8 gap-2 text-xs">
-                <CloudUpload className="h-4 w-4" />
-                {syncing ? 'Syncing...' : 'Sync to Supabase'}
-              </Button>
-            </div>
-          </div>
-        }
-      />)}
-
-      {/* Rates config — inline panel, no overflow/z-index issues */}
+      {/* ── Rates config (collapsible) ──────────────────────────── */}
       {showSettings && (
-        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">RAB Rate Configuration</span>
-            <button
-              type="button"
-              onClick={() => setShowSettings(false)}
-              className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-            >
-              ✕ Tutup
-            </button>
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Rate Configuration</span>
+            <button type="button" onClick={() => setShowSettings(false)} className="text-xs text-slate-400 hover:text-slate-600">✕</button>
           </div>
-          <div className="flex flex-wrap gap-4">
-            <label className="block min-w-[140px]">
-              <span className="mb-1 block text-xs text-slate-500">Overhead (%)</span>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                value={overheadPct}
-                onChange={e => {
-                  const v = Math.max(0, Math.min(100, Number(e.target.value)))
-                  setOverheadPct(v)
-                  persistRates(v, profitPct, taxRate)
-                }}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
-              />
-            </label>
-            <label className="block min-w-[140px]">
-              <span className="mb-1 block text-xs text-slate-500">Profit (%)</span>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                value={profitPct}
-                onChange={e => {
-                  const v = Math.max(0, Math.min(100, Number(e.target.value)))
-                  setProfitPct(v)
-                  persistRates(overheadPct, v, taxRate)
-                }}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
-              />
-            </label>
-            <label className="block min-w-[140px]">
-              <span className="mb-1 block text-xs text-slate-500">PPN / Tax (%)</span>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                value={taxRate}
-                onChange={e => {
-                  const v = Math.max(0, Math.min(100, Number(e.target.value)))
-                  setTaxRate(v)
-                  persistRates(overheadPct, profitPct, v)
-                }}
-                className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
-              />
-            </label>
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: 'Overhead (%)', value: overheadPct, setter: (v: number) => { setOverheadPct(v); persistRates(v, profitPct, taxRate) } },
+              { label: 'Profit (%)', value: profitPct, setter: (v: number) => { setProfitPct(v); persistRates(overheadPct, v, taxRate) } },
+              { label: 'PPN (%)', value: taxRate, setter: (v: number) => { setTaxRate(v); persistRates(overheadPct, profitPct, v) } },
+            ].map(({ label, value, setter }) => (
+              <label key={label} className="block">
+                <span className="mb-1 block text-xs text-slate-500">{label}</span>
+                <input
+                  type="number" min="0" max="100" step="0.1" value={value}
+                  onChange={e => setter(Math.max(0, Math.min(100, Number(e.target.value))))}
+                  className="w-24 rounded border border-slate-200 bg-white px-2 py-1 text-xs focus:border-blue-400 focus:outline-none"
+                />
+              </label>
+            ))}
             <div className="flex items-end">
-              <Button size="sm" className="h-8 text-xs" onClick={() => setShowSettings(false)}>
-                Apply
-              </Button>
+              <Button size="sm" className="h-7 text-xs" onClick={() => setShowSettings(false)}>Apply</Button>
             </div>
           </div>
-          <p className="mt-2 text-xs text-slate-400">
-            Tersimpan otomatis · Digunakan oleh Budget Health Panel untuk menghitung RAB Final Total (harga kontrak).
-          </p>
         </div>
       )}
 
-      <div className="space-y-4">
-        {/* G4 Fix: Lock banner — shown when RAB baseline has been snapshotted */}
-        {isLocked && (
-          <div className="flex items-center gap-2.5 rounded-lg border border-red-200 bg-red-50/60 px-4 py-3 text-sm dark:border-red-800 dark:bg-red-900/20">
-            <Lock size={15} className="shrink-0 text-red-600 dark:text-red-400" />
-            <span className="font-semibold text-red-700 dark:text-red-300">Baseline RAB Terkunci</span>
-            <span className="text-red-600 dark:text-red-400">
-              — RAB bersifat read-only. Import item dan publikasi draft dinonaktifkan.
-            </span>
+      {/* ── KPI strip ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-4 gap-px bg-slate-200 border-b border-slate-200 flex-shrink-0">
+        {([
+          { label: 'TOTAL ITEMS', value: items.length.toString(), cls: 'text-slate-900' },
+          { label: 'SUBTOTAL', value: formatIDR(summary.subtotal), cls: 'text-slate-900' },
+          { label: 'OH + PROFIT + TAX', value: formatIDR(summary.overhead + summary.profit + summary.tax), cls: summary.subtotal > 0 ? 'text-slate-900' : 'text-slate-400' },
+          { label: 'FINAL TOTAL', value: formatIDR(summary.total), cls: 'text-blue-600' },
+        ] as const).map(({ label, value, cls }) => (
+          <div key={label} className="bg-white px-4 py-3">
+            <div className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</div>
+            <div className={`font-bold text-xl font-mono mt-0.5 ${cls}`}>{value}</div>
           </div>
-        )}
+        ))}
+      </div>
 
-        {/* Price Drift Banner */}
-        <PriceDriftBanner projectId={currentProject.id} isLocked={isLocked} />
+      {/* ── Banners ────────────────────────────────────────────── */}
+      <PriceDriftBanner projectId={currentProject.id} isLocked={isLocked} />
 
-        {/* Zone Badge */}
-        {currentZone && (
-          <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50/50 px-3 py-2 dark:border-blue-900 dark:bg-blue-950/30">
-            <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">Zone Pricing Active:</span>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-              {currentZone.name}
-            </Badge>
-            <span className="text-xs text-blue-600 dark:text-blue-400">Prices adjusted for this zone</span>
-          </div>
-        )}
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover-interactive">
-            <CardHeader className="pb-1 pt-4">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{items.length}</div>
-            </CardContent>
-          </Card>
-          <Card className="hover-interactive">
-            <CardHeader className="pb-1 pt-4">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Subtotal</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatIDR(summary.subtotal)}</div>
-            </CardContent>
-          </Card>
-          <Card className="hover-interactive">
-            <CardHeader className="pb-1 pt-4">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                OH + Profit + Tax
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatIDR(summary.overhead + summary.profit + summary.tax)}</div>
-              <p className="mt-0.5 text-xs text-neutral-400">
-                OH {formatIDR(summary.overhead)} · P {formatIDR(summary.profit)} · PPN {formatIDR(summary.tax)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-primary/5 border-primary/20 hover-interactive">
-            <CardHeader className="pb-1 pt-4">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-primary">Final Total</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">{formatIDR(summary.total)}</div>
-            </CardContent>
-          </Card>
+      {/* ── Main: RABTable + EVM Guard ─────────────────────────── */}
+      <div className="flex flex-1 overflow-hidden">
+        <div className="flex-1 flex flex-col bg-white overflow-hidden">
+          {loading.ahspItems ? (
+            <div className="p-4 space-y-3">{[1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}</div>
+          ) : (
+            <>
+              {items.length > 0 && summary.subtotal === 0 && (
+                <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800 flex-shrink-0">
+                  <span className="font-medium">⚠ {items.length} item belum memiliki unit price — Grand Total = Rp 0.</span>
+                  <span className="ml-auto text-amber-600">Import dari AHSP untuk mengisi harga satuan otomatis.</span>
+                </div>
+              )}
+              <RABTable projectId={currentProject.id} />
+            </>
+          )}
         </div>
-
-        <Card className="panel-compact">
-          <CardContent className="p-0 overflow-x-auto">
-            {loading.ahspItems ? (
-              <CardSkeleton />
-            ) : (
-              <>
-                {items.length > 0 && summary.subtotal === 0 && (
-                  <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
-                    <span className="font-medium">
-                      ⚠ {items.length} item belum memiliki unit price — Grand Total = Rp 0.
-                    </span>
-                    <span className="ml-auto text-xs text-amber-600 dark:text-amber-400">Import dari AHSP untuk mengisi harga satuan otomatis.</span>
-                  </div>
-                )}
-                <RABTable projectId={currentProject.id} />
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <EVMGuardPanel projectId={currentProject.id ?? null} />
       </div>
     </div>
   )
+
 }
