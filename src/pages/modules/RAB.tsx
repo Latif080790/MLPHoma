@@ -66,8 +66,13 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
         table: 'rab_items',
         filter: `project_id=eq.${currentProject.id}`
       }, () => {
-        // Automatically fetch to update lock state derived from snapshot_price
-        fetchRabFromSupabase(currentProject.id)
+        // Skip re-fetch when user has unsaved local edits — fetchItems merge strategy
+        // already preserves local data for newer items, but skipping avoids the round-trip
+        // and the brief re-render flicker. Lock state (snapshotPrice) updates will still
+        // arrive on the next fetch after the user publishes their changes.
+        if (!useRabStore.getState().hasUnsavedChanges[currentProject.id]) {
+          fetchRabFromSupabase(currentProject.id)
+        }
       })
       .subscribe()
 
@@ -349,12 +354,15 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
               <div className="p-4 space-y-3">{[1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}</div>
             ) : (
               <>
-                {items.length > 0 && summary.subtotal === 0 && (
-                  <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50/80 px-4 py-2 text-xs text-amber-800 flex-shrink-0">
-                    <span className="font-medium">⚠ {items.length} item belum memiliki unit price.</span>
-                    <span className="ml-auto text-amber-600">Import dari AHSP untuk mengisi harga otomatis.</span>
-                  </div>
-                )}
+                {(() => {
+                  const noPriceCount = items.filter(i => !i.unit_price || i.unit_price === 0).length
+                  return noPriceCount > 0 ? (
+                    <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50/80 px-4 py-2 text-xs text-amber-800 flex-shrink-0">
+                      <span className="font-medium">⚠ {noPriceCount} item belum memiliki unit price.</span>
+                      <span className="ml-auto text-amber-600">Import dari AHSP untuk mengisi harga otomatis.</span>
+                    </div>
+                  ) : null
+                })()}
                 <RABTable projectId={currentProject.id} />
               </>
             )}

@@ -443,12 +443,28 @@ export const useRabStore = create<RabState>((set, get) => {
         // Map snake_case DB columns → RABItem fields via service helper
         const supabaseItems: RABItem[] = data.map((row) => mapDbRowToRabItem(row as Record<string, unknown>))
 
-        // Merge with existing localStorage items:
-        // Supabase items win for matching IDs; local-only items are preserved
+        // Merge with existing local items.
+        // When the user has unsaved edits (hasUnsavedChanges), local items win for matching IDs
+        // provided their updatedAt is newer — this prevents in-progress edits from being
+        // overwritten by a Supabase re-fetch (e.g. triggered by the realtime subscription).
+        // snapshotPrice is always taken from Supabase so lock state stays in sync.
         const localItems = get().itemsByProject[projectId] || []
+        const hasUnsaved = get().hasUnsavedChanges[projectId]
         const supabaseIdSet = new Set(supabaseItems.map(i => i.id))
+        const localItemMap = new Map(localItems.map(i => [i.id, i]))
+
+        const mergedSupabase = supabaseItems.map(si => {
+          if (!hasUnsaved) return si
+          const local = localItemMap.get(si.id)
+          if (!local) return si
+          // Prefer local when it has a newer edit timestamp
+          if (local.updatedAt && si.updatedAt && local.updatedAt > si.updatedAt) {
+            return { ...local, snapshotPrice: si.snapshotPrice, snapshot_price: si.snapshot_price }
+          }
+          return si
+        })
         const localOnlyItems = localItems.filter(i => !supabaseIdSet.has(i.id))
-        const merged = [...supabaseItems, ...localOnlyItems]
+        const merged = [...mergedSupabase, ...localOnlyItems]
 
         set((s) => ({
           itemsByProject: { ...s.itemsByProject, [projectId]: merged }
