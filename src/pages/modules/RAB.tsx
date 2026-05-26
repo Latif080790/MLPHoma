@@ -25,6 +25,7 @@ import { usePresence } from '@/hooks/usePresence'
 import { PresenceAvatars } from '@/components/common/PresenceAvatars'
 import { assertSupabase } from '@/lib/supabaseClient'
 import { EVMGuardPanel } from '@/components/costing'
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
 
 const EMPTY_ARRAY: RABItem[] = []
 
@@ -252,7 +253,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
       style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
     >
       {/* ── Top action bar ─────────────────────────────────────── */}
-      <div className="px-3 py-1.5 bg-white border-b border-slate-200 flex items-center gap-2 flex-shrink-0">
+      <div className="px-3 py-1.5 bg-white border-b border-slate-100 flex items-center gap-2 flex-shrink-0">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {currentZone && (
             <span className="flex items-center gap-1 text-xs text-slate-400">
@@ -295,7 +296,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
 
       {/* ── Rates config (collapsible) ──────────────────────────── */}
       {showSettings && (
-        <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+        <div className="px-4 py-3 bg-slate-50/80 border-b border-slate-100 flex-shrink-0">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Rate Configuration</span>
             <button type="button" onClick={() => setShowSettings(false)} className="text-xs text-slate-400 hover:text-slate-600">✕</button>
@@ -340,25 +341,30 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
       {/* ── Banners ────────────────────────────────────────────── */}
       <PriceDriftBanner projectId={currentProject.id} isLocked={isLocked} />
 
-      {/* ── Main: RABTable + EVM Guard ─────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 flex flex-col bg-white overflow-hidden">
-          {loading.ahspItems ? (
-            <div className="p-4 space-y-3">{[1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}</div>
-          ) : (
-            <>
-              {items.length > 0 && summary.subtotal === 0 && (
-                <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800 flex-shrink-0">
-                  <span className="font-medium">⚠ {items.length} item belum memiliki unit price — Grand Total = Rp 0.</span>
-                  <span className="ml-auto text-amber-600">Import dari AHSP untuk mengisi harga satuan otomatis.</span>
-                </div>
-              )}
-              <RABTable projectId={currentProject.id} />
-            </>
-          )}
-        </div>
-        <EVMGuardPanel projectId={currentProject.id ?? null} />
-      </div>
+      {/* ── Main: RABTable + EVM Guard (resizable) ─────────── */}
+      <ResizablePanelGroup direction="horizontal" className="flex-1 overflow-hidden">
+        <ResizablePanel defaultSize={75} minSize={50}>
+          <div className="flex flex-col bg-white overflow-hidden h-full">
+            {loading.ahspItems ? (
+              <div className="p-4 space-y-3">{[1, 2, 3, 4].map(i => <CardSkeleton key={i} />)}</div>
+            ) : (
+              <>
+                {items.length > 0 && summary.subtotal === 0 && (
+                  <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50/80 px-4 py-2 text-xs text-amber-800 flex-shrink-0">
+                    <span className="font-medium">⚠ {items.length} item belum memiliki unit price.</span>
+                    <span className="ml-auto text-amber-600">Import dari AHSP untuk mengisi harga otomatis.</span>
+                  </div>
+                )}
+                <RABTable projectId={currentProject.id} />
+              </>
+            )}
+          </div>
+        </ResizablePanel>
+        <ResizableHandle withHandle className="bg-slate-100 hover:bg-orange-100 data-[resize-handle-active]:bg-orange-200 transition-colors" />
+        <ResizablePanel defaultSize={25} minSize={18} maxSize={35}>
+          <EVMGuardPanel projectId={currentProject.id ?? null} />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   )
 
