@@ -564,7 +564,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean }) {
 
       {/* Desktop Variant D Layout — WBS Tree | RAB Table | EVM Guard (resizable) */}
       <div
-        className="hidden md:rounded-xl md:border md:border-slate-200 md:shadow-sm md:overflow-hidden"
+        className="hidden md:flex md:rounded-xl md:border md:border-slate-200 md:shadow-sm md:overflow-hidden"
         style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
       >
         <ResizablePanelGroup direction="horizontal" className="h-full">
