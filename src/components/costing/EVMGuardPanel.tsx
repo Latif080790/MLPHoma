@@ -24,10 +24,10 @@ export function EVMGuardPanel({ projectId, className }: EVMGuardPanelProps) {
     const cpi = snapshot.latestCpi ?? null
     const spi = snapshot.latestSpi ?? null
     const budget = project?.budget ?? 0
-    // EAC = AC / CPI when both are available
+    // EAC = BAC / CPI (PMI standard: Estimate at Completion = Budget / Cost Performance Index)
     const eac =
-      snapshot.latestAc !== null && cpi !== null && cpi > 0
-        ? snapshot.latestAc / cpi
+      budget > 0 && cpi !== null && cpi > 0
+        ? budget / cpi
         : null
     return { cpi, spi, eac, budget }
   }, [snapshot, project])
@@ -35,14 +35,14 @@ export function EVMGuardPanel({ projectId, className }: EVMGuardPanelProps) {
   const alerts = useMemo(() => {
     if (!evm) return []
     const list: { sev: 'warning' | 'info'; msg: string; detail: string }[] = []
-    if (evm.cpi !== null && evm.cpi < 1) {
+    if (evm.cpi !== null && evm.cpi < 0.95) {
       list.push({
         sev: 'warning',
         msg: `CPI ${evm.cpi.toFixed(2)} — Over Budget`,
         detail: 'Cost lebih tinggi dari nilai kerja yang dihasilkan.',
       })
     }
-    if (evm.spi !== null && evm.spi < 0.9) {
+    if (evm.spi !== null && evm.spi < 0.95) {
       list.push({
         sev: 'warning',
         msg: `SPI ${evm.spi.toFixed(2)} — Schedule Slip`,
@@ -76,8 +76,7 @@ export function EVMGuardPanel({ projectId, className }: EVMGuardPanelProps) {
               <HelpCircle size={10} className="text-slate-300 hover:text-slate-500 cursor-help ml-auto" />
             </TooltipTrigger>
             <TooltipContent side="left" className="max-w-[240px] text-xs">
-              Earned Value Management: CPI ≥ 1.00 = on-budget, SPI ≥ 1.00 = on-schedule.
-              EAC = estimasi biaya akhir proyek berdasarkan performa saat ini.
+              Earned Value Management: CPI ≥ 0.95 = on-budget (5% toleransi). SPI ≥ 0.95 = on-schedule. EAC = estimasi biaya akhir proyek berdasarkan performa saat ini.
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -95,13 +94,13 @@ export function EVMGuardPanel({ projectId, className }: EVMGuardPanelProps) {
                 label: 'CPI',
                 value: evm.cpi?.toFixed(2) ?? '—',
                 sub: 'Cost Performance',
-                good: evm.cpi === null || evm.cpi >= 1,
+                good: evm.cpi === null || evm.cpi >= 0.95,
               },
               {
                 label: 'SPI',
                 value: evm.spi?.toFixed(2) ?? '—',
                 sub: 'Schedule Performance',
-                good: evm.spi === null || evm.spi >= 1,
+                good: evm.spi === null || evm.spi >= 0.95,
               },
               {
                 label: 'EAC',
@@ -179,7 +178,7 @@ export function EVMGuardPanel({ projectId, className }: EVMGuardPanelProps) {
                   },
                   {
                     label: 'Actual Spent',
-                    pct: Math.round((snapshot.actualCost / evm.budget) * 100),
+                    pct: Math.round(snapshot.burnRatePercent),
                     color: 'bg-emerald-500',
                   },
                 ] as const
