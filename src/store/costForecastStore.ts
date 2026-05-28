@@ -12,12 +12,14 @@ interface ForecastState {
     projections: ForecastProjections | null
     loading: boolean
     error: string | null
-    
+    historyProjectId: string | null
+
     fetchHistory: (projectId: string) => Promise<void>
     generateSnapshot: () => Promise<void>
 
     snapshot: CostDashboardSnapshot | null
     snapshotLoading: boolean
+    snapshotProjectId: string | null
     fetchSnapshot: (projectId: string) => Promise<void>
 }
 
@@ -26,19 +28,24 @@ export const useForecastStore = create<ForecastState>((set, get) => ({
     projections: null,
     loading: false,
     error: null,
+    historyProjectId: null,
 
     fetchHistory: async (projectId: string) => {
-        set({ loading: true, error: null })
+        set({ loading: true, error: null, historyProjectId: projectId })
         try {
-            // 1. Fetch metrics history for charting
             const history = await forecastingService.getHistory(projectId)
-
-            // 2. Fetch projections
             const projections = await forecastingService.getTrendForecast(projectId)
-
-            set({ history: history || [], projections, loading: false })
+            if (get().historyProjectId === projectId) {
+                set({ history: history || [], projections, loading: false })
+            } else {
+                set({ loading: false })
+            }
         } catch (err: unknown) {
-            set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false })
+            if (get().historyProjectId === projectId) {
+                set({ error: err instanceof Error ? err.message : 'Unknown error', loading: false })
+            } else {
+                set({ loading: false })
+            }
         }
     },
 
@@ -55,14 +62,23 @@ export const useForecastStore = create<ForecastState>((set, get) => ({
 
     snapshot: null,
     snapshotLoading: false,
+    snapshotProjectId: null,
     fetchSnapshot: async (projectId: string) => {
-        set({ snapshotLoading: true })
+        set({ snapshotLoading: true, snapshotProjectId: projectId })
         try {
             const { costDashboardService } = await import('../services/costDashboardService')
             const snapshot = await costDashboardService.getDashboardSnapshot(projectId)
-            set({ snapshot, snapshotLoading: false })
+            if (get().snapshotProjectId === projectId) {
+                set({ snapshot, snapshotLoading: false })
+            } else {
+                set({ snapshotLoading: false })
+            }
         } catch (err: unknown) {
-            set({ error: (err as Error).message, snapshotLoading: false })
+            if (get().snapshotProjectId === projectId) {
+                set({ error: (err as Error).message, snapshotLoading: false })
+            } else {
+                set({ snapshotLoading: false })
+            }
         }
     },
 }))

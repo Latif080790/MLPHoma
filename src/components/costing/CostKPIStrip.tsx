@@ -5,6 +5,7 @@ import type { CostDashboardSnapshot } from '@/services/costDashboardService'
 interface CostKPIStripProps {
   snapshot: CostDashboardSnapshot | null
   loading: boolean
+  error?: string | null
 }
 
 function performanceColor(v: number): string {
@@ -23,14 +24,25 @@ function Delta({ v }: { v: number }) {
   )
 }
 
-export function CostKPIStrip({ snapshot, loading }: CostKPIStripProps) {
-  if (loading || snapshot === null) {
+export function CostKPIStrip({ snapshot, loading, error }: CostKPIStripProps) {
+  if (loading) {
     return (
       <div className="grid grid-cols-3 lg:grid-cols-6 rounded-lg border border-slate-200 overflow-hidden">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} role="status"
             className={`animate-pulse bg-slate-50 h-[68px] ${i > 0 ? 'border-l border-slate-200' : ''}`} />
         ))}
+      </div>
+    )
+  }
+
+  if (snapshot === null) {
+    return (
+      <div className="rounded-lg border border-slate-200 bg-slate-50 flex items-center gap-2 px-4 h-[68px] text-xs text-slate-400">
+        {error
+          ? <span className="text-red-500">Gagal memuat data: {error}</span>
+          : <span>Tidak ada data snapshot tersedia.</span>
+        }
       </div>
     )
   }

@@ -66,7 +66,10 @@ export const costDashboardService = {
     const committedCost   = rapItems.reduce((s, r) => s + Number(r.committed_cost || 0), 0)
     // RAP-basis: remaining = planned execution budget minus actual and committed spend
     const remainingBudget = rapPlanned - actualCost - committedCost
-    const burnRatePercent = rabTotal > 0 ? parseFloat(((actualCost / rabTotal) * 100).toFixed(2)) : 0
+    // Burn rate uses RAP execution budget as denominator (what the team actually has to spend).
+    // Fall back to rabTotal when RAP hasn't been initialized yet (rapPlanned = 0).
+    const burnBase = rapPlanned > 0 ? rapPlanned : rabTotal
+    const burnRatePercent = burnBase > 0 ? parseFloat(((actualCost / burnBase) * 100).toFixed(2)) : 0
 
     return {
       rabTotal, rapPlanned, actualCost, committedCost, remainingBudget, burnRatePercent,
