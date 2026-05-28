@@ -43,21 +43,25 @@ export const rapService = {
      */
     async getByProject(projectId: string) {
         const client = assertSupabase()
-        const { data, error } = await client
-            .from('rap_items')
-            .select(`
+        const all: Record<string, unknown>[] = []
+        const BATCH = 1000
+        for (let offset = 0; ; offset += BATCH) {
+            const { data, error } = await client
+                .from('rap_items')
+                .select(`
         *,
         wbs_items ( name, code ),
         ahsp_items ( name, unit ),
         rab_items ( name )
       `)
-            .eq('project_id', projectId)
-
-        if (error) {
-            console.warn('[rap] getByProject error:', error.message)
-            return []
+                .eq('project_id', projectId)
+                .range(offset, offset + BATCH - 1)
+            if (error) { console.warn('[rap] getByProject error:', error.message); break }
+            if (!data || data.length === 0) break
+            all.push(...data)
+            if (data.length < BATCH) break
         }
-        return data || []
+        return all
     },
 
     /**
