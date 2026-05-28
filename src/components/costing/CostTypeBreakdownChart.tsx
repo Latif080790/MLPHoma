@@ -4,7 +4,7 @@
  */
 
 import React from 'react'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from 'recharts'
 import { formatIDR } from '@/lib/utils'
 import type { CostTypeBreakdown } from '@/services/costDashboardService'
 
@@ -61,6 +61,11 @@ export function CostTypeBreakdownChart({ breakdown, totalRab }: CostTypeBreakdow
             outerRadius={78}
             paddingAngle={2}
           >
+            <Label
+              value={formatIDR(total)}
+              position="center"
+              style={{ fontSize: '11px', fontWeight: 700, fill: '#1e293b', fontFamily: 'monospace' }}
+            />
             {slices.map((entry) => (
               <Cell key={entry.key} fill={entry.color} />
             ))}
