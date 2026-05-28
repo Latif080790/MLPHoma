@@ -73,7 +73,7 @@ export const useRapStore = create<RapState>()(
         set({ loading: true, error: null })
         try {
           const data = await rapService.getByProject(projectId)
-          set({ items: data as RapItem[], lastSyncedAt: Date.now() })
+          set({ items: data as unknown as RapItem[], lastSyncedAt: Date.now() })
         } catch (err: unknown) {
           set({ error: (err as Error).message })
           toast.error('Failed to load RAP items: ' + (err as Error).message)
@@ -187,7 +187,7 @@ export const useRapStore = create<RapState>()(
           // Re-fetch with joins so ahsp_items / wbs_items / rab_items names populate immediately.
           // initFromRab returns the raw upsert result (no joined relation data).
           const joined = await rapService.getByProject(projectId)
-          set({ items: joined as RapItem[], lastSyncedAt: Date.now() })
+          set({ items: joined as unknown as RapItem[], lastSyncedAt: Date.now() })
           toast.success(`RAP initialized with ${data.length} items from RAB`)
         } catch (err: unknown) {
           toast.error('Failed to initialize RAP: ' + (err as Error).message)
