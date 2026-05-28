@@ -7,7 +7,6 @@
  * so ResourcePlan reads from the correct data source (RAP, not RAB).
  */
 
-import type { RABItem } from '../types/rab'
 import type { RapItem } from './rapService'
 import type { AHSPComponent, AHSPItem, Resource, ResourceType } from '../types/ahsp'
 
@@ -28,104 +27,6 @@ export interface ResourcePlanStats {
     totalCost: number
     linkedCount: number
     totalRab: number
-}
-
-// ── Core computation ──────────────────────────────────────────
-
-/**
- * Compute resource needs from RAB items × AHSP components × resources.
- * Returns sorted by totalCost descending.
- * @param ahspItems  Optional — used for code-based auto-matching when ahspItemId is not set on RAB item.
- */
-export function computeResourceNeeds(
-    rabItems: RABItem[],
-    componentsByAHSP: Record<string, AHSPComponent[]>,
-    resources: Resource[],
-    ahspItems?: AHSPItem[],
-): ResourceNeed[] {
-    const map = new Map<string, ResourceNeed>()
-
-    // Build code → AHSP id map for auto-matching when ahspItemId is missing
-    const ahspByCode = new Map<string, string>()
-    if (ahspItems) {
-        ahspItems.forEach(a => { if (a.code) ahspByCode.set(a.code, a.id) })
-    }
-
-    for (const rabItem of rabItems) {
-        const volume = rabItem.volume || 0
-        if (volume === 0) continue
-
-        // Explicit link first, then fall back to item_code → AHSP code matching
-        const ahspItemId =
-            rabItem.ahspItemId ||
-            rabItem.ahsp_item_id ||
-            ahspByCode.get(rabItem.item_code || rabItem.itemCode || rabItem.code || '')
-
-        if (!ahspItemId) continue
-
-        const components = componentsByAHSP[ahspItemId] || []
-        for (const comp of components) {
-            if (!comp.resource && !comp.resourceId) continue
-            const resource = comp.resource || resources.find(r => r.id === comp.resourceId)
-            if (!resource) continue
-
-            const needed = comp.coefficient * volume
-            const cost = needed * (comp.unitPrice || resource.unitPrice || 0)
-
-            const existing = map.get(resource.id)
-            if (existing) {
-                existing.totalVolume += needed
-                existing.totalCost += cost
-            } else {
-                map.set(resource.id, {
-                    resourceId: resource.id,
-                    resourceCode: resource.code,
-                    resourceName: resource.name,
-                    resourceType: resource.type,
-                    unit: resource.unit,
-                    unitPrice: comp.unitPrice || resource.unitPrice || 0,
-                    totalVolume: needed,
-                    totalCost: cost,
-                })
-            }
-        }
-    }
-
-    return Array.from(map.values()).sort((a, b) => b.totalCost - a.totalCost)
-}
-
-/**
- * Compute summary statistics from resource needs.
- * @param ahspItems  Optional — used for code-based matching to accurately count linked items.
- */
-export function computeResourceStats(
-    needs: ResourceNeed[],
-    rabItems: RABItem[],
-    ahspItems?: AHSPItem[],
-): ResourcePlanStats {
-    const TYPE_ORDER: ResourceType[] = ['material', 'labor', 'equipment', 'subcontractor']
-
-    const byType = TYPE_ORDER.reduce((acc, t) => {
-        acc[t] = needs
-            .filter(r => r.resourceType === t)
-            .reduce((s, r) => s + r.totalCost, 0)
-        return acc
-    }, {} as Record<ResourceType, number>)
-
-    const totalCost = needs.reduce((s, r) => s + r.totalCost, 0)
-
-    // Build code → id map for auto-matching
-    const codeMap = new Map<string, string>()
-    if (ahspItems) {
-        ahspItems.forEach(a => { if (a.code) codeMap.set(a.code, a.id) })
-    }
-
-    const linkedCount = rabItems.filter(i =>
-        !!(i.ahspItemId || i.ahsp_item_id ||
-            codeMap.get(i.item_code || i.itemCode || i.code || ''))
-    ).length
-
-    return { byType, totalCost, linkedCount, totalRab: rabItems.length }
 }
 
 // ── Audit Trail Types ─────────────────────────────────────────
@@ -309,6 +210,20 @@ export interface ScheduleMonthEntry {
     }>
 }
 
+/**
+ * Returns the ISO 8601 week key (e.g. "2024-W03") for a UTC date.
+ * Uses the standard algorithm: week 1 is the week containing the first Thursday.
+ * This must match the decoder in ResourcePlan.tsx getPeriodStartDate('week').
+ */
+function toISOWeekKey(d: Date): string {
+    const utc = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
+    const dayNum = utc.getUTCDay() || 7  // Sunday = 7
+    utc.setUTCDate(utc.getUTCDate() + 4 - dayNum)  // shift to Thursday of the same week
+    const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1))
+    const weekNum = Math.ceil(((utc.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
+    return `${utc.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`
+}
+
 export function computeArrivalScheduleWithTrace(
     rapItems: RapItem[],
     componentsByAHSP: Record<string, AHSPComponent[]>,
@@ -339,26 +254,23 @@ export function computeArrivalScheduleWithTrace(
             const startDate = new Date(task.start)
             const endDate = new Date(task.end)
             const diffMs = endDate.getTime() - startDate.getTime()
-            const totalDays = Math.max(1, Math.ceil(diffMs / 86400000))
+            // Inclusive day count: Jan1..Jan5 = 5 days, Jan1..Jan1 = 1 day
+            const totalDays = Math.max(1, Math.round(diffMs / 86400000) + 1)
 
             const costPerDay = totalCost / totalDays
             const volPerDay = totalVolume / totalDays
 
-            for (let i = 0; i <= totalDays; i++) {
+            for (let i = 0; i < totalDays; i++) {
                 const d = new Date(startDate)
-                d.setDate(d.getDate() + i)
-                if (d > endDate) break
+                d.setUTCDate(d.getUTCDate() + i)
 
                 let key = ''
                 if (periodType === 'day') {
                     key = d.toISOString().split('T')[0]
                 } else if (periodType === 'week') {
-                    const firstDayOfYear = new Date(d.getFullYear(), 0, 1)
-                    const pastDaysOfYear = (d.getTime() - firstDayOfYear.getTime()) / 86400000
-                    const weekNum = Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7)
-                    key = `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`
+                    key = toISOWeekKey(d)
                 } else {
-                    key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+                    key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
                 }
 
                 if (!buckets.has(key)) {
