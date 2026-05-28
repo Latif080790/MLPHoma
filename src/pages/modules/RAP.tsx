@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { LayoutList, CalendarClock, Search, Info, ChevronDown, ChevronUp, Plus, Link2, Link2Off } from 'lucide-react'
+import { LayoutList, CalendarClock, Search, Info, ChevronDown, ChevronUp, Plus, Link2, Link2Off, Loader2 } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { useRapStore } from '@/store/rapStore'
 import { useRabStore } from '@/store/rabStore'
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { TrendingUp, Percent, ShieldCheck } from 'lucide-react'
 import { rapProfitService } from '@/services/rapProfitService'
+import { rabService } from '@/services/rabService'
 import { ProfitHealthWidget } from '@/components/modules/ProfitHealthWidget'
 import {
   AlertDialog,
@@ -63,7 +64,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
 
   // New Store (RAP Items) — all hooks BEFORE any early return
   const { items, fetchItems, initFromRab, loading: isLoading, updateItem } = useRapStore()
-  const { getItems: getRabItems, getDraftCount } = useRabStore()
+  const { getDraftCount, fetchItems: fetchRabItems } = useRabStore()
 
   // Local state
   const [plan, setPlan] = useState<RapPlanItem[]>([])
@@ -71,6 +72,8 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
   const [targetTotal, setTargetTotal] = useState<number>(5_000_000_000)
   const [searchQuery, setSearchQuery] = useState('')
   const [confirmImportOpen, setConfirmImportOpen] = useState(false)
+  const [isRabLoading, setIsRabLoading] = useState(false)
+  const [pendingRabItems, setPendingRabItems] = useState<any[]>([])
   const [targetProfit, setTargetProfit] = useState(15)
   const [isSimulating, setIsSimulating] = useState(false)
   const [showScheduler, setShowScheduler] = useState(false)
@@ -101,6 +104,12 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
     }
   }, [projectId, fetchItems])
 
+  useEffect(() => {
+    if (projectId) {
+      fetchRabItems(projectId)
+    }
+  }, [projectId, fetchRabItems])
+
   // ── Null-project guard (after ALL hooks) ─────────────────────────
   if (!project || !projectId) {
     return (
@@ -114,28 +123,34 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
     )
   }
 
-  const openImportConfirm = () => {
-    const rabItems = getRabItems(projectId)
-    if (!rabItems.length) {
-      toast.error('No RAB items found to import')
-      return
+  const openImportConfirm = async () => {
+    setIsRabLoading(true)
+    try {
+      // Fetch directly from Supabase — bypasses the store's localOnlyItems
+      // so we only import items that actually exist in the rab_items table.
+      // Using the store's getRabItems would include local-only drafts whose IDs
+      // don't exist in DB, causing FK constraint error 23503 in rap_items.
+      const dbItems = await rabService.fetchRabItems(projectId)
+      if (!dbItems.length) {
+        toast.error('Belum ada item RAB yang dipublish. Publish item RAB terlebih dahulu di modul RAB.')
+        return
+      }
+      setPendingRabItems(dbItems)
+      setConfirmImportOpen(true)
+    } catch (err) {
+      toast.error('Gagal memuat item RAB: ' + (err as Error).message)
+    } finally {
+      setIsRabLoading(false)
     }
-    setConfirmImportOpen(true)
   }
 
   const handleInitFromRab = async () => {
-    const rabItems = getRabItems(projectId)
-    if (!rabItems.length) {
-      setConfirmImportOpen(false)
-      toast.error('No RAB items found to import')
-      return
-    }
+    if (!pendingRabItems.length) return
     try {
-      await initFromRab(projectId, rabItems)
+      await initFromRab(projectId, pendingRabItems)
       setConfirmImportOpen(false)
-      toast.success('RAB items imported to RAP')
+      setPendingRabItems([])
     } catch (error) {
-      // Error is already toasted by the store, just prevent success toast
       console.error('Import failed', error)
     }
   }
@@ -219,17 +234,34 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
                     <LayoutList className="h-10 w-10 text-emerald-400/50" />
                     <div>
                       <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
-                        {items.length === 0 ? 'Belum ada item RAP' : 'Tidak ada item yang cocok'}
+                        {projectItems.length === 0 ? 'Belum ada item RAP' : 'Tidak ada item yang cocok'}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
-                        {items.length === 0 ? 'Import dari RAB untuk mengisi daftar RAP budget.' : 'Ubah kata kunci pencarian Anda.'}
+                        {projectItems.length === 0 ? 'Import dari RAB untuk mengisi daftar RAP budget.' : 'Ubah kata kunci pencarian Anda.'}
                       </p>
                     </div>
-                    {items.length === 0 && (
-                      <Button size="sm" variant="default" className="h-9 gap-2 text-xs mt-1" onClick={openImportConfirm} disabled={isLoading || draftCount > 0}>
-                        <Plus size={14} />
-                        Import dari RAB
-                      </Button>
+                    {projectItems.length === 0 && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div>
+                              <Button size="sm" variant="default" className="h-9 gap-2 text-xs mt-1" onClick={openImportConfirm} disabled={isLoading || isRabLoading}>
+                                {isRabLoading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                {isRabLoading ? 'Memuat RAB...' : 'Import dari RAB'}
+                              </Button>
+                            </div>
+                          </TooltipTrigger>
+                          {draftCount > 0 && (
+                            <TooltipContent className="bg-amber-50 text-amber-700 border-amber-200 text-xs max-w-[240px]">
+                              <p className="font-bold flex items-center gap-1.5 mb-1 text-amber-900">
+                                <Info size={14} />
+                                Ada Draft Belum Dipublish
+                              </p>
+                              <strong>{draftCount}</strong> item RAB masih draft lokal dan tidak akan diimport. Hanya item yang sudah dipublish di modul RAB yang akan diimport ke RAP.
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </div>
                 </TableCell>
@@ -340,6 +372,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
   // ── Embedded: Variant D layout ────────────────────────────────
   if (embedded) {
     return (
+      <>
       <div
         className="flex flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
         style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
@@ -362,11 +395,11 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
             </div>
             <button
               onClick={openImportConfirm}
-              disabled={isLoading || draftCount > 0}
+              disabled={isLoading || isRabLoading}
               className="flex items-center gap-1.5 text-xs text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all disabled:opacity-50"
             >
-              <Plus size={12} />
-              {items.length > 0 ? 'Re-sync RAB' : 'Import RAB'}
+              {isRabLoading ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
+              {isRabLoading ? 'Memuat...' : items.length > 0 ? 'Re-sync RAB' : 'Import RAB'}
             </button>
           </div>
         </div>
@@ -428,6 +461,22 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
           <EVMGuardPanel projectId={projectId} />
         </div>
       </div>
+      <AlertDialog open={confirmImportOpen} onOpenChange={setConfirmImportOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Import RAP items from RAB?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action synchronizes your RAP budget with the current RAB estimate.
+              <strong>Smart Sync:</strong> Existing items with committed or actual costs (like Purchase Orders) will be preserved. Newly added RAB items will be imported, and removed items will only be deleted if they have no costs.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleInitFromRab}>Continue Import</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      </>
     )
   }
 
@@ -448,12 +497,12 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
                     <Button
                       variant="outline"
                       size="sm"
-                      className={`h-8 gap-1.5 text-xs ${draftCount > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className="h-8 gap-1.5 text-xs"
                       onClick={openImportConfirm}
-                      disabled={isLoading || !projectId || draftCount > 0}
+                      disabled={isLoading || isRabLoading || !projectId}
                     >
-                      <Plus size={13} />
-                      {items.length > 0 ? 'Re-sync from RAB' : 'Import from RAB'}
+                      {isRabLoading ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+                      {isRabLoading ? 'Memuat RAB...' : items.length > 0 ? 'Re-sync from RAB' : 'Import from RAB'}
                     </Button>
                   </div>
                 </TooltipTrigger>
@@ -461,9 +510,9 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
                   <TooltipContent className="bg-amber-50 text-amber-700 border-amber-200 text-xs max-w-[240px]">
                     <p className="font-bold flex items-center gap-1.5 mb-1 text-amber-900">
                       <Info size={14} />
-                      Unpublished Changes
+                      Ada Draft Belum Dipublish
                     </p>
-                    There are <strong>{draftCount}</strong> unpublished changes in RAB. Please <strong>Publish</strong> your RAB baseline before syncing to RAP.
+                    <strong>{draftCount}</strong> item RAB masih draft lokal dan tidak akan diimport. Hanya item yang sudah dipublish yang akan diimport ke RAP.
                   </TooltipContent>
                 )}
               </Tooltip>

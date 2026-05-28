@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Costing — Layout Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --orange: #f97316;
+    --orange-soft: #fff7ed;
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --font: 'IBM Plex Sans', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', 'Fira Code', monospace;
+  }
+  body {
+    font-family: var(--font);
+    background: #f0f2f5;
+    color: var(--slate-800);
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+  h1 { font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--slate-500); margin-bottom: 4px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--slate-900); margin-bottom: 8px; }
+  .page-subtitle { font-size: 13px; color: var(--slate-500); margin-bottom: 40px; line-height: 1.6; }
+  .page-subtitle strong { color: var(--orange); }
+
+  /* ── Layout ─────────────────────── */
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 48px; }
+  .panel { border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+  .panel-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    padding: 10px 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .panel-label.before { background: #fef2f2; color: #b91c1c; border-bottom: 1px solid #fecaca; }
+  .panel-label.after  { background: #f0fdf4; color: #15803d; border-bottom: 1px solid #bbf7d0; }
+  .panel-label .badge { font-size: 10px; background: currentColor; color: white; padding: 1px 6px; border-radius: 10px; opacity: .85; }
+
+  /* ── Simulated UI ─────────────────── */
+  .sim { background: white; }
+
+  /* BEFORE layers */
+  .layer {
+    border-bottom: 1px dashed #e2e8f0;
+    display: flex; align-items: center; padding: 0 16px;
+    font-size: 11px; color: var(--slate-600);
+    position: relative;
+  }
+  .layer-label {
+    position: absolute; right: 8px;
+    font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--slate-300); background: var(--slate-50); padding: 1px 6px; border-radius: 4px;
+  }
+  .layer.l1 { height: 36px; background: #f8fafc; }
+  .layer.l2 { height: 36px; background: #f1f5f9; }
+  .layer.l3 { height: 44px; background: #f8fafc; }
+  .layer.l4 { height: 56px; background: white; }
+  .layer.l5 { height: 44px; background: #f8fafc; }
+  .layer.l6 { height: 36px; background: #fffbeb; }
+  .layer.l7 { height: 96px; background: #f8fafc; flex-direction: column; align-items: stretch; padding: 10px 16px; gap: 6px; }
+  .content-area {
+    height: 220px; background: repeating-linear-gradient(0deg, #f8fafc 0px, #f8fafc 1px, white 1px, white 32px);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--slate-300); font-size: 13px; font-family: var(--mono);
+  }
+  .content-area.cramped { height: 100px; background: #fff8f0; color: #f97316; border: 1px dashed #f97316; }
+
+  /* Chips */
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; border: 1px solid currentColor; }
+  .chip.green { color: #15803d; background: #f0fdf4; }
+  .chip.amber { color: #92400e; background: #fffbeb; }
+  .chip.blue  { color: #1d4ed8; background: #eff6ff; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* Step bar */
+  .step-bar { display: flex; align-items: center; gap: 0; height: 100%; }
+  .step { display: flex; align-items: center; gap: 5px; padding: 0 12px; height: 100%; font-size: 11px; font-weight: 600; color: var(--slate-500); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
+  .step:hover { color: var(--slate-800); }
+  .step.active { color: var(--orange); border-bottom-color: var(--orange); }
+  .step.done { color: var(--emerald); }
+  .step .count { font-family: var(--mono); font-size: 9px; background: #f1f5f9; padding: 1px 5px; border-radius: 4px; }
+  .step.active .count { background: #fff7ed; color: var(--orange); }
+  .step.done .count { background: #f0fdf4; color: var(--emerald); }
+  .step-divider { color: var(--slate-300); font-size: 12px; }
+
+  /* AFTER layout */
+  .after-cmd {
+    height: 44px; background: var(--slate-900);
+    display: flex; align-items: center; padding: 0 16px; gap: 12px;
+    border-bottom: 1px solid #1e293b;
+  }
+  .after-cmd .proj-name { font-size: 13px; font-weight: 700; color: white; }
+  .after-cmd .proj-code { font-size: 11px; color: var(--slate-400); font-family: var(--mono); }
+  .after-cmd .sep { width: 1px; height: 20px; background: #334155; }
+  .after-cmd .spacer { flex: 1; }
+  .sync-badge { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--emerald); font-weight: 600; }
+  .sync-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .health-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 12px; background: rgba(249,115,22,.15); color: var(--orange); }
+
+  .after-tabs {
+    height: 40px; background: white; border-bottom: 1px solid var(--slate-200);
+    display: flex; align-items: stretch;
+  }
+  .after-tab { display: flex; align-items: center; gap: 5px; padding: 0 14px; font-size: 11px; font-weight: 600; color: var(--slate-500); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .after-tab:hover { color: var(--slate-800); background: var(--slate-50); }
+  .after-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+  .after-tab.done { color: var(--emerald); }
+  .after-tab .count { font-family: var(--mono); font-size: 9px; padding: 1px 5px; border-radius: 4px; background: #f1f5f9; }
+  .after-tab.active .count { background: #fff7ed; color: var(--orange); }
+  .after-tab.done .count { background: #f0fdf4; color: var(--emerald); }
+  .tab-sep { display: flex; align-items: center; color: var(--slate-300); font-size: 11px; padding: 0 2px; }
+  .after-tab-divider { width: 1px; background: var(--slate-100); margin: 8px 4px; }
+
+  .after-budget-strip {
+    height: 44px; background: var(--slate-50); border-bottom: 1px solid var(--slate-200);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  .budget-cell {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 14px; border-right: 1px solid var(--slate-200);
+    gap: 2px;
+  }
+  .budget-cell:last-child { border-right: none; }
+  .budget-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--slate-400); }
+  .budget-value { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--slate-800); }
+  .budget-bar-track { height: 2px; background: var(--slate-200); border-radius: 1px; overflow: hidden; margin-top: 2px; }
+  .budget-bar-fill { height: 100%; border-radius: 1px; }
+
+  .after-content { height: 306px; background: white; display: flex; flex-direction: column; }
+  .content-header { height: 40px; border-bottom: 1px solid var(--slate-200); display: flex; align-items: center; padding: 0 16px; gap: 12px; background: white; }
+  .content-header .title { font-size: 13px; font-weight: 600; color: var(--slate-800); }
+  .content-header .spacer { flex: 1; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; background: var(--orange); color: white; border-radius: 6px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; }
+  .btn-secondary { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; background: white; color: var(--slate-600); border-radius: 6px; font-size: 11px; font-weight: 500; border: 1px solid var(--slate-200); cursor: pointer; }
+  .content-body {
+    flex: 1; display: grid; grid-template-columns: 200px 1fr 240px;
+    border-top: none;
+  }
+  .wbs-tree { border-right: 1px solid var(--slate-200); padding: 8px 0; overflow: hidden; }
+  .wbs-tree-header { padding: 6px 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--slate-400); border-bottom: 1px solid var(--slate-100); display: flex; align-items: center; justify-content: space-between; }
+  .tree-item { padding: 5px 12px; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .tree-item:hover { background: var(--slate-50); }
+  .tree-item.active { background: #fff7ed; color: var(--orange); font-weight: 600; }
+  .tree-item .code { font-family: var(--mono); font-size: 9px; color: var(--slate-400); min-width: 28px; }
+  .tree-item.child { padding-left: 24px; }
+  .tree-item.child .code { color: var(--slate-300); }
+
+  .rab-table { padding: 0; overflow: hidden; background: var(--slate-50); }
+  .rab-row { display: grid; grid-template-columns: 1fr 80px 80px 80px 60px; padding: 5px 12px; font-size: 10px; gap: 4px; align-items: center; border-bottom: 1px solid var(--slate-100); background: white; }
+  .rab-row.header { background: var(--slate-50); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--slate-500); font-size: 9px; }
+  .rab-row:hover:not(.header) { background: var(--slate-50); }
+  .mono { font-family: var(--mono); }
+
+  .evm-panel { border-left: 1px solid var(--slate-200); display: flex; flex-direction: column; background: white; }
+  .evm-header { padding: 8px 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--slate-500); border-bottom: 1px solid var(--slate-100); display: flex; align-items: center; gap: 5px; }
+  .evm-metric { padding: 8px 12px; border-bottom: 1px solid var(--slate-100); display: flex; justify-content: space-between; align-items: center; }
+  .evm-metric-label { font-size: 10px; color: var(--slate-600); font-weight: 500; }
+  .evm-metric-sub { font-size: 9px; color: var(--slate-400); }
+  .evm-metric-value { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+  .evm-metric-value.good { color: var(--emerald); }
+  .evm-metric-value.warn { color: var(--amber); }
+  .evm-metric-value.bad  { color: var(--red); }
+  .evm-alerts { padding: 8px 10px; flex: 1; overflow: hidden; }
+  .alert-item { border-radius: 6px; padding: 6px 8px; margin-bottom: 5px; font-size: 9px; }
+  .alert-item.warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+  .alert-item.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+  .alert-title { font-weight: 700; margin-bottom: 2px; }
+  .alert-desc { opacity: .8; }
+
+  /* ── Annotation ─── */
+  .annotations { margin-bottom: 40px; }
+  .annotation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .annotation-card {
+    background: white; border-radius: 8px; padding: 16px;
+    border-left: 3px solid transparent;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .annotation-card.problem { border-left-color: #ef4444; }
+  .annotation-card.solution { border-left-color: #10b981; }
+  .annotation-card h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+  .annotation-card.problem h4 { color: #b91c1c; }
+  .annotation-card.solution h4 { color: #15803d; }
+  .annotation-card p { font-size: 12px; color: var(--slate-600); line-height: 1.6; }
+  .annotation-card .metric { font-family: var(--mono); font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .annotation-card.problem .metric { color: #b91c1c; }
+  .annotation-card.solution .metric { color: #15803d; }
+
+  /* ── Plan Table ─── */
+  .plan-section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.06); margin-bottom: 32px; }
+  .plan-title { font-size: 15px; font-weight: 700; color: var(--slate-900); margin-bottom: 4px; }
+  .plan-subtitle { font-size: 12px; color: var(--slate-500); margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--slate-500); border-bottom: 2px solid var(--slate-200); background: var(--slate-50); }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--slate-100); color: var(--slate-700); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--slate-50); }
+  .tag { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+  .tag.remove { background: #fef2f2; color: #b91c1c; }
+  .tag.collapse { background: #fff7ed; color: #9a3412; }
+  .tag.simplify { background: #eff6ff; color: #1d4ed8; }
+  .tag.new { background: #f0fdf4; color: #15803d; }
+  .tag.keep { background: #f8fafc; color: var(--slate-600); }
+  .effort { font-family: var(--mono); font-size: 10px; color: var(--slate-500); }
+</style>
+</head>
+<body>
+
+<h1>Frontend Design Proposal</h1>
+<div class="page-title">Project Costing — Layout Redesign</div>
+<p class="page-subtitle">
+  Analisis masalah tata letak saat ini dan proposal perbaikan.<br>
+  Masalah utama: <strong>~360px chrome sebelum konten terlihat</strong>, layer bertumpuk terlalu banyak.
+</p>
+
+<!-- ── DIAGNOSIS ── -->
+<div class="annotations">
+  <div class="annotation-grid">
+    <div class="annotation-card problem">
+      <div class="metric">7 layer</div>
+      <h4>Terlalu Banyak Chrome</h4>
+      <p>ContextBar → ModeSwitch → WorkflowStepper → WorkspaceHeader → SummaryStrip → AlertStrip → BudgetHealthPanel — semuanya sebelum konten utama.</p>
+    </div>
+    <div class="annotation-card problem">
+      <div class="metric">~360px</div>
+      <h4>Ruang Terbuang di Atas</h4>
+      <p>Embedded WBS/RAB/RAP pakai <code>calc(100vh - 340px)</code> — ini hack untuk mengkompensasi stack yang terlalu tinggi. Hack, bukan solusi.</p>
+    </div>
+    <div class="annotation-card problem">
+      <div class="metric">2×</div>
+      <h4>KPI Duplikat</h4>
+      <p>BudgetHealthPanel dan CostKPIStrip/SummaryStrip menampilkan data yang sama dari sudut pandang berbeda. Redundan dan membingungkan.</p>
+    </div>
+    <div class="annotation-card solution">
+      <div class="metric">2 layer</div>
+      <h4>Command Bar Terpadu</h4>
+      <p>Gabungkan project context + pipeline tabs dalam satu compact header. Ini model yang dipakai Figma, Linear, dan Bloomberg Terminal.</p>
+    </div>
+    <div class="annotation-card solution">
+      <div class="metric">~140px</div>
+      <h4>Chrome Berkurang 220px</h4>
+      <p>Command bar (44px) + tabs (40px) + budget strip (44px) = 128px total. Konten mendapat 220px lebih banyak ruang vertikal.</p>
+    </div>
+    <div class="annotation-card solution">
+      <div class="metric">1 strip</div>
+      <h4>Budget Strip Terpadu</h4>
+      <p>Satu baris 44px menggantikan BudgetHealthPanel + SummaryStrip. Menampilkan 4 angka kritis: Budget / RAB% / Actual% / CPI.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── COMPARISON ── -->
+<div class="comparison">
+
+  <!-- BEFORE -->
+  <div class="panel">
+    <div class="panel-label before">
+      ❌ Saat Ini
+      <span class="badge">Bermasalah</span>
+    </div>
+    <div class="sim">
+      <!-- L1: Context Bar -->
+      <div class="layer l1">
+        <span style="font-size:11px;font-weight:600;color:#334155">RSUD Labha Mura</span>
+        <span style="margin-left:6px;font-size:10px;color:#94a3b8">/ RSP-2026</span>
+        <span style="margin-left:auto;font-size:10px;color:#10b981">● Synced</span>
+        <div class="layer-label">L1 — ContextBar 36px</div>
+      </div>
+      <!-- L2: ModeSwitch -->
+      <div class="layer l2">
+        <div style="display:flex;gap:4px;padding:4px;background:white;border-radius:6px;border:1px solid #e2e8f0">
+          <div style="padding:3px 10px;border-radius:4px;font-size:10px;font-weight:600;background:#f97316;color:white">Dashboard</div>
+          <div style="padding:3px 10px;border-radius:4px;font-size:10px;color:#64748b">Pipeline</div>
+        </div>
+        <div class="layer-label">L2 — ModeSwitch 36px</div>
+      </div>
+      <!-- L3: WorkflowStepper -->
+      <div class="layer l3">
+        <div class="step-bar">
+          <div class="step done">📋 AHSP <span class="count">2,475</span></div>
+          <span class="step-divider">›</span>
+          <div class="step done">🌿 WBS <span class="count">13</span></div>
+          <span class="step-divider">›</span>
+          <div class="step active">💰 RAB <span class="count">8</span></div>
+          <span class="step-divider">›</span>
+          <div class="step">📈 RAP</div>
+          <span class="step-divider">›</span>
+          <div class="step">🔧 Resource</div>
+        </div>
+        <div class="layer-label">L3 — WorkflowStepper 44px</div>
+      </div>
+      <!-- L4: WorkspaceHeader -->
+      <div class="layer l4" style="flex-direction:column;align-items:flex-start;justify-content:center;gap:2px">
+        <span style="font-size:17px;font-weight:700;color:#0f172a">Costing — RAB</span>
+        <span style="font-size:12px;color:#64748b">Rencana anggaran biaya baseline</span>
+        <div class="layer-label">L4 — WorkspaceHeader 56px</div>
+      </div>
+      <!-- L5: SummaryStrip -->
+      <div class="layer l5">
+        <div style="display:flex;gap:6px">
+          <span class="chip green">AHSP 2,475</span>
+          <span class="chip green">WBS 13</span>
+          <span class="chip amber">RAB 8</span>
+          <span class="chip amber">RAP 0</span>
+        </div>
+        <div class="layer-label">L5 — SummaryStrip 44px</div>
+      </div>
+      <!-- L6: AlertStrip -->
+      <div class="layer l6">
+        <span style="font-size:10px;color:#92400e">⚠ RAP belum memiliki data — mulai dari RAP untuk melengkapi pipeline</span>
+        <div class="layer-label">L6 — AlertStrip 36px</div>
+      </div>
+      <!-- L7: BudgetHealthPanel -->
+      <div class="layer l7">
+        <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8">Budget Health</span>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px">
+            <div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase">Budget</div>
+            <div style="font-family:monospace;font-size:12px;font-weight:700;color:#0f172a">Rp 45.2B</div>
+          </div>
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px">
+            <div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase">RAB Total</div>
+            <div style="font-family:monospace;font-size:12px;font-weight:700;color:#1d4ed8">Rp 46.1B</div>
+          </div>
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px">
+            <div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase">Actual</div>
+            <div style="font-family:monospace;font-size:12px;font-weight:700;color:#f59e0b">Rp 12.3B</div>
+          </div>
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px">
+            <div style="font-size:9px;color:#94a3b8;font-weight:600;text-transform:uppercase">CPI</div>
+            <div style="font-family:monospace;font-size:12px;font-weight:700;color:#10b981">1.04</div>
+          </div>
+        </div>
+        <div class="layer-label">L7 — BudgetHealthPanel 96px</div>
+      </div>
+      <!-- Content area -->
+      <div class="content-area cramped">
+        konten hanya dapat ~100px sebelum scroll
+      </div>
+    </div>
+  </div>
+
+  <!-- AFTER -->
+  <div class="panel">
+    <div class="panel-label after">
+      ✅ Usulan Baru
+      <span class="badge" style="background:#15803d">+220px konten</span>
+    </div>
+    <div class="sim">
+      <!-- Command Bar: project + sync + health -->
+      <div class="after-cmd">
+        <div style="display:flex;flex-direction:column;gap:1px">
+          <span class="proj-name">RSUD Labha Mura</span>
+          <span class="proj-code">RSP-2026 · Active</span>
+        </div>
+        <div class="sep"></div>
+        <div class="spacer"></div>
+        <span class="health-badge">Pipeline 3/4</span>
+        <div class="sync-badge"><span class="dot"></span> Synced</div>
+      </div>
+
+      <!-- Unified Tab Bar: Dashboard + Pipeline steps -->
+      <div class="after-tabs">
+        <div class="after-tab" style="border-right:1px solid #e2e8f0">
+          📊 Dashboard
+        </div>
+        <div class="after-tab-divider"></div>
+        <div class="after-tab done">📋 AHSP <span class="count">2,475</span> ✓</div>
+        <div class="tab-sep">›</div>
+        <div class="after-tab done">🌿 WBS <span class="count">13</span> ✓</div>
+        <div class="tab-sep">›</div>
+        <div class="after-tab active">💰 RAB <span class="count">8</span> ⚠</div>
+        <div class="tab-sep">›</div>
+        <div class="after-tab">📈 RAP</div>
+        <div class="tab-sep">›</div>
+        <div class="after-tab">🔧 Resource</div>
+      </div>
+
+      <!-- Slim Budget Strip -->
+      <div class="after-budget-strip">
+        <div class="budget-cell">
+          <span class="budget-label">Project Budget</span>
+          <span class="budget-value">Rp 45.2B</span>
+          <div class="budget-bar-track"><div class="budget-bar-fill" style="width:100%;background:#e2e8f0"></div></div>
+        </div>
+        <div class="budget-cell">
+          <span class="budget-label">RAB / Budget</span>
+          <span class="budget-value" style="color:#3b82f6">102%</span>
+          <div class="budget-bar-track"><div class="budget-bar-fill" style="width:100%;background:#3b82f6"></div></div>
+        </div>
+        <div class="budget-cell">
+          <span class="budget-label">Actual Spent</span>
+          <span class="budget-value" style="color:#f59e0b">27%</span>
+          <div class="budget-bar-track"><div class="budget-bar-fill" style="width:27%;background:#f59e0b"></div></div>
+        </div>
+        <div class="budget-cell">
+          <span class="budget-label">CPI</span>
+          <span class="budget-value" style="color:#10b981">1.04 ↑</span>
+          <div class="budget-bar-track"><div class="budget-bar-fill" style="width:80%;background:#10b981"></div></div>
+        </div>
+      </div>
+
+      <!-- Content: fills remaining space -->
+      <div class="after-content">
+        <div class="content-header">
+          <span class="title">Rencana Anggaran Biaya</span>
+          <div class="spacer"></div>
+          <button class="btn-secondary">BoQ Import</button>
+          <button class="btn-primary">+ Add Item</button>
+        </div>
+        <div class="content-body">
+          <!-- WBS Tree -->
+          <div class="wbs-tree">
+            <div class="wbs-tree-header">
+              <span>WBS Structure</span>
+              <span style="font-family:monospace;font-size:9px;color:#94a3b8">13 nodes</span>
+            </div>
+            <div class="tree-item"><span class="code">1.</span> Pondasi</div>
+            <div class="tree-item child active"><span class="code">1.1</span> Bored Pile</div>
+            <div class="tree-item child"><span class="code">1.2</span> Pile Cap</div>
+            <div class="tree-item child"><span class="code">1.3</span> Sloof</div>
+            <div class="tree-item"><span class="code">2.</span> Struktur</div>
+            <div class="tree-item child"><span class="code">2.1</span> Kolom</div>
+            <div class="tree-item child"><span class="code">2.2</span> Balok</div>
+            <div class="tree-item child"><span class="code">2.3</span> Pelat Lantai</div>
+            <div class="tree-item"><span class="code">3.</span> Arsitektur</div>
+            <div class="tree-item child"><span class="code">3.1</span> Dinding</div>
+          </div>
+          <!-- RAB Table -->
+          <div class="rab-table">
+            <div class="rab-row header">
+              <span>Nama Item</span><span>Volume</span><span>Harga Satuan</span><span>Total</span><span>Status</span>
+            </div>
+            <div class="rab-row">
+              <span style="font-weight:600;font-size:10px">Bored Pile D600</span>
+              <span class="mono" style="color:#475569">120 m</span>
+              <span class="mono" style="color:#475569">850,000</span>
+              <span class="mono" style="font-weight:700;color:#1d4ed8">102,000,000</span>
+              <span style="color:#10b981;font-size:9px">✓</span>
+            </div>
+            <div class="rab-row">
+              <span style="font-weight:600;font-size:10px">Pile Cap 2x2</span>
+              <span class="mono" style="color:#475569">24 unit</span>
+              <span class="mono" style="color:#475569">4,200,000</span>
+              <span class="mono" style="font-weight:700;color:#1d4ed8">100,800,000</span>
+              <span style="color:#10b981;font-size:9px">✓</span>
+            </div>
+            <div class="rab-row">
+              <span style="font-weight:600;font-size:10px">Sloof 30/50</span>
+              <span class="mono" style="color:#475569">186 m</span>
+              <span class="mono" style="color:#475569">1,150,000</span>
+              <span class="mono" style="font-weight:700;color:#1d4ed8">213,900,000</span>
+              <span style="color:#f59e0b;font-size:9px">⚠</span>
+            </div>
+            <div class="rab-row" style="background:#fffbeb">
+              <span style="font-weight:600;font-size:10px;color:#92400e">Urug Pasir</span>
+              <span class="mono" style="color:#92400e">—</span>
+              <span class="mono" style="color:#92400e">—</span>
+              <span class="mono" style="font-weight:700;color:#92400e">Rp 0</span>
+              <span style="color:#f59e0b;font-size:9px">⚠</span>
+            </div>
+          </div>
+          <!-- EVM Guard -->
+          <div class="evm-panel">
+            <div class="evm-header">🛡 EVM Guard</div>
+            <div class="evm-metric">
+              <div><div class="evm-metric-label">CPI</div><div class="evm-metric-sub">Cost Performance</div></div>
+              <div class="evm-metric-value good">1.04</div>
+            </div>
+            <div class="evm-metric">
+              <div><div class="evm-metric-label">SPI</div><div class="evm-metric-sub">Schedule Performance</div></div>
+              <div class="evm-metric-value warn">0.87</div>
+            </div>
+            <div class="evm-metric">
+              <div><div class="evm-metric-label">EAC</div><div class="evm-metric-sub">Estimate at Completion</div></div>
+              <div class="evm-metric-value bad">Rp 47.1B</div>
+            </div>
+            <div class="evm-alerts">
+              <div class="alert-item warning">
+                <div class="alert-title">SPI 0.87 — Terlambat</div>
+                <div class="alert-desc">Progress lebih lambat dari rencana</div>
+              </div>
+              <div class="alert-item info">
+                <div class="alert-title">EAC melebihi Budget</div>
+                <div class="alert-desc">Estimasi akhir Rp 47.1B > Rp 45.2B</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── PLAN TABLE ── -->
+<div class="plan-section">
+  <div class="plan-title">Rencana Implementasi</div>
+  <div class="plan-subtitle">Perubahan konkret per komponen — diurutkan dari yang paling berdampak</div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>File</th>
+        <th>Perubahan</th>
+        <th>Aksi</th>
+        <th>Dampak</th>
+        <th>Effort</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><code>ProjectCosting.tsx</code></td>
+        <td>Ganti PageShell + ModeSwitch + WorkflowStepper + WorkspaceHeader dengan layout inline: CommandBar (slate-900) + UnifiedTabBar + BudgetStrip</td>
+        <td><span class="tag remove">Hapus PageShell</span> <span class="tag new">Custom layout</span></td>
+        <td>Saves ~220px vertical, unified tab navigation</td>
+        <td class="effort">2–3 jam</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><code>ProjectCosting.tsx</code></td>
+        <td>Hapus BudgetHealthPanel dari pipeline content, ganti dengan slim 4-cell budget strip di bawah tabs (tinggi 44px, border-bottom). Data dari useForecastStore snapshot.</td>
+        <td><span class="tag remove">Hapus BudgetHealthPanel</span> <span class="tag new">BudgetStrip inline</span></td>
+        <td>Eliminasi duplikasi KPI, +96px ruang konten</td>
+        <td class="effort">1 jam</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><code>ProjectCosting.tsx</code></td>
+        <td>Dashboard mode jadi tab pertama di UnifiedTabBar (bukan ModeSwitch terpisah). Tab chart icon + "Dashboard" label.</td>
+        <td><span class="tag collapse">Merge ModeSwitch → Tab</span></td>
+        <td>Satu paradigma navigasi, tidak ada mode toggle</td>
+        <td class="effort">30 menit</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><code>WBS.tsx</code> / <code>RAB.tsx</code> / <code>RAP.tsx</code></td>
+        <td>Update <code>calc(100vh - 340px)</code> → <code>calc(100vh - 128px)</code> karena chrome berkurang 220px. Juga update minHeight.</td>
+        <td><span class="tag simplify">Update height calc</span></td>
+        <td>Konten mengisi layar penuh</td>
+        <td class="effort">15 menit</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><code>AlertStrip</code></td>
+        <td>Tampilkan warning inline di tab label (badge merah/kuning di count chip), bukan baris terpisah. Misal: "RAB 8 ⚠" bukan strip kuning di atas.</td>
+        <td><span class="tag collapse">Inline ke tab badge</span></td>
+        <td>Eliminasi 1 layer, warning lebih kontekstual</td>
+        <td class="effort">30 menit</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><code>GlobalContextBar</code></td>
+        <td>Kompres dari 36px → height 44px tapi dengan dark background (slate-900) sehingga terasa lebih premium, bukan abu-abu generic.</td>
+        <td><span class="tag simplify">Redesign visual</span></td>
+        <td>Terasa seperti professional tool, bukan generic SaaS</td>
+        <td class="effort">30 menit</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ── SUMMARY ── -->
+<div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:12px;padding:24px 28px;color:white;margin-bottom:24px">
+  <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-bottom:8px">Kesimpulan</div>
+  <div style="font-size:16px;font-weight:700;margin-bottom:6px">Satu komponen diganti → seluruh workspace lebih lapang</div>
+  <p style="font-size:13px;color:#94a3b8;line-height:1.7">
+    Semua perubahan ada di <code style="background:#334155;padding:2px 6px;border-radius:4px;font-size:12px">ProjectCosting.tsx</code>.
+    Sub-pages (WBS, RAB, RAP) hanya perlu update <code style="background:#334155;padding:2px 6px;border-radius:4px;font-size:12px">calc(100vh - ...)</code>.
+    Tidak ada refactor besar, tidak ada breaking changes pada store atau komponen child.
+  </p>
+  <div style="display:flex;gap:16px;margin-top:16px">
+    <div style="background:#334155;border-radius:8px;padding:12px 16px;flex:1">
+      <div style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:4px">Chrome sebelum</div>
+      <div style="font-family:monospace;font-size:20px;font-weight:700;color:#ef4444">~360px</div>
+    </div>
+    <div style="background:#334155;border-radius:8px;padding:12px 16px;flex:1">
+      <div style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:4px">Chrome sesudah</div>
+      <div style="font-family:monospace;font-size:20px;font-weight:700;color:#10b981">~128px</div>
+    </div>
+    <div style="background:#334155;border-radius:8px;padding:12px 16px;flex:1">
+      <div style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:4px">Ruang konten +</div>
+      <div style="font-family:monospace;font-size:20px;font-weight:700;color:#f97316">+232px</div>
+    </div>
+    <div style="background:#334155;border-radius:8px;padding:12px 16px;flex:1">
+      <div style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-bottom:4px">Total effort</div>
+      <div style="font-family:monospace;font-size:20px;font-weight:700;color:#94a3b8">~5 jam</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -30,27 +30,28 @@ export interface CostDashboardSnapshot {
 export const costDashboardService = {
   async getDashboardSnapshot(projectId: string): Promise<CostDashboardSnapshot> {
     const client = assertSupabase()
-    const [rabResult, rapResult, metricsResult] = await Promise.all([
+    const [rabResult, rapResult] = await Promise.all([
       client.from('rab_items')
         .select('final_total, cost_material, cost_labor, cost_equipment, cost_subcon, is_overhead')
         .eq('project_id', projectId),
       client.from('rap_items')
         .select('total_budget, actual_cost, committed_cost')
         .eq('project_id', projectId),
-      client.from('project_daily_metrics')
-        .select('pv, ev, ac, cpi, spi')
-        .eq('project_id', projectId)
-        .order('snapshot_date', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
     ])
     if (rabResult.error) throw rabResult.error
     if (rapResult.error) throw rapResult.error
-    if (metricsResult.error) throw metricsResult.error
+
+    // project_daily_metrics may not exist or may lack RLS — treat as optional
+    const metricsResult = await client.from('project_daily_metrics')
+      .select('pv, ev, ac, cpi, spi')
+      .eq('project_id', projectId)
+      .order('snapshot_date', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
     const rabItems = (rabResult.data ?? []) as RabRow[]
     const rapItems = (rapResult.data ?? []) as RapRow[]
-    const m = metricsResult.data as MetricsRow | null
+    const m = (!metricsResult.error && metricsResult.data) ? metricsResult.data as MetricsRow : null
 
     const rabTotal = rabItems.reduce((s, r) => s + Number(r.final_total || 0), 0)
     const breakdown: CostTypeBreakdown = {

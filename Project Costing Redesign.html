@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Project Costing Redesign — MLPHoma</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter','system-ui','sans-serif'], mono: ['JetBrains Mono','Fira Code','monospace'] }
+    }
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body,#root{height:100%;margin:0;padding:0;overflow:hidden}
+  body{font-family:'Inter',sans-serif;background:#0f172a}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.4);border-radius:99px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(100,116,139,.7)}
+  input[type=number]::-webkit-inner-spin-button{opacity:.5}
+
+  /* Tweaks panel */
+  .tweaks-panel{position:fixed;bottom:20px;right:20px;z-index:9999;background:white;border:1px solid #e2e8f0;border-radius:16px;padding:16px;width:260px;box-shadow:0 8px 32px rgba(0,0,0,.15);font-family:'Inter',sans-serif;font-size:12px}
+  .tweaks-header{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .variant-btn{width:100%;text-align:left;padding:8px 12px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:6px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:10px;background:white}
+  .variant-btn:hover{border-color:#93c5fd;background:#eff6ff}
+  .variant-btn.active{border-color:#3b82f6;background:#eff6ff;box-shadow:0 0 0 2px #bfdbfe}
+  .variant-num{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+  .vn-a{background:#dbeafe;color:#1d4ed8}
+  .vn-b{background:#dcfce7;color:#15803d}
+  .vn-c{background:#fef3c7;color:#b45309}
+  .vn-d{background:#fae8ff;color:#9333ea}
+  .variant-info{flex:1}
+  .variant-name{font-weight:700;font-size:12px;color:#1e293b}
+  .variant-desc{font-size:10px;color:#94a3b8;margin-top:1px}
+  .tweaks-close{background:none;border:none;cursor:pointer;color:#94a3b8;font-size:16px;padding:0;line-height:1}
+  .tweaks-toggle{position:fixed;bottom:20px;right:20px;z-index:9998;width:44px;height:44px;background:#1e293b;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.3);color:white;font-size:16px;transition:all .15s}
+  .tweaks-toggle:hover{background:#334155;transform:scale(1.05)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="costing-shared.jsx"></script>
+<script type="text/babel" src="costing-variations.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React
+
+const VARIANTS = [
+  { id:'A', name:'Unified Rail', desc:'Left sidebar + persistent context', numCls:'vn-a' },
+  { id:'B', name:'Dense Worksheet', desc:'Full-width Excel-like density', numCls:'vn-b' },
+  { id:'C', name:'Multi-Pane', desc:'3-pane comparison: WBS·RAB·RAP', numCls:'vn-c' },
+  { id:'D', name:'Command Center', desc:'Pipeline flow + EVM right panel', numCls:'vn-d' },
+]
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "variant": "D",
+  "tab": "AHSP"
+}/*EDITMODE-END*/
+
+function App() {
+  const [variant, setVariant] = useState(TWEAK_DEFAULTS.variant || 'A')
+  const [tab, setTab]         = useState(TWEAK_DEFAULTS.tab || 'AHSP')
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [editMode, setEditMode]   = useState(false)
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode')   setEditMode(true)
+      if (e.data?.type === '__deactivate_edit_mode') setEditMode(false)
+    }
+    window.addEventListener('message', handler)
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*')
+    return () => window.removeEventListener('message', handler)
+  }, [])
+
+  useEffect(() => {
+    if (editMode) setPanelOpen(true)
+    else setPanelOpen(false)
+  }, [editMode])
+
+  const switchVariant = (v) => {
+    setVariant(v)
+    setTab('AHSP')
+    window.parent.postMessage({ type:'__edit_mode_set_keys', edits:{ variant:v, tab:'AHSP' }}, '*')
+  }
+
+  const V = { A: VariationA, B: VariationB, C: VariationC, D: VariationD }[variant]
+
+  return (
+    <div style={{ height:'100vh', position:'relative', overflow:'hidden' }}>
+      {/* Main content */}
+      <V tab={tab} setTab={setTab} />
+
+      {/* Variant badge — always visible */}
+      {!panelOpen && (
+        <div style={{position:'fixed',bottom:20,right:20,zIndex:9997,display:'flex',gap:8}}>
+          {VARIANTS.map(v => (
+            <button key={v.id} onClick={() => switchVariant(v.id)}
+              style={{
+                width:36,height:36,borderRadius:10,border:'2px solid',cursor:'pointer',fontWeight:800,fontSize:13,
+                background: variant===v.id ? '#1e40af' : 'white',
+                color: variant===v.id ? 'white' : '#64748b',
+                borderColor: variant===v.id ? '#3b82f6' : '#e2e8f0',
+                boxShadow: variant===v.id ? '0 0 0 3px rgba(59,130,246,.3)' : '0 2px 8px rgba(0,0,0,.1)',
+                transition:'all .15s'
+              }}>
+              {v.id}
+            </button>
+          ))}
+          <button onClick={() => setPanelOpen(true)}
+            style={{width:36,height:36,borderRadius:10,background:'#1e293b',border:'none',cursor:'pointer',color:'white',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 8px rgba(0,0,0,.2)',fontSize:16}}>
+            ⚙
+          </button>
+        </div>
+      )}
+
+      {/* Tweaks Panel */}
+      {panelOpen && (
+        <div className="tweaks-panel">
+          <div className="tweaks-header">
+            <span>Tweaks — Variasi Layout</span>
+            <button className="tweaks-close" onClick={() => { setPanelOpen(false); if(editMode){ window.parent.postMessage({type:'__edit_mode_dismissed'},'*') } }}>✕</button>
+          </div>
+
+          {VARIANTS.map(v => (
+            <button key={v.id} className={`variant-btn ${variant===v.id?'active':''}`} onClick={() => switchVariant(v.id)}>
+              <div className={`variant-num ${v.numCls}`}>{v.id}</div>
+              <div className="variant-info">
+                <div className="variant-name">{v.name}</div>
+                <div className="variant-desc">{v.desc}</div>
+              </div>
+              {variant===v.id && <span style={{color:'#3b82f6',fontSize:14}}>✓</span>}
+            </button>
+          ))}
+
+          <div style={{borderTop:'1px solid #f1f5f9',marginTop:10,paddingTop:10}}>
+            <div className="tweaks-header" style={{marginBottom:8}}>Tab Aktif</div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+              {['AHSP','WBS','RAB','RAP','Resource'].map(t => (
+                <button key={t} onClick={() => { setTab(t); window.parent.postMessage({type:'__edit_mode_set_keys',edits:{tab:t}},'*') }}
+                  style={{padding:'4px 10px',borderRadius:6,border:'1px solid',fontSize:11,fontWeight:700,cursor:'pointer',
+                    background:tab===t?'#3b82f6':'white', color:tab===t?'white':'#64748b',
+                    borderColor:tab===t?'#3b82f6':'#e2e8f0', transition:'all .12s'}}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{borderTop:'1px solid #f1f5f9',marginTop:10,paddingTop:10,fontSize:11,color:'#94a3b8',lineHeight:1.5}}>
+            <div style={{fontWeight:700,color:'#64748b',marginBottom:4}}>Keterangan Variasi</div>
+            <div style={{color:'#64748b'}}>{
+              variant==='A' ? '🔵 Sidebar kiri persisten menampilkan pipeline steps, budget gauge & mini WBS tree. Cocok untuk navigasi cepat antar tahap.' :
+              variant==='B' ? '🟢 Full-width worksheet tanpa sidebar. Pipeline stepper tipis di atas, KPI collapsible. Maksimal ruang tabel.' :
+              variant==='C' ? '🟡 3 panel: WBS di kiri, RAB di tengah, RAP+EVM di kanan. Pilih WBS node untuk filter otomatis semua panel.' :
+              '🟣 Pipeline sebagai flow di atas dengan statistik tiap tahap. Panel kanan berisi EVM metrics, alerts, dan S-curve.'
+            }</div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+</script>
+</body>
+</html>

@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react'
 import { useAHSPStore } from '@/store/ahspStore'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Calculator, Filter } from 'lucide-react'
 import { formatIDR } from '@/lib/utils'
 
-export function AHSPStatsBar() {
+interface AHSPStatsBarProps {
+  onRefresh?: () => void
+}
+
+export function AHSPStatsBar({ onRefresh: _onRefresh }: AHSPStatsBarProps) {
     const { ahspItems, resources, totalAhspCount, totalResourceCount } = useAHSPStore()
 
     const summary = useMemo(() => {
@@ -19,56 +21,45 @@ export function AHSPStatsBar() {
             averagePrice: totalAHSP > 0
                 ? ahspItems.reduce((acc, item) => acc + (item.finalPrice || 0), 0) / totalAHSP
                 : 0,
-            categories: new Set(ahspItems.map(item => item.category)).size
+            categories: new Set(ahspItems.map(item => item.category)).size,
         }
     }, [ahspItems, resources, totalAhspCount, totalResourceCount])
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total AHSP Items</CardTitle>
-                    <Calculator className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{summary.totalAHSPItems}</div>
-                    <p className="text-xs text-muted-foreground">
-                        {summary.activeItems} active
-                    </p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Resources</CardTitle>
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{summary.totalResources}</div>
-                    <p className="text-xs text-muted-foreground">
-                        {summary.activeResources} active
-                    </p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Average Price</CardTitle>
-                    <Calculator className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{formatIDR(summary.averagePrice)}</div>
-                    <p className="text-xs text-muted-foreground">Per AHSP item</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Categories</CardTitle>
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{summary.categories}</div>
-                    <p className="text-xs text-muted-foreground">Different categories</p>
-                </CardContent>
-            </Card>
+        <div className="grid grid-cols-2 md:grid-cols-4 rounded-lg border border-slate-200 overflow-hidden bg-white">
+            <div className="px-4 py-2.5 border-r border-slate-200">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+                    Total AHSP
+                </p>
+                <div className="flex items-baseline gap-2">
+                    <span className="text-base font-bold font-mono text-slate-800">{summary.totalAHSPItems}</span>
+                    <span className="text-xs font-mono text-emerald-500">{summary.activeItems} aktif</span>
+                </div>
+            </div>
+
+            <div className="px-4 py-2.5 border-r border-slate-200">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+                    Resources DKH
+                </p>
+                <div className="flex items-baseline gap-2">
+                    <span className="text-base font-bold font-mono text-slate-800">{summary.totalResources}</span>
+                    <span className="text-xs font-mono text-emerald-500">{summary.activeResources} aktif</span>
+                </div>
+            </div>
+
+            <div className="px-4 py-2.5 border-r border-slate-200">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+                    Harga Rata-rata
+                </p>
+                <p className="text-base font-bold font-mono text-slate-800">{formatIDR(summary.averagePrice)}</p>
+            </div>
+
+            <div className="px-4 py-2.5">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+                    Kategori
+                </p>
+                <p className="text-base font-bold font-mono text-slate-800">{summary.categories}</p>
+            </div>
         </div>
     )
 }

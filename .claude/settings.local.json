@@ -1,11 +1,22 @@
 {
   "permissions": {
     "allow": [
+      "Bash(*)",
       "Bash(node_modules/.bin/tsc --noEmit)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Skill(superpowers:systematic-debugging)",
-      "Skill(superpowers:systematic-debugging:*)"
+      "Skill(superpowers:systematic-debugging:*)",
+      "Bash(npx vitest *)",
+      "Skill(code-review:code-review)",
+      "Bash(gh auth *)",
+      "Bash(git config *)",
+      "Bash(export GH_TOKEN=\"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\")",
+      "Bash(gh api *)",
+      "Read(//tmp/**)",
+      "Bash(python -c ' *)",
+      "Bash(start \"\" \"d:\\\\2. NATA_PROJECTAPP\\\\PM_LABHA\\\\MLPHoma\\\\costing-layout-proposal.html\")",
+      "Bash(npx tsc *)"
     ]
   }
 }

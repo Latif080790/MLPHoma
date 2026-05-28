@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440,initial-scale=1">
+<title>Other Screens Redesign — MLPHoma NATALABA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body,#root{height:100%;overflow:hidden}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:#070C18;color:#F1F5F9;-webkit-font-smoothing:antialiased;font-size:14px}
+  :root{--sans:'DM Sans',system-ui,sans-serif;--mono:'DM Mono','JetBrains Mono',monospace}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(100,116,139,.35);border-radius:99px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(100,116,139,.6)}
+  input,select,button{font-family:var(--sans)}
+  @keyframes slideIn{from{transform:translateX(16px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadeUp{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="other-screens-base.jsx"></script>
+<script type="text/babel" src="other-screens-views-1.jsx"></script>
+<script type="text/babel" src="other-screens-views-2.jsx"></script>
+<script type="text/babel" src="other-screens-views-3.jsx"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const SCREEN_META = {
+  gantt:     { label:'Schedule & Gantt',     icon:'calendar-clock',  sub:'Bandung Tower · 9 tasks · EVM S-Curve' },
+  finance:   { label:'Finance AP/AR',         icon:'wallet',          sub:'Bandung Tower · 8 invoices · Cash Flow' },
+  supply:    { label:'Supply Chain',           icon:'truck',           sub:'Bandung Tower · 6 PO aktif · Tracking' },
+  field:     { label:'Field Tasks',            icon:'hard-hat',        sub:'Bandung Tower · 8 task harian · Daily Log' },
+  portfolio: { label:'Portfolio KPIs',         icon:'pie-chart',       sub:'4 Proyek Aktif · CPI/SPI/PHI' },
+  change:    { label:'Change Management',      icon:'file-diff',       sub:'5 Change Orders · Impact Analysis' },
+  handover:  { label:'Handover Wizard',        icon:'clipboard-check', sub:'Bandung Tower · Serah Terima 60%' },
+  tkdn:      { label:'TKDN Compliance',        icon:'flag',            sub:'Local Content · Target 40%' },
+  report:    { label:'Report & Export',        icon:'file-bar-chart',  sub:'8 jenis laporan · PDF & Excel' },
+};
+
+const SCREEN_COMPONENTS = {
+  gantt:     'ScheduleGantt',
+  finance:   'Finance',
+  supply:    'SupplyChain',
+  field:     'FieldTasks',
+  portfolio: 'PortfolioKPIs',
+  change:    'ChangeManagement',
+  handover:  'HandoverWizard',
+  tkdn:      'TKDNCompliance',
+  report:    'ReportExport',
+};
+
+function WelcomeScreen({onPick}) {
+  const groups = [
+    { label:'Cost & Schedule', items:['gantt'] },
+    { label:'Operations',      items:['finance','supply','field','change','handover','tkdn'] },
+    { label:'Portfolio',       items:['portfolio','report'] },
+  ];
+  return (
+    <div style={{flex:1,overflow:'auto',padding:'48px 48px 48px',display:'flex',flexDirection:'column',gap:32,animation:'fadeUp .3s ease'}}>
+      <div>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(249,115,22,.7)',marginBottom:12}}>NATALABA · REDESIGN</div>
+        <h1 style={{fontSize:36,fontWeight:700,color:'#F1F5F9',letterSpacing:'-.025em',lineHeight:1.15,marginBottom:10}}>
+          Module Redesign<br/>
+          <span style={{color:'rgba(249,115,22,.9)'}}>— Screen Suite</span>
+        </h1>
+        <p style={{fontSize:14,color:'#475569',maxWidth:520,lineHeight:1.7}}>
+          Redesign 8 modul Enterprise Construction Platform mengikuti design language yang sudah ditetapkan: dark navy + orange accent, dense-data layout, glassmorphism chrome.
+        </p>
+      </div>
+
+      {groups.map(grp=>(
+        <div key={grp.label}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'#334155',marginBottom:14}}>{grp.label}</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:12}}>
+            {grp.items.map(id=>{
+              const m=SCREEN_META[id];
+              return (
+                <div key={id} onClick={()=>onPick(id)}
+                  style={{background:'#111B2E',border:'1px solid rgba(255,255,255,.08)',borderRadius:14,padding:'18px 20px',cursor:'pointer',transition:'all .2s',display:'flex',gap:14,alignItems:'flex-start'}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor='rgba(249,115,22,.35)';e.currentTarget.style.background='rgba(249,115,22,.05)';}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,.08)';e.currentTarget.style.background='#111B2E';}}>
+                  <div style={{width:40,height:40,borderRadius:10,background:'rgba(249,115,22,.12)',border:'1px solid rgba(249,115,22,.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                    <LI name={m.icon} size={18} color='#FB923C'/>
+                  </div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontSize:14,fontWeight:600,color:'#F1F5F9',marginBottom:4}}>{m.label}</div>
+                    <div style={{fontSize:11,color:'#475569',lineHeight:1.5}}>{m.sub}</div>
+                  </div>
+                  <LI name="chevron-right" size={14} color='#334155'/>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [screen,setScreen] = useState(null);
+  const { showToast } = useToast();
+
+  const ScreenComp = screen ? window[SCREEN_COMPONENTS[screen]] : null;
+
+  return (
+    <div style={{display:'flex',height:'100%',overflow:'hidden'}}>
+      <Sidebar active={screen||''} onPick={setScreen}/>
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minWidth:0}}>
+        {!screen && <WelcomeScreen onPick={setScreen}/>}
+        {screen && ScreenComp && (
+          <div key={screen} style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',animation:'fadeUp .2s ease'}}>
+            <ScreenComp/>
+          </div>
+        )}
+        {screen && !ScreenComp && (
+          <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
+            <LI name="loader" size={32} color='#334155'/>
+            <div style={{color:'#475569',fontSize:13}}>Memuat modul…</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Root() {
+  return (
+    <ToastProvider>
+      <App/>
+    </ToastProvider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Root/>);
+</script>
+</body>
+</html>

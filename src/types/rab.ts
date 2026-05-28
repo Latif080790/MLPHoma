@@ -50,6 +50,10 @@ export interface RABItem {
   /** AHSP Item link (Task 42: added for AHSP→RAB→Resource Plan chain) */
   ahspItemId?: string
   ahsp_item_id?: string
+  /** Raw AHSP foreign key UUID from rab_items.ahsp_id column */
+  ahsp_id?: string
+  /** Raw AHSP code from rab_items.ahsp_code column */
+  ahsp_code?: string
   /**
    * markup_source — Anti-Double-Counting discriminant.
    *   'project_level' (default): unit_price is pure base cost; overhead/profit applied at RAB aggregate level.

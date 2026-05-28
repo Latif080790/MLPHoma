@@ -133,9 +133,9 @@ async function loadPersistedAsync(): Promise<{ itemsByProject: Record<string, RA
 /**
  * Async: persist current state to IndexedDB (fire-and-forget)
  */
-async function persistToIDB(state: { itemsByProject: Record<string, RABItem[]>; audit: AuditEntry[] }) {
+async function persistToIDB(state: { itemsByProject: Record<string, RABItem[]>; audit: AuditEntry[]; hasUnsavedChanges: Record<string, boolean> }) {
   try {
-    await idbSet(STORAGE_KEY, { itemsByProject: state.itemsByProject, audit: state.audit })
+    await idbSet(STORAGE_KEY, { itemsByProject: state.itemsByProject, audit: state.audit, hasUnsavedChanges: state.hasUnsavedChanges })
   } catch (e) {
     console.warn('Failed to persist rabStore to IndexedDB', e)
   }
@@ -161,7 +161,11 @@ export const useRabStore = create<RabState>((set, get) => {
   // Kick off async IndexedDB hydration
   loadPersistedAsync().then((data) => {
     if (data) {
-      set({ itemsByProject: data.itemsByProject, audit: data.audit || [] })
+      set({
+        itemsByProject: data.itemsByProject,
+        audit: data.audit || [],
+        hasUnsavedChanges: (data as any).hasUnsavedChanges || {},
+      })
     }
   })
 
@@ -403,15 +407,17 @@ export const useRabStore = create<RabState>((set, get) => {
     },
 
     persist: () => {
-      // Fire-and-forget async persist to IndexedDB
-      void persistToIDB({ itemsByProject: get().itemsByProject, audit: get().audit })
+      void persistToIDB({ itemsByProject: get().itemsByProject, audit: get().audit, hasUnsavedChanges: get().hasUnsavedChanges })
     },
 
     loadFromStorage: () => {
-      // Async load from IndexedDB
       void loadPersistedAsync().then((p) => {
         if (p) {
-          set({ itemsByProject: p.itemsByProject, audit: p.audit || [] })
+          set({
+            itemsByProject: p.itemsByProject,
+            audit: p.audit || [],
+            hasUnsavedChanges: (p as any).hasUnsavedChanges || {},
+          })
         }
       })
     },
@@ -454,12 +460,22 @@ export const useRabStore = create<RabState>((set, get) => {
         const localItemMap = new Map(localItems.map(i => [i.id, i]))
 
         const mergedSupabase = supabaseItems.map(si => {
-          if (!hasUnsaved) return si
           const local = localItemMap.get(si.id)
+          if (hasUnsaved && local) {
+            // User has explicitly unsaved changes: local always wins.
+            // Always take snapshotPrice from Supabase so lock state stays in sync.
+            return { ...local, snapshotPrice: si.snapshotPrice, snapshot_price: si.snapshot_price }
+          }
           if (!local) return si
-          // User has unsaved edits — prefer local for all fields.
-          // Always take snapshotPrice from Supabase so lock state stays in sync.
-          return { ...local, snapshotPrice: si.snapshotPrice, snapshot_price: si.snapshot_price }
+          // No unsaved flag (e.g., after reload). Still prefer local non-zero values
+          // over DB zeros — handles the case where items were locked before publishing.
+          return {
+            ...si,
+            snapshotPrice: si.snapshotPrice,
+            snapshot_price: si.snapshot_price,
+            volume: si.volume || local.volume,
+            unit_price: si.unit_price || local.unit_price,
+          }
         })
         const localOnlyItems = localItems.filter(i => !supabaseIdSet.has(i.id))
         const merged = [...mergedSupabase, ...localOnlyItems]
@@ -555,13 +571,41 @@ export const useRabStore = create<RabState>((set, get) => {
       return get().hasUnsavedChanges[projectId] || false
     },
     takeSnapshot: async (projectId: string) => {
+      const { assertSupabase } = await import('../lib/supabaseClient')
+      const client = assertSupabase()
+
+      // Flush local state to Supabase BEFORE snapshotting.
+      // Volumes entered after the last publishDrafts live only in IDB, not in Supabase.
+      // Writing them here ensures Supabase becomes the permanent ground truth so volumes
+      // survive IDB clearing and the RAP import reads correct values.
+      const preItems = get().itemsByProject[projectId] || []
+      if (preItems.length > 0) {
+        const rows = preItems.map(item => ({
+          id: item.id,
+          project_id: projectId,
+          ahsp_code: item.item_code || item.code || null,
+          name: item.name || item.item_name || null,
+          unit: item.unit || null,
+          volume: item.volume ?? 0,
+          unit_price: item.unit_price ?? 0,
+          cost_material: item.cost_material ?? 0,
+          cost_labor: item.cost_labor ?? 0,
+          cost_equipment: item.cost_equipment ?? 0,
+          cost_subcon: item.cost_subcon ?? 0,
+          markup_percentage: item.markup_percentage ?? 0,
+          weight_percentage: item.weight_percentage ?? 0,
+          final_total: item.final_total ?? item.finalTotal ?? 0,
+          updated_at: new Date().toISOString(),
+        }))
+        const { error: flushErr } = await client.from('rab_items').upsert(rows, { onConflict: 'id' })
+        if (flushErr) console.warn('[RAB] Pre-snapshot flush (non-critical):', flushErr.message)
+      }
+
       const { ahspSnapshotService } = await import('../services/ahspSnapshotService')
       const result = await ahspSnapshotService.takeSnapshot(projectId)
       if (result.itemsSnapshotted > 0) {
         // Re-fetch items via RPC to get updated snapshot_price in local state
         try {
-          const { assertSupabase } = await import('../lib/supabaseClient')
-          const client = assertSupabase()
           const { data } = await client.rpc('rpc_get_rab_items', {
             p_project_id: projectId,
           })
@@ -570,12 +614,30 @@ export const useRabStore = create<RabState>((set, get) => {
             const existingMap = new Map(currentItems.map(i => [i.id, i]))
             const refreshed: import('../types/rab').RABItem[] = data
               .filter((row: Record<string, unknown>) => typeof row.id === 'string')
-              .map((row: Record<string, unknown>) => ({
-                ...existingMap.get(row.id as string),
-                ...(row as Partial<import('../types/rab').RABItem>),
-                id: row.id as string,
-                snapshotPrice: row.snapshot_price as number | undefined,
-              } as import('../types/rab').RABItem))
+              .map((row: Record<string, unknown>) => {
+                const local = existingMap.get(row.id as string)
+                const dbRow = row as Partial<import('../types/rab').RABItem>
+                return {
+                  // DB provides snapshot-related fields (snapshot_price, base_price, updated_at)
+                  ...dbRow,
+                  id: row.id as string,
+                  snapshotPrice: row.snapshot_price as number | undefined,
+                  // Always preserve local user-editable values — DB may have stale/zero
+                  // values if items were not published before locking
+                  ...(local ? {
+                    volume: local.volume,
+                    unit_price: local.unit_price,
+                    name: local.name,
+                    unit: local.unit,
+                    item_code: local.item_code,
+                    notes: local.notes,
+                    wbsId: local.wbsId,
+                    wbs_id: local.wbs_id,
+                    is_overhead: local.is_overhead,
+                    category: local.category,
+                  } : {}),
+                } as import('../types/rab').RABItem
+              })
             set((s) => ({
               itemsByProject: { ...s.itemsByProject, [projectId]: refreshed }
             }))
@@ -608,12 +670,28 @@ export const useRabStore = create<RabState>((set, get) => {
             const existingMap = new Map(currentItems.map(i => [i.id, i]))
             const refreshed: import('../types/rab').RABItem[] = items
               .filter((row: Record<string, unknown>) => typeof row.id === 'string')
-              .map((row: Record<string, unknown>) => ({
-                ...existingMap.get(row.id as string),
-                ...(row as Partial<import('../types/rab').RABItem>),
-                id: row.id as string,
-                snapshotPrice: undefined,
-              } as import('../types/rab').RABItem))
+              .map((row: Record<string, unknown>) => {
+                const local = existingMap.get(row.id as string)
+                const dbRow = row as Partial<import('../types/rab').RABItem>
+                return {
+                  ...dbRow,
+                  id: row.id as string,
+                  snapshotPrice: undefined,
+                  snapshot_price: undefined,
+                  ...(local ? {
+                    volume: local.volume,
+                    unit_price: local.unit_price,
+                    name: local.name,
+                    unit: local.unit,
+                    item_code: local.item_code,
+                    notes: local.notes,
+                    wbsId: local.wbsId,
+                    wbs_id: local.wbs_id,
+                    is_overhead: local.is_overhead,
+                    category: local.category,
+                  } : {}),
+                } as import('../types/rab').RABItem
+              })
             set((s) => ({
               itemsByProject: { ...s.itemsByProject, [projectId]: refreshed }
             }))

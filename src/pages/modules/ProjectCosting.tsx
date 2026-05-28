@@ -66,6 +66,7 @@ export default function ProjectCosting() {
   )
 
   const ahspCount = useAHSPStore(s => s.ahspItems.length)
+  const fetchAHSP = useAHSPStore(s => s.fetchAHSPItems)
   const wbsByProj = useWBSStore(s => s.itemsByProject)
   const rabByProj = useRabStore(s => s.itemsByProject)
   const rapItems  = useRapStore(s => s.items)
@@ -73,6 +74,12 @@ export default function ProjectCosting() {
   const { fetchItems: fetchWbs } = useWBSStore()
   const { fetchItems: fetchRab } = useRabStore()
   const { fetchItems: fetchRap } = useRapStore()
+
+  useEffect(() => {
+    // Lazy-load AHSP catalog once if not yet in store (persist middleware rehydrates
+    // from IDB, but on a clean session nothing exists until AHSP page is visited)
+    if (ahspCount === 0) fetchAHSP().catch(() => {})
+  }, [ahspCount, fetchAHSP])
 
   useEffect(() => {
     if (activeProjectId) {

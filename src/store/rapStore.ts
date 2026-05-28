@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { rapService, RapItem } from '../services/rapService'
-import { syncRAPItem } from '../lib/supabaseSyncService'
 import { toast } from 'sonner'
 import { createCachedGetterWithKey } from '../lib/cachedGetter'
 import { useCurvaSStore } from './curvaSStore'
@@ -84,14 +83,44 @@ export const useRapStore = create<RapState>()(
       },
 
       updateItem: async (item: Partial<RapItem>) => {
+        // Capture original before optimistic update so we can revert on error
+        const original = get().items.find((i) => i.id === item.id)
+
         // Optimistic update
         set((state) => ({
           items: state.items.map((i) => (i.id === item.id ? { ...i, ...item } : i))
         }))
 
-        // Sync using service
-        syncRAPItem(item)
-        toast.success('RAP Item update queued')
+        // Partial PATCH — only send the fields that actually changed.
+        // syncRAPItem() does a full upsert which (a) omits committed_cost and
+        // (b) reads camelCase aliases, so it corrupts other columns on partial edits.
+        if (!item.id) return
+        const { id, total_budget, remaining_budget, ahsp_items, wbs_items, rab_items, ...patch } = item
+        if (Object.keys(patch).length === 0) return
+        try {
+          const client = (await import('../lib/supabaseClient')).assertSupabase()
+          const { error } = await client
+            .from('rap_items')
+            .update({ ...patch, updated_at: new Date().toISOString() })
+            .eq('id', id)
+          if (error) {
+            console.error('[rapStore] updateItem patch error:', error.message)
+            if (original) {
+              set((state) => ({
+                items: state.items.map((i) => (i.id === original.id ? original : i))
+              }))
+            }
+            toast.error('Gagal menyimpan perubahan: ' + error.message)
+          }
+        } catch (err) {
+          console.error('[rapStore] updateItem error:', err)
+          if (original) {
+            set((state) => ({
+              items: state.items.map((i) => (i.id === original.id ? original : i))
+            }))
+          }
+          toast.error('Gagal menyimpan perubahan: ' + (err instanceof Error ? err.message : String(err)))
+        }
       },
 
       getPlan: (projectId: string) => {
@@ -155,8 +184,10 @@ export const useRapStore = create<RapState>()(
         set({ loading: true })
         try {
           const data = await rapService.initFromRab(projectId, rabItems)
-          // Update local state with fresh data from DB
-          set({ items: data as RapItem[], lastSyncedAt: Date.now() })
+          // Re-fetch with joins so ahsp_items / wbs_items / rab_items names populate immediately.
+          // initFromRab returns the raw upsert result (no joined relation data).
+          const joined = await rapService.getByProject(projectId)
+          set({ items: joined as RapItem[], lastSyncedAt: Date.now() })
           toast.success(`RAP initialized with ${data.length} items from RAB`)
         } catch (err: unknown) {
           toast.error('Failed to initialize RAP: ' + (err as Error).message)

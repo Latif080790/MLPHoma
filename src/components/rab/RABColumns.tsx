@@ -210,6 +210,7 @@ export const getRABColumns = (
     cell: ({ row }) => (
       <NumberInputCell
         value={row.original.volume}
+        disabled={projectLocked}
         onCommit={(val) => onVolumeChange(row.original.id, val)}
       />
     ),

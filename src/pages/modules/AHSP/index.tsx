@@ -82,36 +82,56 @@ function AHSPContent() {
     }
 
     return (
-        <div className="space-y-4 density-compact">
-            <div className="flex items-start justify-between gap-2">
-                <div className="flex-1">
-                    <AHSPStatsBar />
-                </div>
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Sinkronisasi ulang data AHSP"
-                    className="mt-0.5 h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-                    title="Sinkronisasi ulang data AHSP dari database"
-                    onClick={loadData}
-                >
-                    <RefreshCw size={15} />
-                </Button>
-            </div>
+        <div className="flex flex-col gap-3 density-compact">
+            {/* KPI Strip */}
+            <AHSPStatsBar onRefresh={loadData} />
 
-            <Tabs defaultValue="items" className="space-y-3">
-                <TabsList className="h-auto w-full justify-start gap-2 overflow-x-auto bg-slate-50/70 p-1 dark:bg-slate-950/40">
-                    <TabsTrigger value="items">AHSP Items</TabsTrigger>
-                    <TabsTrigger value="resources">DKH Resources</TabsTrigger>
-                    <TabsTrigger value="analytics">Analytics</TabsTrigger>
-                    <TabsTrigger value="settings">Settings</TabsTrigger>
+            {/* Tab bar — flat underline style */}
+            <Tabs defaultValue="items" className="flex flex-col gap-0">
+                <TabsList className="h-9 w-full justify-start gap-0 rounded-none border-b border-slate-200 bg-white p-0 dark:border-slate-800 dark:bg-slate-950">
+                    <TabsTrigger
+                        value="items"
+                        className="relative h-9 rounded-none border-b-2 border-transparent px-4 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors hover:text-slate-700 data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 data-[state=active]:shadow-none"
+                    >
+                        AHSP Items
+                        <span className="ml-1.5 font-mono text-xs opacity-60">{ahspItems.length}</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="resources"
+                        className="relative h-9 rounded-none border-b-2 border-transparent px-4 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors hover:text-slate-700 data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 data-[state=active]:shadow-none"
+                    >
+                        DKH Resources
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="analytics"
+                        className="relative h-9 rounded-none border-b-2 border-transparent px-4 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors hover:text-slate-700 data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 data-[state=active]:shadow-none"
+                    >
+                        Analytics
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="settings"
+                        className="relative h-9 rounded-none border-b-2 border-transparent px-4 text-xs font-bold uppercase tracking-wider text-slate-400 transition-colors hover:text-slate-700 data-[state=active]:border-orange-500 data-[state=active]:text-orange-600 data-[state=active]:shadow-none"
+                    >
+                        Settings
+                    </TabsTrigger>
+                    {/* Refresh sits flush to the right end of the tab bar */}
+                    <div className="ml-auto flex items-center pr-2">
+                        <button
+                            onClick={loadData}
+                            title="Sinkronisasi ulang data AHSP"
+                            aria-label="Sinkronisasi ulang data AHSP"
+                            className="flex items-center justify-center h-6 w-6 rounded text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                        >
+                            <RefreshCw size={11} />
+                        </button>
+                    </div>
                 </TabsList>
 
-                <TabsContent value="items" className="space-y-3 mt-0">
+                <TabsContent value="items" className="mt-0">
                     <AHSPItemsTab />
                 </TabsContent>
 
-                <TabsContent value="resources" className="space-y-3 mt-0">
+                <TabsContent value="resources" className="mt-3">
                     {errors.resources && (
                         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800/40 dark:bg-amber-900/20 dark:text-amber-300">
                             <span className="font-semibold">Koneksi Database Gagal (DKH): </span>{errors.resources}
@@ -126,11 +146,11 @@ function AHSPContent() {
                     <DKHManager />
                 </TabsContent>
 
-                <TabsContent value="analytics" className="space-y-3 mt-0">
+                <TabsContent value="analytics" className="mt-3">
                     <BenchmarkingDashboard />
                 </TabsContent>
 
-                <TabsContent value="settings" className="space-y-3 mt-0">
+                <TabsContent value="settings" className="mt-3">
                     <AHSPSettings />
                 </TabsContent>
             </Tabs>

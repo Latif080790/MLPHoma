@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, X, RotateCcw, MoreHorizontal } from 'lucide-react'
+import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, X, RotateCcw, MoreHorizontal, MapPin } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Badge } from '../ui/badge'
@@ -508,37 +508,54 @@ export function AHSPCatalog({
         </div>
       )}
 
-      {/* Search and Filters */}
-      <div className="sticky-glass-panel flex flex-col gap-3 p-3">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-1 flex-wrap gap-2">
-            <div className="relative flex-1 min-w-[220px] max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Cari item AHSP..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 pl-10"
-              />
-            </div>
+      {/* Filter + Action Toolbar */}
+      <div className="sticky top-0 z-10 bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div className="flex items-center gap-2 px-3 py-2">
+          {/* Search */}
+          <div className="relative flex-1 min-w-0 max-w-xs">
+            <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari item AHSP..."
+              className="w-full h-7 pl-7 pr-6 text-xs border border-slate-200 rounded bg-slate-50 focus:outline-none focus:border-orange-400 focus:bg-white transition-colors placeholder:text-slate-300"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+              >
+                <X size={9} />
+              </button>
+            )}
+          </div>
 
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Pilih kategori" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Kategori</SelectItem>
-                {categories.map(category => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Category */}
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="h-7 w-[152px] text-xs border-slate-200 bg-slate-50 focus:ring-0 focus:border-orange-400 rounded">
+              <SelectValue placeholder="Kategori" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Kategori</SelectItem>
+              {categories.map(category => (
+                <SelectItem key={category} value={category}>{category}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
+          {/* Zone */}
+          <div className="flex items-center gap-1">
             <Select value={selectedZone} onValueChange={setSelectedZone}>
-              <SelectTrigger className="w-[180px] border-blue-200 dark:border-blue-900">
-                <SelectValue placeholder="Pilih zona" />
+              <SelectTrigger className={`h-7 w-[148px] text-xs focus:ring-0 rounded ${
+                selectedZone !== 'default'
+                  ? 'border-orange-300 bg-orange-50 text-orange-700 focus:border-orange-400'
+                  : 'border-slate-200 bg-slate-50 focus:border-orange-400'
+              }`}>
+                <div className="flex items-center gap-1 min-w-0">
+                  <MapPin size={9} className={selectedZone !== 'default' ? 'text-orange-500 shrink-0' : 'text-slate-300 shrink-0'} />
+                  <SelectValue placeholder="Zona" />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="default">Default (Master)</SelectItem>
@@ -550,37 +567,40 @@ export function AHSPCatalog({
             <ZoneManager />
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => handleExport()} className="h-8 text-xs">
-              <Download className="h-4 w-4 mr-2" />
-              Ekspor
-            </Button>
+          {/* Separator */}
+          <div className="h-4 w-px bg-slate-200 mx-0.5 shrink-0" />
 
-            <Button variant="outline" size="sm" asChild className="h-8 text-xs">
-              <label className="cursor-pointer">
-                <Upload className="h-4 w-4 mr-2" />
-                Impor
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleImport}
-                  className="hidden"
-                />
-              </label>
-            </Button>
+          {/* Actions */}
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => handleExport()}
+              title="Ekspor katalog AHSP"
+              className="flex items-center gap-1 text-xs text-slate-500 h-7 px-2.5 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
+            >
+              <Download size={11} />
+              <span>Ekspor</span>
+            </button>
 
-            <Button size="sm" onClick={handleAddItem} className="h-8 text-xs">
-              <Plus className="h-4 w-4 mr-2" />
-              Tambah Item
-            </Button>
+            <label className="flex items-center gap-1 text-xs text-slate-500 h-7 px-2.5 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">
+              <Upload size={11} />
+              <span>Impor</span>
+              <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+            </label>
 
-            {/* Overflow menu — keeps destructive action out of primary toolbar */}
+            <button
+              onClick={handleAddItem}
+              className="flex items-center gap-1 text-xs bg-orange-500 text-white font-semibold h-7 px-3 rounded hover:bg-orange-600 transition-all"
+            >
+              <Plus size={11} />
+              <span>Tambah Item</span>
+            </button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
+                <button className="flex items-center justify-center text-slate-400 h-7 w-7 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-600 transition-all">
+                  <MoreHorizontal size={12} />
                   <span className="sr-only">More actions</span>
-                </Button>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem
@@ -604,11 +624,11 @@ export function AHSPCatalog({
           </div>
         </div>
 
+        {/* Zone active banner */}
         {selectedZone !== 'default' && (
-          <div className="bg-blue-50 dark:bg-blue-950/30 p-2 rounded text-sm text-blue-700 dark:text-blue-300 flex items-center">
-            <Calculator className="h-4 w-4 mr-2" />
-            Menampilkan harga untuk zona: <strong>{zones.find(z => z.id === selectedZone)?.name}</strong>.
-            Perubahan akan menimpa harga dasar pada zona ini.
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border-t border-orange-100 text-xs text-orange-700">
+            <MapPin size={10} className="text-orange-500 shrink-0" />
+            <span>Zona: <strong>{zones.find(z => z.id === selectedZone)?.name}</strong> — harga zona menimpa harga master.</span>
           </div>
         )}
       </div>

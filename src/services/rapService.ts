@@ -95,33 +95,42 @@ export const rapService = {
     async initFromRab(projectId: string, rabItems: Array<Record<string, unknown>>) {
         const client = assertSupabase()
 
-        // 1. Fetch existing RAP items + AHSP code→id map in parallel
-        const [existingRapResult, ahspResult] = await Promise.all([
-            client
-                .from('rap_items')
-                .select('id, rab_item_id, committed_cost, actual_cost')
-                .eq('project_id', projectId),
-            client
-                .from('ahsp_items')
-                .select('id, code, base_price')
-                .not('code', 'is', null),
-        ])
+        // 1a. Fetch existing RAP items
+        const existingRapResult = await client
+            .from('rap_items')
+            .select('id, rab_item_id, committed_cost, actual_cost')
+            .eq('project_id', projectId)
 
         const existingMap = new Map((existingRapResult.data || []).map(r => [r.rab_item_id, r]))
 
+        // 1b. Fetch ALL AHSP items via pagination (PostgREST max_rows=1000 server cap
+        //     means .limit(N>1000) is silently truncated; must paginate manually)
+        const ahspAll: Array<{ id: string; code: string; base_price: number }> = []
+        const BATCH = 1000
+        for (let offset = 0; ; offset += BATCH) {
+            const { data, error } = await client
+                .from('ahsp_items')
+                .select('id, code, base_price')
+                .not('code', 'is', null)
+                .range(offset, offset + BATCH - 1)
+            if (error || !data || data.length === 0) break
+            ahspAll.push(...(data as typeof ahspAll))
+            if (data.length < BATCH) break
+        }
+
         // Build code → AHSP text-id map (rab_items stores ahsp_code, ahsp_items stores code)
         const ahspCodeMap = new Map<string, string>(
-            (ahspResult.data || [])
+            ahspAll
                 .filter(a => a.code && a.id)
-                .map(a => [a.code as string, a.id as string])
+                .map(a => [a.code, a.id])
         )
 
         // Build AHSP id → base_price map (production cost, no overhead/profit markup)
         // base_price = sum of resource components; RAP uses this so total_budget = execution cost ≠ contract price
         const ahspBasePriceMap = new Map<string, number>(
-            (ahspResult.data || [])
+            ahspAll
                 .filter(a => a.id && a.base_price != null && Number(a.base_price) > 0)
-                .map(a => [a.id as string, Number(a.base_price)])
+                .map(a => [a.id, Number(a.base_price)])
         )
 
         // 2. Prepare items for Upsert
