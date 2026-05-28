@@ -65,7 +65,7 @@ export const forecastingService = {
             .order('snapshot_date', { ascending: false })
             .limit(14)
 
-        if (!history || history.length === 0) {
+        if (!history || history.length === 0 || bac === 0) {
             return this.getFallbackForecast(bac)
         }
 
@@ -75,16 +75,21 @@ export const forecastingService = {
         const cpi = Number(latest.cpi) || 1
         const spi = Number(latest.spi) || 1
 
-        // 3. Trend Analysis (SPI Slippage)
-        const consecutiveSlippage = history.filter(m => Number(m.spi) < 0.9).length
+        // 3. Trend Analysis — count consecutive check-ins (newest first) with SPI < 0.9
+        // history is ordered descending so [0] = most recent; break on first non-slip.
+        let consecutiveSlippage = 0
+        for (const m of history) {
+            if (Number(m.spi) < 0.9) consecutiveSlippage++
+            else break
+        }
         const isRedAlert = consecutiveSlippage >= 7
 
         // 4. Multi-Method EAC Projections
         const eacStandard = cpi > 0 ? bac / cpi : bac
-        
+
         // Conservative: Weights CPI and SPI (The critical ratio method)
-        const eacConservative = ac + (bac - ev) / (cpi * spi > 0 ? cpi * spi : 1)
-        
+        const eacConservative = ac + (bac - ev) / Math.max(cpi * spi, 0.1)
+
         // Aggressive: Assumes remaining work stays strictly on budget
         const eacAggressive = ac + (bac - ev)
 
