@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import { LayoutList, CalendarClock, Search, Info, ChevronDown, ChevronUp, Plus, Link2, Link2Off, Loader2 } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { useRapStore } from '@/store/rapStore'
@@ -78,6 +78,10 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
   const [isSimulating, setIsSimulating] = useState(false)
   const [showScheduler, setShowScheduler] = useState(false)
 
+  // Inline-edit local buffer so inputs don't snap while Supabase call is debounced
+  const [localEdits, setLocalEdits] = useState<Record<string, string>>({})
+  const editTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>())
+
   const draftCount = getDraftCount(projectId)
 
   // Derived totals
@@ -109,6 +113,15 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
       fetchRabItems(projectId)
     }
   }, [projectId, fetchRabItems])
+
+  // Cancel any pending debounce timers on unmount (prevents setState on unmounted component)
+  useEffect(() => {
+    const timers = editTimers.current
+    return () => {
+      timers.forEach(t => clearTimeout(t))
+      timers.clear()
+    }
+  }, [])
 
   // ── Null-project guard (after ALL hooks) ─────────────────────────
   if (!project || !projectId) {
@@ -189,11 +202,22 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
   // Items without ahsp_id won't feed Resource Plan — show warning
   const unlinkedAHSPCount = projectItems.filter(i => !i.ahsp_id).length
 
-  // Task 35: Inline edit handler
   const handleInlineEdit = (itemId: string, field: string, val: string) => {
+    const key = `${itemId}:${field}`
+    setLocalEdits(prev => ({ ...prev, [key]: val }))
+
+    // Clear any pending save for this field (handles backspace/clear mid-type)
+    const existing = editTimers.current.get(key)
+    if (existing) clearTimeout(existing)
+
     const num = parseFloat(val)
     if (isNaN(num)) return
-    updateItem({ id: itemId, [field]: num })
+
+    editTimers.current.set(key, setTimeout(() => {
+      updateItem({ id: itemId, [field]: num })
+      editTimers.current.delete(key)
+      setLocalEdits(prev => { const n = { ...prev }; delete n[key]; return n })
+    }, 400))
   }
 
   // ── Shared table block (used in both layouts) ───────────────────
@@ -317,7 +341,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
                     <TableCell className="text-right py-1.5 px-2">
                       <Input
                         type="number"
-                        value={committedCost || ''}
+                        value={localEdits[`${item.id}:committed_cost`] ?? (committedCost || '')}
                         onChange={e => handleInlineEdit(item.id, 'committed_cost', e.target.value)}
                         className="h-8 w-full text-right font-mono text-xs border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white focus:border-blue-500 shadow-none text-blue-700"
                         placeholder="0"
@@ -326,7 +350,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
                     <TableCell className="text-right py-1.5 px-2">
                       <Input
                         type="number"
-                        value={actualCost || ''}
+                        value={localEdits[`${item.id}:actual_cost`] ?? (actualCost || '')}
                         onChange={e => handleInlineEdit(item.id, 'actual_cost', e.target.value)}
                         className="h-8 w-full text-right font-mono text-xs border-slate-200 bg-slate-50/60 hover:bg-white focus:bg-white focus:border-amber-500 shadow-none text-amber-700"
                         placeholder="0"
@@ -412,7 +436,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
             { label: 'ACTUAL COST', value: formatIDR(totals.totalActual), cls: 'text-amber-600' },
             { label: 'REMAINING', value: formatIDR(totals.totalRemaining), cls: totals.totalRemaining < 0 ? 'text-red-600' : 'text-emerald-600' },
             {
-              label: 'EFISIENSI',
+              label: 'SISA BUDGET',
               value: totals.totalBudget === 0 ? '—' : `${totals.efficiency}%`,
               cls: totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600',
             },
@@ -549,10 +573,10 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
               colorClass={totals.totalRemaining < 0 ? 'text-red-600 font-bold' : 'text-emerald-600'}
             />
             <KPICard
-              label="Efisiensi"
+              label="Sisa Budget"
               value={totals.totalBudget === 0 ? '—' : `${totals.efficiency}%`}
               colorClass={totals.totalBudget === 0 ? 'text-slate-400' : totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600'}
-              sub={totals.totalBudget === 0 ? 'Belum ada budget' : totals.efficiency >= 90 ? 'On track' : totals.efficiency >= 75 ? 'Monitor' : 'At Risk'}
+              sub={totals.totalBudget === 0 ? 'Belum ada budget' : '% Anggaran Tersisa'}
             />
           </div>
 
