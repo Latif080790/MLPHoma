@@ -146,8 +146,9 @@ export default function ProjectCosting() {
 
   // ── BudgetStrip data ──────────────────────────────────────────────────────
   const budget    = activeProject.budget ?? 0
-  const rabPct    = budget > 0 && snapshot ? Math.round((snapshot.rabTotal    / budget) * 100) : null
-  const actualPct = budget > 0 && snapshot ? Math.round((snapshot.actualCost  / budget) * 100) : null
+  const rabPct    = budget > 0 && snapshot ? Math.round((snapshot.rabTotal / budget) * 100) : null
+  // burnRatePercent already uses rapPlanned as denominator (consistent with CostKPIStrip)
+  const actualPct = snapshot ? Math.round(snapshot.burnRatePercent) : null
   const cpi       = snapshot?.latestCpi ?? null
 
   const budgetCells: Array<{ label: string; value: string; sub: string; warn: boolean }> = [
@@ -161,7 +162,7 @@ export default function ProjectCosting() {
       label: 'RAB / Budget',
       value: rabPct    !== null ? `${rabPct}%`    : '—',
       sub:   snapshot  ? formatIDR(snapshot.rabTotal)   : '—',
-      warn:  rabPct    !== null && rabPct > 105,
+      warn:  rabPct    !== null && rabPct > 100,
     },
     {
       label: 'Actual Spent',
@@ -172,8 +173,8 @@ export default function ProjectCosting() {
     {
       label: 'CPI',
       value: cpi !== null ? cpi.toFixed(2) : '—',
-      sub:   cpi !== null ? (cpi >= 1 ? 'On Budget' : 'Over Budget') : 'No data',
-      warn:  cpi !== null && cpi < 1,
+      sub:   cpi !== null ? (cpi >= 0.95 ? 'On Budget' : 'Over Budget') : 'No data',
+      warn:  cpi !== null && cpi < 0.95,
     },
   ]
 
