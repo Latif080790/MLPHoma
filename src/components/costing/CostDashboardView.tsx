@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { format } from 'date-fns'
 import {
@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts'
+import { RefreshCw } from 'lucide-react'
 
 import { formatIDR } from '@/lib/utils'
 import { useForecastStore } from '@/store/costForecastStore'
@@ -21,23 +22,17 @@ import { BurnRateSparkline } from './BurnRateSparkline'
 export function CostDashboardView() {
   const activeProjectId = useProjectStore((s) => s.activeProjectId)
 
-  const { snapshot, snapshotLoading, history, projections, fetchSnapshot, fetchHistory } =
+  const { snapshot, snapshotLoading, error, history, projections, generateSnapshot } =
     useForecastStore(
       useShallow((s) => ({
         snapshot: s.snapshot,
         snapshotLoading: s.snapshotLoading,
+        error: s.error,
         history: s.history,
         projections: s.projections,
-        fetchSnapshot: s.fetchSnapshot,
-        fetchHistory: s.fetchHistory,
+        generateSnapshot: s.generateSnapshot,
       }))
     )
-
-  useEffect(() => {
-    if (!activeProjectId) return
-    fetchSnapshot(activeProjectId)
-    fetchHistory(activeProjectId)
-  }, [activeProjectId, fetchSnapshot, fetchHistory])
 
   const evmChartData = useMemo(
     () => (history || []).map((m) => ({
@@ -53,7 +48,7 @@ export function CostDashboardView() {
     <div className="p-4 flex flex-col gap-3">
 
       {/* Row 1: KPI Strip */}
-      <CostKPIStrip snapshot={snapshot} loading={snapshotLoading} />
+      <CostKPIStrip snapshot={snapshot} loading={snapshotLoading} error={error} />
 
       {/* Row 2: Breakdown + EVM chart */}
       <div className="grid grid-cols-12 gap-3">
@@ -79,22 +74,39 @@ export function CostDashboardView() {
           <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
             <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">EVM Performance — PV / EV / AC</span>
-              <div className="hidden sm:flex items-center gap-4 text-xs text-slate-400">
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block w-6 h-px" style={{ background: '#f59e0b' }} /> PV
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block w-6 h-px" style={{ background: '#10b981' }} /> EV
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="inline-block w-5 h-px border-t border-dashed border-slate-400" /> AC
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-4 text-xs text-slate-400">
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block w-6 h-px" style={{ background: '#f59e0b' }} /> PV
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block w-6 h-px" style={{ background: '#10b981' }} /> EV
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block w-5 h-px border-t border-dashed border-slate-400" /> AC
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    if (!activeProjectId) return
+                    generateSnapshot().then(() => {
+                      const { fetchHistory: fh } = useForecastStore.getState()
+                      fh(activeProjectId)
+                    }).catch(() => {})
+                  }}
+                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                  title="Generate EVM snapshot"
+                >
+                  <RefreshCw size={10} />
+                  <span className="hidden sm:inline">Snapshot</span>
+                </button>
               </div>
             </div>
             <div className="p-4">
               {evmChartData.length < 2 ? (
-                <div className="flex items-center justify-center h-40 text-xs text-slate-400">
-                  Belum ada data metrik harian
+                <div className="flex flex-col items-center justify-center h-40 text-xs text-slate-400">
+                  <span>Belum ada data metrik harian</span>
+                  <span className="mt-1 text-slate-300">Klik tombol Snapshot untuk generate data EVM</span>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
