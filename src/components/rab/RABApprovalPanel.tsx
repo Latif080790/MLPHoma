@@ -90,7 +90,7 @@ function StepIndicator({ step, isLast }: { step: ApprovalStep; isLast: boolean }
   const getStepColor = () => {
     if (step.status === 'approved') return 'bg-green-500 border-green-500'
     if (step.status === 'rejected') return 'bg-red-500 border-red-500'
-    if (step.isCurrent) return 'bg-blue-500 border-blue-500 animate-pulse'
+    if (step.isCurrent) return 'bg-primary border-primary animate-pulse'
     return 'bg-gray-300 border-gray-300'
   }
 

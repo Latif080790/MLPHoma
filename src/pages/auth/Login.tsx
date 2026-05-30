@@ -5,12 +5,13 @@ import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Alert, AlertDescription } from '../../components/ui/alert'
-import { AlertCircle, ArrowRight, CheckCircle2, DraftingCompass, HardHat, Loader2, Lock, Mail } from 'lucide-react'
-import { toast } from 'sonner'
+import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { AuthLayout } from '../../components/layouts/AuthLayout'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [validationError, setValidationError] = useState('')
 
@@ -36,7 +37,7 @@ export default function Login() {
     setIsLoading(true)
 
     if (!email || !password) {
-      setValidationError('Please enter your email and password')
+      setValidationError('Masukkan email dan password Anda')
       setIsLoading(false)
       return
     }
@@ -51,163 +52,108 @@ export default function Login() {
   }
 
   return (
-    <div className="container relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-
-      {/* Left Column: Brand Panel */}
-      <div className="relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r overflow-hidden">
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #7c2d12 100%)' }} />
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-        <div className="relative z-20 flex items-center gap-3">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-xl shadow-lg text-white"
-            style={{ background: 'linear-gradient(135deg, #1d5fcc, #f97316)' }}
-          >
-            <HardHat size={20} />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-base font-bold leading-tight tracking-tight">NATA LABA</span>
-            <span className="text-xs font-semibold tracking-wider text-slate-400">Construction Suite</span>
-          </div>
-        </div>
-
-        <div className="relative z-20 mt-auto">
-          <blockquote className="space-y-2">
-            <p className="text-lg leading-relaxed">
-              &ldquo;This platform has completely transformed how we manage our project estimates and timelines. The precision and speed are unmatched.&rdquo;
-            </p>
-            <footer className="text-sm text-orange-200">Achmad Latif, Project Manager</footer>
-          </blockquote>
-        </div>
+    <AuthLayout>
+      {/* Title */}
+      <div className="mb-8">
+        <h1 className="font-display text-2xl font-bold text-white">Masuk ke Akun</h1>
+        <p className="mt-1 text-sm text-white/50">
+          Masuk untuk lanjutkan ke Command Center
+        </p>
       </div>
 
-      {/* Right Column: Login Form */}
-      <div className="lg:p-8 border-t-4" style={{ borderTopColor: '#f97316' }}>
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+      {/* Error */}
+      {(error || validationError) && (
+        <Alert variant="destructive" className="mb-5 border-red-500/30 bg-red-500/10">
+          <AlertCircle className="h-4 w-4 text-red-400" />
+          <AlertDescription className="text-red-300">
+            {validationError || error}
+          </AlertDescription>
+        </Alert>
+      )}
 
-          <div className="flex flex-col space-y-2 text-center">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <div
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-white"
-                style={{ background: 'linear-gradient(135deg, #1d5fcc, #f97316)' }}
-              >
-                <DraftingCompass size={14} />
-              </div>
-              <span className="text-base font-bold text-foreground">NATA LABA</span>
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-            <p className="text-sm text-muted-foreground">
-              Enter your credentials to access your dashboard
-            </p>
-          </div>
+      <form onSubmit={onSubmit} className="space-y-5">
+        {/* Email */}
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-sm font-medium text-white/70">
+            Email
+          </Label>
+          <Input
+            id="email"
+            placeholder="nama@perusahaan.com"
+            type="email"
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect="off"
+            disabled={isLoading}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="h-11 border-white/10 bg-[#16223A] text-white placeholder:text-white/30 focus-visible:border-[#F97316] focus-visible:ring-[#F97316]/20"
+          />
+        </div>
 
-          <form onSubmit={onSubmit}>
-            <div className="grid gap-4">
-              {(error || validationError) && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{validationError || error}</AlertDescription>
-                </Alert>
-              )}
-
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    placeholder="name@company.com"
-                    type="email"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    autoCorrect="off"
-                    disabled={isLoading}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9 bg-neutral-50 dark:bg-neutral-900/50"
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs text-primary hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    placeholder="••••••••"
-                    type="password"
-                    autoComplete="current-password"
-                    disabled={isLoading}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9 bg-neutral-50 dark:bg-neutral-900/50"
-                  />
-                </div>
-              </div>
-
-              <Button
-                disabled={isLoading}
-                className="mt-2 w-full group text-white font-semibold"
-                style={{ backgroundColor: '#f97316' }}
-                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#ea580c')}
-                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#f97316')}
-              >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    Sign In
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" disabled={isLoading} onClick={() => toast.info('Demo only')}>
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Demo Acct
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/register">Create Account</Link>
-            </Button>
-          </div>
-
-          <p className="px-8 text-center text-sm text-muted-foreground">
-            By clicking continue, you agree to our{' '}
-            <Link to="/terms" className="underline underline-offset-4 hover:text-primary">
-              Terms
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="underline underline-offset-4 hover:text-primary">
-              Privacy Policy
+        {/* Password */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-sm font-medium text-white/70">
+              Password
+            </Label>
+            <Link
+              to="/forgot-password"
+              className="text-xs font-medium text-[#F97316] hover:text-[#FB923C] transition-colors"
+            >
+              Lupa kata sandi?
             </Link>
-            .
-          </p>
+          </div>
+          <div className="relative">
+            <Input
+              id="password"
+              placeholder="••••••••"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              disabled={isLoading}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-11 border-white/10 bg-[#16223A] pr-10 text-white placeholder:text-white/30 focus-visible:border-[#F97316] focus-visible:ring-[#F97316]/20"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+              tabIndex={-1}
+              aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
+
+        {/* CTA */}
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="mt-2 h-11 w-full bg-[#F97316] font-semibold text-white hover:bg-[#EA580C] focus-visible:ring-[#F97316]/40 disabled:opacity-60"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Masuk...
+            </>
+          ) : (
+            'Masuk'
+          )}
+        </Button>
+      </form>
+
+      {/* Register link */}
+      <p className="mt-6 text-center text-sm text-white/40">
+        Belum punya akun?{' '}
+        <Link
+          to="/register"
+          className="font-medium text-[#F97316] hover:text-[#FB923C] transition-colors"
+        >
+          Daftar
+        </Link>
+      </p>
+    </AuthLayout>
   )
 }

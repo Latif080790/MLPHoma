@@ -611,9 +611,9 @@ export default function PortfolioAnalytics() {
             )}
 
             {/* Project Comparison Table */}
-            <div ref={tableRef} className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 shadow-sm">
+            <div ref={tableRef} className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
                 {/* Table Header */}
-                <div className="grid grid-cols-[1fr_80px_80px_80px_80px_100px_100px_80px] gap-0 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-wider text-slate-500">
+                <div className="grid grid-cols-[1fr_80px_80px_80px_80px_100px_100px_80px] gap-0 px-4 py-2 bg-muted/30 border-b border-border text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     <span>Project</span>
                     <span className="text-center">CPI</span>
                     <span className="text-center">SPI</span>
@@ -625,7 +625,7 @@ export default function PortfolioAnalytics() {
                 </div>
 
                 {visibleRows.length === 0 && (
-                    <div className="flex items-center justify-center h-32 text-sm text-slate-400">
+                    <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
                         No projects match the current search/filter.
                     </div>
                 )}
@@ -638,22 +638,22 @@ export default function PortfolioAnalytics() {
                     return (
                         <div
                             key={row.projectId}
-                            className={`grid grid-cols-[1fr_80px_80px_80px_80px_100px_100px_80px] gap-0 px-4 py-3 items-center border-b border-slate-100 dark:border-slate-800 last:border-b-0 transition-colors hover:bg-slate-50/70 dark:hover:bg-slate-800/30 ${idx % 2 === 1 ? 'bg-slate-50/30 dark:bg-slate-900/30' : ''}`}
+                            className={`grid grid-cols-[1fr_80px_80px_80px_80px_100px_100px_80px] gap-0 px-4 py-3 items-center border-b border-border last:border-b-0 transition-colors hover:bg-muted/30/70 ${idx % 2 === 1 ? 'bg-muted/30/30' : ''}`}
                         >
                             {/* Name + meta */}
                             <div className="min-w-0">
                                 <div className="flex items-center gap-2">
                                     <span className="font-semibold text-sm truncate">{row.projectName}</span>
                                     {row.status && (
-                                        <Badge variant="outline" className={`text-xs px-1 py-0 ${row.status === 'Active' ? 'border-emerald-400 text-emerald-600' : 'border-slate-300 text-slate-500'}`}>
+                                        <Badge variant="outline" className={`text-xs px-1 py-0 ${row.status === 'Active' ? 'border-emerald-400 text-emerald-600' : 'border-border text-muted-foreground'}`}>
                                             {row.status}
                                         </Badge>
                                     )}
                                 </div>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                    {row.projectCode && <span className="text-xs font-mono text-slate-400">{row.projectCode}</span>}
+                                    {row.projectCode && <span className="text-xs font-mono text-muted-foreground">{row.projectCode}</span>}
                                     {days !== null && (
-                                        <span className={`text-xs ${days < 0 ? 'text-red-500' : days <= 30 ? 'text-amber-500' : 'text-slate-400'}`}>
+                                        <span className={`text-xs ${days < 0 ? 'text-red-500' : days <= 30 ? 'text-amber-500' : 'text-muted-foreground'}`}>
                                             {days < 0 ? `${Math.abs(days)}d overdue` : `${days}d left`}
                                         </span>
                                     )}
@@ -687,10 +687,10 @@ export default function PortfolioAnalytics() {
                                         <span className={`text-lg font-bold tabular-nums ${s.phi.score >= 85 ? 'text-emerald-500' : s.phi.score >= 70 ? 'text-amber-500' : 'text-red-500'}`}>
                                             {s.phi.score}
                                         </span>
-                                        <span className="text-xs text-slate-400">{s.phi.rating}</span>
+                                        <span className="text-xs text-muted-foreground">{s.phi.rating}</span>
                                     </div>
                                 ) : (
-                                    <span className="text-slate-400 text-xs">—</span>
+                                    <span className="text-muted-foreground text-xs">—</span>
                                 )}
                             </div>
 
@@ -711,7 +711,7 @@ export default function PortfolioAnalytics() {
                                 {row.loading ? (
                                     <Skeleton className="ml-auto h-5 w-16" />
                                 ) : (
-                                    <span className="text-sm font-mono tabular-nums text-slate-600 dark:text-slate-300">
+                                    <span className="text-sm font-mono tabular-nums text-muted-foreground">
                                         {row.budget ? fmtCurrency(row.budget) : s?.totalBudget ? fmtCurrency(s.totalBudget) : '—'}
                                     </span>
                                 )}
@@ -723,11 +723,11 @@ export default function PortfolioAnalytics() {
                                     <Skeleton className="ml-auto h-5 w-16" />
                                 ) : s ? (
                                     <div className="flex flex-col items-end gap-1">
-                                        <span className={`text-sm font-mono tabular-nums ${utilPct !== null && utilPct > 100 ? 'text-red-500' : 'text-slate-600 dark:text-slate-300'}`}>
+                                        <span className={`text-sm font-mono tabular-nums ${utilPct !== null && utilPct > 100 ? 'text-red-500' : 'text-muted-foreground'}`}>
                                             {fmtCurrency(s.utilizedBudget)}
                                         </span>
                                         {utilPct !== null && (
-                                            <div className="w-16 h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                                            <div className="w-16 h-1 rounded-full bg-muted/50 overflow-hidden">
                                                 <div
                                                     className={`h-full rounded-full ${utilPct > 100 ? 'bg-red-500' : utilPct > 80 ? 'bg-amber-400' : 'bg-emerald-500'}`}
                                                     style={{ width: `${Math.min(utilPct, 100)}%` }}
@@ -735,7 +735,7 @@ export default function PortfolioAnalytics() {
                                             </div>
                                         )}
                                     </div>
-                                ) : <span className="text-slate-400 text-xs">—</span>}
+                                ) : <span className="text-muted-foreground text-xs">—</span>}
                             </div>
 
                             {/* Health badge */}
@@ -752,7 +752,7 @@ export default function PortfolioAnalytics() {
             </div>
 
             {/* Legend */}
-            <div className="flex items-center gap-4 text-xs text-slate-500 px-1">
+            <div className="flex items-center gap-4 text-xs text-muted-foreground px-1">
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-emerald-500" /> CPI/SPI ≥ 1.00 — Optimal</span>
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-amber-400" /> 0.85–0.99 — Watch</span>
                 <span className="flex items-center gap-1"><span className="inline-block w-2 h-2 rounded-full bg-red-500" /> &lt; 0.85 — Critical</span>

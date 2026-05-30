@@ -70,13 +70,28 @@ export function computeResourceNeedsFromRAP(
         if (!ahspId) continue
 
         const components = componentsByAHSP[ahspId] || []
+
+        // Compute AHSP-selling-price total for this item, then scale to RAP budget
+        // so resource costs reflect execution cost (unit_price_budget), not AHSP selling price
+        const ahspSellingTotal = components.reduce((sum, comp) => {
+            const res = comp.resource || resources.find(r => r.id === comp.resourceId)
+            if (!res) return sum
+            return sum + comp.coefficient * (comp.unitPrice || res.unitPrice || 0)
+        }, 0)
+        const rapBudgetPerUnit = rapItem.unit_price_budget || 0
+        const costScaling = ahspSellingTotal > 0 && rapBudgetPerUnit > 0
+            ? rapBudgetPerUnit / ahspSellingTotal
+            : 1
+
         for (const comp of components) {
             if (!comp.resource && !comp.resourceId) continue
             const resource = comp.resource || resources.find(r => r.id === comp.resourceId)
             if (!resource) continue
 
+            const rawPrice = comp.unitPrice || resource.unitPrice || 0
+            const scaledPrice = rawPrice * costScaling
             const needed = comp.coefficient * volume
-            const cost = needed * (comp.unitPrice || resource.unitPrice || 0)
+            const cost = needed * scaledPrice
 
             const existing = map.get(resource.id)
             if (existing) {
@@ -89,7 +104,7 @@ export function computeResourceNeedsFromRAP(
                     resourceName: resource.name,
                     resourceType: resource.type,
                     unit: resource.unit,
-                    unitPrice: comp.unitPrice || resource.unitPrice || 0,
+                    unitPrice: scaledPrice,
                     totalVolume: needed,
                     totalCost: cost,
                 })
@@ -142,12 +157,26 @@ export function computeResourceNeedsFromRAPWithTrace(
         if (!ahspId) continue
 
         const components = componentsByAHSP[ahspId] || []
+
+        // Scale AHSP component prices to RAP budget (unit_price_budget) level
+        // so that Σ(resource costs for this item) = rapItem.total_budget (RAP cost, not AHSP selling price)
+        const ahspSellingTotal = components.reduce((sum, comp) => {
+            const res = comp.resource || resources.find(r => r.id === comp.resourceId)
+            if (!res) return sum
+            return sum + comp.coefficient * (comp.unitPrice || res.unitPrice || 0)
+        }, 0)
+        const rapBudgetPerUnit = rapItem.unit_price_budget || 0
+        const costScaling = ahspSellingTotal > 0 && rapBudgetPerUnit > 0
+            ? rapBudgetPerUnit / ahspSellingTotal
+            : 1
+
         for (const comp of components) {
             if (!comp.resource && !comp.resourceId) continue
             const resource = comp.resource || resources.find(r => r.id === comp.resourceId)
             if (!resource) continue
 
-            const effectivePrice = comp.unitPrice || resource.unitPrice || 0
+            const rawPrice = comp.unitPrice || resource.unitPrice || 0
+            const effectivePrice = rawPrice * costScaling
             const needed = comp.coefficient * volume
             const cost = needed * effectivePrice
 

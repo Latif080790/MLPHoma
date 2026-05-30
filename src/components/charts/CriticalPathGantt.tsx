@@ -41,7 +41,7 @@ export function CriticalPathGantt() {
     }, [activeProjectId, projectTasks, predictiveMode])
 
     if (!activeProjectId) return <EmptyState title="No Project Selected" description="Select a project to view the Critical Path." />
-    if (projectTasks.length === 0) return <EmptyState title="No Schedule Data" description="Create WBS timeline items first." icon={<GitBranch className="h-12 w-12 text-slate-300 mb-4" />} />
+    if (projectTasks.length === 0) return <EmptyState title="No Schedule Data" description="Create WBS timeline items first." icon={<GitBranch className="h-12 w-12 text-foreground mb-4" />} />
 
     // Determine coordinate space for Gantt lines
     let minDate = new Date('2099-01-01')
@@ -61,7 +61,7 @@ export function CriticalPathGantt() {
     const headerHeight = 60
 
     return (
-        <Card className="flex flex-col h-[600px] border-slate-200 dark:border-slate-800">
+        <Card className="flex flex-col h-[600px] border-border">
             <CardHeader className="shrink-0 flex flex-row items-center justify-between pb-4">
                 <div>
                     <CardTitle className="flex items-center gap-2">
@@ -91,22 +91,22 @@ export function CriticalPathGantt() {
                 </div>
             </CardHeader>
 
-            <div className="flex-1 overflow-hidden relative border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+            <div className="flex-1 overflow-hidden relative border-t border-border bg-muted/30">
 
                 {/* Fixed left column for labels */}
-                <div className="absolute left-0 top-0 bottom-0 w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 z-10 flex flex-col shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
-                    <div className="h-[60px] shrink-0 border-b border-slate-200 dark:border-slate-800 p-3 flex flex-col justify-end bg-slate-50 dark:bg-slate-900">
-                        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">WBS Task</span>
+                <div className="absolute left-0 top-0 bottom-0 w-64 bg-card border-r border-border z-10 flex flex-col shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
+                    <div className="h-[60px] shrink-0 border-b border-border p-3 flex flex-col justify-end bg-muted/30">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">WBS Task</span>
                     </div>
                     <div className="flex-1 overflow-y-auto overflow-x-hidden p-2" id="cpm-left-col">
                         {displayNodes.map((node, _idx) => (
                             <div key={node.id} className="h-[40px] flex flex-col justify-center px-2 relative group">
-                                <span className={`text-sm truncate w-full ${node.isCritical ? 'font-bold text-red-700 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                                <span className={`text-sm truncate w-full ${node.isCritical ? 'font-bold text-red-700 dark:text-red-400' : 'text-muted-foreground'}`}>
                                     {node.name}
                                 </span>
                                 <div className="flex justify-between items-center w-full mt-0.5 opacity-60">
-                                    <span className="text-xs text-slate-500">Float: {node.totalFloat}d</span>
-                                    <span className="text-xs text-slate-500">{node.progress}%</span>
+                                    <span className="text-xs text-muted-foreground">Float: {node.totalFloat}d</span>
+                                    <span className="text-xs text-muted-foreground">{node.progress}%</span>
                                 </div>
                             </div>
                         ))}
@@ -126,19 +126,19 @@ export function CriticalPathGantt() {
                         >
                             {/* Time Axis Header */}
                             <g className="time-axis" transform={`translate(0, ${headerHeight - 20})`}>
-                                <line x1="0" y1="0" x2="100%" y2="0" stroke="currentColor" strokeWidth="1" className="text-slate-200 dark:text-slate-800" />
+                                <line x1="0" y1="0" x2="100%" y2="0" stroke="currentColor" strokeWidth="1" className="text-foreground" />
                                 {/* Generate monthly marks (simplified for mockup, ideally day/week marks based on scale) */}
                                 {Array.from({ length: Math.ceil(totalDays / 7) }).map((_, i) => {
                                     const x = i * 7 * 20 // 7 days * 20px per day
                                     const date = addDays(minDate, i * 7)
                                     return (
                                         <g key={i} transform={`translate(${x}, 0)`}>
-                                            <line x1="0" y1="-5" x2="0" y2="5" stroke="currentColor" className="text-slate-300 dark:text-slate-700" />
-                                            <text x="5" y="-10" fontSize="10" fill="currentColor" className="text-slate-500 dark:text-slate-400">
+                                            <line x1="0" y1="-5" x2="0" y2="5" stroke="currentColor" className="text-foreground" />
+                                            <text x="5" y="-10" fontSize="10" fill="currentColor" className="text-muted-foreground">
                                                 {format(date, 'MMM dd')}
                                             </text>
                                             {/* Vertical grid line */}
-                                            <line x1="0" y1="0" x2="0" y2={displayNodes.length * rowHeight + 20} stroke="currentColor" strokeDasharray="4 4" className="text-slate-100 dark:text-slate-800/50" />
+                                            <line x1="0" y1="0" x2="0" y2={displayNodes.length * rowHeight + 20} stroke="currentColor" strokeDasharray="4 4" className="text-foreground" />
                                         </g>
                                     )
                                 })}
@@ -175,7 +175,7 @@ export function CriticalPathGantt() {
                                                 fill="none"
                                                 stroke={isCriticalPath ? '#ef4444' : 'currentColor'}
                                                 strokeWidth={isCriticalPath ? 2 : 1.5}
-                                                className={isCriticalPath ? 'opacity-90' : 'text-slate-300 dark:text-slate-700'}
+                                                className={isCriticalPath ? 'opacity-90' : 'text-foreground'}
                                                 markerEnd={isCriticalPath ? 'url(#arrowhead-red)' : 'url(#arrowhead-gray)'}
                                             />
                                         )
@@ -204,7 +204,7 @@ export function CriticalPathGantt() {
                                                     height="16"
                                                     rx="4"
                                                     fill="currentColor"
-                                                    className="text-slate-200 dark:text-slate-800/60"
+                                                    className="text-foreground"
                                                     strokeDasharray="2 2"
                                                     stroke="currentColor"
                                                 />
@@ -239,7 +239,7 @@ export function CriticalPathGantt() {
                                             )}
 
                                             {/* Hover labels */}
-                                            <text x={width + 8} y="11" fontSize="10" fill="currentColor" className="text-slate-600 dark:text-slate-400 font-mono">
+                                            <text x={width + 8} y="11" fontSize="10" fill="currentColor" className="text-muted-foreground font-mono">
                                                 {isDelaying ? `${plannedDuration}d → ${duration}d (Delay)` : `${duration}d`}
                                             </text>
                                         </g>
@@ -250,7 +250,7 @@ export function CriticalPathGantt() {
                             {/* SVG Defs for markers */}
                             <defs>
                                 <marker id="arrowhead-gray" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
-                                    <polygon points="0 0, 6 2, 0 4" fill="currentColor" className="text-slate-300 dark:text-slate-700" />
+                                    <polygon points="0 0, 6 2, 0 4" fill="currentColor" className="text-foreground" />
                                 </marker>
                                 <marker id="arrowhead-red" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
                                     <polygon points="0 0, 6 2, 0 4" fill="#ef4444" />
@@ -262,7 +262,7 @@ export function CriticalPathGantt() {
             </div>
 
             {/* Bottom Legend */}
-            <div className="shrink-0 h-10 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center px-4 gap-6 text-xs uppercase font-semibold text-slate-500">
+            <div className="shrink-0 h-10 border-t border-border bg-muted/30 flex items-center px-4 gap-6 text-xs uppercase font-semibold text-muted-foreground">
                 <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm bg-red-500"></div> Critical Path (0 Float)
                 </div>
@@ -270,7 +270,7 @@ export function CriticalPathGantt() {
                     <div className="w-3 h-3 rounded-sm bg-violet-500"></div> Standard Task (Has Float)
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm border border-dashed border-slate-300 bg-slate-200"></div> Available Total Float
+                    <div className="w-3 h-3 rounded-sm border border-dashed border-border bg-muted"></div> Available Total Float
                 </div>
             </div>
         </Card>

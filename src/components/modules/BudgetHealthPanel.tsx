@@ -34,7 +34,7 @@ function statusColor(s: HealthStatus) {
     healthy: 'text-emerald-600 dark:text-emerald-400',
     warning: 'text-amber-600 dark:text-amber-400',
     danger:  'text-red-600 dark:text-red-400',
-    empty:   'text-slate-400 dark:text-slate-500',
+    empty:   'text-muted-foreground',
   }[s]
 }
 
@@ -43,7 +43,7 @@ function statusBg(s: HealthStatus) {
     healthy: 'bg-emerald-500',
     warning: 'bg-amber-500',
     danger:  'bg-red-500',
-    empty:   'bg-slate-200 dark:bg-slate-700',
+    empty:   'bg-muted',
   }[s]
 }
 
@@ -51,7 +51,7 @@ function StatusIcon({ s }: { s: HealthStatus }) {
   if (s === 'healthy') return <CheckCircle2 size={12} className="text-emerald-500" />
   if (s === 'warning') return <AlertTriangle size={12} className="text-amber-500" />
   if (s === 'danger')  return <AlertTriangle size={12} className="text-red-500" />
-  return <Info size={12} className="text-slate-400" />
+  return <Info size={12} className="text-muted-foreground" />
 }
 
 // ─── Mini metric card ─────────────────────────────────────────────────────────
@@ -72,22 +72,22 @@ function MetricCard({
 }) {
   const clampedPct = Math.min(100, Math.max(0, pct ?? 0))
   return (
-    <div className="flex-1 min-w-[130px] rounded-lg border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="flex-1 min-w-[130px] rounded-lg border border-border bg-card p-3 shadow-sm">
       <div className="flex items-center justify-between gap-1 mb-1">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 leading-tight">{label}</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground leading-tight">{label}</span>
         <StatusIcon s={status} />
       </div>
       <div className={`text-sm font-bold font-mono leading-snug ${statusColor(status)}`}>{value}</div>
-      <div className="text-xs text-slate-400 mt-0.5">{sub}</div>
+      <div className="text-xs text-muted-foreground mt-0.5">{sub}</div>
       {pct !== undefined && (
         <div className="mt-2">
-          <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-muted/50 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${statusBg(status)}`}
               style={{ width: `${clampedPct}%` }}
             />
           </div>
-          {pctLabel && <div className="mt-0.5 text-xs text-slate-400">{pctLabel}</div>}
+          {pctLabel && <div className="mt-0.5 text-xs text-muted-foreground">{pctLabel}</div>}
         </div>
       )}
     </div>
@@ -181,25 +181,25 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
     : 'healthy'
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-900/60 overflow-hidden">
+    <div className="rounded-xl border border-border bg-muted/30/70 overflow-hidden">
       {/* Header row */}
       <button
         type="button"
         onClick={() => setExpanded(v => !v)}
-        className="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors"
+        className="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-accent/40 transition-colors"
       >
         <div className="flex items-center gap-2">
           {overallStatus === 'healthy' && <CheckCircle2 size={14} className="text-emerald-500" />}
           {overallStatus === 'warning' && <AlertTriangle size={14} className="text-amber-500" />}
           {overallStatus === 'danger'  && <AlertTriangle size={14} className="text-red-500" />}
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Budget Health</span>
+          <span className="text-xs font-semibold text-muted-foreground">Budget Health</span>
           {totalAlerts > 0 && (
             <span className="rounded-full bg-amber-100 px-1.5 py-0 text-xs font-bold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
               {totalAlerts} alert
             </span>
           )}
         </div>
-        {expanded ? <ChevronUp size={13} className="text-slate-400" /> : <ChevronDown size={13} className="text-slate-400" />}
+        {expanded ? <ChevronUp size={13} className="text-muted-foreground" /> : <ChevronDown size={13} className="text-muted-foreground" />}
       </button>
 
       {/* Expanded body */}
@@ -240,13 +240,13 @@ export function BudgetHealthPanel({ projectId, projectBudget }: BudgetHealthPane
 
             {/* CPI KPI card */}
             {kpi.cpi > 0 && (
-              <div className="flex-1 min-w-[100px] rounded-lg border border-slate-100 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 flex flex-col justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">CPI</span>
+              <div className="flex-1 min-w-[100px] rounded-lg border border-border bg-card p-3 shadow-sm flex flex-col justify-between">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">CPI</span>
                 <div className={`flex items-center gap-1 mt-1 ${statusColor(kpi.cpiStatus)}`}>
                   {kpi.cpi >= 1 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                   <span className="text-lg font-bold font-mono">{kpi.cpi.toFixed(2)}</span>
                 </div>
-                <span className="text-xs text-slate-400 mt-0.5">
+                <span className="text-xs text-muted-foreground mt-0.5">
                   {kpi.cpi >= 1.05 ? 'Under budget ✓' : kpi.cpi >= 0.9 ? 'On track' : 'Over budget ⚠️'}
                 </span>
               </div>

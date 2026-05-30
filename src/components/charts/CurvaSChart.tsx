@@ -63,7 +63,7 @@ export interface CurvaSChartProps {
 const CustomTooltip = ({ active, payload, label, type }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-lg border bg-white p-3 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
+      <div className="rounded-lg border bg-card p-3 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
         <p className="mb-2 font-medium">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>

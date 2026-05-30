@@ -311,6 +311,25 @@ export const useTimelineStore = create<TimelineState>((set, get) => {
       if (updatedTask) {
         timelineService.syncTask(updatedTask)
       }
+
+      // A3: Propagate progress to linked WBS node (weighted average across all tasks sharing same wbsId)
+      // Skipped if the WBS node has physicalProgressLocked = true (manual validation required).
+      if (updatedTask && 'progress' in patch && (updatedTask as TimelineTask).wbsId) {
+        const wbsId = (updatedTask as TimelineTask).wbsId!
+        const allTasks = get().tasksByProject[projectId] || []
+        const wbsTasks = allTasks.filter(t => t.wbsId === wbsId)
+        if (wbsTasks.length > 0) {
+          const avgProgress = Math.round(wbsTasks.reduce((s, t) => s + (t.id === id ? (updatedTask as TimelineTask).progress : t.progress), 0) / wbsTasks.length)
+          import('./wbsStore').then(({ useWBSStore }) => {
+            const wbsState = useWBSStore.getState()
+            const wbsItems = wbsState.itemsByProject[projectId] || []
+            const targetNode = wbsItems.find(i => i.id === wbsId)
+            // Respect physicalProgressLocked — manual QC validation takes precedence
+            if (targetNode?.physicalProgressLocked) return
+            wbsState.updateItem(projectId, wbsId, { progress: avgProgress, progressSource: 'timeline' })
+          }).catch(() => { /* wbsStore not available */ })
+        }
+      }
     },
 
     updateTaskDates: (projectId, id, dates) => {
@@ -476,4 +495,4 @@ eventBus.on('timeline:changed', ({ projectId }) => {
   }
 })
 
-export default useTimelineStore
+export default useTimelineStore

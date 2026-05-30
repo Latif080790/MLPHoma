@@ -742,6 +742,7 @@ export function syncRABItems(items: any[], projectId: string): string {
       name: item.name || item.item_name,
       unit: item.unit,
       volume: item.volume,
+      base_price: item.base_price ?? null,
       unit_price: item.unit_price || item.unitPrice,
       cost_material: item.cost_material || 0,
       cost_labor: item.cost_labor || 0,

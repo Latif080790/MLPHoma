@@ -137,7 +137,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
   }
 
   return (
-    <div className="space-y-4 rounded-md border p-4 dark:border-neutral-800">
+    <div className="space-y-4 rounded-md border p-4 ">
       <div>
         <div className="mb-1 flex items-center justify-between text-sm">
           <span>Down Payment (%)</span>
@@ -152,7 +152,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
           onChange={(e) => setWhatIfDpPct(Number(e.target.value))}
           className="w-full"
         />
-        <div className="mt-1 text-xs text-neutral-500">Range 0–50%</div>
+        <div className="mt-1 text-xs text-muted-foreground">Range 0–50%</div>
       </div>
 
       <div>
@@ -169,7 +169,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
           onChange={(e) => setWhatIfBillingPct(Number(e.target.value))}
           className="w-full"
         />
-        <div className="mt-1 text-xs text-neutral-500">How much to bill per progress</div>
+        <div className="mt-1 text-xs text-muted-foreground">How much to bill per progress</div>
       </div>
 
       <div>
@@ -186,7 +186,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
           onChange={(e) => setRetentionRate(Number(e.target.value) / 100)}
           className="w-full"
         />
-        <div className="mt-1 text-xs text-neutral-500">Retention held from billing (0–20%)</div>
+        <div className="mt-1 text-xs text-muted-foreground">Retention held from billing (0–20%)</div>
       </div>
 
       <div>
@@ -203,7 +203,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
           onChange={(e) => setLoanInterestRate(Number(e.target.value))}
           className="w-full"
         />
-        <div className="mt-1 text-xs text-neutral-500">Interest on negative balance (0–20%)</div>
+        <div className="mt-1 text-xs text-muted-foreground">Interest on negative balance (0–20%)</div>
       </div>
 
       <div>
@@ -220,7 +220,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
           onChange={(e) => setTaxRate(Number(e.target.value))}
           className="w-full"
         />
-        <div className="mt-1 text-xs text-neutral-500">Tax on billing (e.g. PPN/PPH)</div>
+        <div className="mt-1 text-xs text-muted-foreground">Tax on billing (e.g. PPN/PPH)</div>
       </div>
 
       <div className="space-y-2">
@@ -229,27 +229,27 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
           value={scenarioName}
           onChange={(e) => setScenarioName(e.target.value)}
           placeholder="Scenario name"
-          className="w-full rounded-md border px-3 py-1.5 text-sm dark:border-neutral-700"
+          className="w-full rounded-md border px-3 py-1.5 text-sm "
         />
         <div className="flex gap-2">
           <button
             onClick={handleSaveScenario}
             disabled={!canSave}
-            className={`rounded-md border px-3 py-1.5 text-sm ${!canSave ? 'opacity-60 cursor-not-allowed' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'} dark:border-neutral-700`}
+            className={`rounded-md border px-3 py-1.5 text-sm ${!canSave ? 'opacity-60 cursor-not-allowed' : 'hover:bg-muted/30 dark:hover:bg-muted'} `}
           >
             Save Scenario
           </button>
 
           <button
             onClick={handleApply}
-            className="rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+            className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted/30  dark:hover:bg-muted"
           >
             Apply to Settings
           </button>
 
           <button
             onClick={handleExportScenarioCSV}
-            className="rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800"
+            className="rounded-md border px-3 py-1.5 text-sm hover:bg-muted/30  dark:hover:bg-muted"
           >
             Export CSV
           </button>
@@ -259,7 +259,7 @@ export const WhatIfPanel: React.FC<WhatIfPanelProps> = ({ projectId, projectBudg
         {lastSavedOk === false ? <div className="text-sm text-rose-600 dark:text-rose-300">Failed to save scenario</div> : null}
       </div>
 
-      <div className="text-xs text-neutral-500">
+      <div className="text-xs text-muted-foreground">
         {projectBudget ? <span>Project budget: <strong>{projectBudget.toLocaleString()}</strong></span> : <span>No project budget provided</span>}
       </div>
     </div>

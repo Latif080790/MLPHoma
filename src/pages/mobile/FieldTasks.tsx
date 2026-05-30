@@ -5,7 +5,6 @@ import { useCurvaSStore } from '@/store/curvaSStore'
 import { Camera, MapPin, CheckCircle2, Clock, Calendar, Check, AlertCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { toast } from 'sonner'
@@ -131,62 +130,64 @@ export default function FieldTasks() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-60px)] md:h-[calc(100vh-100px)] bg-slate-50 dark:bg-slate-900">
+        <div className="flex flex-col h-[calc(100vh-60px)] md:h-[calc(100vh-100px)] bg-background">
             {/* Mobile Header */}
-            <div className="bg-indigo-600 text-white p-4 shadow-md z-10 shrink-0">
-                <h1 className="text-xl font-bold">Field Tasks</h1>
-                <p className="text-sm text-indigo-100 opacity-90">{project?.name || 'Loading Project...'}</p>
+            <div className="bg-muted/50 border-b border-border px-4 py-3 z-10 shrink-0">
+                <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-nl-orange" />
+                    <h1 className="text-base font-bold text-foreground tracking-tight">Field Tasks</h1>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 pl-4">{project?.name || 'Loading Project...'}</p>
             </div>
 
             {/* Tabs */}
-            <div className="flex bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 shrink-0">
+            <div className="flex bg-card border-b border-border shrink-0">
                 <button
                     onClick={() => setActiveTab('todo')}
-                    className={`flex-1 min-h-[48px] py-3 text-sm font-bold transition-colors border-b-2 ${activeTab === 'todo' ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 min-h-[44px] py-3 text-sm font-bold transition-colors border-b-2 ${activeTab === 'todo' ? 'border-nl-orange text-nl-orange' : 'border-transparent text-muted-foreground hover:text-muted-foreground'}`}
                 >
                     To Do ({tasks.filter(t => (t.progress || 0) < 100).length})
                 </button>
                 <button
                     onClick={() => setActiveTab('completed')}
-                    className={`flex-1 min-h-[48px] py-3 text-sm font-bold transition-colors border-b-2 ${activeTab === 'completed' ? 'border-indigo-600 text-indigo-700 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                    className={`flex-1 min-h-[44px] py-3 text-sm font-bold transition-colors border-b-2 ${activeTab === 'completed' ? 'border-nl-orange text-nl-orange' : 'border-transparent text-muted-foreground hover:text-muted-foreground'}`}
                 >
                     Completed ({tasks.filter(t => (t.progress || 0) >= 100).length})
                 </button>
             </div>
 
-
             {/* Task List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-24">
                 {filteredTasks.length === 0 && (
                     <div className="text-center py-10">
-                        <CheckCircle2 className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-700 mb-3" />
-                        <p className="text-slate-500 font-medium">No tasks found in this tab.</p>
+                        <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-3" />
+                        <p className="text-muted-foreground font-medium">No tasks found in this tab.</p>
                     </div>
                 )}
 
                 {filteredTasks.map(task => (
                     <Card
                         key={task.id}
-                        className="border border-slate-200 dark:border-slate-800 shadow-sm active:scale-[0.98] transition-all cursor-pointer overflow-hidden"
+                        className="border border-border bg-card active:scale-[0.98] transition-all cursor-pointer overflow-hidden hover:border-border"
                         onClick={() => openLogDialog(task.id)}
                     >
                         <CardContent className="p-0">
                             <div className="flex items-stretch">
-                                <div className={`w-2 shrink-0 ${task.status === 'completed' ? 'bg-emerald-500' : task.status === 'delayed' ? 'bg-red-500' : 'bg-blue-500'}`} />
+                                <div className={`w-1.5 shrink-0 ${task.status === 'completed' ? 'bg-green-500' : task.status === 'delayed' ? 'bg-red-500' : 'bg-blue-400'}`} />
                                 <div className="flex-1 p-4">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <h3 className="font-bold text-slate-800 dark:text-slate-200 leading-tight">{task.name}</h3>
-                                        <Badge variant={task.status === 'completed' ? 'default' : 'outline'} className={task.status === 'completed' ? 'bg-emerald-500' : 'text-blue-600 border-blue-200 bg-blue-50'}>
+                                    <div className="flex justify-between items-start mb-2 gap-2">
+                                        <h3 className="font-bold text-foreground/90 leading-tight text-sm">{task.name}</h3>
+                                        <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-mono font-semibold shrink-0 ${task.status === 'completed' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
                                             {task.progress || 0}%
-                                        </Badge>
+                                        </span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-xs text-slate-500 mt-2">
+                                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
                                         <span className="flex items-center gap-1">
-                                            <Calendar size={12} />
+                                            <Calendar size={11} />
                                             {new Date(task.startDate).toLocaleDateString()}
                                         </span>
                                         <span className="flex items-center gap-1">
-                                            <Clock size={12} />
+                                            <Clock size={11} />
                                             {task.duration} days
                                         </span>
                                     </div>
@@ -199,27 +200,27 @@ export default function FieldTasks() {
 
             {/* Action Dialog */}
             <Dialog open={!!selectedTask} onOpenChange={(open) => !open && setSelectedTask(null)}>
-                <DialogContent className="max-w-[400px] w-[95vw] rounded-xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
-                    <DialogHeader className="p-4 bg-slate-50 dark:bg-slate-900 border-b shrink-0">
-                        <DialogTitle className="text-lg">Update Progress</DialogTitle>
-                        <p className="text-sm text-slate-500 line-clamp-1">{tasks.find(t => t.id === selectedTask)?.name}</p>
+                <DialogContent className="max-w-[400px] w-[95vw] rounded-xl p-0 overflow-hidden flex flex-col max-h-[90vh] border border-border bg-background">
+                    <DialogHeader className="p-4 bg-muted/30 border-b border-border shrink-0">
+                        <DialogTitle className="text-base text-foreground">Update Progress</DialogTitle>
+                        <p className="text-xs text-muted-foreground line-clamp-1">{tasks.find(t => t.id === selectedTask)?.name}</p>
                     </DialogHeader>
 
                     <div className="p-4 flex-1 overflow-y-auto space-y-5">
                         <div className="space-y-3">
-                            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Physical Progress (%)</label>
+                            <label className="text-sm font-bold text-foreground/80">Physical Progress (%)</label>
                             <div className="flex items-center gap-4">
                                 <input
                                     type="range"
                                     min="0"
                                     max="100"
-                                    className="flex-1 h-10 accent-indigo-600"
+                                    className="flex-1 h-10 accent-orange-500"
                                     value={progressVal}
                                     onChange={(e) => setProgressVal(Number(e.target.value))}
                                 />
                                 <Input
                                     type="number"
-                                    className="w-24 text-center font-bold text-lg field-input-mobile"
+                                    className="w-24 text-center font-bold text-lg field-input-mobile bg-muted/20 border-border text-foreground"
                                     value={progressVal}
                                     onChange={(e) => setProgressVal(Number(e.target.value))}
                                     min={0} max={100}
@@ -227,19 +228,18 @@ export default function FieldTasks() {
                             </div>
                         </div>
 
-
                         {/* Evidence: Photo */}
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700 flex justify-between">
+                            <label className="text-sm font-semibold text-foreground/80 flex justify-between">
                                 <span>Field Photo Evidence</span>
-                                {photoUrl && <Check className="text-emerald-500" size={16} />}
+                                {photoUrl && <Check className="text-green-400" size={16} />}
                             </label>
-                            <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-4 text-center">
+                            <div className="border-2 border-dashed border-border rounded-lg p-4 text-center bg-muted/10">
                                 {photoUrl ? (
                                     <div className="relative group rounded-md overflow-hidden">
                                         <img src={photoUrl} alt="Progress" className="w-full h-32 object-cover" />
                                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <label className="cursor-pointer text-white text-sm font-medium flex items-center gap-2">
+                                            <label className="cursor-pointer text-foreground text-sm font-medium flex items-center gap-2">
                                                 <Camera size={16} /> Retake
                                                 <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={handleFileUpload} />
                                             </label>
@@ -247,26 +247,26 @@ export default function FieldTasks() {
                                     </div>
                                 ) : (
                                     <label className="cursor-pointer flex flex-col items-center gap-2 py-4">
-                                        <div className="h-12 w-12 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-full flex items-center justify-center">
+                                        <div className="h-12 w-12 bg-nl-orange/10 text-nl-orange rounded-full flex items-center justify-center">
                                             <Camera size={24} />
                                         </div>
-                                        <span className="text-sm font-medium text-slate-600">Tap to snap a photo</span>
+                                        <span className="text-sm font-medium text-muted-foreground">Tap to snap a photo</span>
                                         <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="hidden" onChange={handleFileUpload} />
                                     </label>
                                 )}
-                                {uploading && <p className="text-xs text-blue-500 mt-2 animate-pulse">Uploading...</p>}
+                                {uploading && <p className="text-xs text-nl-cyan mt-2 animate-pulse">Uploading...</p>}
                             </div>
                         </div>
 
                         {/* Evidence: GPS */}
                         <div className="space-y-3">
-                            <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex justify-between">
+                            <label className="text-sm font-bold text-foreground/80 flex justify-between">
                                 <span>GPS Location Pin</span>
-                                {gpsCoords && <Check className="text-emerald-500" size={16} />}
+                                {gpsCoords && <Check className="text-green-400" size={16} />}
                             </label>
                             <Button
                                 variant={gpsCoords ? 'outline' : 'default'}
-                                className={`w-full gap-2 field-button ${gpsCoords ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-800 hover:bg-slate-700 text-white'}`}
+                                className={`w-full gap-2 field-button ${gpsCoords ? 'border-green-500/20 bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'bg-accent hover:bg-accent/80 text-foreground border-border'}`}
                                 onClick={captureGps}
                                 disabled={gpsLoading}
                             >
@@ -275,22 +275,20 @@ export default function FieldTasks() {
                             </Button>
                         </div>
 
-
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-slate-700">Notes (Optional)</label>
+                            <label className="text-sm font-semibold text-foreground/80">Notes (Optional)</label>
                             <textarea
-                                className="w-full border border-slate-200 dark:border-slate-800 rounded-md p-2 text-sm focus:ring-2 focus:ring-indigo-500 min-h-[60px]"
+                                className="w-full border border-border bg-muted/20 rounded-md p-2 text-sm text-foreground/90 placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-nl-orange/50 min-h-[60px]"
                                 placeholder="Any issues, weather delays, or material shortages..."
                                 value={notes}
                                 onChange={e => setNotes(e.target.value)}
                             />
                         </div>
-
                     </div>
 
-                    <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t shrink-0 flex gap-3">
-                        <Button variant="outline" className="flex-1 field-button" onClick={() => setSelectedTask(null)}>Cancel</Button>
-                        <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700 field-button" onClick={handleSubmit}>
+                    <div className="p-4 bg-muted/20 border-t border-border shrink-0 flex gap-3">
+                        <Button variant="outline" className="flex-1 field-button border-border text-muted-foreground hover:text-foreground/90 hover:bg-white/[0.04]" onClick={() => setSelectedTask(null)}>Cancel</Button>
+                        <Button className="flex-1 bg-nl-orange hover:bg-nl-orange/90 text-white field-button" onClick={handleSubmit}>
                             Submit Log
                         </Button>
                     </div>

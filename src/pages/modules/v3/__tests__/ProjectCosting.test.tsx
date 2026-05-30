@@ -19,7 +19,7 @@ vi.mock('../../../../store/projectStore', () => ({
   useProjectStore: vi.fn(),
 }));
 
-const _ahspState = { ahspItems: [], loading: false, fetchItems: vi.fn().mockResolvedValue([]) }
+const _ahspState = { ahspItems: [], loading: false, fetchItems: vi.fn().mockResolvedValue([]), fetchAHSPItems: vi.fn().mockResolvedValue([]) }
 vi.mock('../../../../store/ahspStore', () => ({
   useAHSPStore: vi.fn((sel?: (s: typeof _ahspState) => any) => sel ? sel(_ahspState) : _ahspState),
 }));

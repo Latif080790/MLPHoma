@@ -46,17 +46,34 @@ const INCIDENT_TYPE_LABEL: Record<string, string> = {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-    LOW: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-    MEDIUM: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-    HIGH: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-    CRITICAL: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+    LOW: 'bg-green-500/10 text-green-400 border border-green-500/20',
+    MEDIUM: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+    HIGH: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
+    CRITICAL: 'bg-red-500/10 text-red-400 border border-red-500/20',
+}
+
+const INCIDENT_TYPE_COLORS: Record<string, string> = {
+    NEAR_MISS: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+    FIRST_AID: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+    MEDICAL_TREATMENT: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+    LOST_TIME: 'bg-red-500/10 text-red-400 border border-red-500/20',
+    FATALITY: 'bg-red-500/10 text-red-400 border border-red-500/20',
+    PROPERTY_DAMAGE: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
+    ENVIRONMENTAL: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
 }
 
 const RISK_LEVEL_COLORS: Record<string, string> = {
-    LOW: 'text-green-600',
-    MEDIUM: 'text-yellow-600',
-    HIGH: 'text-orange-600',
-    CRITICAL: 'text-red-600 font-bold',
+    LOW: 'bg-green-500/10 text-green-400 border border-green-500/20',
+    MEDIUM: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+    HIGH: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
+    CRITICAL: 'bg-red-500/10 text-red-400 border border-red-500/20',
+}
+
+const RISK_LEVEL_TEXT: Record<string, string> = {
+    LOW: 'text-green-400',
+    MEDIUM: 'text-amber-400',
+    HIGH: 'text-orange-400',
+    CRITICAL: 'text-red-400',
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -949,7 +966,7 @@ export default function QHSE() {
                                     </TableHeader>
                                     <TableBody>
                                         {incidents.map(inc => (
-                                            <TableRow key={inc.id}>
+                                            <TableRow key={inc.id} style={inc.type === 'FATALITY' ? { backgroundColor: 'rgba(239,68,68,.15)' } : undefined}>
                                                 <TableCell className="font-mono text-xs">{inc.incident_number}</TableCell>
                                                 <TableCell>
                                                     <div className="font-medium text-sm">{inc.title}</div>
@@ -1005,7 +1022,7 @@ export default function QHSE() {
                                     </TableHeader>
                                     <TableBody>
                                         {inspections.map(ins => (
-                                            <TableRow key={ins.id}>
+                                            <TableRow key={ins.id} style={ins.score != null && ((ins.score / (ins.max_score || 100)) * 100) < 80 ? { backgroundColor: 'rgba(245,158,11,.08)' } : undefined}>
                                                 <TableCell className="font-mono text-xs">{ins.inspection_number}</TableCell>
                                                 <TableCell className="font-medium text-sm">{ins.title}</TableCell>
                                                 <TableCell className="text-xs">{ins.type}</TableCell>

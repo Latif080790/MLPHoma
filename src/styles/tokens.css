@@ -43,15 +43,26 @@
   --brand-primary-100: 214 95% 89%;
   --brand-primary-050: 214 100% 95%;
 
-  /* --- Brand Secondary Scale --- */
-  --brand-secondary-700: 262 72% 40%;
-  --brand-secondary-500: 262 83% 58%;
-  --brand-secondary-100: 264 100% 93%;
+  /* --- Orange Brand Scale (new primary — replaces blue in dark mode) --- */
+  --brand-orange-900: 20 90% 28%;    /* #7C2D12 */
+  --brand-orange-700: 21 90% 42%;    /* #EA580C dark */
+  --brand-orange-500: 25 95% 53%;    /* #F97316 primary */
+  --brand-orange-400: 27 96% 61%;    /* #FB923C light */
+  --brand-orange-100: 34 100% 91%;
+  --brand-orange-050: 34 100% 96%;
+  --brand-orange-dim: rgba(249, 115, 22, 0.12);
 
-  /* --- Brand Accent Support --- */
-  --brand-teal-500: 173 58% 39%;
-  --brand-indigo-500: 243 75% 59%;
-  --brand-cyan-500: 192 91% 36%;
+  /* --- Cyan Accent Scale (data live / progress / actual values) --- */
+  --brand-cyan-400: 188 86% 53%;     /* #22D3EE — data live */
+  --brand-cyan-500: 190 91% 36%;     /* #06B6D4 */
+  --brand-cyan-dim: rgba(34, 211, 238, 0.12);
+
+  /* --- Navy Surface Scale (v2 — wider steps) --- */
+  --navy-1: #070C18;    /* canvas */
+  --navy-2: #0E1525;    /* page / sidebar */
+  --navy-3: #16223A;    /* panel / card */
+  --navy-4: #1E2B45;    /* hover state */
+  --navy-5: #273856;    /* elevated (modal / drawer) */
 
   /* --- Spacing Scale (4px base) --- */
   --space-0: 0px;
@@ -359,15 +370,26 @@
    ========================================================================== */
 
 .dark {
-  /* --- Surface Tokens --- */
-  --color-surface-canvas: var(--neutral-950);
-  --color-surface-page: var(--neutral-900);
-  --color-surface-panel: var(--neutral-800);
-  --color-surface-panel-hover: var(--neutral-700);
-  --color-surface-panel-active: var(--neutral-700);
-  --color-surface-subtle: var(--neutral-900);
-  --color-surface-elevated: var(--neutral-700);
+  /* --- Raw rgba border vars — use in Tailwind arbitrary: border-[var(--b1)] --- */
+  --b0: rgba(255, 255, 255, 0.04);
+  --b1: rgba(255, 255, 255, 0.08);
+  --b2: rgba(255, 255, 255, 0.14);
+
+  /* --- Surface Tokens — Dark Navy v2 (wider steps) --- */
+  --color-surface-canvas: 222 55% 6%;       /* #070C18 */
+  --color-surface-page: 222 45% 10%;        /* #0E1525 */
+  --color-surface-panel: 220 45% 16%;       /* #16223A */
+  --color-surface-panel-hover: 220 39% 19%; /* #1E2B45 */
+  --color-surface-panel-active: 220 39% 19%;
+  --color-surface-subtle: 222 45% 10%;
+  --color-surface-elevated: 218 38% 25%;    /* #273856 — modal / drawer */
   --color-surface-inverse: var(--neutral-100);
+
+  /* --- Brand Primary Override — orange in dark mode --- */
+  --brand-primary-500: 25 95% 53%;   /* #F97316 */
+  --brand-primary-300: 27 96% 61%;   /* #FB923C */
+  --brand-primary-100: 27 100% 82%;
+  --brand-primary-050: 34 100% 91%;
 
   /* --- Text Tokens --- */
   --color-text-primary: var(--neutral-50);
@@ -375,8 +397,8 @@
   --color-text-tertiary: var(--neutral-500);
   --color-text-disabled: var(--neutral-600);
   --color-text-inverse: var(--neutral-900);
-  --color-text-link: var(--brand-primary-300);
-  --color-text-link-hover: var(--brand-primary-100);
+  --color-text-link: var(--brand-orange-500);
+  --color-text-link-hover: var(--brand-orange-400);
 
   /* --- Icon Tokens --- */
   --color-icon-primary: var(--neutral-100);
@@ -384,68 +406,65 @@
   --color-icon-tertiary: var(--neutral-500);
   --color-icon-disabled: var(--neutral-600);
   --color-icon-inverse: var(--neutral-900);
-  --color-icon-brand: var(--brand-primary-300);
+  --color-icon-brand: var(--brand-orange-400);
 
-  /* --- Border Tokens --- */
-  --color-border-default: var(--neutral-700);
-  --color-border-subtle: var(--neutral-700);
-  --color-border-strong: var(--neutral-600);
-  --color-border-focus: var(--brand-primary-300);
-  --color-border-disabled: var(--neutral-700);
+  /* --- Border Tokens (rgba-white equivalents on navy bg) --- */
+  --color-border-default: 220 28% 18%;   /* ≈ rgba(255,255,255,0.08) */
+  --color-border-subtle: 220 20% 14%;    /* ≈ rgba(255,255,255,0.04) */
+  --color-border-strong: 220 35% 22%;    /* ≈ rgba(255,255,255,0.14) */
+  --color-border-focus: var(--brand-orange-500);
+  --color-border-disabled: 220 20% 14%;
+  --color-border-inverse: var(--neutral-200);
 
-  /* --- Status Tokens (darkened backgrounds) --- */
-  --color-status-success-bg: 138 76% 10%;
-  --color-status-warning-bg: 48 96% 10%;
-  --color-status-danger-bg: 0 86% 12%;
-  --color-status-info-bg: 214 100% 12%;
+  /* --- Status Tokens — dark backgrounds --- */
+  --color-status-success-bg: 142 72% 8%;
+  --color-status-warning-bg: 45 93% 9%;
+  --color-status-danger-bg: 0 84% 10%;
+  --color-status-info-bg: 221 83% 12%;
 
-  /* --- Table / Row — Dark Mode --- */
-  --table-row-default: var(--neutral-800);
-  --table-row-hover: var(--neutral-700);
-  --table-row-selected: 221 83% 15%;
-  --table-row-active: 221 83% 18%;
-  --table-row-group: var(--neutral-900);
+  /* --- Table / Row — Dark Navy --- */
+  --table-row-default: 220 45% 16%;      /* panel */
+  --table-row-hover: 220 39% 19%;        /* panel-hover */
+  --table-row-selected: 25 95% 12%;      /* orange dim */
+  --table-row-active: 25 95% 15%;
+  --table-row-warning: 45 93% 9%;
+  --table-row-error: 0 84% 10%;
+  --table-row-group: 222 45% 10%;        /* page level */
 
-  --table-header-bg: var(--neutral-900);
+  --table-header-bg: 222 45% 10%;
   --table-header-text: var(--neutral-400);
-  --table-header-border: var(--neutral-700);
+  --table-header-border: 220 20% 14%;
 
-  --table-footer-bg: var(--neutral-900);
+  --table-footer-bg: 222 45% 10%;
   --table-footer-text: var(--neutral-100);
-  --table-footer-border: var(--neutral-700);
+  --table-footer-border: 220 20% 14%;
 
   /* --- Navigation — Dark Mode --- */
-  --nav-item-active-bg: 221 83% 15%;
-  --nav-item-active-text: var(--brand-primary-300);
-  --nav-item-hover-bg: var(--neutral-700);
+  --nav-item-active-bg: var(--brand-orange-dim);
+  --nav-item-active-text: var(--brand-orange-500);
+  --nav-item-hover-bg: 220 39% 19%;
+  --nav-section-text: var(--neutral-600);
 
-  /* --- Shadow Overrides (Dark) — stronger for dark canvas depth --- */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.30);
+  /* --- Shadow Overrides (Dark) — no colored glow per v2 spec --- */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.35);
   --shadow-sm:
-    0 1px 3px 0 rgb(0 0 0 / 0.40),
-    0 1px 2px -1px rgb(0 0 0 / 0.30);
+    0 1px 3px 0 rgb(0 0 0 / 0.45),
+    0 1px 2px -1px rgb(0 0 0 / 0.35);
   --shadow-md:
-    0 4px 6px -1px rgb(0 0 0 / 0.45),
-    0 2px 4px -2px rgb(0 0 0 / 0.35),
-    0 0 0 1px rgb(255 255 255 / 0.04);
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 4px 16px rgb(0 0 0 / 0.45);
   --shadow-lg:
-    0 10px 15px -3px rgb(0 0 0 / 0.50),
-    0 4px 6px -4px rgb(0 0 0 / 0.40),
-    0 0 0 1px rgb(255 255 255 / 0.04);
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 8px 32px rgb(0 0 0 / 0.55);
   --shadow-xl:
-    0 20px 25px -5px rgb(0 0 0 / 0.55),
-    0 8px 10px -6px rgb(0 0 0 / 0.45),
-    0 0 0 1px rgb(255 255 255 / 0.05);
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 20px 48px rgb(0 0 0 / 0.65);
 
-  /* --- Glow Overrides (Dark) — more vivid on dark canvas --- */
-  --shadow-glow-orange:
-    0 0 0 1px rgb(249 115 22 / 0.20),
-    0 8px 24px -4px rgb(249 115 22 / 0.30);
-  --shadow-glow-orange-hover:
-    0 0 0 1px rgb(249 115 22 / 0.30),
-    0 12px 32px -4px rgb(249 115 22 / 0.40);
-  --shadow-glow-blue:
-    0 0 0 1px rgb(29 95 204 / 0.20),
-    0 8px 24px -4px rgb(29 95 204 / 0.28);
-  --shadow-focus-ring: 0 0 0 2px rgb(9 9 11), 0 0 0 4px rgb(249 115 22 / 0.55);
+  /* Focus ring uses canvas color for offset gap */
+  --shadow-focus-ring: 0 0 0 2px rgb(7 12 24), 0 0 0 4px rgb(249 115 22 / 0.55);
+
+  /* Glow shadows REMOVED per v2 spec — no colored shadows */
+  --shadow-glow-orange: none;
+  --shadow-glow-orange-hover: none;
+  --shadow-glow-blue: none;
 }

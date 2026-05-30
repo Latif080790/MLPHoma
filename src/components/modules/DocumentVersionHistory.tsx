@@ -123,7 +123,7 @@ export function DocumentVersionHistory({
                                     <TableCell>
                                         <div className="flex items-center gap-1.5">
                                             {v.status === 'ARCHIVED' ? (
-                                                <Badge variant="outline" className="text-xs bg-slate-100 text-slate-700 border-slate-300">ARCHIVED</Badge>
+                                                <Badge variant="outline" className="text-xs bg-muted/50 text-muted-foreground border-border">ARCHIVED</Badge>
                                             ) : v.status === 'SUPERSEDED' ? (
                                                 <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-300">SUPERSEDED</Badge>
                                             ) : (

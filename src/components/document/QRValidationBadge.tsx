@@ -114,7 +114,7 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
                     <div className="py-6 flex flex-col items-center justify-center space-y-4">
                         {!record ? (
                             <div className="space-y-4">
-                                <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 flex flex-col items-center">
+                                <div className="p-4 bg-muted/50 rounded-lg text-muted-foreground flex flex-col items-center">
                                     <QrCode size={48} className="opacity-50 mb-2" />
                                     <p className="text-sm">No QR validation generated yet.</p>
                                 </div>
@@ -124,18 +124,18 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
                             </div>
                         ) : (
                             <div className="space-y-4 w-full">
-                                <div className="bg-white p-4 rounded-xl border-2 border-slate-200 shadow-sm inline-block mx-auto relative group">
+                                <div className="bg-card p-4 rounded-xl border-2 border-border shadow-sm inline-block mx-auto relative group">
                                     {/* Simulated QR Code using CSS grid and icon */}
-                                    <div className="w-32 h-32 border-4 border-slate-900 p-2 flex items-center justify-center relative">
-                                        <QrCode size={96} className="text-slate-900" />
+                                    <div className="w-32 h-32 border-4 border-border p-2 flex items-center justify-center relative">
+                                        <QrCode size={96} className="text-foreground" />
                                         <div className="absolute inset-0 border-[8px] border-white/50 border-r-transparent border-b-transparent"></div>
                                         <div className="absolute inset-0 border-[8px] border-white/50 border-l-transparent border-t-transparent"></div>
                                     </div>
                                 </div>
 
-                                <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3 text-left space-y-2 border">
+                                <div className="bg-muted/30 rounded-lg p-3 text-left space-y-2 border">
                                     <div>
-                                        <div className="text-xs text-slate-500 uppercase font-semibold">Validation Hash</div>
+                                        <div className="text-xs text-muted-foreground uppercase font-semibold">Validation Hash</div>
                                         <div className="font-mono text-sm font-bold flex items-center justify-between">
                                             {record.validationHash}
                                             <Button variant="ghost" size="icon" aria-label="Copy hash" className="h-5 w-5" onClick={handleCopyHash}><Copy size={12} /></Button>
@@ -143,11 +143,11 @@ export function QRValidationBadge({ documentId, projectId, documentTitle, versio
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 text-xs">
                                         <div>
-                                            <div className="text-xs text-slate-500 uppercase font-semibold">Issued By</div>
+                                            <div className="text-xs text-muted-foreground uppercase font-semibold">Issued By</div>
                                             <div className="font-medium truncate">{record.issuedBy}</div>
                                         </div>
                                         <div>
-                                            <div className="text-xs text-slate-500 uppercase font-semibold">Version</div>
+                                            <div className="text-xs text-muted-foreground uppercase font-semibold">Version</div>
                                             <div className="font-medium">v{record.versionNumber}</div>
                                         </div>
                                     </div>

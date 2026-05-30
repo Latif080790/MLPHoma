@@ -1,8 +1,6 @@
 
 import React, { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 // Enterprise patterns
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
@@ -16,7 +14,8 @@ function getUtilizationStatus(totalUsage: number) {
     if (totalUsage >= 85) {
         return {
             label: 'High',
-            className: 'border-red-200 text-red-700 bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:bg-red-950/20',
+            className: 'border-red-500/20 text-red-400 bg-red-500/10',
+            barColor: '#EF4444',
             Icon: AlertTriangle,
         }
     }
@@ -24,14 +23,16 @@ function getUtilizationStatus(totalUsage: number) {
     if (totalUsage >= 60) {
         return {
             label: 'Medium',
-            className: 'border-amber-200 text-amber-700 bg-amber-50 dark:border-amber-900/40 dark:text-amber-300 dark:bg-amber-950/20',
+            className: 'border-amber-500/20 text-amber-400 bg-amber-500/10',
+            barColor: '#F59E0B',
             Icon: Info,
         }
     }
 
     return {
         label: 'Low',
-        className: 'border-emerald-200 text-emerald-700 bg-emerald-50 dark:border-emerald-900/40 dark:text-emerald-300 dark:bg-emerald-950/20',
+        className: 'border-green-500/20 text-green-400 bg-green-500/10',
+        barColor: '#10B981',
         Icon: CheckCircle2,
     }
 }
@@ -175,55 +176,68 @@ export default function PortfolioResources() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {resources.map((res, i) => (
-                    <Card key={i} className="group border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all overflow-hidden">
+                    <Card key={i} className="group border-border bg-card hover:border-border transition-all overflow-hidden">
                         {(() => {
                             const utilization = getUtilizationStatus(res.totalUsage)
                             const UtilizationIcon = utilization.Icon
 
                             return (
-                                <CardHeader className="pb-2 bg-slate-50/50 dark:bg-slate-900/50">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                    {res.resourceName}
-                                    <Badge variant="outline" className="text-xs font-normal uppercase">
-                                        {res.type}
-                                    </Badge>
-                                </CardTitle>
-                                <Badge variant="outline" className={`text-xs font-semibold gap-1.5 ${utilization.className}`}>
-                                    <UtilizationIcon size={12} />
-                                    {utilization.label}
-                                    <span className="font-mono">{Math.round(res.totalUsage)}%</span>
-                                </Badge>
-                            </div>
-                        </CardHeader>
+                                <CardHeader className="pb-2 bg-muted/20">
+                                    <div className="flex items-center justify-between">
+                                        <CardTitle className="text-sm font-bold flex items-center gap-2 text-foreground/90">
+                                            {res.resourceName}
+                                            <span className="inline-flex items-center rounded-md border border-white/10 bg-white/[0.06] px-1.5 py-0.5 text-xs font-mono text-muted-foreground uppercase">
+                                                {res.type}
+                                            </span>
+                                        </CardTitle>
+                                        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${utilization.className}`}>
+                                            <UtilizationIcon size={11} />
+                                            {utilization.label}
+                                            <span className="font-mono">{Math.round(res.totalUsage)}%</span>
+                                        </span>
+                                    </div>
+                                </CardHeader>
                             )
                         })()}
                         <CardContent className="pt-4 space-y-4">
-                            <div className="space-y-1">
-                                <div className="flex justify-between text-xs text-slate-500 uppercase">
-                                    <span>Portfolio Allocation</span>
-                                    <span>{res.allocation.length} Projects</span>
-                                </div>
-                                <Progress value={res.totalUsage} className="h-1.5" />
-                            </div>
+                            {(() => {
+                                const utilization = getUtilizationStatus(res.totalUsage)
+                                return (
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between text-xs text-white/30 uppercase tracking-wide">
+                                            <span>Alokasi Portfolio</span>
+                                            <span>{res.allocation.length} Proyek</span>
+                                        </div>
+                                        <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                                            <div
+                                                className="h-full rounded-full transition-all"
+                                                style={{ width: `${res.totalUsage}%`, backgroundColor: utilization.barColor }}
+                                            />
+                                        </div>
+                                    </div>
+                                )
+                            })()}
 
                             <div className="space-y-2">
-                                <h4 className="text-xs text-slate-500 font-bold uppercase flex items-center gap-1">
-                                    <Info size={10} /> Active Distribution
+                                <h4 className="text-xs text-white/30 font-bold uppercase flex items-center gap-1">
+                                    <Info size={10} /> Distribusi Aktif
                                 </h4>
                                 {res.allocation.map((alloc, idx) => (
-                                    <div key={idx} className="flex items-center justify-between group/item">
-                                        <span className="text-xs text-slate-700 dark:text-slate-300 truncate w-32">
+                                    <div key={idx} className="flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground truncate w-32">
                                             {alloc.projectName}
                                         </span>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-24 bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                            <div className="w-24 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
                                                 <div
-                                                    className={`h-full transition-all ${alloc.usagePercent > 70 ? 'bg-amber-500' : 'bg-blue-500'}`}
-                                                    style={{ width: `${alloc.usagePercent}%` }}
+                                                    className="h-full rounded-full transition-all"
+                                                    style={{
+                                                        width: `${alloc.usagePercent}%`,
+                                                        backgroundColor: alloc.usagePercent > 70 ? '#F59E0B' : '#3B82F6',
+                                                    }}
                                                 />
                                             </div>
-                                            <span className="text-xs font-mono w-8 text-right">
+                                            <span className="text-xs font-mono w-8 text-right text-muted-foreground">
                                                 {Math.round(alloc.usagePercent)}%
                                             </span>
                                         </div>
@@ -235,12 +249,12 @@ export default function PortfolioResources() {
                 ))}
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-lg p-4 flex items-start gap-3">
-                <Info size={16} className="text-blue-500 mt-0.5" />
-                <div className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-                    <strong>Optimization Tip:</strong> Equipment with {'>'}85% average utilization may indicate a bottleneck.
-                    Consider reallocating idle assets from projects with {'<'}20% usage or procuring additional units to avoid schedule slips.
-                </div>
+            <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.07] p-4 flex items-start gap-3">
+                <Info size={15} className="text-blue-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-blue-300/80 leading-relaxed">
+                    <strong className="text-blue-300">Tips Optimasi:</strong> Sumber daya dengan utilisasi {'>'}85% mengindikasikan bottleneck.
+                    Pertimbangkan realokasi aset idle dari proyek dengan utilisasi {'<'}20% untuk menghindari keterlambatan jadwal.
+                </p>
             </div>
         </PageShell>
     )

@@ -987,12 +987,29 @@ export default function GanttChart({
    * Render
    * ------------------------- */
   return (
-    <div className="flex flex-col h-full w-full bg-white dark:bg-neutral-900 overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-card overflow-hidden">
       {/* Chart – fills entire container */}
       <div ref={containerRef} className="relative overflow-auto outline-none flex-1" onKeyDown={handleKeyDown} tabIndex={0} role="region" aria-label="Gantt chart">
+        {/* ── Full-container background overlays (pointer-events-none, z-0) ──
+            These cover the ENTIRE scrollable area — full height & width:
+            1. Column day/week grid lines starting at leftColWidth
+            2. Left-panel border-r vertical separator line               */}
+        <div
+          className="absolute inset-0 pointer-events-none z-0"
+          aria-hidden="true"
+          style={{
+            backgroundImage: `repeating-linear-gradient(to right, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent ${pxPerDay}px)`,
+            backgroundPosition: `${leftColWidth}px 0`,
+          }}
+        />
+        <div
+          className="absolute top-0 bottom-0 border-r border-border pointer-events-none z-0"
+          aria-hidden="true"
+          style={{ left: leftColWidth - 1, width: 1 }}
+        />
         {/* Resizable Split Pane Handle */}
         <div
-          className="sticky top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-blue-500/80 hover:scale-x-150 transition-all flex items-center justify-center -ml-1 group"
+          className="sticky top-0 bottom-0 z-50 w-2 cursor-col-resize hover:bg-primary/60 hover:scale-x-150 transition-all flex items-center justify-center -ml-1 group"
           style={{ left: leftColWidth, height: '100%', float: 'left' }}
           onMouseDown={(e) => {
             e.preventDefault()
@@ -1004,21 +1021,21 @@ export default function GanttChart({
             window.addEventListener('mouseup', up)
           }}
         >
-          <div className="h-full w-[1px] bg-neutral-300 dark:bg-neutral-600 group-hover:bg-transparent" />
+          <div className="h-full w-[1px] bg-border group-hover:bg-transparent" />
         </div>
 
-        <div ref={exportRef} style={{ width: (endDay - startDay) * pxPerDay + leftColWidth }}>
+        <div ref={exportRef} className="min-h-full flex flex-col" style={{ width: (endDay - startDay) * pxPerDay + leftColWidth, minWidth: '100%' }}>
           {/* Sticky headers */}
-          <div className="sticky top-0 z-30 backdrop-blur-lg bg-white/90 dark:bg-neutral-900/90 shadow-sm">
+          <div className="sticky top-0 z-30 backdrop-blur-md bg-background/95 shadow-sm">
             {/* Month row */}
-            <div className="flex items-center border-b border-neutral-200 dark:border-neutral-700" style={{ height: 36 }}>
-              <div className="flex items-center justify-between px-4 border-r border-neutral-200 dark:border-neutral-700 text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500" style={{ width: leftColWidth }}>
+            <div className="flex items-center border-b border-border" style={{ height: 36 }}>
+              <div className="flex items-center justify-between px-4 border-r border-border text-xs font-bold uppercase tracking-widest text-muted-foreground" style={{ width: leftColWidth }}>
                 <span className="truncate">Activity / Task</span>
-                <span className="text-xs font-medium text-neutral-300 dark:text-neutral-600 ml-2 shrink-0">Schedule</span>
+                <span className="text-xs font-medium text-muted-foreground/50 ml-2 shrink-0">Schedule</span>
               </div>
               <div className="relative" style={{ width: (endDay - startDay) * pxPerDay }}>
                 {monthSpans.map((m, i) => (
-                  <div key={i} className="absolute top-0 h-full px-3 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center border-r border-neutral-100 dark:border-neutral-800" style={{ left: (m.startIndex - startDay) * pxPerDay, width: m.width }}>
+                  <div key={i} className="absolute top-0 h-full px-3 text-xs font-bold uppercase tracking-wider text-primary flex items-center border-r border-border/40" style={{ left: (m.startIndex - startDay) * pxPerDay, width: m.width }}>
                     <div className="truncate">{m.label}</div>
                   </div>
                 ))}
@@ -1026,10 +1043,10 @@ export default function GanttChart({
             </div>
 
             {/* Day/Week row */}
-            <div className="flex items-center border-b border-neutral-200 dark:border-neutral-700" style={{ height: 28 }}>
-              <div className="flex items-center gap-2 px-4 border-r border-neutral-200 dark:border-neutral-700" style={{ width: leftColWidth }}>
-                <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider flex-1">Task</span>
-                <span className="text-xs font-semibold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider">Dur</span>
+            <div className="flex items-center border-b border-border" style={{ height: 28 }}>
+              <div className="flex items-center gap-2 px-4 border-r border-border" style={{ width: leftColWidth }}>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex-1">Task</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dur</span>
               </div>
 
               <div className="relative" style={{ width: (endDay - startDay) * pxPerDay }}>
@@ -1054,7 +1071,7 @@ export default function GanttChart({
                         const dow = parseISODate(d).getUTCDay()
                         const label = viewMode === 'month' ? `${new Date(d).toISOString().slice(8, 10)}` : ['S', 'M', 'T', 'W', 'T', 'F', 'S'][dow]
                         return (
-                          <div key={globalIdx} className="absolute top-0 h-8 border-l text-xs text-neutral-500 flex items-center px-1 select-none" style={{ left, width: pxPerDay }} title={d}>
+                          <div key={globalIdx} className="absolute top-0 h-8 border-l border-border/30 text-xs text-muted-foreground/60 flex items-center px-1 select-none" style={{ left, width: pxPerDay }} title={d}>
                             {showLabel ? <div className="text-xs">{label}</div> : null}
                           </div>
                         )
@@ -1117,18 +1134,18 @@ export default function GanttChart({
                   return (
                     <div key={`group-${r.groupId}`} role="row" style={{ height: rowHeight }} className="relative">
                       <div
-                        className={`sticky left-0 z-10 flex items-center gap-2 px-4 text-sm bg-gradient-to-r from-indigo-50/70 to-transparent dark:from-indigo-950/20 dark:to-transparent border-b border-r border-neutral-200 dark:border-neutral-700 hover:from-indigo-100/80 dark:hover:from-indigo-900/30`}
+                        className={`sticky left-0 z-10 flex items-center gap-2 px-4 text-sm bg-gradient-to-r from-muted/60 to-transparent border-b border-r border-border hover:from-muted/80`}
                         style={{ top: 0, width: leftColWidth }}
                       >
                         <button
-                          className="flex items-center justify-center w-5 h-5 rounded text-xs font-bold border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-neutral-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors"
+                          className="flex items-center justify-center w-5 h-5 rounded text-xs font-bold border border-border bg-card text-muted-foreground hover:bg-accent/60 transition-colors"
                           onClick={() => setCollapsedGroups((s) => ({ ...s, [r.groupId]: !s[r.groupId] }))}
                         >
                           {collapsed ? '▶' : '▼'}
                         </button>
                         <div className="min-w-0">
-                          <div className="truncate text-[12px] font-bold text-neutral-700 dark:text-neutral-200 uppercase tracking-wide">{r.label}</div>
-                          <div className="text-xs text-neutral-400">{r.count} items</div>
+                          <div className="truncate text-[12px] font-bold text-foreground uppercase tracking-wide">{r.label}</div>
+                          <div className="text-xs text-muted-foreground">{r.count} items</div>
                         </div>
                       </div>
                     </div>
@@ -1150,9 +1167,9 @@ export default function GanttChart({
 
                 const leftCellBase = `sticky left-0 z-10 flex items-center gap-2 px-3 text-[12px] border-b border-r transition-colors ${
                   isCritical
-                    ? 'bg-rose-50/40 dark:bg-rose-950/20 border-l-2 border-l-rose-500'
-                    : globalRowIndex % 2 === 0 ? 'bg-white/95 dark:bg-neutral-900/95' : 'bg-neutral-25 dark:bg-neutral-800/40'
-                } ${isSelected ? 'ring-1 ring-inset ring-brand-primary-300 bg-brand-primary-050 dark:bg-brand-primary-900/20' : 'hover:bg-neutral-50 dark:hover:bg-neutral-700/60'}`
+                    ? 'bg-rose-500/10 dark:bg-rose-950/20 border-l-2 border-l-rose-500'
+                    : globalRowIndex % 2 === 0 ? 'bg-card' : 'bg-muted/20'
+                } ${isSelected ? 'ring-1 ring-inset ring-primary/30 bg-primary/5' : 'hover:bg-accent/40'}`
 
                 const barTop = (rowHeight - barHeight) / 2
 
@@ -1247,7 +1264,7 @@ export default function GanttChart({
                     {onTaskResize && (
                       <div
                         aria-label="Resize task end date"
-                        className="absolute right-0 top-0 h-full w-2 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/30 rounded-r"
+                        className="absolute right-0 top-0 h-full w-2 cursor-col-resize opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary/30 rounded-r"
                         onMouseDown={(e) => {
                           e.stopPropagation()
                           e.preventDefault()
@@ -1273,7 +1290,7 @@ export default function GanttChart({
                           tabIndex={0}
                         >
                           {/* Line ID / Index */}
-                          <span className="text-xs font-mono text-neutral-400 w-5 shrink-0">
+                          <span className="text-xs font-mono text-muted-foreground w-5 shrink-0">
                             {(globalRowIndex + 1).toString().padStart(2, '0')}
                           </span>
                           
@@ -1281,15 +1298,15 @@ export default function GanttChart({
                           <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${
                             t.status === 'completed' ? 'bg-emerald-500' : 
                             t.status === 'in_progress' ? 'bg-blue-500' : 
-                            'bg-neutral-300'
+                            'bg-border'
                           }`} />
 
                           <div className="min-w-0 flex-1">
-                            <div className="truncate font-semibold text-neutral-800 dark:text-neutral-100 leading-tight text-xs">
+                            <div className="truncate font-semibold text-foreground leading-tight text-xs">
                               {t.name}
                             </div>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-xs text-neutral-400 font-medium tabular-nums">
+                              <span className="text-xs text-muted-foreground font-medium tabular-nums">
                                 {t.startDate}
                               </span>
                               <span className="text-xs bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold px-1 rounded">
@@ -1301,7 +1318,7 @@ export default function GanttChart({
                       </ContextMenuTrigger>
 
                       <ContextMenuContent className="w-44">
-                        <div className="px-2 py-1.5 text-xs text-neutral-500">{t.name}</div>
+                        <div className="px-2 py-1.5 text-xs text-muted-foreground">{t.name}</div>
                         <ContextMenuSeparator />
                         <ContextMenuItem onSelect={() => onTaskEdit?.(t.id)}>Edit task</ContextMenuItem>
                         <ContextMenuItem className="text-red-600 focus:text-red-700" onSelect={() => onTaskDelete?.(t.id)}>
@@ -1314,7 +1331,7 @@ export default function GanttChart({
                       <div className="relative" style={{ width: (endDay - startDay) * pxPerDay, height: rowHeight }}>
                         {showBaseline && t.baselineStartDate && t.baselineEndDate ? (
                           <div
-                            className="absolute h-1.5 rounded-sm border border-dashed border-neutral-300"
+                            className="absolute h-1.5 rounded-sm border border-dashed border-border/60"
                             style={{
                               left: (Math.max(0, days.indexOf(t.baselineStartDate)) - startDay) * pxPerDay,
                               width: Math.max(1, inclusiveDays(t.baselineStartDate, t.baselineEndDate)) * pxPerDay,
@@ -1357,7 +1374,7 @@ export default function GanttChart({
                               </div>
                             </ContextMenuTrigger>
                             <ContextMenuContent className="w-44">
-                              <div className="px-2 py-1.5 text-xs text-neutral-500">{t.name}</div>
+                              <div className="px-2 py-1.5 text-xs text-muted-foreground">{t.name}</div>
                               <ContextMenuSeparator />
                               <ContextMenuItem onSelect={() => onTaskEdit?.(t.id)}>Edit task</ContextMenuItem>
                               <ContextMenuItem className="text-red-600 focus:text-red-700" onSelect={() => onTaskDelete?.(t.id)}>
@@ -1369,7 +1386,7 @@ export default function GanttChart({
                           <ContextMenu>
                             <ContextMenuTrigger asChild>{barNode}</ContextMenuTrigger>
                             <ContextMenuContent className="w-44">
-                              <div className="px-2 py-1.5 text-xs text-neutral-500">{t.name}</div>
+                              <div className="px-2 py-1.5 text-xs text-muted-foreground">{t.name}</div>
                               <ContextMenuSeparator />
                               <ContextMenuItem onSelect={() => onTaskEdit?.(t.id)}>Edit task</ContextMenuItem>
                               <ContextMenuItem className="text-red-600 focus:text-red-700" onSelect={() => onTaskDelete?.(t.id)}>
@@ -1391,6 +1408,10 @@ export default function GanttChart({
             {/* Canvas for connectors positioned absolute */}
             <canvas ref={canvasRef} className="absolute left-0 top-0 pointer-events-none" />
           </div>
+
+          {/* Height filler — ensures exportRef fills container height.
+              Visual background handled by the absolute overlay above.  */}
+          <div className="flex-1" aria-hidden="true" style={{ minHeight: 120 }} />
         </div>
       </div>
     </div>

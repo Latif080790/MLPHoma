@@ -48,7 +48,7 @@ export default function RABCalculator({
   const isBakedIn = markupSource === 'baked_in' || markupSource === 'none'
 
   return (
-    <div className="rounded-md border p-3 bg-white shadow-sm text-sm space-y-1">
+    <div className="rounded-md border p-3 bg-card shadow-sm text-sm space-y-1">
       <div className="font-medium mb-2 flex items-center gap-2">
         Price Calculator
         {isBakedIn && (

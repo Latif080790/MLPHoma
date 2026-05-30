@@ -3,6 +3,7 @@ import { assertSupabase } from '../lib/supabaseClient'
 type RabRow = { final_total: number | null; cost_material: number | null; cost_labor: number | null; cost_equipment: number | null; cost_subcon: number | null; is_overhead: boolean | null }
 type RapRow = { total_budget: number | null; actual_cost: number | null; committed_cost: number | null }
 type MetricsRow = { pv: number; ev: number; ac: number; cpi: number; spi: number }
+type ProjectMetaRow = { meta: { rabRates?: { tax?: number; overhead?: number; profit?: number } } | null }
 
 export interface CostTypeBreakdown {
   material: number
@@ -14,6 +15,8 @@ export interface CostTypeBreakdown {
 
 export interface CostDashboardSnapshot {
   rabTotal: number
+  rabTaxRate: number
+  rabTotalWithPPN: number
   rapPlanned: number
   actualCost: number
   committedCost: number
@@ -30,13 +33,17 @@ export interface CostDashboardSnapshot {
 export const costDashboardService = {
   async getDashboardSnapshot(projectId: string): Promise<CostDashboardSnapshot> {
     const client = assertSupabase()
-    const [rabResult, rapResult] = await Promise.all([
+    const [rabResult, rapResult, projectResult] = await Promise.all([
       client.from('rab_items')
         .select('final_total, cost_material, cost_labor, cost_equipment, cost_subcon, is_overhead')
         .eq('project_id', projectId),
       client.from('rap_items')
         .select('total_budget, actual_cost, committed_cost')
         .eq('project_id', projectId),
+      client.from('projects')
+        .select('meta')
+        .eq('id', projectId)
+        .maybeSingle(),
     ])
     if (rabResult.error) throw rabResult.error
     if (rapResult.error) throw rapResult.error
@@ -52,8 +59,13 @@ export const costDashboardService = {
     const rabItems = (rabResult.data ?? []) as RabRow[]
     const rapItems = (rapResult.data ?? []) as RapRow[]
     const m = (!metricsResult.error && metricsResult.data) ? metricsResult.data as MetricsRow : null
+    const projectMeta = (!projectResult.error && projectResult.data)
+      ? (projectResult.data as ProjectMetaRow).meta
+      : null
+    const rabTaxRate = Number(projectMeta?.rabRates?.tax ?? 0)
 
     const rabTotal = rabItems.reduce((s, r) => s + Number(r.final_total || 0), 0)
+    const rabTotalWithPPN = parseFloat((rabTotal * (1 + rabTaxRate / 100)).toFixed(0))
     const breakdown: CostTypeBreakdown = {
       material:  rabItems.reduce((s, r) => s + Number(r.cost_material  || 0), 0),
       labor:     rabItems.reduce((s, r) => s + Number(r.cost_labor     || 0), 0),
@@ -72,7 +84,8 @@ export const costDashboardService = {
     const burnRatePercent = burnBase > 0 ? parseFloat(((actualCost / burnBase) * 100).toFixed(2)) : 0
 
     return {
-      rabTotal, rapPlanned, actualCost, committedCost, remainingBudget, burnRatePercent,
+      rabTotal, rabTaxRate, rabTotalWithPPN,
+      rapPlanned, actualCost, committedCost, remainingBudget, burnRatePercent,
       costTypeBreakdown: breakdown,
       latestCpi: m ? Number(m.cpi) : null,
       latestSpi: m ? Number(m.spi) : null,

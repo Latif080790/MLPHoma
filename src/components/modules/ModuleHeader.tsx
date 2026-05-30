@@ -12,7 +12,7 @@ export type ModuleHeaderAccent =
   | 'teal' | 'violet' | 'cyan' | 'fuchsia' | 'orange' | 'default'
 
 const ACCENT: Record<ModuleHeaderAccent, { bar: string; icon: string; glow: string }> = {
-  default:  { bar: 'from-slate-400 to-slate-500',   icon: 'bg-slate-100   dark:bg-slate-800   text-slate-600   dark:text-slate-300',   glow: 'shadow-slate-400/20' },
+  default:  { bar: 'from-slate-400 to-slate-500',   icon: 'bg-muted/50     text-muted-foreground  ',   glow: 'shadow-slate-400/20' },
   blue:     { bar: 'from-blue-500 to-indigo-500',    icon: 'bg-blue-50     dark:bg-blue-950/60  text-blue-600    dark:text-blue-400',    glow: 'shadow-blue-500/25'  },
   emerald:  { bar: 'from-emerald-400 to-teal-500',   icon: 'bg-emerald-50  dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400', glow: 'shadow-emerald-500/25' },
   rose:     { bar: 'from-rose-500 to-pink-500',      icon: 'bg-rose-50     dark:bg-rose-950/60  text-rose-600    dark:text-rose-400',    glow: 'shadow-rose-500/25'  },
@@ -48,7 +48,7 @@ export function ModuleHeader({
   const a = ACCENT[accent]
 
   return (
-    <div className="relative mb-5 overflow-hidden rounded-xl border border-slate-200/70 dark:border-slate-700/50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-sm">
+    <div className="relative mb-5 overflow-hidden rounded-xl border border-border/70 bg-white/80 backdrop-blur-sm shadow-sm">
       {/* Top gradient accent bar */}
       <div className={cn('absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r', a.bar)} />
 
@@ -64,11 +64,11 @@ export function ModuleHeader({
             </div>
           )}
           <div className="min-w-0">
-            <h1 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-50 leading-tight">
+            <h1 className="text-base font-bold tracking-tight text-foreground leading-tight">
               {title}
             </h1>
             {description && (
-              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed truncate max-w-xl">
+              <p className="mt-0.5 text-xs text-muted-foreground leading-relaxed truncate max-w-xl">
                 {description}
               </p>
             )}

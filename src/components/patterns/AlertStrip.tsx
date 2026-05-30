@@ -56,7 +56,7 @@ const severityConfig: Record<AlertSeverity, { icon: React.ReactNode; classes: st
   },
   locked: {
     icon: <Lock className="h-4 w-4 shrink-0" />,
-    classes: 'bg-slate-100 border-slate-300 text-slate-700 dark:bg-slate-800/50 dark:border-slate-700 dark:text-slate-300',
+    classes: 'bg-muted/50 border-border text-muted-foreground',
   },
 };
 

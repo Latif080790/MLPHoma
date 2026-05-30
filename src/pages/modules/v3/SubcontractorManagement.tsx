@@ -16,16 +16,16 @@ import ModulePageState from '@/components/common/ModulePageState'
 // ─── Status badges ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    ACTIVE:              { label: 'Aktif',          cls: 'bg-success-subtle text-success-fg' },
-    DRAFT:               { label: 'Draft',          cls: 'bg-surface-subtle text-secondary' },
-    COMPLETED:           { label: 'Selesai',        cls: 'bg-brand-subtle text-brand' },
-    TERMINATED:          { label: 'Terminasi',      cls: 'bg-destructive-subtle text-destructive' },
-    SUBMITTED:           { label: 'Diajukan',       cls: 'bg-warning-subtle text-warning-fg' },
-    APPROVED:            { label: 'Disetujui',      cls: 'bg-success-subtle text-success-fg' },
-    REJECTED:            { label: 'Ditolak',        cls: 'bg-destructive-subtle text-destructive' },
-    POSTED_TO_FINANCE:   { label: 'Posting AP',     cls: 'bg-brand-subtle text-brand' },
-    INACTIVE:            { label: 'Nonaktif',       cls: 'bg-surface-subtle text-secondary' },
-    BLACKLISTED:         { label: 'Blacklist',      cls: 'bg-destructive-subtle text-destructive' },
+    ACTIVE:              { label: 'Aktif',          cls: 'bg-green-500/10 text-green-400 border border-green-500/20' },
+    DRAFT:               { label: 'Draft',          cls: 'bg-white/[0.06] text-white/40 border border-white/10' },
+    COMPLETED:           { label: 'Selesai',        cls: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
+    TERMINATED:          { label: 'Terminasi',      cls: 'bg-red-500/10 text-red-400 border border-red-500/20' },
+    SUBMITTED:           { label: 'Diajukan',       cls: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
+    APPROVED:            { label: 'Disetujui',      cls: 'bg-green-500/10 text-green-400 border border-green-500/20' },
+    REJECTED:            { label: 'Ditolak',        cls: 'bg-red-500/10 text-red-400 border border-red-500/20' },
+    POSTED_TO_FINANCE:   { label: 'Posting AP',     cls: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
+    INACTIVE:            { label: 'Nonaktif',       cls: 'bg-white/[0.06] text-white/40 border border-white/10' },
+    BLACKLISTED:         { label: 'Blacklist',      cls: 'bg-red-500/10 text-red-400 border border-red-500/20' },
   }
   const cfg = map[status] ?? { label: status, cls: 'bg-surface-subtle text-secondary' }
   return (

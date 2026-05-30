@@ -27,10 +27,10 @@ function Delta({ v }: { v: number }) {
 export function CostKPIStrip({ snapshot, loading, error }: CostKPIStripProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-3 lg:grid-cols-6 rounded-lg border border-slate-200 overflow-hidden">
+      <div className="grid grid-cols-3 lg:grid-cols-6 rounded-lg border border-border overflow-hidden">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} role="status"
-            className={`animate-pulse bg-slate-50 h-[68px] ${i > 0 ? 'border-l border-slate-200' : ''}`} />
+            className={`animate-pulse bg-muted/30 h-[68px] ${i > 0 ? 'border-l border-border' : ''}`} />
         ))}
       </div>
     )
@@ -38,7 +38,7 @@ export function CostKPIStrip({ snapshot, loading, error }: CostKPIStripProps) {
 
   if (snapshot === null) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-slate-50 flex items-center gap-2 px-4 h-[68px] text-xs text-slate-400">
+      <div className="rounded-lg border border-border bg-muted/30 flex items-center gap-2 px-4 h-[68px] text-xs text-muted-foreground">
         {error
           ? <span className="text-red-500">Gagal memuat data: {error}</span>
           : <span>Tidak ada data snapshot tersedia.</span>
@@ -91,19 +91,19 @@ export function CostKPIStrip({ snapshot, loading, error }: CostKPIStripProps) {
   ]
 
   return (
-    <div className="grid grid-cols-3 lg:grid-cols-6 rounded-lg border border-slate-200 overflow-hidden bg-white">
+    <div className="grid grid-cols-3 lg:grid-cols-6 rounded-lg border border-border overflow-hidden bg-card">
       {cells.map((cell, i) => (
         <div
           key={cell.label}
-          className={`px-3 py-3 ${i > 0 ? 'border-l border-slate-200' : ''}`}
+          className={`px-3 py-3 ${i > 0 ? 'border-l border-border' : ''}`}
         >
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground leading-none mb-1.5">
             {cell.label}
           </p>
           <div className="flex items-baseline gap-1.5 flex-wrap">
             <p
               className={`text-sm font-bold font-mono leading-tight ${
-                cell.colorClass ?? (cell.warn ? 'text-amber-600' : 'text-slate-800')
+                cell.colorClass ?? (cell.warn ? 'text-amber-600' : 'text-muted-foreground')
               }`}
               data-testid={cell.testId}
             >
@@ -111,7 +111,7 @@ export function CostKPIStrip({ snapshot, loading, error }: CostKPIStripProps) {
             </p>
             {cell.delta}
           </div>
-          <p className="text-xs text-slate-400 mt-1 leading-none">{cell.sub}</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-none">{cell.sub}</p>
         </div>
       ))}
     </div>

@@ -26,6 +26,12 @@ export interface RABItem {
   volume?: number
   unit_price?: number
   unitPrice?: number
+  /**
+   * base_price — biaya pokok AHSP per satuan (harga cost, sebelum OH+Profit).
+   * Dipreservasi agar unit_price dapat direcalculate saat margin berubah.
+   * unit_price = base_price / (1 - (OH% + Profit%))
+   */
+  base_price?: number
   /** Computed totals */
   finalTotal?: number
   final_total?: number

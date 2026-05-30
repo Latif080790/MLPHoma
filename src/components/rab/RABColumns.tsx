@@ -43,7 +43,7 @@ function NumberInputCell({
       type="number"
       value={local}
       disabled={disabled}
-      className="h-7 text-right text-xs bg-slate-50 border-transparent focus:bg-white focus:border-blue-300 transition-all font-mono disabled:opacity-50"
+      className="h-7 text-right text-xs bg-muted/30 border-transparent focus:bg-card focus:border-blue-300 transition-all font-mono disabled:opacity-50"
       onChange={(e) => setLocal(e.target.value)}
       onFocus={() => { focused.current = true }}
       onBlur={() => {
@@ -117,7 +117,7 @@ export const getRABColumns = (
   {
     accessorKey: 'index',
     header: 'No.',
-    cell: ({ row }) => <span className="text-slate-400 font-mono">{row.index + 1}</span>,
+    cell: ({ row }) => <span className="text-muted-foreground font-mono">{row.index + 1}</span>,
     size: 56,
   },
   {
@@ -128,7 +128,7 @@ export const getRABColumns = (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <InfoIcon className="h-3 w-3 text-slate-400" />
+              <InfoIcon className="h-3 w-3 text-muted-foreground" />
             </TooltipTrigger>
             <TooltipContent>Class A = High Impact, B = Medium, C = Low</TooltipContent>
           </Tooltip>
@@ -151,7 +151,7 @@ export const getRABColumns = (
   {
     accessorKey: 'item_code',
     header: 'Code',
-    cell: ({ row }) => <span className="font-mono text-slate-500">{row.original.item_code || row.original.code || '-'}</span>,
+    cell: ({ row }) => <span className="font-mono text-muted-foreground">{row.original.item_code || row.original.code || '-'}</span>,
     size: 100,
   },
   {
@@ -164,20 +164,20 @@ export const getRABColumns = (
         <div className="flex items-start gap-2 py-1 max-w-[340px]">
           <button 
             onClick={() => row.toggleExpanded()}
-            className="mt-0.5 text-slate-400 hover:text-blue-500 transition-colors shrink-0"
+            className="mt-0.5 text-muted-foreground hover:text-blue-500 transition-colors shrink-0"
           >
             {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </button>
           <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
             <span 
-              className="font-bold text-slate-900 leading-snug dark:text-slate-100 line-clamp-2 break-words"
+              className="font-bold text-foreground leading-snug line-clamp-2 break-words"
               title={item.name}
             >
               {item.name}
             </span>
             {item.notes && item.notes !== 'No specification' ? (
               <span 
-                className="text-xs text-slate-400 line-clamp-1 break-words mt-0.5"
+                className="text-xs text-muted-foreground line-clamp-1 break-words mt-0.5"
                 title={item.notes}
               >
                 {item.notes}
@@ -221,7 +221,7 @@ export const getRABColumns = (
     header: () => <div className="text-center">SAT.</div>,
     cell: ({ row }) => (
       <div className="text-center">
-        <Badge variant="outline" className="text-xs font-bold text-slate-600 bg-slate-50 border-slate-200 uppercase px-1.5 h-5">
+        <Badge variant="outline" className="text-xs font-bold text-muted-foreground bg-muted/30 border-border uppercase px-1.5 h-5">
           {row.original.unit || '-'}
         </Badge>
       </div>
@@ -265,7 +265,7 @@ export const getRABColumns = (
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0 text-slate-400 hover:text-blue-600 transition-colors"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-600 transition-colors"
           title="Edit item"
           onClick={() => onSelectRow(row.original.id, true)}
         >
@@ -274,7 +274,7 @@ export const getRABColumns = (
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0 text-slate-400 hover:text-indigo-600 transition-colors"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-indigo-600 transition-colors"
           title="Link ke WBS"
           onClick={() => onToggleExpand(row.original.id)}
         >
@@ -283,7 +283,7 @@ export const getRABColumns = (
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0 text-slate-400 hover:text-red-600 transition-colors"
+          className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600 transition-colors"
           title="Hapus"
           onClick={() => onRemoveRow(row.original.id)}
         >

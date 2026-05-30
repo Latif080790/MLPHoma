@@ -37,7 +37,7 @@ export default function CurvaSChartSimple({ planned, actual = [] }: CurvaSChartP
   const data = Object.values(map).sort((a, b) => String(a.period).localeCompare(String(b.period)))
 
   return (
-    <div className="rounded-md border p-2 bg-white">
+    <div className="rounded-md border p-2 bg-card">
       <ResponsiveContainer width="100%" height={260}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />

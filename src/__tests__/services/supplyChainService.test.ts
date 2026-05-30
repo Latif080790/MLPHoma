@@ -78,6 +78,7 @@ describe('SupplyChainService Unit Tests', () => {
     beforeEach(() => {
         vi.resetAllMocks()
         mockFromFn.mockImplementation(() => makeChain({ data: [], error: null }))
+        mockRpcFn.mockResolvedValue({ data: { success: true, remaining: 0 }, error: null })
     })
 
     // --- PURCHASE ORDER TESTS ---

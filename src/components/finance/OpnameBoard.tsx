@@ -166,8 +166,8 @@ export function OpnameBoard() {
                     </CardContent>
                 </Card>
 
-                <Card className="col-span-1 lg:col-span-2 shadow-sm border border-slate-200 dark:border-slate-800">
-                    <CardHeader className="p-4 bg-slate-50 dark:bg-slate-900 border-b">
+                <Card className="col-span-1 lg:col-span-2 shadow-sm border border-border">
+                    <CardHeader className="p-4 bg-muted/30 border-b">
                         <CardTitle className="text-sm flex items-center gap-2">
                             <FileDown size={14} className="text-emerald-600" /> Opname Approval Queue
                         </CardTitle>
@@ -186,7 +186,7 @@ export function OpnameBoard() {
                                         return (
                                             <div>
                                                 <div className="font-mono font-medium">{parentSpk?.spkNumber}</div>
-                                                <div className="text-xs text-slate-500">Period: {op.periodNumber} • {format(new Date(op.date), 'dd MMM yyyy')}</div>
+                                                <div className="text-xs text-muted-foreground">Period: {op.periodNumber} • {format(new Date(op.date), 'dd MMM yyyy')}</div>
                                             </div>
                                         );
                                     }
@@ -197,7 +197,7 @@ export function OpnameBoard() {
                                     cell: ({ row }) => (
                                         <div>
                                             <div className="font-medium text-blue-700">{row.original.progressPercentage}%</div>
-                                            <div className="text-xs text-slate-500">(+{row.original.currentPeriodProgressPercentage}%)</div>
+                                            <div className="text-xs text-muted-foreground">(+{row.original.currentPeriodProgressPercentage}%)</div>
                                         </div>
                                     )
                                 },
@@ -205,7 +205,7 @@ export function OpnameBoard() {
                                     id: 'payable',
                                     header: () => <div className="text-right">Net Payable</div>,
                                     cell: ({ row }) => (
-                                        <div className="text-right font-mono font-bold text-slate-900 dark:text-slate-100">
+                                        <div className="text-right font-mono font-bold text-foreground">
                                             Rp {row.original.netPayable.toLocaleString('id-ID')}
                                         </div>
                                     )
@@ -218,7 +218,7 @@ export function OpnameBoard() {
                                             <Badge variant="outline" className={`text-xs ${row.original.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                                                     row.original.status === 'POSTED_TO_FINANCE' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                                                         row.original.status === 'SUBMITTED' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                                                            'bg-slate-50 text-slate-600'
+                                                            'bg-muted/30 text-muted-foreground'
                                                 }`}>
                                                 {row.original.status.replace('_', ' ')}
                                             </Badge>
@@ -268,22 +268,22 @@ export function OpnameBoard() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label className="text-xs text-slate-500">Cumulative Target %</Label>
+                                    <Label className="text-xs text-muted-foreground">Cumulative Target %</Label>
                                     <Input type="number" value={reqProgress} onChange={e => handleProgressChange(Number(e.target.value))} />
                                     <div className="text-xs flex justify-between">
-                                        <span className="text-slate-400">Previous: {draftOpname.previousProgressPercentage}%</span>
+                                        <span className="text-muted-foreground">Previous: {draftOpname.previousProgressPercentage}%</span>
                                         <span className="text-blue-600 font-bold">This period: +{draftOpname.currentPeriodProgressPercentage}%</span>
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-xs text-slate-500">Other Deductions (Rp)</Label>
+                                    <Label className="text-xs text-muted-foreground">Other Deductions (Rp)</Label>
                                     <Input type="number" value={otherDed} onChange={e => handleDedChange(Number(e.target.value))} />
                                 </div>
                             </div>
 
                             {/* Calculation Breakdown */}
-                            <div className="bg-slate-50 dark:bg-slate-900 border rounded-lg p-3 space-y-2 text-sm font-mono">
-                                <div className="flex justify-between text-slate-600">
+                            <div className="bg-muted/30 border rounded-lg p-3 space-y-2 text-sm font-mono">
+                                <div className="flex justify-between text-muted-foreground">
                                     <span>Gross Claim ({draftOpname.currentPeriodProgressPercentage}%)</span>
                                     <span>Rp {draftOpname.grossAmount.toLocaleString('id-ID')}</span>
                                 </div>
@@ -305,8 +305,8 @@ export function OpnameBoard() {
                                         <span>- Rp {draftOpname.otherDeductions.toLocaleString('id-ID')}</span>
                                     </div>
                                 )}
-                                <div className="border-t border-slate-200 dark:border-slate-800 my-1 pt-1" />
-                                <div className="flex justify-between font-bold text-slate-900 dark:text-white">
+                                <div className="border-t border-border my-1 pt-1" />
+                                <div className="flex justify-between font-bold text-foreground">
                                     <span>Net Payable</span>
                                     <span className="text-emerald-600">Rp {draftOpname.netPayable.toLocaleString('id-ID')}</span>
                                 </div>
@@ -334,11 +334,11 @@ export function OpnameBoard() {
                                     Rp {reviewOpname.netPayable.toLocaleString('id-ID')}
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
-                                <div className="flex justify-between p-2 bg-slate-50 rounded"><span>Progress:</span> <strong className="text-slate-900">+{reviewOpname.currentPeriodProgressPercentage}%</strong></div>
-                                <div className="flex justify-between p-2 bg-slate-50 rounded"><span>Total %:</span> <strong className="text-blue-600">{reviewOpname.progressPercentage}%</strong></div>
-                                <div className="flex justify-between p-2 bg-slate-50 rounded"><span>Retensi Cut:</span> <span>Rp {reviewOpname.retentionDeduction.toLocaleString()}</span></div>
-                                <div className="flex justify-between p-2 bg-slate-50 rounded"><span>DP Cut:</span> <span>Rp {reviewOpname.dpRepaymentDeduction.toLocaleString()}</span></div>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                                <div className="flex justify-between p-2 bg-muted/30 rounded"><span>Progress:</span> <strong className="text-foreground">+{reviewOpname.currentPeriodProgressPercentage}%</strong></div>
+                                <div className="flex justify-between p-2 bg-muted/30 rounded"><span>Total %:</span> <strong className="text-blue-600">{reviewOpname.progressPercentage}%</strong></div>
+                                <div className="flex justify-between p-2 bg-muted/30 rounded"><span>Retensi Cut:</span> <span>Rp {reviewOpname.retentionDeduction.toLocaleString()}</span></div>
+                                <div className="flex justify-between p-2 bg-muted/30 rounded"><span>DP Cut:</span> <span>Rp {reviewOpname.dpRepaymentDeduction.toLocaleString()}</span></div>
                             </div>
                         </div>
                     )}

@@ -110,10 +110,10 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
       case 'blue':
         return {
           bg: isActive ? 'bg-gradient-to-br from-blue-100 via-indigo-100 to-blue-200' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 hover:from-blue-100 hover:via-indigo-100 hover:to-blue-200',
-          border: isActive ? 'border-blue-500 shadow-blue-200' : 'border-blue-300 hover:border-blue-500 hover:shadow-blue-200',
+          border: isActive ? 'border-primary/60 shadow-orange-200/40' : 'border-border hover:border-primary/40',
           icon: 'bg-gradient-to-br from-blue-600 to-indigo-700',
-          text: 'text-blue-800',
-          badge: 'bg-blue-600'
+          text: 'text-foreground',
+          badge: 'bg-primary'
         }
       case 'purple':
         return {
@@ -134,10 +134,10 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
       default:
         return {
           bg: 'bg-gradient-to-br from-slate-50 to-slate-100',
-          border: 'border-slate-300',
+          border: 'border-border',
           icon: 'bg-gradient-to-br from-slate-600 to-slate-700',
-          text: 'text-slate-800',
-          badge: 'bg-slate-600'
+          text: 'text-muted-foreground',
+          badge: 'bg-muted'
         }
     }
   }
@@ -154,7 +154,7 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
               Pilih Mode Pembuatan AHSP
             </DialogTitle>
           </div>
-          <DialogDescription className="mx-auto max-w-2xl px-2 text-center text-xs leading-relaxed text-slate-600 sm:text-sm">
+          <DialogDescription className="mx-auto max-w-2xl px-2 text-center text-xs leading-relaxed text-muted-foreground sm:text-sm">
             Pilih metode pembuatan Analisa Harga Satuan Pekerjaan yang sesuai dengan kebutuhan Anda
           </DialogDescription>
         </DialogHeader>
@@ -182,14 +182,14 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                     </span>
                   </div>
                   <div className={`text-base font-bold sm:text-lg ${colors.text}`}>{mode.title}</div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-500">{mode.subtitle}</div>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-600">{mode.description}</p>
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{mode.subtitle}</div>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{mode.description}</p>
                 </button>
               )
             })}
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             {(() => {
               const colors = getColorClasses(selectedModeData.color, true)
               const Icon = selectedModeData.icon
@@ -203,15 +203,15 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                       </div>
                       <div>
                         <h3 className={`text-lg font-bold ${colors.text}`}>{selectedModeData.title}</h3>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{selectedModeData.subtitle}</p>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{selectedModeData.subtitle}</p>
                       </div>
                     </div>
                     <Badge className={`${colors.badge} text-white`}>{selectedModeData.badge}</Badge>
                   </div>
 
-                  <ul className="mb-4 grid gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <ul className="mb-4 grid gap-2 rounded-lg border border-border bg-muted/30 p-3">
                     {selectedModeData.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-xs text-slate-700">
+                      <li key={idx} className="flex items-start gap-2 text-xs text-muted-foreground">
                         <ChevronRight className={`mt-0.5 h-4 w-4 ${colors.text} flex-shrink-0`} />
                         <span>{feature}</span>
                       </li>
@@ -219,21 +219,21 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                   </ul>
 
                   {selectedMode === 'sni' && (
-                    <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                    <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
                       <div className="mb-2 flex items-center justify-between">
-                        <p className="text-xs font-bold uppercase tracking-widest text-blue-700">Sumber dari Total AHSP Item</p>
-                        <Badge variant="outline" className="border-blue-300 text-blue-700">{sniItemsPreview.length} item</Badge>
+                        <p className="text-xs font-bold uppercase tracking-widest text-primary">Sumber dari Total AHSP Item</p>
+                        <Badge variant="outline" className="border-primary/40 text-primary">{sniItemsPreview.length} item</Badge>
                       </div>
 
                       {sniItemsPreview.length > 0 && (
                         <div className="mb-3 grid grid-cols-2 gap-2">
-                          <div className="rounded-lg border border-blue-100 bg-white p-2">
-                            <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Rata-rata Harga</p>
-                            <p className="text-xs font-bold text-slate-800">{formatIDR(averageSNIPrice)}</p>
+                          <div className="rounded-lg border border-border bg-card p-2">
+                            <p className="text-xs font-bold uppercase tracking-wider text-primary">Rata-rata Harga</p>
+                            <p className="text-xs font-bold text-muted-foreground">{formatIDR(averageSNIPrice)}</p>
                           </div>
-                          <div className="rounded-lg border border-blue-100 bg-white p-2">
-                            <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Total Komponen</p>
-                            <p className="text-xs font-bold text-slate-800">
+                          <div className="rounded-lg border border-border bg-card p-2">
+                            <p className="text-xs font-bold uppercase tracking-wider text-primary">Total Komponen</p>
+                            <p className="text-xs font-bold text-muted-foreground">
                               {sniItemsPreview.reduce((sum, item) => sum + item.componentCount, 0)}
                             </p>
                           </div>
@@ -242,14 +242,14 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
 
                       <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
                         {sniItemsPreview.length === 0 ? (
-                          <div className="rounded-lg border border-dashed border-blue-300 bg-white p-3">
-                            <p className="text-xs text-blue-700">Belum ada data AHSP SNI aktif.</p>
-                            <p className="mt-1 text-xs text-slate-600">Gunakan mode Kustom untuk membuat item pertama, lalu tandai sebagai SNI.</p>
+                          <div className="rounded-lg border border-dashed border-primary/30 bg-card p-3">
+                            <p className="text-xs text-primary">Belum ada data AHSP SNI aktif.</p>
+                            <p className="mt-1 text-xs text-muted-foreground">Gunakan mode Kustom untuk membuat item pertama, lalu tandai sebagai SNI.</p>
                             <Button
                               type="button"
                               size="sm"
                               variant="outline"
-                              className="mt-2 h-8 border-blue-300 text-blue-700"
+                              className="mt-2 h-8 border-primary/40 text-primary"
                               onClick={() => setSelectedMode('custom')}
                             >
                               Pindah ke Kustom
@@ -257,10 +257,10 @@ export function AHSPCreationModeDialog({ open, onClose, onSelect, sniItemsPrevie
                           </div>
                         ) : (
                           sniItemsPreview.map((item) => (
-                            <div key={item.id} className="rounded-lg border border-blue-100 bg-white p-2.5">
-                              <p className="text-xs font-bold text-slate-900">{item.code} - {item.name}</p>
-                              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                                <span className="rounded bg-slate-100 px-1.5 py-0.5">{item.category}</span>
+                            <div key={item.id} className="rounded-lg border border-border bg-card p-2.5">
+                              <p className="text-xs font-bold text-foreground">{item.code} - {item.name}</p>
+                              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                <span className="rounded bg-muted/50 px-1.5 py-0.5">{item.category}</span>
                                 <span>{item.unit}</span>
                                 <span className="flex items-center gap-1"><CircleDollarSign className="h-3 w-3" />{formatIDR(item.finalPrice)}</span>
                                 <span className="flex items-center gap-1"><Boxes className="h-3 w-3" />{item.componentCount} komponen</span>

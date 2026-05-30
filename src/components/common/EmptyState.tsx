@@ -38,12 +38,12 @@ export interface EmptyStateProps {
 function DefaultIllustration() {
   return (
     <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect x="10" y="20" width="60" height="48" rx="6" fill="currentColor" className="text-slate-100 dark:text-slate-800" />
-      <rect x="18" y="30" width="44" height="6" rx="3" fill="currentColor" className="text-slate-200 dark:text-slate-700" />
-      <rect x="18" y="42" width="30" height="4" rx="2" fill="currentColor" className="text-slate-200 dark:text-slate-700" />
-      <rect x="18" y="52" width="20" height="4" rx="2" fill="currentColor" className="text-slate-200 dark:text-slate-700" />
-      <circle cx="57" cy="22" r="14" fill="currentColor" className="text-slate-50 dark:text-slate-900" stroke="currentColor" strokeWidth="2" />
-      <path d="M51 22h12M57 16v12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-slate-300 dark:text-slate-600" />
+      <rect x="10" y="20" width="60" height="48" rx="6" fill="currentColor" className="text-foreground" />
+      <rect x="18" y="30" width="44" height="6" rx="3" fill="currentColor" className="text-foreground" />
+      <rect x="18" y="42" width="30" height="4" rx="2" fill="currentColor" className="text-foreground" />
+      <rect x="18" y="52" width="20" height="4" rx="2" fill="currentColor" className="text-foreground" />
+      <circle cx="57" cy="22" r="14" fill="currentColor" className="text-white/80" stroke="currentColor" strokeWidth="2" />
+      <path d="M51 22h12M57 16v12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-foreground" />
     </svg>
   )
 }
@@ -72,7 +72,7 @@ export function EmptyState({
   const hasImage = !!imageKeyword
 
   return (
-    <div className={cn('flex flex-col items-center justify-center rounded-xl border bg-white p-8 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900', className)}>
+    <div className={cn('flex flex-col items-center justify-center rounded-xl border bg-card p-8 text-center shadow-sm dark:border-neutral-800 dark:bg-neutral-900', className)}>
       {/* Illustration or Icon */}
       {hasImage ? (
         <div className="mb-4 flex h-32 w-full max-w-sm items-center justify-center rounded-xl border border-dashed border-orange-200 dark:border-orange-900 bg-gradient-to-br from-orange-50 to-blue-50 dark:from-orange-950/20 dark:to-blue-950/20">
@@ -83,7 +83,7 @@ export function EmptyState({
               <rect x="20" y="8" width="8" height="10" rx="1" fill="#f97316" fillOpacity="0.3" stroke="#f97316" strokeWidth="1.5"/>
               <line x1="4" y1="28" x2="44" y2="28" stroke="#64748b" strokeWidth="1" strokeDasharray="3 2"/>
             </svg>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{imageKeyword}</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{imageKeyword}</span>
           </div>
         </div>
       ) : icon ? (

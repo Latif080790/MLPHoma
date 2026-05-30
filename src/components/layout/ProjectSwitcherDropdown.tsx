@@ -32,7 +32,7 @@ export function ProjectSwitcherDropdown() {
   const statusColor: Record<string, string> = {
     active: 'bg-emerald-500',
     'in-progress': 'bg-blue-500',
-    completed: 'bg-slate-400',
+    completed: 'bg-muted-foreground/40',
     on_hold: 'bg-amber-400',
   }
 
@@ -46,25 +46,25 @@ export function ProjectSwitcherDropdown() {
     <DropdownMenu onOpenChange={(open) => { if (!open) setSearch('') }}>
       <DropdownMenuTrigger asChild>
         <button
-          className="flex items-center gap-1.5 h-8 max-w-[220px] px-2.5 rounded-md border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors bg-transparent truncate"
+          className="flex items-center gap-1.5 h-8 max-w-[220px] px-2.5 rounded-md border border-border text-xs text-muted-foreground hover:border-border dark:hover:border-border hover:bg-accent/40 transition-colors bg-transparent truncate"
           aria-label="Ganti proyek aktif"
         >
-          <FolderOpen size={13} className="shrink-0 text-slate-400" />
+          <FolderOpen size={13} className="shrink-0 text-muted-foreground" />
           <span className="truncate font-medium">
             {activeProject ? activeProject.name : 'Pilih Proyek'}
           </span>
-          <ChevronsUpDown size={12} className="shrink-0 text-slate-400 ml-auto" />
+          <ChevronsUpDown size={12} className="shrink-0 text-muted-foreground ml-auto" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64 p-0" sideOffset={6}>
-        <DropdownMenuLabel className="px-2 pt-2 pb-1 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+        <DropdownMenuLabel className="px-2 pt-2 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
           Proyek
         </DropdownMenuLabel>
         {/* Search */}
         <div className="relative px-2 pb-1">
-          <Search size={12} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={12} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
-            className="w-full h-7 pl-6 pr-2 text-xs rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-1 focus:ring-primary/40"
+            className="w-full h-7 pl-6 pr-2 text-xs rounded border border-border bg-muted/30 outline-none focus:ring-1 focus:ring-primary/40"
             placeholder="Cari proyek..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -74,7 +74,7 @@ export function ProjectSwitcherDropdown() {
         <DropdownMenuSeparator />
         <div className="max-h-52 overflow-y-auto py-1">
           {filtered.length === 0 ? (
-            <p className="py-3 text-center text-xs text-slate-400">Tidak ditemukan</p>
+            <p className="py-3 text-center text-xs text-muted-foreground">Tidak ditemukan</p>
           ) : (
             filtered.map((project) => (
               <DropdownMenuItem
@@ -83,11 +83,11 @@ export function ProjectSwitcherDropdown() {
                 className="flex items-center gap-2 px-2 py-1.5 text-xs cursor-pointer"
               >
                 <span
-                  className={`h-2 w-2 rounded-full shrink-0 ${statusColor[project.status ?? ''] ?? 'bg-slate-300'}`}
+                  className={`h-2 w-2 rounded-full shrink-0 ${statusColor[project.status ?? ''] ?? 'bg-muted-foreground/30'}`}
                 />
                 <span className="truncate flex-1">{project.name}</span>
                 {project.code && (
-                  <span className="text-xs text-slate-400 shrink-0">{project.code}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{project.code}</span>
                 )}
                 {project.id === activeProjectId && (
                   <Check size={12} className="shrink-0 text-primary" />
@@ -100,7 +100,7 @@ export function ProjectSwitcherDropdown() {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="text-xs text-slate-500 justify-center py-1.5"
+              className="text-xs text-muted-foreground justify-center py-1.5"
               onClick={() => navigate('/projects')}
             >
               Lihat semua {projectList.length} proyek →

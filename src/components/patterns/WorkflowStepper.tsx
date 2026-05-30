@@ -69,7 +69,7 @@ const statusStyles: Record<StepStatus, { bg: string; text: string; border: strin
     indicator: <AlertTriangle className="h-3.5 w-3.5" />,
   },
   locked: {
-    bg: 'bg-slate-100 dark:bg-slate-800/30',
+    bg: 'bg-muted/50',
     text: 'text-text-semantic-disabled',
     border: 'border-border-semantic-subtle',
     indicator: <Lock className="h-3.5 w-3.5" />,

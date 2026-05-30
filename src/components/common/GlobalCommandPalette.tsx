@@ -101,7 +101,7 @@ export default function GlobalCommandPalette() {
                             onSelect={() => runCommand(cmd.path)}
                             className="flex items-center gap-3 cursor-pointer"
                         >
-                            <span className="text-slate-400"><Icon size={14} /></span>
+                            <span className="text-muted-foreground"><Icon size={14} /></span>
                             <div className="flex-1 min-w-0">
                                 <span className="font-medium text-sm">{cmd.label}</span>
                                 {cmd.description && (
@@ -152,7 +152,7 @@ export default function GlobalCommandPalette() {
                         onSelect={() => runCommand('/settings')}
                         className="flex items-center gap-3 cursor-pointer"
                     >
-                        <Settings size={14} className="text-slate-400 shrink-0" />
+                        <Settings size={14} className="text-muted-foreground shrink-0" />
                         <span className="font-medium text-sm">Open Settings</span>
                     </CommandItem>
                 </CommandGroup>

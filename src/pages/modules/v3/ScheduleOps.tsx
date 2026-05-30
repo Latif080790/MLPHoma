@@ -16,26 +16,35 @@ import { Card } from '@/components/ui/card'
 import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, FlaskConical, Boxes, BarChart2 } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { useTimelineStore } from '@/store/timelineStore'
+import { useCurvaSStore } from '@/store/curvaSStore'
 import ModulePageState from '@/components/common/ModulePageState'
 import { lazyRetry } from '@/lib/lazyRetry'
+import CurvaSChart from '@/components/charts/CurvaSChart'
 
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, ModeSwitch, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { usePresence } from '@/hooks/usePresence'
-import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { PresenceAvatars } from '@/components/common/PresenceAvatars'
 import { useAuthStore } from '@/store/authStore'
 import { CPMWorkerStatus } from '@/components/charts/CPMWorkerStatus'
 
+const GanttChartLazy = lazyRetry(() => import('@/components/timeline/GanttChart'))
 const WBS = lazyRetry(() => import('../WBS'))
-const CostForecastDashboard = lazyRetry(() => import('./CostForecastDashboard'))
 const RiskRegister = lazyRetry(() => import('@/components/risk/RiskRegister'))
 const TimelineScenarioPanel = lazyRetry(() => import('@/components/modules/TimelineScenarioPanel').then((m) => ({ default: m.TimelineScenarioPanel })))
 const ResourceUsageDialog = lazyRetry(() => import('@/components/progress/ResourceUsageDialog').then((m) => ({ default: m.ResourceUsageDialog })))
 const DailyProgressBoard = lazyRetry(() => import('@/components/progress/DailyProgressBoard').then((m) => ({ default: m.DailyProgressBoard })))
 const CriticalPathGantt = lazyRetry(() => import('@/components/charts/CriticalPathGantt').then((m) => ({ default: m.CriticalPathGantt })))
+
+function CurvaSEmbedded({ projectId }: { projectId: string }) {
+    const getDataPoints = useCurvaSStore(s => s.getDataPoints)
+    const getAnalysis = useCurvaSStore(s => s.getAnalysis)
+    const data = getDataPoints(projectId)
+    const analysis = getAnalysis(projectId)
+    return <CurvaSChart data={data} analysis={analysis} height={420} />
+}
 
 function TabFallback({ minHeight = 420 }: { minHeight?: number }) {
     return (
@@ -45,10 +54,10 @@ function TabFallback({ minHeight = 420 }: { minHeight?: number }) {
             aria-busy="true"
             aria-label="Loading module"
         >
-            <div className="h-8 w-1/3 rounded-md bg-slate-200 dark:bg-slate-700" />
-            <div className="h-4 w-2/3 rounded-md bg-slate-100 dark:bg-slate-800" />
-            <div className="h-4 w-1/2 rounded-md bg-slate-100 dark:bg-slate-800" />
-            <div className="mt-6 h-64 rounded-lg bg-slate-100 dark:bg-slate-800" />
+            <div className="h-8 w-1/3 rounded-md bg-muted/50" />
+            <div className="h-4 w-2/3 rounded-md bg-muted/30" />
+            <div className="h-4 w-1/2 rounded-md bg-muted/30" />
+            <div className="mt-6 h-64 rounded-lg bg-muted/30" />
         </div>
     )
 }
@@ -91,7 +100,6 @@ export default function ScheduleOps() {
     // B.7: use reactive selector instead of getState() in JSX
     const activeProjectName = useProjectStore(s => activeProjectId ? (s.projects[activeProjectId]?.name || 'Project') : 'Project')
     const { isCPMCalculating, getTasks } = useTimelineStore()
-    const { handleAsync } = useErrorHandler()
     const taskCount = activeProjectId ? (getTasks(activeProjectId)?.length || 0) : 0
     const completedCount = activeProjectId
         ? (getTasks(activeProjectId)?.filter(t => t.status === 'completed').length || 0)
@@ -245,7 +253,7 @@ export default function ScheduleOps() {
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="flex items-center justify-between mb-4">
                     {/* B.4: proper Radix tabs for keyboard accessibility */}
-                    <TabsList className="flex h-auto items-center gap-1 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 px-2 py-1">
+                    <TabsList className="flex h-auto items-center gap-1 overflow-x-auto rounded-lg border border-border bg-muted/20 px-2 py-1">
                         {currentTabs.map((tab) => (
                             <TabsTrigger
                                 key={tab.value}
@@ -273,17 +281,17 @@ export default function ScheduleOps() {
                 {/* B.10: ErrorBoundary per TabsContent */}
                 {/* ─── Plan Mode Tabs ─────────────────────────────────────────── */}
                 <TabsContent value="timeline" className="outline-none">
-                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[500px]">
+                    <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[calc(100vh-280px)]">
                         <ErrorBoundary errorMessage="Timeline failed to render">
                             <Suspense fallback={<TabFallback minHeight={500} />}>
-                                <CriticalPathGantt />
+                                <GanttChartLazy projectId={activeProjectId} />
                             </Suspense>
                         </ErrorBoundary>
                     </div>
                 </TabsContent>
 
                 <TabsContent value="wbs" className="outline-none">
-                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[500px]">
+                    <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[calc(100vh-280px)]">
                         <ErrorBoundary errorMessage="WBS failed to render">
                             <Suspense fallback={<TabFallback minHeight={500} />}>
                                 <WBS />
@@ -312,7 +320,7 @@ export default function ScheduleOps() {
                 </TabsContent>
 
                 <TabsContent value="resource" className="outline-none">
-                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)] min-h-[400px]">
+                    <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)] min-h-[400px]">
                         <div className="text-center py-12">
                             <Boxes className="mx-auto h-12 w-12 text-[hsl(var(--color-text-disabled))] mb-[var(--space-4)]" />
                             <h3 className="text-lg font-[var(--font-weight-bold)]">Resource Logistics & Tooling</h3>
@@ -335,17 +343,15 @@ export default function ScheduleOps() {
 
                 {/* ─── Analyze Mode Tabs ──────────────────────────────────────── */}
                 <TabsContent value="curvas" className="outline-none">
-                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
+                    <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
                         <ErrorBoundary errorMessage="Curva-S failed to render">
-                            <Suspense fallback={<TabFallback minHeight={420} />}>
-                                <CostForecastDashboard />
-                            </Suspense>
+                            <CurvaSEmbedded projectId={activeProjectId} />
                         </ErrorBoundary>
                     </div>
                 </TabsContent>
 
                 <TabsContent value="risk" className="outline-none">
-                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
+                    <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
                         <ErrorBoundary errorMessage="Risk Register failed to render">
                             <Suspense fallback={<TabFallback minHeight={360} />}>
                                 <RiskRegister projectId={activeProjectId} />
@@ -355,7 +361,7 @@ export default function ScheduleOps() {
                 </TabsContent>
 
                 <TabsContent value="scenario" className="outline-none">
-                    <div className="rounded-[var(--radius-lg)] border border-[hsl(var(--color-border-subtle))] bg-[hsl(var(--color-surface-panel))] shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
+                    <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden p-[var(--padding-md)]">
                         <ErrorBoundary errorMessage="What-If scenario panel failed to render">
                             <Suspense fallback={<TabFallback minHeight={360} />}>
                                 <TimelineScenarioPanel projectId={activeProjectId} />

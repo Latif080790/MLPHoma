@@ -30,22 +30,22 @@ const PortfolioHeatmap: React.FC<PortfolioHeatmapProps> = ({ projects, onProject
         if (active && payload && payload.length) {
             const item = payload[0].payload
             return (
-                <div className="bg-slate-900 border border-slate-700 p-2 rounded shadow-xl text-xs font-mono text-white">
+                <div className="bg-background border border-border p-2 rounded shadow-xl text-xs font-mono text-white">
                     <div className="font-bold text-blue-400 mb-1 tracking-wider uppercase">{item.name}</div>
                     <div className="flex justify-between gap-4">
-                        <span className="text-slate-500">SPI (Schedule):</span>
+                        <span className="text-muted-foreground">SPI (Schedule):</span>
                         <span className={item.x >= 1 ? 'text-emerald-400' : 'text-red-400'}>{item.x.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between gap-4">
-                        <span className="text-slate-500">CPI (Cost):</span>
+                        <span className="text-muted-foreground">CPI (Cost):</span>
                         <span className={item.y >= 1 ? 'text-emerald-400' : 'text-red-400'}>{item.y.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between gap-4 mt-1 border-t border-slate-800 pt-1">
-                        <span className="text-slate-500">Budget:</span>
+                    <div className="flex justify-between gap-4 mt-1 border-t border-border pt-1">
+                        <span className="text-muted-foreground">Budget:</span>
                         <span>Rp {(item.z / 1000000).toLocaleString()}M</span>
                     </div>
                     {onProjectClick && (
-                        <div className="mt-1.5 pt-1 border-t border-slate-700 text-xs text-slate-400 text-center">
+                        <div className="mt-1.5 pt-1 border-t border-border text-xs text-muted-foreground text-center">
                             Klik untuk buka detail →
                         </div>
                     )}
@@ -56,9 +56,9 @@ const PortfolioHeatmap: React.FC<PortfolioHeatmapProps> = ({ projects, onProject
     }
 
     return (
-        <Card className="bg-slate-950 border-slate-800 text-white shadow-2xl overflow-hidden">
+        <Card className="bg-background border-border text-white shadow-2xl overflow-hidden">
             <CardHeader className="pb-0">
-                <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                     Governance Heatmap: Portfolio Performance Matrix
                 </CardTitle>
             </CardHeader>
@@ -116,22 +116,22 @@ const PortfolioHeatmap: React.FC<PortfolioHeatmapProps> = ({ projects, onProject
                     </ScatterChart>
                 </ResponsiveContainer>
             </CardContent>
-            <div className="bg-slate-900/50 p-3 border-t border-slate-800 flex justify-between gap-4 overflow-x-auto">
+            <div className="bg-background/50 p-3 border-t border-border flex justify-between gap-4 overflow-x-auto">
                 <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-xs text-slate-400 uppercase tracking-tighter font-mono font-bold">Optimal (Ahead/Under)</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-tighter font-mono font-bold">Optimal (Ahead/Under)</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-amber-500" />
-                    <span className="text-xs text-slate-400 uppercase tracking-tighter font-mono font-bold">Burn (Behind/Under)</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-tighter font-mono font-bold">Burn (Behind/Under)</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-blue-500" />
-                    <span className="text-xs text-slate-400 uppercase tracking-tighter font-mono font-bold">Drift (Ahead/Over)</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-tighter font-mono font-bold">Drift (Ahead/Over)</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-red-500" />
-                    <span className="text-xs text-slate-400 uppercase tracking-tighter font-mono font-bold">Danger (Behind/Over)</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-tighter font-mono font-bold">Danger (Behind/Over)</span>
                 </div>
             </div>
         </Card>

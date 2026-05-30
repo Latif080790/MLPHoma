@@ -54,10 +54,13 @@ export function BudgetGuardDialog({
     if (loading) {
         return (
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="sm:max-w-lg">
+                <DialogContent
+                    className="sm:max-w-[420px]"
+                    style={{ borderLeft: '4px solid #F59E0B' }}
+                >
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
-                        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
-                        <p className="text-sm text-muted-foreground font-medium">Checking budget against RAP...</p>
+                        <Loader2 className="h-8 w-8 animate-spin text-amber-400" />
+                        <p className="text-sm text-muted-foreground font-medium">Memvalidasi anggaran RAP...</p>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -70,14 +73,17 @@ export function BudgetGuardDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent
+                className="sm:max-w-[420px]"
+                style={{ borderLeft: '4px solid #F59E0B' }}
+            >
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <ShieldAlert className="h-5 w-5 text-blue-500" />
-                        Budget Guard — Pre-Flight Check
+                        <AlertTriangle className="h-5 w-5 text-amber-500" />
+                        Anggaran Melebihi Batas
                     </DialogTitle>
                     <DialogDescription>
-                        Validating Procurement items against RAP budget allocation.
+                        Validasi item Pengadaan terhadap alokasi anggaran RAP.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -98,34 +104,34 @@ export function BudgetGuardDialog({
                 </div>
 
                 {/* Items Table */}
-                <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    <table className="w-full text-[11px]">
+                <div className="rounded-lg border border-border overflow-hidden">
+                    <table className="w-full text-xs">
                         <thead>
-                            <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                                <th className="text-left px-3 py-2 font-semibold text-slate-500 uppercase">Item</th>
-                                <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase">Budget</th>
-                                <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase">Used</th>
-                                <th className="text-right px-3 py-2 font-semibold text-slate-500 uppercase">Requested</th>
-                                <th className="text-center px-3 py-2 font-semibold text-slate-500 uppercase">Status</th>
+                            <tr className="border-b border-border bg-muted/30/50">
+                                <th className="text-left px-3 py-2 font-semibold text-muted-foreground uppercase">Item</th>
+                                <th className="text-right px-3 py-2 font-semibold text-muted-foreground uppercase">Budget</th>
+                                <th className="text-right px-3 py-2 font-semibold text-muted-foreground uppercase">Used</th>
+                                <th className="text-right px-3 py-2 font-semibold text-muted-foreground uppercase">Requested</th>
+                                <th className="text-center px-3 py-2 font-semibold text-muted-foreground uppercase">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {result.items.map((item, idx) => {
                                 const status = item.exceeds ? 'exceeded' : (item.remaining - item.requested < item.totalBudget * 0.1) ? 'warning' : 'ok'
                                 return (
-                                    <tr key={item.rapItemId || idx} className="border-b border-slate-50 dark:border-slate-900 last:border-0">
+                                    <tr key={item.rapItemId || idx} className="border-b border-border/20 last:border-0">
                                         <td className="px-3 py-2 font-medium">{item.itemName}</td>
                                         <td className="px-3 py-2">
-                                            <CurrencyCell value={item.totalBudget} className="text-[11px]" />
+                                            <CurrencyCell value={item.totalBudget} className="text-xs" />
                                         </td>
-                                        <td className="px-3 py-2 text-slate-500">
-                                            <CurrencyCell value={item.committed + item.actual} className="text-[11px] text-slate-500" />
+                                        <td className="px-3 py-2 text-muted-foreground">
+                                            <CurrencyCell value={item.committed + item.actual} className="text-xs text-muted-foreground" />
                                         </td>
                                         <td className="px-3 py-2">
                                             <CurrencyCell 
                                                 value={item.requested} 
                                                 variant={status === 'exceeded' ? 'negative' : status === 'warning' ? 'neutral' : 'default'}
-                                                className="text-[11px]" 
+                                                className="text-xs" 
                                             />
                                         </td>
                                         <td className="px-3 py-2 text-center">
@@ -144,7 +150,7 @@ export function BudgetGuardDialog({
                     </table>
                 </div>
 
-                <DialogFooter className="gap-2 sm:gap-0 bg-slate-50/50 dark:bg-slate-900/50 p-4 -mx-6 -mb-6 mt-2 border-t">
+                <DialogFooter className="gap-2 sm:gap-0 bg-muted/30/50 p-4 -mx-6 -mb-6 mt-2 border-t">
                     <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
 
                     {overallStatus === 'ok' && (

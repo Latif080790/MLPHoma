@@ -20,6 +20,8 @@ import { useWBSStore } from '@/store/wbsStore'
 import { useRabWbsLinkStore } from '@/store/rabWbsLinkStore'
 import { useRABVersionStore } from '@/store/rabVersionStore'
 import { generateScheduleFromRAB } from '@/lib/autoScheduler'
+import { baselineService } from '@/services/baselineService'
+import { rabWbsLinkService } from '@/services/rabWbsLinkService'
 import { formatIDR } from '@/lib/utils'
 
 import { RABPriceDriftDashboard } from './RABPriceDriftDashboard'
@@ -158,11 +160,25 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
           error: 'Failed to load analysis'
         })
       }
+
+      // ── Hitung unit_price menggunakan formula margin embedded ────────────
+      // base_price = biaya pokok AHSP (harga cost dari catalog)
+      // unit_price = base_price / (1 - (OH% + Profit%))  ← margin formula
+      const metaRates = project?.meta?.rabRates as { overhead?: number; profit?: number } | undefined
+      const ohPct     = Number(metaRates?.overhead ?? 0)
+      const profitPct = Number(metaRates?.profit   ?? 0)
+      const baseCost  = Number(ahsp.finalPrice || ahsp.total_price || 0)
+      const marginFraction = (ohPct + profitPct) / 100
+      const sellingPrice = marginFraction > 0 && marginFraction < 1
+        ? Math.round(baseCost / (1 - marginFraction))
+        : baseCost
+
       addItem(projectId, {
         item_code: ahsp.code,
         name: ahsp.name,
         unit: ahsp.unit,
-        unit_price: ahsp.finalPrice || ahsp.total_price || 0,
+        base_price: baseCost,
+        unit_price: sellingPrice,
         cost_material: ahsp.price_material || 0,
         cost_labor: ahsp.price_labor || 0,
         cost_equipment: ahsp.price_equipment || 0,
@@ -172,13 +188,13 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         is_overhead: activeTab === 'overhead',
         source_ahsp_id: ahsp.id,
       })
-      toast.success('Item added to RAB', { description: ahsp.name })
+      toast.success('Item ditambahkan ke RAB', { description: ahsp.name })
       setIsAddDialogOpen(false)
       setAhspSearchQuery('')
     } catch (err) {
-      toast.error('Failed to add item')
+      toast.error('Gagal menambahkan item')
     }
-  }, [projectId, activeTab, componentsByAHSP, fetchComponents, addItem])
+  }, [projectId, project, activeTab, componentsByAHSP, fetchComponents, addItem])
 
   const handleDownloadTemplate = () => {
     const ws = xlsx.utils.json_to_sheet([{
@@ -198,9 +214,31 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const handleAutoSchedule = async () => {
     const ahspMap = new Map<string, AHSPItem>(ahspItems.map((i: any) => [i.code || '', i]))
     const tasks = generateScheduleFromRAB(projectId, project?.startDate || new Date().toISOString(), items, ahspMap, componentsByAHSP)
-    setTasks(projectId, tasks)
+
+    // Auto-link each task to its primary WBS node (highest allocationPct) via rabWbsLinkStore
+    const { getLinksForItem } = useRabWbsLinkStore.getState()
+    const linkedTasks = tasks.map(task => {
+      if (!task.rabId) return task
+      const links = getLinksForItem(task.rabId)
+      if (!links.length) return task
+      const primary = links.reduce((best, l) => l.allocationPct >= best.allocationPct ? l : best, links[0])
+      return { ...task, wbsId: primary.wbsItemId }
+    })
+
+    setTasks(projectId, linkedTasks)
     setConfirmScheduleOpen(false)
-    toast.success(`Generated ${tasks.length} tasks from RAB items`)
+    const wbsLinkedCount = linkedTasks.filter(t => t.wbsId).length
+    toast.success(
+      `Generated ${linkedTasks.length} tasks dari RAB`,
+      { description: wbsLinkedCount > 0 ? `${wbsLinkedCount} task ter-link ke WBS` : undefined }
+    )
+
+    // Tag auto-generated RAB-WBS links as 'auto' mapping status (non-blocking)
+    linkedTasks.forEach(task => {
+      if (task.rabId && task.wbsId) {
+        rabWbsLinkService.updateMappingStatus(task.rabId, task.wbsId, 'auto', 80).catch(() => {})
+      }
+    })
   }
 
   const handleGenerateWBS = () => {
@@ -250,9 +288,9 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   useUnsavedChanges(hasUnsavedChanges, 'RAB has unpublished drafts. Leave without saving?')
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-950 p-2 sm:p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 relative z-0">
+    <div className="flex flex-col h-full bg-card p-2 sm:p-4 rounded-xl shadow-sm border border-border relative z-0">
       
-      {showDriftAnalysis && currentZone && (
+      {showDriftAnalysis && (
         <div className="mb-4">
           <RABPriceDriftDashboard projectId={projectId} />
         </div>
@@ -331,13 +369,13 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
           }}
           renderFooter={() => (
              items.length > 0 ? (
-               <tfoot className="sticky bottom-0 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur z-20 border-t-2 border-slate-200 dark:border-slate-800">
+               <tfoot className="sticky bottom-0 bg-muted/30/95 backdrop-blur z-20 border-t-2 border-border">
                   <tr className="hover:bg-transparent">
-                    <td colSpan={5} className="py-3 px-4 text-right font-black text-[10px] text-slate-500 uppercase tracking-wider">Sub-Totals</td>
+                    <td colSpan={5} className="py-3 px-4 text-right font-black text-xs text-muted-foreground uppercase tracking-wider">Sub-Totals</td>
                     <td className="py-3" />
                     <td className="py-3" />
                     <td className="py-3" />
-                    <td className="py-3 px-4 text-right font-mono text-sm font-black text-slate-900 dark:text-white bg-slate-100/50 dark:bg-slate-800/50 border-l border-slate-200">
+                    <td className="py-3 px-4 text-right font-mono text-sm font-black text-foreground bg-muted/50/50 border-l border-border">
                       {formatIDR(total)}
                     </td>
                     <td className="py-3" />
@@ -352,9 +390,9 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       <div className="sticky-glass-footer flex flex-col gap-4 rounded-lg p-3 md:p-4 mt-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-xs uppercase font-bold tracking-wider">
-            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 bg-red-500 rounded-full" /> <span className="text-slate-500">Class A:</span> <span className="text-slate-900 dark:text-slate-200">80% Cost Baseline</span></div>
-            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 bg-yellow-400 rounded-full" /> <span className="text-slate-500">Class B:</span> <span className="text-slate-900 dark:text-slate-200">15% Cost Baseline</span></div>
-            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 border border-slate-400 rounded-full" /> <span className="text-slate-500">Class C:</span> <span className="text-slate-900 dark:text-slate-200">Non-Critical</span></div>
+            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 bg-red-500 rounded-full" /> <span className="text-muted-foreground">Class A:</span> <span className="text-foreground">80% Cost Baseline</span></div>
+            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 bg-yellow-400 rounded-full" /> <span className="text-muted-foreground">Class B:</span> <span className="text-foreground">15% Cost Baseline</span></div>
+            <div className="flex items-center gap-1.5"><div className="h-2.5 w-2.5 border border-border rounded-full" /> <span className="text-muted-foreground">Class C:</span> <span className="text-foreground">Non-Critical</span></div>
           </div>
           <div className="flex items-end gap-4">
             <ExportMenu
@@ -363,10 +401,10 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
               filename={`RAB_${projectId}_${new Date().toISOString().slice(0, 10)}`}
             />
             <div className="flex flex-col items-end">
-              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-1.5 opacity-80">
+              <div className="text-xs text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-1.5 opacity-80">
                 <Calculator size={12} /> Grand Total Estimated
               </div>
-              <div className="text-2xl lg:text-3xl font-black font-mono text-slate-900 dark:text-white mt-1 drop-shadow-sm tracking-tighter">
+              <div className="text-2xl lg:text-3xl font-black font-mono text-foreground mt-1 drop-shadow-sm tracking-tighter">
                 {formatIDR(total)}
               </div>
             </div>
@@ -455,7 +493,21 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { takeSnapshot(projectId); setShowLockConfirm(false); toast.success('Baseline locked') }} className="bg-amber-600 hover:bg-amber-700">Lock Baseline</AlertDialogAction>
+            <AlertDialogAction
+              onClick={async () => {
+                takeSnapshot(projectId)
+                try {
+                  await baselineService.freezeBaseline(projectId)
+                } catch {
+                  // non-blocking — lock still applies in-app
+                }
+                setShowLockConfirm(false)
+                toast.success('Baseline dikunci & disimpan ke database')
+              }}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              Lock Baseline
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

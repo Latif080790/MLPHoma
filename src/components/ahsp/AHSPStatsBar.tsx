@@ -26,39 +26,39 @@ export function AHSPStatsBar({ onRefresh: _onRefresh }: AHSPStatsBarProps) {
     }, [ahspItems, resources, totalAhspCount, totalResourceCount])
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 rounded-lg border border-slate-200 overflow-hidden bg-white">
-            <div className="px-4 py-2.5 border-r border-slate-200">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+        <div className="grid grid-cols-2 md:grid-cols-4 rounded-lg border border-border overflow-hidden bg-card">
+            <div className="px-4 py-2.5 border-r border-border">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground leading-none mb-1.5">
                     Total AHSP
                 </p>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-base font-bold font-mono text-slate-800">{summary.totalAHSPItems}</span>
+                    <span className="text-base font-bold font-mono text-muted-foreground">{summary.totalAHSPItems}</span>
                     <span className="text-xs font-mono text-emerald-500">{summary.activeItems} aktif</span>
                 </div>
             </div>
 
-            <div className="px-4 py-2.5 border-r border-slate-200">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+            <div className="px-4 py-2.5 border-r border-border">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground leading-none mb-1.5">
                     Resources DKH
                 </p>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-base font-bold font-mono text-slate-800">{summary.totalResources}</span>
+                    <span className="text-base font-bold font-mono text-muted-foreground">{summary.totalResources}</span>
                     <span className="text-xs font-mono text-emerald-500">{summary.activeResources} aktif</span>
                 </div>
             </div>
 
-            <div className="px-4 py-2.5 border-r border-slate-200">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+            <div className="px-4 py-2.5 border-r border-border">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground leading-none mb-1.5">
                     Harga Rata-rata
                 </p>
-                <p className="text-base font-bold font-mono text-slate-800">{formatIDR(summary.averagePrice)}</p>
+                <p className="text-base font-bold font-mono text-muted-foreground">{formatIDR(summary.averagePrice)}</p>
             </div>
 
             <div className="px-4 py-2.5">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 leading-none mb-1.5">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground leading-none mb-1.5">
                     Kategori
                 </p>
-                <p className="text-base font-bold font-mono text-slate-800">{summary.categories}</p>
+                <p className="text-base font-bold font-mono text-muted-foreground">{summary.categories}</p>
             </div>
         </div>
     )

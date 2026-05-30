@@ -18,9 +18,10 @@ const makeChain = (result: any) => {
 // Mock Supabase Client
 vi.mock('../lib/supabaseClient', () => {
     const mockFrom = vi.fn()
+    const mockRpc = vi.fn().mockResolvedValue({ data: { success: true, remaining: 0 }, error: null })
     return {
         supabase: { from: mockFrom },
-        assertSupabase: () => ({ from: mockFrom }),
+        assertSupabase: () => ({ from: mockFrom, rpc: mockRpc }),
         upsertPurchaseOrder: vi.fn(),
         upsertPoItem: vi.fn(),
         fetchPurchaseOrders: vi.fn(),

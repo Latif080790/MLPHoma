@@ -125,10 +125,10 @@ export function OverheadCostPanel() {
                         <div className="text-sm font-medium text-blue-800 dark:text-blue-300 flex justify-between">
                             Direct Cost (RAB)<Building2 size={16} />
                         </div>
-                        <div className="text-xl font-bold font-mono mt-1 text-slate-800 dark:text-slate-100">
+                        <div className="text-xl font-bold font-mono mt-1 text-foreground">
                             Rp {summary.directCost.toLocaleString('id-ID')}
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">Base calculation</p>
+                        <p className="text-xs text-muted-foreground mt-1">Base calculation</p>
                     </CardContent>
                 </Card>
 
@@ -137,7 +137,7 @@ export function OverheadCostPanel() {
                         <div className="text-sm font-medium text-amber-800 dark:text-amber-300 flex justify-between">
                             Total Overhead<PieChart size={16} />
                         </div>
-                        <div className="text-xl font-bold font-mono mt-1 text-slate-800 dark:text-slate-100">
+                        <div className="text-xl font-bold font-mono mt-1 text-foreground">
                             Rp {summary.totalOverhead.toLocaleString('id-ID')}
                         </div>
                         <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold">
@@ -161,7 +161,7 @@ export function OverheadCostPanel() {
                                 <Button variant="outline" size="sm" className="h-8" onClick={handleApplyTemplate} disabled={summary.items.length > 0}>
                                     <CopyPlus size={14} className="mr-1.5" /> Load Template
                                 </Button>
-                                <Button size="sm" className="h-8 bg-blue-600 hover:bg-blue-700" onClick={handleOpenCreate}>
+                                <Button size="sm" className="h-8 bg-primary hover:bg-primary/90" onClick={handleOpenCreate}>
                                     <Plus size={14} className="mr-1.5" /> Add Target
                                 </Button>
                             </div>
@@ -176,23 +176,23 @@ export function OverheadCostPanel() {
                     <Card>
                         <CardHeader className="p-4 pb-0">
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                <PieChart size={16} className="text-slate-500" /> Breakdown by Category
+                                <PieChart size={16} className="text-muted-foreground" /> Breakdown by Category
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-4">
                             {summary.byCategory.length === 0 ? (
-                                <div className="text-sm text-center text-slate-500 py-8">No overhead data</div>
+                                <div className="text-sm text-center text-muted-foreground py-8">No overhead data</div>
                             ) : (
                                 <div className="space-y-3">
                                     {summary.byCategory.sort((a, b) => b.total - a.total).map(c => (
                                         <div key={c.category} className="flex items-center justify-between text-sm">
                                             <div className="flex items-center gap-2">
                                                 <span>{OVERHEAD_CATEGORY_ICONS[c.category] || '📋'}</span>
-                                                <span className="font-medium text-slate-700 dark:text-slate-300">{c.label}</span>
+                                                <span className="font-medium text-muted-foreground">{c.label}</span>
                                             </div>
-                                            <div className="font-mono text-slate-900 dark:text-white font-semibold flex flex-col items-end">
+                                            <div className="font-mono text-foreground font-semibold flex flex-col items-end">
                                                 Rp {c.total.toLocaleString('id-ID')}
-                                                <span className="text-xs text-slate-400 font-sans font-normal">
+                                                <span className="text-xs text-muted-foreground font-sans font-normal">
                                                     {((c.total / summary.totalOverhead) * 100).toFixed(1)}%
                                                 </span>
                                             </div>
@@ -219,10 +219,10 @@ export function OverheadCostPanel() {
                                             const item = row.original;
                                             return (
                                                 <div>
-                                                    <div className="font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                                                    <div className="font-medium text-foreground flex items-center gap-1.5">
                                                         {OVERHEAD_CATEGORY_ICONS[item.category] || '📋'} {item.label}
                                                     </div>
-                                                    <div className="text-xs text-slate-500 mt-0.5">{OVERHEAD_CATEGORY_LABELS[item.category]}</div>
+                                                    <div className="text-xs text-muted-foreground mt-0.5">{OVERHEAD_CATEGORY_LABELS[item.category]}</div>
                                                 </div>
                                             )
                                         },
@@ -232,7 +232,7 @@ export function OverheadCostPanel() {
                                         id: 'method',
                                         header: 'Method',
                                         cell: ({ row }) => (
-                                            <Badge variant="outline" className="text-xs uppercase font-normal bg-slate-50 dark:bg-slate-900">
+                                            <Badge variant="outline" className="text-xs uppercase font-normal bg-muted/30">
                                                 {row.original.method}
                                             </Badge>
                                         )
@@ -243,7 +243,7 @@ export function OverheadCostPanel() {
                                         cell: ({ row }) => {
                                             const item = row.original;
                                             return (
-                                                <div className="text-right font-mono text-slate-600 dark:text-slate-300 text-xs">
+                                                <div className="text-right font-mono text-muted-foreground text-xs">
                                                     {item.method === 'PERCENTAGE'
                                                         ? <span className="text-blue-600 font-semibold">{item.percentage}%</span>
                                                         : `Rp ${item.fixedAmount?.toLocaleString('id-ID')}`
@@ -256,7 +256,7 @@ export function OverheadCostPanel() {
                                         id: 'calculated',
                                         header: () => <div className="text-right">Calculated (Rp)</div>,
                                         cell: ({ row }) => (
-                                            <div className="text-right font-mono font-semibold text-slate-900 dark:text-white">
+                                            <div className="text-right font-mono font-semibold text-foreground">
                                                 Rp {row.original.calculatedAmount.toLocaleString('id-ID')}
                                             </div>
                                         )

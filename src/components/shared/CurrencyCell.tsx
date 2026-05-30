@@ -23,7 +23,7 @@ export const CurrencyCell: React.FC<CurrencyCellProps> = ({
   showSign = false
 }) => {
   if (value === undefined || value === null) {
-    return <span className={cn("text-slate-400 font-mono", className)}>-</span>
+    return <span className={cn("text-muted-foreground font-mono", className)}>-</span>
   }
 
   const formatted = new Intl.NumberFormat('id-ID', {
@@ -34,10 +34,10 @@ export const CurrencyCell: React.FC<CurrencyCellProps> = ({
   const sign = showSign && value !== 0 ? (value > 0 ? '+' : '-') : ''
   
   const variantStyles = {
-    default: "text-slate-900 dark:text-slate-100",
+    default: "text-foreground",
     positive: "text-emerald-600 dark:text-emerald-400 font-medium",
     negative: "text-rose-600 dark:text-rose-400 font-medium",
-    neutral: "text-slate-500 dark:text-slate-400"
+    neutral: "text-muted-foreground"
   }
 
   return (
@@ -46,7 +46,7 @@ export const CurrencyCell: React.FC<CurrencyCellProps> = ({
       variantStyles[variant],
       className
     )}>
-      <span className="text-[10px] opacity-60 mr-1 font-sans">{prefix}</span>
+      <span className="text-xs opacity-60 mr-1 font-sans">{prefix}</span>
       <span>{sign}{formatted}</span>
     </div>
   )

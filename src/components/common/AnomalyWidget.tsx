@@ -63,7 +63,7 @@ export function AnomalyWidget({ projectId, compact = false, className }: Anomaly
     if (!loading && visible.length === 0 && !error) return null
 
     return (
-        <div className={cn('rounded-lg border bg-white dark:bg-zinc-900 shadow-sm', className)}>
+        <div className={cn('rounded-lg border bg-card dark:bg-zinc-900 shadow-sm', className)}>
             {/* Header */}
             <div
                 className="flex items-center justify-between px-4 py-3 cursor-pointer select-none"

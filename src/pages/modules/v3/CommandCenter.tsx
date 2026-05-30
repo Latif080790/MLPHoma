@@ -289,7 +289,7 @@ export default function CommandCenter() {
                 />
 
                 {/* E. FINANCIAL FLOW (Wide Chart) */}
-                <Suspense fallback={<div className="md:col-span-3 h-[300px] w-full animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />}>
+                <Suspense fallback={<div className="md:col-span-3 h-[300px] w-full animate-pulse rounded-md bg-muted/50" />}>
                    <div className="md:col-span-3 md:row-span-2">
                     <CommandCenterCashflowChart
                             isPortfolioMode={isPortfolioMode}

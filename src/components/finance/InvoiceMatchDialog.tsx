@@ -48,7 +48,7 @@ function StatusIcon({ status }: { status: MatchStatus }) {
         case 'matched': return <CheckCircle2 className="text-emerald-500" size={20} />
         case 'partial': return <AlertCircle className="text-amber-500" size={20} />
         case 'mismatch': return <XCircle className="text-red-500" size={20} />
-        case 'no_po': return <FileText className="text-slate-400" size={20} />
+        case 'no_po': return <FileText className="text-muted-foreground" size={20} />
     }
 }
 
@@ -91,14 +91,14 @@ export function InvoiceMatchDialog({
                 <div className="space-y-4 py-2">
 
                     {/* ── Score & Status Overview ── */}
-                    <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                    <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/30/50">
                         <div className="flex items-center gap-4">
                             <ScoreGauge score={result.overallScore} />
                             <div>
                                 <Badge className={getMatchStatusColor(result.status)}>
                                     {getMatchStatusLabel(result.status)}
                                 </Badge>
-                                <p className="text-xs text-slate-500 mt-1">{result.summary}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{result.summary}</p>
                             </div>
                         </div>
                     </div>
@@ -117,26 +117,26 @@ export function InvoiceMatchDialog({
                                 {result.po ? (
                                     <>
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">PO #</span>
+                                            <span className="text-muted-foreground">PO #</span>
                                             <span className="font-mono font-medium">{result.po.poNumber}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">Vendor</span>
+                                            <span className="text-muted-foreground">Vendor</span>
                                             <span className="truncate ml-2">{result.po.vendorName}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">Total</span>
+                                            <span className="text-muted-foreground">Total</span>
                                             <span className="font-mono font-semibold text-blue-700 dark:text-blue-400">
                                                 {formatIDR(result.po.poTotal)}
                                             </span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">Status</span>
+                                            <span className="text-muted-foreground">Status</span>
                                             <Badge variant="outline" className="text-xs h-4">{result.po.poStatus}</Badge>
                                         </div>
                                     </>
                                 ) : (
-                                    <p className="text-center text-slate-400 py-3">No PO linked</p>
+                                    <p className="text-center text-muted-foreground py-3">No PO linked</p>
                                 )}
                             </CardContent>
                         </Card>
@@ -152,15 +152,15 @@ export function InvoiceMatchDialog({
                                 {result.grn ? (
                                     <>
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">Ordered</span>
+                                            <span className="text-muted-foreground">Ordered</span>
                                             <span className="font-mono">{result.grn.totalOrdered.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">Received</span>
+                                            <span className="text-muted-foreground">Received</span>
                                             <span className="font-mono">{result.grn.totalReceived.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-slate-500">Receipt %</span>
+                                            <span className="text-muted-foreground">Receipt %</span>
                                             <span className={`font-mono font-semibold ${result.grn.receiptPercentage >= 100 ? 'text-green-600' :
                                                     result.grn.receiptPercentage >= 80 ? 'text-amber-600' : 'text-red-600'
                                                 }`}>
@@ -169,7 +169,7 @@ export function InvoiceMatchDialog({
                                         </div>
                                     </>
                                 ) : (
-                                    <p className="text-center text-slate-400 py-3">No GRN data</p>
+                                    <p className="text-center text-muted-foreground py-3">No GRN data</p>
                                 )}
                             </CardContent>
                         </Card>
@@ -183,21 +183,21 @@ export function InvoiceMatchDialog({
                             </CardHeader>
                             <CardContent className="px-3 pb-3 space-y-1 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">Invoice #</span>
+                                    <span className="text-muted-foreground">Invoice #</span>
                                     <span className="font-mono font-medium">{invoice.invoice_number}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">Vendor</span>
+                                    <span className="text-muted-foreground">Vendor</span>
                                     <span className="truncate ml-2">{invoice.vendor_name}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">Total</span>
+                                    <span className="text-muted-foreground">Total</span>
                                     <span className="font-mono font-semibold text-purple-700 dark:text-purple-400">
                                         {formatIDR(invoice.total_amount)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-slate-500">Status</span>
+                                    <span className="text-muted-foreground">Status</span>
                                     <Badge variant="outline" className="text-xs h-4">{invoice.status}</Badge>
                                 </div>
                             </CardContent>
@@ -207,7 +207,7 @@ export function InvoiceMatchDialog({
                     {/* ── Discrepancies Table ── */}
                     {result.discrepancies.length > 0 && (
                         <div>
-                            <h4 className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1.5">
+                            <h4 className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
                                 <AlertTriangle size={13} /> Discrepancies ({result.discrepancies.length})
                             </h4>
                             <Table>

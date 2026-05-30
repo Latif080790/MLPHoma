@@ -36,7 +36,7 @@ export const PeriodTable: React.FC<PeriodTableProps> = ({ rows, bufferAmount = 0
   return (
     <div className="overflow-x-auto">
       <div className="min-w-[720px]">
-        <div className="grid grid-cols-7 border-b bg-neutral-50 p-2 text-sm font-medium dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="grid grid-cols-7 border-b bg-muted/30 p-2 text-sm font-medium  ">
           <div>Period</div>
           <div className="text-right">Outflow</div>
           <div className="text-right">Inflow</div>
@@ -50,7 +50,7 @@ export const PeriodTable: React.FC<PeriodTableProps> = ({ rows, bufferAmount = 0
           const isDeficit = r.balance < 0
           const isBelowBuffer = !isDeficit && bufferAmount > 0 && r.balance < bufferAmount
           return (
-            <div key={r.period} className="grid grid-cols-7 border-b p-2 text-sm last:border-b-0 dark:border-neutral-800">
+            <div key={r.period} className="grid grid-cols-7 border-b p-2 text-sm last:border-b-0 ">
               <div>{r.period}</div>
               <div className="text-right">Rp {r.outflow.toLocaleString('id-ID')}</div>
               <div className="text-right">Rp {r.inflow.toLocaleString('id-ID')}</div>

@@ -73,7 +73,7 @@ export function ModuleListToolbar({
   return (
     <div className={cn('flex flex-col gap-3 md:flex-row md:items-center md:justify-between', className)}>
       <div className="relative w-full md:max-w-sm">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           value={localQuery}
           onChange={(e) => setLocalQuery(e.target.value)}

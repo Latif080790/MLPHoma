@@ -19,6 +19,7 @@ export function mapDbRowToRabItem(row: Record<string, unknown>, existing?: RABIt
     item_name: row.name as string | undefined,
     unit: row.unit as string | undefined,
     volume: Number(row.volume || 0),
+    base_price: Number(row.base_price || 0),
     unit_price: Number(row.unit_price || 0),
     cost_material: Number(row.cost_material || 0),
     cost_labor: Number(row.cost_labor || 0),

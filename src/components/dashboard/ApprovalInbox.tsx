@@ -364,7 +364,7 @@ export function ApprovalInbox() {
                         <div className="space-y-2">
                             {/* Select-all header */}
                             {sorted.length > 1 && (
-                                <div className="flex items-center gap-2 px-1 pb-1 border-b border-white/[0.06]">
+                                <div className="flex items-center gap-2 px-1 pb-1 border-b border-border/60">
                                     <Checkbox
                                         checked={allSelected}
                                         onCheckedChange={toggleAll}
@@ -385,7 +385,7 @@ export function ApprovalInbox() {
                                 return (
                                     <div
                                         key={approval.id}
-                                        className={`rounded-lg border px-4 py-3 transition-colors hover:bg-white/[0.02] ${
+                                        className={`rounded-lg border px-4 py-3 transition-colors hover:bg-muted/20 ${
                                             approval.entityType === 'EMERGENCY_TRANSFER' || approval.entityType === 'BUDGET_OVERRIDE' || isUrgent
                                                 ? slaState === 'overdue' || approval.status === 'ESCALATED'
                                                     ? 'border-red-500/30 bg-red-500/[0.04]'

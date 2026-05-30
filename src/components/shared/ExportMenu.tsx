@@ -80,7 +80,7 @@ export function ExportMenu<T>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
-        <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-slate-500">
+        <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground">
           Export Data
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

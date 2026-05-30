@@ -204,6 +204,8 @@ export const wbsItemInputSchema = z.object({
   budget: commonValidations.price.optional(),
   progress: commonValidations.percentage.optional().default(0),
   qc_status: z.enum(['PENDING', 'PASSED', 'FAILED', 'NOT_REQUIRED']).optional().default('NOT_REQUIRED'),
+  progressSource: z.enum(['timeline', 'manual']).optional(),
+  physicalProgressLocked: z.boolean().optional(),
 })
 
 /** WBS Item update schema */

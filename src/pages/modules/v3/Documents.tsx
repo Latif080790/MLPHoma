@@ -466,13 +466,13 @@ export default function Documents() {
                         return (
                             <Card
                                 key={doc.id}
-                                className={`hover:border-blue-500 transition-colors group ${isArchived ? 'opacity-60 border-slate-300' :
+                                className={`hover:border-blue-500 transition-colors group ${isArchived ? 'opacity-60 border-border' :
                                     isSuperseded ? 'opacity-50 border-yellow-300' : ''
                                     }`}
                             >
                                 <CardContent className="p-4 flex flex-col justify-between h-full min-h-[140px]">
                                     <div className="flex items-start justify-between">
-                                        <div className={`p-2 rounded ${isArchived ? 'bg-slate-50 text-slate-400' :
+                                        <div className={`p-2 rounded ${isArchived ? 'bg-muted/30 text-muted-foreground' :
                                             isSuperseded ? 'bg-yellow-50 text-yellow-600' :
                                                 'bg-blue-50 text-blue-600'
                                             }`}>
@@ -516,7 +516,7 @@ export default function Documents() {
                                                 variant="ghost"
                                                 size="icon"
                                                 aria-label={isArchived ? 'Pulihkan dari arsip' : 'Arsipkan dokumen'}
-                                                className={`text-neutral-400 hover:text-slate-500 opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 ${isArchived ? 'text-slate-500 !opacity-100' : ''}`}
+                                                className={`text-neutral-400 hover:text-muted-foreground opacity-80 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 ${isArchived ? 'text-muted-foreground !opacity-100' : ''}`}
                                                 onClick={() => handleToggleArchive(doc)}
                                                 disabled={!governance.canArchive && !governance.canUnarchive}
                                                 title={isArchived ? 'Restore from archive' : 'Archive document'}
@@ -576,7 +576,7 @@ export default function Documents() {
                                                         </Badge>
                                                     )}
                                                     {isArchived && (
-                                                        <Badge variant="outline" className="text-xs px-1 py-0 bg-slate-100 text-slate-600 border-slate-300">
+                                                        <Badge variant="outline" className="text-xs px-1 py-0 bg-muted/50 text-muted-foreground border-border">
                                                             ARCHIVED
                                                         </Badge>
                                                     )}
@@ -708,7 +708,7 @@ export default function Documents() {
                                 aria-label={`Preview PDF: ${previewDoc.title}`}
                             />
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-400">
+                            <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">
                                 <FileText size={48} className="opacity-30" />
                                 <p className="text-sm">Preview tidak tersedia untuk format ini</p>
                                 <Button size="sm" variant="outline" onClick={() => previewDoc && handleDownload(previewDoc)}>

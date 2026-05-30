@@ -206,7 +206,7 @@ export function WBSEditor({
               {item.code}
             </span>
           )}
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-muted/50 border border-border text-xs font-medium text-muted-foreground">
             <Layers size={10} />
             Level {formData.level}
           </span>
@@ -215,7 +215,7 @@ export function WBSEditor({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name field */}
           <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Nama Item <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -234,7 +234,7 @@ export function WBSEditor({
 
           {/* Description field */}
           <div className="space-y-1.5">
-            <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Deskripsi
             </Label>
             <Textarea
@@ -266,15 +266,15 @@ export function WBSEditor({
                 checked={addAnother}
                 onCheckedChange={(checked) => setAddAnother(!!checked)}
               />
-              <label htmlFor="addAnother" className="flex items-center gap-1.5 text-sm text-slate-600 cursor-pointer select-none">
-                <RotateCcw size={12} className="text-slate-400" />
+              <label htmlFor="addAnother" className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer select-none">
+                <RotateCcw size={12} className="text-muted-foreground" />
                 Tambah lagi setelah simpan
               </label>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="flex justify-end gap-2 pt-2 border-t border-border">
             <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Batal
             </Button>

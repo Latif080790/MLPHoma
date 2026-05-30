@@ -30,7 +30,7 @@ export default function RABSummary({ projectId, taxRate = 0.11 }: RABSummaryProp
   }, [items, taxRate])
 
   return (
-    <div className="rounded-md border p-4 bg-white shadow-sm">
+    <div className="rounded-md border p-4 bg-card shadow-sm">
       <div className="font-medium text-sm mb-3">RAB Summary</div>
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">

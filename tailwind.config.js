@@ -58,16 +58,23 @@ module.exports = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
-        /* NATA LABA Brand Tokens — V2 Evaluation "Opsi A Applied" */
-        'nl-orange': '#f97316',
-        'nl-orange-dark': '#ea580c',
-        'nl-orange-pale': '#ffedd5',
-        'nl-orange-border': '#fed7aa',
-        'nl-blue': '#1d5fcc',
-        'nl-blue-dark': '#153fa8',
-        'nl-blue-pale': '#dbeafe',
-        'nl-sidebar': '#0f172a',
-        'nl-sidebar-active': '#431407',
+        /* NATA LABA Brand — v2 Design System */
+        'nl-orange': '#F97316',
+        'nl-orange-light': '#FB923C',
+        'nl-orange-dark': '#EA580C',
+        'nl-orange-dim': 'rgba(249,115,22,0.12)',
+        /* Navy Surface Scale — v2 (wider steps for monitor legibility) */
+        'nl-navy': {
+          1: '#070C18',  /* canvas */
+          2: '#0E1525',  /* page / sidebar */
+          3: '#16223A',  /* panel / card */
+          4: '#1E2B45',  /* hover state */
+          5: '#273856',  /* elevated (modal/drawer) */
+        },
+        /* Cyan — data live / progress / actual values */
+        'nl-cyan': '#22D3EE',
+        'nl-cyan-500': '#06B6D4',
+        'nl-cyan-dim': 'rgba(34,211,238,0.12)',
         /* MLPHoma Design Token System — Semantic Colors */
         surface: {
           canvas: 'hsl(var(--color-surface-canvas))',
@@ -176,13 +183,14 @@ module.exports = {
         DEFAULT: '2px', // Add offset for clearer separation
       },
       fontFamily: {
-        display: ['Geist', 'Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'ui-monospace', 'monospace'],
+        display: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['DM Mono', 'ui-monospace', 'monospace'],
       },
       transitionTimingFunction: {
-        spring: 'cubic-bezier(0.16, 1, 0.3, 1)',
         standard: 'cubic-bezier(0.2, 0, 0, 1)',
+        decelerate: 'cubic-bezier(0, 0, 0, 1)',
+        accelerate: 'cubic-bezier(0.3, 0, 1, 1)',
       },
       keyframes: {
         'accordion-down': {

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import {
   CheckCircle2, Layers, Lock, LockKeyhole, Plus, Search, Trash2, X, Zap,
   Download, Upload, ChevronDown, ListFilter, Percent, MoreHorizontal,
+  GitBranch, CalendarClock, History,
 } from 'lucide-react'
 import { VisibilityState } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
@@ -52,6 +53,7 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
   searchQuery, onSearchChange, activeTab, onTabChange,
   isLocked, draftCount, selectedCount, scenarioVersion,
   onAddItem, onBulkDelete, onBulkOverhead,
+  onGenerateWBS, onAutoSchedule, onShowHistory,
   onDownloadTemplate, onImportExcel, onPriceDrift, onToggleLock,
   onPublish, onSwitchScenario, onSaveScenario, scenarios,
   availableColumns = [], columnVisibility = {}, onColumnVisibilityChange,
@@ -60,30 +62,30 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
   const [bulkPopoverOpen, setBulkPopoverOpen] = useState(false)
 
   return (
-    <div className="flex items-center gap-1.5 flex-nowrap px-3 py-2 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
+    <div className="flex items-center gap-1.5 flex-nowrap px-3 py-2 bg-muted/30/95 backdrop-blur-md border-b border-border overflow-x-auto">
 
       {/* Search */}
       <div className="relative flex-shrink-0 w-40">
-        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={searchQuery}
           onChange={e => onSearchChange(e.target.value)}
           placeholder="Search items, codes..."
-          className="h-7 pl-8 pr-7 text-xs bg-white border-slate-200"
+          className="h-7 pl-8 pr-7 text-xs bg-card border-border"
         />
         {searchQuery && (
-          <button onClick={() => onSearchChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+          <button onClick={() => onSearchChange('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground">
             <X size={11} />
           </button>
         )}
       </div>
 
       {/* DC / Overhead toggle */}
-      <div className="flex bg-white border border-slate-200 rounded-md p-0.5 flex-shrink-0">
+      <div className="flex bg-card border border-border rounded-md p-0.5 flex-shrink-0">
         <button
           onClick={() => onTabChange('direct')}
           className={`px-2.5 py-1 text-xs font-semibold rounded transition-all ${
-            activeTab === 'direct' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            activeTab === 'direct' ? 'bg-muted text-white shadow-sm' : 'text-muted-foreground hover:text-muted-foreground'
           }`}
         >
           Direct
@@ -91,27 +93,27 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
         <button
           onClick={() => onTabChange('overhead')}
           className={`px-2.5 py-1 text-xs font-semibold rounded transition-all ${
-            activeTab === 'overhead' ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+            activeTab === 'overhead' ? 'bg-muted text-white shadow-sm' : 'text-muted-foreground hover:text-muted-foreground'
           }`}
         >
           OH
         </button>
       </div>
 
-      <div className="w-px h-4 bg-slate-200 flex-shrink-0 mx-0.5" />
+      <div className="w-px h-4 bg-muted flex-shrink-0 mx-0.5" />
 
       {/* Column visibility */}
       {availableColumns.length > 0 && onColumnVisibilityChange && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-slate-200 flex-shrink-0">
-              <ListFilter size={11} className="text-slate-400" />
+            <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-border flex-shrink-0">
+              <ListFilter size={11} className="text-muted-foreground" />
               Kolom
               <ChevronDown size={10} className="opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
-            <DropdownMenuLabel className="text-xs uppercase tracking-wider text-slate-500 py-1">Visibilitas Kolom</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground py-1">Visibilitas Kolom</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {availableColumns.map(col => {
               const isVisible = columnVisibility[col.id] !== false
@@ -133,14 +135,14 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
       {/* Scenario / Baseline version */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-slate-200 flex-shrink-0">
-            <Layers size={11} className="text-slate-400" />
+          <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-border flex-shrink-0">
+            <Layers size={11} className="text-muted-foreground" />
             {scenarioVersion ? `v${scenarioVersion}` : 'vBaseline'}
             <ChevronDown size={10} className="opacity-50" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-52">
-          <DropdownMenuLabel className="text-xs uppercase tracking-wider text-slate-500 py-1">Scenarios</DropdownMenuLabel>
+          <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground py-1">Scenarios</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => onSwitchScenario(null)} className="flex items-center justify-between text-xs">
             <span>Live RAB</span>
@@ -160,17 +162,17 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className="w-px h-4 bg-slate-200 flex-shrink-0 mx-0.5" />
+      <div className="w-px h-4 bg-muted flex-shrink-0 mx-0.5" />
 
       {/* Overflow: Template + Import + Analyze Drift */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-slate-200 flex-shrink-0">
-            <MoreHorizontal size={13} className="text-slate-400" />
+          <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-border flex-shrink-0">
+            <MoreHorizontal size={13} className="text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-44">
-          <DropdownMenuLabel className="text-xs uppercase tracking-wider text-slate-500 py-1">Actions</DropdownMenuLabel>
+        <DropdownMenuContent align="start" className="w-48">
+          <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground py-1">Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onImportExcel} className="text-xs gap-2">
             <Upload size={12} className="text-emerald-600" /> Import Excel
@@ -179,8 +181,19 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
             <Download size={12} className="text-emerald-600" /> Download Template
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground py-1">Generate & Sync</DropdownMenuLabel>
+          <DropdownMenuItem onClick={onGenerateWBS} className="text-xs gap-2">
+            <GitBranch size={12} className="text-violet-600" /> Generate WBS dari RAB
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={onAutoSchedule} className="text-xs gap-2">
+            <CalendarClock size={12} className="text-blue-600" /> Auto Schedule
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onShowHistory} className="text-xs gap-2">
+            <History size={12} className="text-muted-foreground" /> Riwayat Versi
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={onPriceDrift} className="text-xs gap-2">
-            <Zap size={12} className="text-blue-600" /> Analyze Drift
+            <Zap size={12} className="text-amber-600" /> Analyze Drift
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -193,7 +206,7 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
         className={`h-7 px-2 text-xs gap-1 flex-shrink-0 ${
           isLocked
             ? 'text-emerald-600 border-emerald-200 bg-emerald-50'
-            : 'text-slate-500 border-slate-200 hover:border-amber-200 hover:text-amber-600'
+            : 'text-muted-foreground border-border hover:border-amber-200 hover:text-amber-600'
         }`}
       >
         {isLocked ? <LockKeyhole size={11} /> : <Lock size={11} />}
@@ -212,13 +225,13 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-56 p-3">
-                <p className="text-xs font-semibold text-slate-700 mb-1">Terapkan Markup Overhead</p>
-                <p className="text-xs text-slate-500 mb-2">Kalikan unit price {selectedCount} item × (1 + %)</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Terapkan Markup Overhead</p>
+                <p className="text-xs text-muted-foreground mb-2">Kalikan unit price {selectedCount} item × (1 + %)</p>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Input type="number" min={-100} max={500} step={0.5} placeholder="15" value={overheadPct}
                       onChange={e => setOverheadPct(e.target.value)} className="h-7 text-xs pr-6" />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">%</span>
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
                   </div>
                   <Button size="sm" className="h-7 text-xs" onClick={() => {
                     const pct = parseFloat(overheadPct)
@@ -252,7 +265,7 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
         </Button>
       ) : (
         <Button onClick={onAddItem} size="sm"
-          className="h-7 px-3 text-xs gap-1.5 bg-blue-600 hover:bg-blue-700 shadow shadow-blue-200 flex-shrink-0">
+          className="h-7 px-3 text-xs gap-1.5 bg-primary hover:bg-primary/90 shadow shadow-orange-200/30 flex-shrink-0">
           <Plus size={12} />
           Add Item
         </Button>

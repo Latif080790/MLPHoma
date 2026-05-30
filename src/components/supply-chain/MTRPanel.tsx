@@ -126,9 +126,9 @@ export function MTRPanel() {
             {mtrs.length === 0 ? (
                 <Card>
                     <CardContent className="p-8 text-center">
-                        <Package2 className="mx-auto h-10 w-10 text-slate-300 mb-3" />
-                        <p className="text-sm text-slate-500">No material transfer requests yet.</p>
-                        <p className="text-xs text-slate-400 mt-1">Create an MTR to reallocate materials between WBS items.</p>
+                        <Package2 className="mx-auto h-10 w-10 text-foreground mb-3" />
+                        <p className="text-sm text-muted-foreground">No material transfer requests yet.</p>
+                        <p className="text-xs text-muted-foreground mt-1">Create an MTR to reallocate materials between WBS items.</p>
                     </CardContent>
                 </Card>
             ) : (
@@ -153,10 +153,10 @@ export function MTRPanel() {
                                             <TableCell className="p-3">
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="font-medium">{mtr.sourceWbsLabel}</span>
-                                                    <ArrowRight size={12} className="text-slate-400" />
+                                                    <ArrowRight size={12} className="text-muted-foreground" />
                                                     <span className="font-medium">{mtr.targetWbsLabel}</span>
                                                 </div>
-                                                <div className="text-xs text-slate-500 mt-0.5">{mtr.reason}</div>
+                                                <div className="text-xs text-muted-foreground mt-0.5">{mtr.reason}</div>
                                             </TableCell>
                                             <TableCell className="p-3 text-right font-mono font-semibold">
                                                 Rp {mtr.totalValue.toLocaleString()}

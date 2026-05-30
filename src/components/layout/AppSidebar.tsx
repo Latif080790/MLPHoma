@@ -134,21 +134,21 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
             )}
         >
             {/* Logo Area */}
-            <div className="flex h-14 items-center gap-3 px-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
+            <div className="flex h-14 items-center gap-3 px-4 border-b border-border shrink-0">
                 <div
-                    className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg shadow-md text-white"
-                    style={{ background: 'linear-gradient(135deg, #1d5fcc, #f97316)' }}
+                    className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
+                    style={{ background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)' }}
                 >
-                    <Hexagon size={18} />
+                    <Hexagon size={16} color="#F97316" strokeWidth={1.5} />
                 </div>
 
                 {!collapsed && (
                     <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                            MLPHoma
+                        <span className="text-sm font-bold text-foreground truncate tracking-tight">
+                            NATA LABA
                         </span>
-                        <span className="text-xs tracking-wider text-nl-orange font-semibold truncate">
-                            by NATA LABA
+                        <span className="text-xs tracking-widest text-nl-orange/70 font-semibold truncate uppercase">
+                            Construction Suite
                         </span>
                     </div>
                 )}
@@ -165,19 +165,19 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                             {!collapsed && (
                                 <button
                                     onClick={() => toggleGroup(group.label)}
-                                    className="w-full flex items-center justify-between mb-1 px-2 pb-1 border-b border-slate-100 dark:border-slate-800 group/grp"
+                                    className="w-full flex items-center justify-between mb-1 px-2 pb-1 border-b border-border/40 group/grp"
                                     aria-expanded={!isGroupCollapsed}
                                     aria-label={`${isGroupCollapsed ? 'Expand' : 'Collapse'} ${group.label}`}
                                 >
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 group-hover/grp:text-slate-600 dark:group-hover/grp:text-slate-400 transition-colors">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 group-hover/grp:text-muted-foreground transition-colors">
                                         {group.label}
                                         {hasActiveItem && isGroupCollapsed && (
                                             <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-nl-orange align-middle" />
                                         )}
                                     </span>
                                     <ChevronDown
-                                        size={12}
-                                        className={`text-slate-300 dark:text-slate-600 group-hover/grp:text-slate-500 transition-transform duration-200 ${isGroupCollapsed ? '-rotate-90' : ''}`}
+                                        size={11}
+                                        className={`text-muted-foreground/40 group-hover/grp:text-muted-foreground/70 transition-transform duration-200 ${isGroupCollapsed ? '-rotate-90' : ''}`}
                                     />
                                 </button>
                             )}
@@ -193,8 +193,8 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                                                 className={cn(
                                                     "group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors relative overflow-hidden",
                                                     isActive
-                                                        ? "bg-orange-50 text-nl-orange dark:bg-nl-sidebar-active dark:text-orange-300"
-                                                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                        ? "bg-[rgba(249,115,22,0.1)] text-[#FB923C] dark:bg-[rgba(249,115,22,0.12)] dark:text-[#FB923C]"
+                                                        : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                                                 )}
                                                 title={collapsed ? item.label : undefined}
                                             >
@@ -229,15 +229,15 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
             </div>
 
             {/* Footer / Collapse Toggle */}
-            <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
+            <div className="p-3 border-t border-border shrink-0">
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="flex w-full items-center justify-center gap-3 rounded-lg p-2 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                    className="flex w-full items-center justify-center gap-3 rounded-lg p-2 text-muted-foreground/60 hover:bg-accent/60 hover:text-foreground transition-colors"
                     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 >
-                    {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+                    {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
                     {!collapsed && (
-                        <span className="text-xs font-medium">Collapse</span>
+                        <span className="text-xs font-medium">Ciutkan</span>
                     )}
                 </button>
             </div>

@@ -5,8 +5,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const { mockFrom, mockNotifyByRole, mockNotifyCreate, mockAuditLog, mockCascadeExecute } = vi.hoisted(() => ({
+const { mockFrom, mockRpc, mockNotifyByRole, mockNotifyCreate, mockAuditLog, mockCascadeExecute } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
+  mockRpc: vi.fn().mockResolvedValue({ data: { success: true }, error: null }),
   mockNotifyByRole: vi.fn().mockResolvedValue(undefined),
   mockNotifyCreate: vi.fn().mockResolvedValue({ id: 'notif-1' }),
   mockAuditLog: vi.fn().mockResolvedValue(undefined),
@@ -14,7 +15,7 @@ const { mockFrom, mockNotifyByRole, mockNotifyCreate, mockAuditLog, mockCascadeE
 }))
 
 vi.mock('../../lib/supabaseClient', () => ({
-  assertSupabase: () => ({ from: (t: string) => mockFrom(t) }),
+  assertSupabase: () => ({ from: (t: string) => mockFrom(t), rpc: (...args: any[]) => mockRpc(...args) }),
 }))
 
 vi.mock('../../lib/idGenerator', () => ({
@@ -140,17 +141,7 @@ describe('approvalService', () => {
         created_at: '2025-01-01',
       }
 
-      mockFrom.mockImplementation(() => ({
-        update: () => ({
-          eq: () => ({
-            eq: () => ({
-              select: () => ({
-                single: () => Promise.resolve({ data: approvedRow, error: null }),
-              }),
-            }),
-          }),
-        }),
-      }))
+      mockFrom.mockImplementation(() => makeChain({ data: approvedRow, error: null }))
 
       const result = await approvalService.approve('a1', 'mgr-1', 'Manager A', 'Looks good')
 
@@ -178,17 +169,7 @@ describe('approvalService', () => {
         created_at: '2025-01-01',
       }
 
-      mockFrom.mockImplementation(() => ({
-        update: () => ({
-          eq: () => ({
-            eq: () => ({
-              select: () => ({
-                single: () => Promise.resolve({ data: approvedRow, error: null }),
-              }),
-            }),
-          }),
-        }),
-      }))
+      mockFrom.mockImplementation(() => makeChain({ data: approvedRow, error: null }))
 
       await approvalService.approve('a2', 'mgr-1', 'Manager A')
       expect(mockCascadeExecute).not.toHaveBeenCalled()
@@ -211,17 +192,7 @@ describe('approvalService', () => {
         created_at: '2025-01-01',
       }
 
-      mockFrom.mockImplementation(() => ({
-        update: () => ({
-          eq: () => ({
-            eq: () => ({
-              select: () => ({
-                single: () => Promise.resolve({ data: rejectedRow, error: null }),
-              }),
-            }),
-          }),
-        }),
-      }))
+      mockFrom.mockImplementation(() => makeChain({ data: rejectedRow, error: null }))
 
       const result = await approvalService.reject('a3', 'mgr-1', 'Manager A', 'Over limit')
 

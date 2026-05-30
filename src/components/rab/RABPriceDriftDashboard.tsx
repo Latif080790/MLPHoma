@@ -40,7 +40,7 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
 
     if (!driftData && loading) {
         return (
-            <div className="flex flex-col items-center justify-center p-12 text-slate-400">
+            <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
                 <RefreshCw className="h-8 w-8 animate-spin mb-4" />
                 <p>Analyzing price drift...</p>
             </div>
@@ -51,8 +51,8 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
         return (
             <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                    <Zap className="h-10 w-10 text-slate-200 mb-2" />
-                    <p className="text-slate-500 text-sm mb-4">No price drift data available.</p>
+                    <Zap className="h-10 w-10 text-foreground mb-2" />
+                    <p className="text-muted-foreground text-sm mb-4">No price drift data available.</p>
                     <Button size="sm" onClick={handleRefresh}>
                         Start Analysis
                     </Button>
@@ -85,7 +85,7 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                 {/* Summary Card */}
                 <Card className={`${totalDrift > 0 ? 'border-red-200 bg-red-50/30' : 'border-green-200 bg-green-50/30'}`}>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-500">Net Price Drift</CardTitle>
+                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Net Price Drift</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="flex items-center justify-between">
@@ -117,7 +117,7 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                         <div className="space-y-4">
                             <div className="flex justify-between items-end">
                                 <div className="space-y-1">
-                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Efficiency Progress</div>
+                                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Efficiency Progress</div>
                                     <div className="text-sm font-semibold">Budget Health Analysis</div>
                                 </div>
                                 <div className="flex gap-4">
@@ -131,7 +131,7 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                                     </div>
                                 </div>
                             </div>
-                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex">
+                            <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden flex">
                                 <div
                                     className="bg-red-500 h-full transition-all"
                                     style={{ width: `${(leakage / (leakage + savings + 0.001)) * 100}%` }}
@@ -161,23 +161,23 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                 </CardHeader>
                 <CardContent className="p-0 mt-4">
                     <ScrollArea className="h-[300px]">
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-border">
                             {itemsWithDrift.length === 0 ? (
-                                <div className="p-12 text-center text-slate-400 text-xs italic">
+                                <div className="p-12 text-center text-muted-foreground text-xs italic">
                                     No significant drift detected. All prices within ±0.01 tolerance.
                                 </div>
                             ) : (
                                 itemsWithDrift.map((item, idx) => (
-                                    <div key={idx} className="p-3 px-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                    <div key={idx} className="p-3 px-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
                                         <div className="flex items-center gap-3">
                                             <div className={`h-8 w-8 rounded flex items-center justify-center ${item.potentialImpact > 0 ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
                                                 {item.potentialImpact > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                                             </div>
                                             <div>
-                                                <div className="text-xs font-bold text-slate-800">{item.itemName}</div>
+                                                <div className="text-xs font-bold text-muted-foreground">{item.itemName}</div>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-xs font-mono text-slate-400">{formatIDR(item.baselinePrice)}</span>
-                                                    <ArrowRight size={10} className="text-slate-300" />
+                                                    <span className="text-xs font-mono text-muted-foreground">{formatIDR(item.baselinePrice)}</span>
+                                                    <ArrowRight size={10} className="text-foreground" />
                                                     <span className="text-xs font-mono font-bold text-blue-600">{formatIDR(item.currentAhspPrice)}</span>
                                                     {item.livingPrice && (
                                                         <Badge variant="secondary" className="h-4 px-1.5 text-xs bg-amber-50 text-amber-600 border-amber-200">
@@ -192,7 +192,7 @@ export function RABPriceDriftDashboard({ projectId }: RABPriceDriftDashboardProp
                                             <div className={`text-xs font-black font-mono ${item.potentialImpact > 0 ? 'text-red-500' : 'text-green-500'}`}>
                                                 {item.potentialImpact > 0 ? '+' : '-'}{formatIDR(Math.abs(item.potentialImpact))}
                                             </div>
-                                            <div className="text-xs text-slate-400 mt-0.5">
+                                            <div className="text-xs text-muted-foreground mt-0.5">
                                                 Budget Impact ({item.volume} {item.unit})
                                             </div>
                                         </div>

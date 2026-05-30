@@ -30,12 +30,12 @@ export const PerformanceKPIs: React.FC<PerformanceKPIsProps> = ({
     const spiValue = isPortfolioMode ? (portfolioStats?.avgSpi || 0) : (stats?.spi || 0)
 
     return (
-        <Card className="md:col-span-2 md:row-span-1 bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 text-white shadow-xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+        <Card className="md:col-span-2 md:row-span-1 bg-gradient-to-br from-[#111B2E] to-[#070C18] border-border text-white shadow-xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[rgba(249,115,22,0.04)] rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
 
             <CardContent className="p-6 h-full flex flex-col justify-between relative z-10">
                 <div>
-                    <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">
+                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">
                         {isPortfolioMode ? 'Portfolio Avg Performance' : 'Project Health Index (PHI)'}
                     </h3>
                     <div className="flex items-end gap-6">
@@ -43,13 +43,13 @@ export const PerformanceKPIs: React.FC<PerformanceKPIsProps> = ({
                             <span className={`text-4xl font-mono font-bold ${ratingColor}`}>
                                 {phiScore}
                             </span>
-                            <span className="text-sm text-slate-500 mb-1.5 font-mono">
+                            <span className="text-sm text-muted-foreground mb-1.5 font-mono">
                                 / 100
                             </span>
                         </div>
-                        <div className="h-10 w-px bg-slate-800" />
+                        <div className="h-10 w-px bg-white/10" />
                         <div className="flex flex-col">
-                            <span className="text-xs text-slate-500 uppercase">Rating</span>
+                            <span className="text-xs text-muted-foreground uppercase">Rating</span>
                             <Badge variant="outline" className={`text-xs uppercase ${badgeColor}`}>
                                 {rating}
                             </Badge>
@@ -57,7 +57,7 @@ export const PerformanceKPIs: React.FC<PerformanceKPIsProps> = ({
                         
                         {!isPortfolioMode && stats?.phi?.factors && (
                             <div className="ml-2 flex flex-col items-end gap-0.5">
-                                <span className="text-xs text-slate-600 uppercase tracking-widest">Factors</span>
+                                <span className="text-xs text-muted-foreground/60 uppercase tracking-widest">Factors</span>
                                 <MiniSparkline
                                     data={[
                                         stats.phi.factors.financial,
@@ -75,7 +75,7 @@ export const PerformanceKPIs: React.FC<PerformanceKPIsProps> = ({
                         <div className="ml-auto">
                             <button
                                 onClick={onAnalyzeImpact}
-                                className="h-7 px-3 text-xs font-mono text-slate-500 hover:text-white border border-slate-800 hover:bg-blue-600 transition-all uppercase tracking-tighter rounded"
+                                className="h-7 px-3 text-xs font-mono text-muted-foreground hover:text-white border border-white/10 hover:bg-primary transition-all uppercase tracking-tighter rounded"
                             >
                                 Analyze Impact
                             </button>
@@ -83,47 +83,75 @@ export const PerformanceKPIs: React.FC<PerformanceKPIsProps> = ({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-8 mt-4">
-                    <div>
-                        <div className="text-xs text-slate-500 uppercase">
+                <div className="flex items-center gap-6 mt-4 flex-wrap">
+                    {/* CPI — large with delta pill */}
+                    <div className="flex flex-col gap-1">
+                        <div className="text-xs text-muted-foreground uppercase tracking-widest">
                             {isPortfolioMode ? 'Avg CPI' : 'CPI'}
                         </div>
-                        <div className={`text-sm font-mono font-bold ${cpiValue >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {cpiValue.toFixed(2)}
+                        <div className="flex items-center gap-2">
+                            <span className={`text-2xl font-mono font-bold leading-none ${cpiValue >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {cpiValue.toFixed(2)}
+                            </span>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold ${
+                                cpiValue >= 1
+                                    ? 'bg-emerald-500/15 text-emerald-400'
+                                    : 'bg-red-500/15 text-red-400'
+                            }`}>
+                                {cpiValue >= 1 ? '+' : ''}{((cpiValue - 1) * 100).toFixed(1)}%
+                            </span>
                         </div>
                     </div>
-                    <div>
-                        <div className="text-xs text-slate-500 uppercase">
+
+                    <div className="h-8 w-px bg-white/10 shrink-0" />
+
+                    {/* SPI — large with delta pill */}
+                    <div className="flex flex-col gap-1">
+                        <div className="text-xs text-muted-foreground uppercase tracking-widest">
                             {isPortfolioMode ? 'Avg SPI' : 'SPI'}
                         </div>
-                        <div className={`text-sm font-mono font-bold ${spiValue >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            {spiValue.toFixed(2)}
+                        <div className="flex items-center gap-2">
+                            <span className={`text-2xl font-mono font-bold leading-none ${spiValue >= 1 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                {spiValue.toFixed(2)}
+                            </span>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold ${
+                                spiValue >= 1
+                                    ? 'bg-emerald-500/15 text-emerald-400'
+                                    : 'bg-red-500/15 text-red-400'
+                            }`}>
+                                {spiValue >= 1 ? '+' : ''}{((spiValue - 1) * 100).toFixed(1)}%
+                            </span>
                         </div>
                     </div>
-                    <div className="h-6 w-px bg-slate-800" />
-                    <div>
-                        <div className="text-xs text-slate-500 uppercase">
-                            {isPortfolioMode ? 'Active Projects' : 'Cost Variance'}
+
+                    <div className="h-8 w-px bg-white/10 shrink-0" />
+
+                    {/* Budget / Projects */}
+                    <div className="flex flex-col gap-1">
+                        <div className="text-xs text-muted-foreground uppercase tracking-widest">
+                            {isPortfolioMode ? 'Active Projects' : 'Cost Var'}
                         </div>
-                        <div className="text-sm font-mono text-slate-300">
+                        <div className="text-lg font-mono font-semibold text-foreground leading-none">
                             {isPortfolioMode ? portfolioStats?.totalProjects || 0 : (
-                                <>
+                                <span className={cpiValue >= 1 ? 'text-emerald-400' : 'text-red-400'}>
                                     {cpiValue >= 1 ? '+' : ''}{((cpiValue - 1) * 100).toFixed(1)}%
-                                </>
+                                </span>
                             )}
                         </div>
                     </div>
-                    <div className="h-6 w-px bg-slate-800" />
-                    <div>
-                        <div className="text-xs text-slate-500 uppercase">
-                            {isPortfolioMode ? 'Total Budget' : 'Schedule Var'}
+
+                    {/* Schedule Var / Total Budget */}
+                    <div className="flex flex-col gap-1">
+                        <div className="text-xs text-muted-foreground uppercase tracking-widest">
+                            {isPortfolioMode ? 'Total Budget' : 'Sched Var'}
                         </div>
-                        <div className="text-sm font-mono text-slate-300">
-                            {isPortfolioMode ? `Rp ${((portfolioStats?.totalBudget || 0) / 1e9).toFixed(1)}B` : (
-                                <>
+                        <div className="text-lg font-mono font-semibold leading-none">
+                            {isPortfolioMode
+                                ? <span className="text-foreground">{`Rp ${((portfolioStats?.totalBudget || 0) / 1e9).toFixed(1)}B`}</span>
+                                : <span className={spiValue >= 1 ? 'text-emerald-400' : 'text-red-400'}>
                                     {spiValue >= 1 ? '+' : ''}{((spiValue - 1) * 100).toFixed(1)}%
-                                </>
-                            )}
+                                  </span>
+                            }
                         </div>
                     </div>
                 </div>

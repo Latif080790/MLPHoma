@@ -308,11 +308,11 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                             </Button>
                         </div>
 
-                        <div className="space-y-4 border rounded-md p-4 bg-slate-50/50 dark:bg-slate-900/50">
+                        <div className="space-y-4 border rounded-md p-4 bg-muted/30/50">
                             {fields.map((field, index) => (
                                 <div key={field.id} className="grid grid-cols-12 gap-3 items-start pb-4 border-b last:border-0 last:pb-0">
                                     <div className="col-span-4">
-                                        <Label className="text-xs font-bold uppercase text-slate-500 mb-1 block">RAP Budget Item (Linkage)</Label>
+                                        <Label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">RAP Budget Item (Linkage)</Label>
                                         <Select
                                             value={form.watch(`items.${index}.rap_item_id`)}
                                             onValueChange={(val) => {
@@ -328,7 +328,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                                                 }
                                             }}
                                         >
-                                            <SelectTrigger className="h-9 text-xs bg-white border-slate-200">
+                                            <SelectTrigger className="h-9 text-xs bg-card border-border">
                                                 <SelectValue placeholder="Link to Budget..." />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -339,7 +339,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                                                         <SelectItem key={ri.id} value={ri.id} className="text-xs">
                                                             <div className="flex flex-col">
                                                                 <span className="font-bold">{name}</span>
-                                                                <span className="text-xs text-slate-400">Rem: Rp {Math.round(rem).toLocaleString()}</span>
+                                                                <span className="text-xs text-muted-foreground">Rem: Rp {Math.round(rem).toLocaleString()}</span>
                                                             </div>
                                                         </SelectItem>
                                                     )
@@ -348,16 +348,16 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                                         </Select>
                                     </div>
                                     <div className="col-span-3">
-                                        <Label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Item Description</Label>
-                                        <Input {...form.register(`items.${index}.item_name`)} placeholder="e.g. Semen Padang" className="h-9 text-xs bg-white" />
+                                        <Label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">Item Description</Label>
+                                        <Input {...form.register(`items.${index}.item_name`)} placeholder="e.g. Semen Padang" className="h-9 text-xs bg-card" />
                                     </div>
                                     <div className="col-span-2">
-                                        <Label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Qty</Label>
-                                        <Input type="number" step="any" {...form.register(`items.${index}.quantity`)} className="h-9 text-xs bg-white" />
+                                        <Label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">Qty</Label>
+                                        <Input type="number" step="any" {...form.register(`items.${index}.quantity`)} className="h-9 text-xs bg-card" />
                                     </div>
                                     <div className="col-span-2">
-                                        <Label className="text-xs font-bold uppercase text-slate-500 mb-1 block">Price</Label>
-                                        <Input type="number" step="any" {...form.register(`items.${index}.unit_price`)} className="h-9 text-xs bg-white" />
+                                        <Label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">Price</Label>
+                                        <Input type="number" step="any" {...form.register(`items.${index}.unit_price`)} className="h-9 text-xs bg-card" />
                                     </div>
                                     <div className="col-span-1 flex flex-col justify-end h-full">
                                         <Button type="button" size="icon" variant="ghost" aria-label="Hapus item" onClick={() => remove(index)} className="h-9 w-9 text-red-500 hover:text-red-700 hover:bg-red-50">
@@ -365,7 +365,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId }: PurchaseO
                                         </Button>
                                     </div>
                                     <div className="col-span-12 flex justify-end">
-                                        <span className="text-xs font-mono font-bold text-slate-500">
+                                        <span className="text-xs font-mono font-bold text-muted-foreground">
                                             Subtotal: Rp {((Number(form.watch(`items.${index}.quantity`) || 0) * Number(form.watch(`items.${index}.unit_price`) || 0))).toLocaleString('id-ID')}
                                         </span>
                                     </div>

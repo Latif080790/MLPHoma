@@ -83,11 +83,11 @@ export function ProjectSettingsDialog({ projectId, open, onOpenChange }: Project
                                 onChange={(e) => setProfit(Number(e.target.value))}
                                 className="pr-10"
                             />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
                                 <Percent size={14} />
                             </div>
                         </div>
-                        <p className="text-xs text-slate-500 italic">Used as a benchmark in RAP simulations and AHSP calculations.</p>
+                        <p className="text-xs text-muted-foreground italic">Used as a benchmark in RAP simulations and AHSP calculations.</p>
                     </div>
 
                     <div className="grid gap-2">
@@ -103,11 +103,11 @@ export function ProjectSettingsDialog({ projectId, open, onOpenChange }: Project
                                 onChange={(e) => setOverhead(Number(e.target.value))}
                                 className="pr-10"
                             />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
                                 <Percent size={14} />
                             </div>
                         </div>
-                        <p className="text-xs text-slate-500 italic">Default overhead applied to new AHSP items in this project.</p>
+                        <p className="text-xs text-muted-foreground italic">Default overhead applied to new AHSP items in this project.</p>
                     </div>
                 </div>
 

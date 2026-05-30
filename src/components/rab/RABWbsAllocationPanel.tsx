@@ -163,13 +163,13 @@ export function RABWbsAllocationPanel({
     <Sheet open={open} onOpenChange={(v) => { if (!v) onClose() }}>
       <SheetContent side="right" className="w-[420px] sm:w-[480px] flex flex-col p-0">
         {/* ── Header ── */}
-        <SheetHeader className="px-5 py-4 border-b bg-white">
+        <SheetHeader className="px-5 py-4 border-b bg-card">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <SheetTitle className="text-sm font-bold leading-snug line-clamp-2">
                 {rabItemName || 'RAB Item'}
               </SheetTitle>
-              <SheetDescription className="text-xs text-slate-500 mt-0.5">
+              <SheetDescription className="text-xs text-muted-foreground mt-0.5">
                 Link ke WBS node · Alokasi budget proporsional
               </SheetDescription>
             </div>
@@ -220,10 +220,10 @@ export function RABWbsAllocationPanel({
 
             {/* Linked nodes list */}
             {links.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 py-8 text-center text-slate-400">
+              <div className="flex flex-col items-center gap-2 py-8 text-center text-muted-foreground">
                 <Link2 size={28} className="opacity-30" />
                 <p className="text-sm font-medium">Belum ada WBS node ter-link</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   Klik &quot;Tambah WBS Node&quot; di bawah untuk mulai.
                 </p>
               </div>
@@ -235,7 +235,7 @@ export function RABWbsAllocationPanel({
                   return (
                     <div
                       key={link.wbsItemId}
-                      className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5"
+                      className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2.5"
                     >
                       {/* WBS code badge */}
                       <span className="shrink-0 rounded bg-indigo-50 px-1.5 py-0.5 text-xs font-mono font-bold text-indigo-600 border border-indigo-100">
@@ -243,13 +243,13 @@ export function RABWbsAllocationPanel({
                       </span>
 
                       {/* WBS name */}
-                      <span className="flex-1 truncate text-xs text-slate-700 font-medium">
+                      <span className="flex-1 truncate text-xs text-muted-foreground font-medium">
                         {wbs?.name || link.wbsItemId}
                       </span>
 
                       {/* Allocated amount */}
                       {rabItemTotal > 0 && (
-                        <span className="shrink-0 text-xs font-mono text-slate-400">
+                        <span className="shrink-0 text-xs font-mono text-muted-foreground">
                           {formatIDR(itemTotal)}
                         </span>
                       )}
@@ -264,16 +264,16 @@ export function RABWbsAllocationPanel({
                           value={getDisplayPct(link.wbsItemId, link.allocationPct)}
                           onChange={(e) => handlePctChange(link.wbsItemId, e.target.value)}
                           onBlur={() => handlePctBlur(link.wbsItemId)}
-                          className="h-6 w-16 text-right text-xs font-mono border-slate-200 focus:border-blue-400"
+                          className="h-6 w-16 text-right text-xs font-mono border-border focus:border-blue-400"
                         />
-                        <span className="text-xs text-slate-400">%</span>
+                        <span className="text-xs text-muted-foreground">%</span>
                       </div>
 
                       {/* Remove */}
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-6 w-6 shrink-0 text-slate-300 hover:text-red-500 hover:bg-red-50"
+                        className="h-6 w-6 shrink-0 text-foreground hover:text-red-500 hover:bg-red-50"
                         onClick={() => handleRemoveLink(link.wbsItemId)}
                         title="Hapus link ini"
                       >
@@ -290,7 +290,7 @@ export function RABWbsAllocationPanel({
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full h-7 text-xs text-slate-500 hover:bg-slate-50"
+                className="w-full h-7 text-xs text-muted-foreground hover:bg-muted/30"
                 onClick={handleRebalance}
               >
                 <RefreshCw size={11} className="mr-1.5" />
@@ -301,12 +301,12 @@ export function RABWbsAllocationPanel({
         </ScrollArea>
 
         {/* ── Footer: Add WBS picker ── */}
-        <div className="border-t bg-slate-50 px-5 py-3 space-y-2">
+        <div className="border-t bg-muted/30 px-5 py-3 space-y-2">
           {showPicker ? (
             <div className="space-y-2">
               {/* Search input */}
               <div className="relative">
-                <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <Input
                   autoFocus
                   placeholder="Cari kode atau nama WBS…"
@@ -316,16 +316,16 @@ export function RABWbsAllocationPanel({
                 />
                 <button
                   onClick={() => { setShowPicker(false); setPickerSearch('') }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   <X size={11} />
                 </button>
               </div>
 
               {/* WBS options */}
-              <ScrollArea className="h-48 rounded-md border border-slate-200 bg-white">
+              <ScrollArea className="h-48 rounded-md border border-border bg-card">
                 {filteredWbsItems.length === 0 ? (
-                  <p className="py-6 text-center text-xs text-slate-400">
+                  <p className="py-6 text-center text-xs text-muted-foreground">
                     {wbsItems.length === 0
                       ? 'Belum ada WBS node. Buat dulu di modul WBS.'
                       : 'Semua WBS node sudah ter-link atau tidak ditemukan.'}
@@ -341,8 +341,8 @@ export function RABWbsAllocationPanel({
                         <span className="shrink-0 rounded bg-indigo-50 px-1.5 py-0.5 text-xs font-mono font-bold text-indigo-600 border border-indigo-100">
                           {w.code || '—'}
                         </span>
-                        <span className="flex-1 truncate text-slate-700">{w.name}</span>
-                        <Plus size={11} className="shrink-0 text-slate-300" />
+                        <span className="flex-1 truncate text-muted-foreground">{w.name}</span>
+                        <Plus size={11} className="shrink-0 text-foreground" />
                       </button>
                     ))}
                   </div>

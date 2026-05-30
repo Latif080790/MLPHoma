@@ -43,5 +43,24 @@ export const rabWbsLinkService = {
     const supabase = assertSupabase()
     const { error } = await supabase.rpc('rpc_unlink_wbs_node', { p_wbs_item_id: wbsItemId })
     if (error) throw error
-  }
+  },
+
+  /**
+   * Set mapping_status and mapping_confidence on an existing link.
+   * Used after auto-generation to mark links as 'auto' for review.
+   */
+  updateMappingStatus: async (
+    rabItemId: string,
+    wbsItemId: string,
+    mappingStatus: 'auto' | 'reviewed' | 'manual' | 'rejected',
+    mappingConfidence = 100,
+  ) => {
+    const supabase = assertSupabase()
+    const { error } = await supabase
+      .from('rab_wbs_links')
+      .update({ mapping_status: mappingStatus, mapping_confidence: mappingConfidence })
+      .eq('rab_item_id', rabItemId)
+      .eq('wbs_item_id', wbsItemId)
+    if (error) console.warn('[rabWbsLink] updateMappingStatus:', error.message)
+  },
 }

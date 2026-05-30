@@ -25,21 +25,21 @@ export interface SummaryCardProps {
  */
 export const SummaryCard: React.FC<SummaryCardProps> = ({ totalOutflow = 0, totalInflow = 0, endingBalance = 0, minBalance = 0, hasDeficit = false, bufferAmount = 0 }) => {
   return (
-    <div className="grid gap-4 md:grid-cols-4 rounded-md border p-3 text-sm dark:border-neutral-800">
+    <div className="grid gap-4 md:grid-cols-4 rounded-md border p-3 text-sm ">
       <div>
-        <div className="text-neutral-500 text-xs">Total Outflow</div>
+        <div className="text-muted-foreground text-xs">Total Outflow</div>
         <div className="font-medium text-blue-700 dark:text-blue-300">Rp {Math.round(totalOutflow).toLocaleString('id-ID')}</div>
       </div>
       <div>
-        <div className="text-neutral-500 text-xs">Total Inflow</div>
+        <div className="text-muted-foreground text-xs">Total Inflow</div>
         <div className="font-medium text-blue-700 dark:text-blue-300">Rp {Math.round(totalInflow).toLocaleString('id-ID')}</div>
       </div>
       <div>
-        <div className="text-neutral-500 text-xs">Ending Balance</div>
+        <div className="text-muted-foreground text-xs">Ending Balance</div>
         <div className={`font-medium ${endingBalance < 0 ? 'text-red-600' : 'text-green-700'}`}>Rp {Math.round(endingBalance).toLocaleString('id-ID')}</div>
       </div>
       <div>
-        <div className="text-neutral-500 text-xs">Min Balance</div>
+        <div className="text-muted-foreground text-xs">Min Balance</div>
         <div className={minBalance < 0 ? 'text-red-600 font-medium' : bufferAmount > 0 && minBalance < bufferAmount ? 'text-amber-600 font-medium' : 'text-green-700 font-medium'}>
           Rp {Math.round(minBalance).toLocaleString('id-ID')}
         </div>

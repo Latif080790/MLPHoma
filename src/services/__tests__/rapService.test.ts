@@ -21,6 +21,7 @@ function makeChain(result: any) {
   c.not = () => c
   c.order = () => c
   c.limit = () => c
+  c.range = () => Promise.resolve(result)
   c.single = () => Promise.resolve(result)
   c.upsert = () => c
   c.insert = () => c

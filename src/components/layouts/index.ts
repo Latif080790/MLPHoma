@@ -8,3 +8,4 @@
 export { PageShell } from './PageShell';
 export { SplitLayout } from './SplitLayout';
 export { ThreePanelLayout } from './ThreePanelLayout';
+export { AuthLayout } from './AuthLayout';

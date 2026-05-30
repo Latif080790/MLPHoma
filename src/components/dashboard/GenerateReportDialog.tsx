@@ -95,7 +95,7 @@ export function GenerateReportDialog({ projectId, projectName, stats, children }
                 </div>
                 <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button onClick={handleGenerate} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Button onClick={handleGenerate} disabled={loading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                         Generate Now
                     </Button>

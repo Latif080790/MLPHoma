@@ -57,7 +57,7 @@ interface GlobalContextBarProps {
 
 const syncIcons: Record<SyncStatus, React.ReactNode> = {
   synced: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />,
-  syncing: <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" />,
+  syncing: <RefreshCw className="h-3.5 w-3.5 text-primary animate-spin" />,
   error: <XCircle className="h-3.5 w-3.5 text-red-500" />,
   offline: <CloudOff className="h-3.5 w-3.5 text-amber-500" />,
 };

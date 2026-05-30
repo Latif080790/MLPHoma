@@ -221,7 +221,7 @@ export function TKDNResourceManager() {
       />
 
       <Tabs defaultValue="dashboard">
-        <TabsList className="h-auto bg-slate-50/70 p-1 dark:bg-slate-950/40">
+        <TabsList className="h-auto bg-muted/30/70 p-1">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="items">Data Item ({items.length})</TabsTrigger>
         </TabsList>
@@ -365,7 +365,7 @@ export function TKDNResourceManager() {
               ) : undefined}
             />
           ) : (
-            <div className="overflow-x-auto rounded-lg border bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+            <div className="overflow-x-auto rounded-lg border bg-card shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
               <Table>
                 <TableHeader className="sticky-glass-tablehead z-10">
                   <TableRow>
@@ -381,7 +381,7 @@ export function TKDNResourceManager() {
                 </TableHeader>
                 <TableBody>
                   {filteredItems.map(item => (
-                    <TableRow key={item.id} className="group transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                    <TableRow key={item.id} className="group transition-colors hover:bg-accent/40">
                       <TableCell className="py-2 font-medium text-xs">
                         {item.name}
                         {item.hs_code && <span className="block text-xs text-neutral-400">HS: {item.hs_code}</span>}

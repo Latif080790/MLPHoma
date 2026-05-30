@@ -451,7 +451,7 @@ export default function SupplyChain() {
             case 'REJECTED': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800'
             case 'ORDERED': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800'
             case 'RECEIVED': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800'
-            default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+            default: return 'bg-muted/50 text-muted-foreground'
         }
     }
 
@@ -651,7 +651,7 @@ export default function SupplyChain() {
                                     : []
 
                                 return (
-                                    <div key={mr.id} className={`group flex items-center justify-between p-4 bg-white dark:bg-slate-900 border rounded-xl hover:shadow-md transition-all hover:border-blue-200 dark:hover:border-blue-800 ${selectedMrIds.has(mr.id) ? 'border-orange-300 dark:border-orange-700 bg-orange-50/40 dark:bg-orange-900/10' : ''}`}>
+                                    <div key={mr.id} className={`group flex items-center justify-between p-4 bg-card border rounded-xl hover:shadow-md transition-all hover:border-blue-200 dark:hover:border-blue-800 ${selectedMrIds.has(mr.id) ? 'border-orange-300 dark:border-orange-700 bg-orange-50/40 dark:bg-orange-900/10' : ''}`}>
                                         {/* v4 Sprint 2: checkbox for PENDING MRs */}
                                         {mr.status === 'PENDING' && (
                                             <div className="mr-3 shrink-0" onClick={e => e.stopPropagation()}>
@@ -668,7 +668,7 @@ export default function SupplyChain() {
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="font-semibold text-slate-900 dark:text-slate-100">{mr.itemName}</h3>
+                                                    <h3 className="font-semibold text-foreground">{mr.itemName}</h3>
                                                     <Badge variant="outline" className={`text-xs px-1.5 py-0 border ${getStatusColor(mr.status)}`}>
                                                         {mr.status}
                                                     </Badge>
@@ -676,15 +676,15 @@ export default function SupplyChain() {
                                                         <TraceChain chain={traceChain} size="sm" />
                                                     )}
                                                 </div>
-                                                <div className="text-sm text-slate-500 flex items-center gap-3 mt-0.5">
-                                                    <span className="font-medium text-slate-700 dark:text-slate-300">Qty: {mr.quantityRequested} {mr.unit}</span>
-                                                    <span className="text-slate-300">•</span>
+                                                <div className="text-sm text-muted-foreground flex items-center gap-3 mt-0.5">
+                                                    <span className="font-medium text-muted-foreground">Qty: {mr.quantityRequested} {mr.unit}</span>
+                                                    <span className="text-foreground">•</span>
                                                     <span>{mr.wbsName || 'General Request'}</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="text-right text-xs text-slate-400">
-                                            <div className="font-medium text-slate-600 dark:text-slate-400">Required: {mr.dateRequired || 'ASAP'}</div>
+                                        <div className="text-right text-xs text-muted-foreground">
+                                            <div className="font-medium text-muted-foreground">Required: {mr.dateRequired || 'ASAP'}</div>
                                             <div>ID: {mr.id.slice(0, 8)}</div>
                                         </div>
                                     </div>
@@ -755,11 +755,11 @@ export default function SupplyChain() {
                             ]}
                             className="mb-2"
                         />
-                        <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+                        <div className="rounded-lg border border-border overflow-hidden shadow-sm bg-card">
                             <div ref={poScrollRef} className="max-h-[600px] overflow-auto relative">
                                 <Table>
-                                    <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
-                                        <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                    <TableHeader className="bg-muted/30 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                                        <TableRow className="hover:bg-transparent border-border">
                                             <TableHead className="w-10 p-3">
                                                 <Checkbox
                                                     checked={isAllPoSelected}
@@ -768,12 +768,12 @@ export default function SupplyChain() {
                                                     disabled={selectablePos.length === 0}
                                                 />
                                             </TableHead>
-                                            <TableHead className="w-[120px] font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">PO Number</TableHead>
-                                            <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
-                                            <TableHead className="font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Trace</TableHead>
-                                            <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
-                                            <TableHead className="w-[120px] text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
-                                            <TableHead className="text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Date</TableHead>
+                                            <TableHead className="w-[120px] font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">PO Number</TableHead>
+                                            <TableHead className="font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
+                                            <TableHead className="font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Trace</TableHead>
+                                            <TableHead className="text-right font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Amount</TableHead>
+                                            <TableHead className="w-[120px] text-center font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Status</TableHead>
+                                            <TableHead className="text-right font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Date</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -794,7 +794,7 @@ export default function SupplyChain() {
                                             }
                                             const downstreamCount = Math.max(0, traceChain.length - 1)
                                             return (
-                                                <TableRow key={po.id} data-index={vRow.index} ref={poVirtualizer.measureElement} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors ${selectedPoIds.has(po.id) ? 'bg-orange-50/60 dark:bg-orange-900/10' : ''}`} onClick={() => setTracePo(po)}>
+                                                <TableRow key={po.id} data-index={vRow.index} ref={poVirtualizer.measureElement} className={`group hover:bg-accent/40 cursor-pointer border-b border-border transition-colors ${selectedPoIds.has(po.id) ? 'bg-orange-50/60 dark:bg-orange-900/10' : ''}`} onClick={() => setTracePo(po)}>
                                                     {/* v4 Sprint 2: checkbox — only selectable for DRAFT/PENDING */}
                                                     <TableCell className="w-10 py-2 px-3" onClick={e => e.stopPropagation()}>
                                                         {(po.status === 'DRAFT' || po.status === 'PENDING') && (
@@ -808,7 +808,7 @@ export default function SupplyChain() {
                                                     <TableCell className="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 py-2 border-r border-transparent">
                                                         {po.poNumber}
                                                     </TableCell>
-                                                    <TableCell className="py-2 text-sm text-slate-700 dark:text-slate-300">
+                                                    <TableCell className="py-2 text-sm text-muted-foreground">
                                                         {po.vendorName || '-'}
                                                     </TableCell>
                                                     <TableCell className="py-2">
@@ -820,7 +820,7 @@ export default function SupplyChain() {
                                                                 )}
                                                             </div>
                                                         ) : (
-                                                            <span className="text-xs text-slate-400">-</span>
+                                                            <span className="text-xs text-muted-foreground">-</span>
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-right font-mono text-xs font-semibold py-2">
@@ -831,7 +831,7 @@ export default function SupplyChain() {
                                                             {po.status}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-right text-xs text-slate-500 font-mono py-2">
+                                                    <TableCell className="text-right text-xs text-muted-foreground font-mono py-2">
                                                         {format(new Date(po.createdAt), 'dd MMM yyyy')}
                                                     </TableCell>
                                                 </TableRow>
@@ -850,8 +850,8 @@ export default function SupplyChain() {
                     )}
                 </TabsContent>
                 <TabsContent value="inventory" className="space-y-6">
-                    <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-dashed">
-                        <div className="text-sm text-slate-500 ml-2">Digital Warehouse <span className="text-slate-300">|</span> Real-time Levels</div>
+                    <div className="flex justify-between items-center bg-muted/30 p-3 rounded-xl border border-dashed">
+                        <div className="text-sm text-muted-foreground ml-2">Digital Warehouse <span className="text-foreground">|</span> Real-time Levels</div>
                         <div className="flex gap-2">
                             <Button size="sm" variant="outline" className="gap-2 text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleInvClick("IN")}>
                                 <ArrowDown size={14} /> Stock In
@@ -868,8 +868,8 @@ export default function SupplyChain() {
                                 <CardContent className="p-5">
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
-                                            <h3 className="font-bold text-lg text-slate-900 dark:text-white line-clamp-1">{item.materialName}</h3>
-                                            <p className="text-xs text-slate-500">Unit: {item.unit} • SKU: {generateSku(item.materialName)}</p>
+                                            <h3 className="font-bold text-lg text-foreground line-clamp-1">{item.materialName}</h3>
+                                            <p className="text-xs text-muted-foreground">Unit: {item.unit} • SKU: {generateSku(item.materialName)}</p>
                                         </div>
                                         <div className={`p-2 rounded-lg ${(item.currentStock ?? 0) > 0 ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-500'}`}>
                                             <Warehouse size={18} />
@@ -877,22 +877,22 @@ export default function SupplyChain() {
                                     </div>
                                     <div className="flex items-end justify-between">
                                         <div className="space-y-1">
-                                            <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Total Movement</div>
+                                            <div className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Total Movement</div>
                                             <div className="flex gap-3 text-xs font-mono">
                                                 <span className="text-green-600 flex items-center gap-1">
                                                     <ArrowDown size={10} /> {item.totalIn}
                                                 </span>
-                                                <span className="text-slate-300">|</span>
+                                                <span className="text-foreground">|</span>
                                                 <span className="text-red-500 flex items-center gap-1">
                                                     <ArrowUp size={10} /> {item.totalOut}
                                                 </span>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                            <div className="text-3xl font-bold tracking-tight text-foreground">
                                                 {item.currentStock}
                                             </div>
-                                            <div className="text-xs font-medium text-slate-400 uppercase tracking-widest">Available</div>
+                                            <div className="text-xs font-medium text-muted-foreground uppercase tracking-widest">Available</div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -912,16 +912,16 @@ export default function SupplyChain() {
 
                 {/* --- LOGISTICS (Transfers + MTR) --- */}
                 <TabsContent value="logistics" className="space-y-4">
-                    <div className="flex gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                    <div className="flex gap-2 border-b border-border pb-2">
                         <button
                             onClick={() => setLogisticsTab('transfers')}
-                            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${logisticsTab === 'transfers' ? 'bg-primary text-primary-foreground' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${logisticsTab === 'transfers' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-accent/60'}`}
                         >
                             Material Transfers
                         </button>
                         <button
                             onClick={() => setLogisticsTab('mtr')}
-                            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${logisticsTab === 'mtr' ? 'bg-primary text-primary-foreground' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                            className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${logisticsTab === 'mtr' ? 'bg-primary text-primary-foreground' : 'bg-muted/50 text-muted-foreground hover:bg-accent/60'}`}
                         >
                             Transfer Requests
                         </button>

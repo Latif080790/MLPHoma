@@ -14,6 +14,8 @@ import {
   Trash2,
   GripVertical,
   Calculator,
+  Clock,
+  Lock,
 } from 'lucide-react'
 import { formatIDR } from '../../lib/utils'
 import type { WBSItem } from '../../types/wbs'
@@ -105,7 +107,7 @@ function WBSTreeItem({
   const rowBg = isSelected
     ? 'bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
     : lvl === 1
-      ? 'bg-slate-50/80 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-700/50 border border-transparent'
+      ? 'bg-muted/30/80 hover:bg-accent/40 border border-transparent'
       : 'hover:bg-neutral-50 dark:hover:bg-neutral-800 border border-transparent'
   const nameClass = lvl === 1
     ? 'text-sm font-bold text-neutral-800 dark:text-neutral-100'
@@ -115,8 +117,8 @@ function WBSTreeItem({
   const codeClass = lvl === 1
     ? 'font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded'
     : lvl === 2
-      ? 'font-mono text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1 rounded'
-      : 'font-mono text-xs text-slate-400 dark:text-slate-500 px-1'
+      ? 'font-mono text-xs text-muted-foreground bg-muted/50 px-1 rounded'
+      : 'font-mono text-xs text-muted-foreground px-1'
 
   // Close menu on click outside
   React.useEffect(() => {
@@ -245,6 +247,19 @@ function WBSTreeItem({
                   {formatIDR(budget)}
                 </span>
               )}
+              {/* Progress source badge (B2) */}
+              {item.physicalProgressLocked && (
+                <span title="Progress fisik dikunci — update manual diperlukan" className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 shrink-0">
+                  <Lock size={9} />
+                  Locked
+                </span>
+              )}
+              {!item.physicalProgressLocked && item.progressSource === 'timeline' && (
+                <span title="Progress otomatis dari Timeline" className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-sky-50 px-1.5 py-0 text-xs font-semibold text-sky-600 dark:bg-sky-900/30 dark:text-sky-300 shrink-0">
+                  <Clock size={9} />
+                  Auto
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -261,7 +276,7 @@ function WBSTreeItem({
           {showMenu && (
             <div
               ref={menuRef}
-              className="absolute right-0 top-full mt-1 w-44 rounded-lg border bg-white shadow-lg dark:border-neutral-700 dark:bg-neutral-900 z-10"
+              className="absolute right-0 top-full mt-1 w-44 rounded-lg border bg-card shadow-lg dark:border-neutral-700 dark:bg-neutral-900 z-10"
             >
               <button
                 onClick={() => {
@@ -301,7 +316,7 @@ function WBSTreeItem({
 
       {/* Children — left border creates the tree-line visual */}
       {isExpanded && item.children && (
-        <div className="ml-4 border-l-2 border-slate-200 dark:border-slate-700 pl-1">
+        <div className="ml-4 border-l-2 border-border pl-1">
           {item.children.map((child) => (
             <WBSTreeItem
               key={child.id}
@@ -552,7 +567,7 @@ export function WBSTree({
         {onAddItem && (
           <button
             onClick={() => onAddItem(null)}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             <Plus size={14} />
             Buat Item WBS Pertama

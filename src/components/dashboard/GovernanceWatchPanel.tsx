@@ -25,22 +25,22 @@ const GovernanceWatchPanel: React.FC<GovernanceWatchPanelProps> = ({ alerts }) =
 
     if (redAlerts.length === 0) {
         return (
-            <Card className="bg-slate-900/50 border-slate-800 border-dashed">
+            <Card className="bg-muted/20 border-border border-dashed">
                 <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                     <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3">
                         <ShieldAlert className="text-emerald-500" size={20} />
                     </div>
                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">Governance Clear</h3>
-                    <p className="text-xs text-slate-500 mt-1 max-w-[200px]">No projects currently meeting Red Alert drift criteria.</p>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">No projects currently meeting Red Alert drift criteria.</p>
                 </CardContent>
             </Card>
         )
     }
 
     return (
-        <Card className="bg-slate-950 border-red-500/30 shadow-2xl overflow-hidden relative group">
+        <Card className="bg-[#0B1220] border-red-500/30 shadow-2xl overflow-hidden relative group">
             <div className="absolute top-0 left-0 w-1 h-full bg-red-500 animate-pulse" />
-            <CardHeader className="pb-2 border-b border-slate-900 bg-red-500/5">
+            <CardHeader className="pb-2 border-b border-border/50 bg-red-500/5">
                 <CardTitle className="text-xs font-bold uppercase tracking-[0.2em] text-red-500 flex items-center gap-2">
                     <AlertCircle size={14} className="animate-bounce" /> Governance Watch: Red Alert Feed
                 </CardTitle>
@@ -50,7 +50,7 @@ const GovernanceWatchPanel: React.FC<GovernanceWatchPanelProps> = ({ alerts }) =
                     const mitigations = forecastingService.getMitigationSuggestions(project.spi, project.cpi)
                     
                     return (
-                        <div key={project.id} className="p-4 border-b border-slate-900 last:border-0 hover:bg-slate-900/40 transition-colors">
+                        <div key={project.id} className="p-4 border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors">
                             <div className="flex items-start justify-between mb-3">
                                 <div>
                                     <h4 className="text-sm font-bold text-white font-mono uppercase truncate max-w-[220px]">
@@ -68,19 +68,19 @@ const GovernanceWatchPanel: React.FC<GovernanceWatchPanelProps> = ({ alerts }) =
                                 <Button 
                                     size="sm" 
                                     variant="ghost" 
-                                    className="h-7 text-xs font-mono text-slate-500 hover:text-white"
+                                    className="h-7 text-xs font-mono text-muted-foreground hover:text-white"
                                     onClick={() => navigate(`/cost-forecast?projectId=${project.id}`)}
                                 >
                                     EAC DRILLDOWN <ArrowRight size={10} className="ml-1" />
                                 </Button>
                             </div>
 
-                            <div className="space-y-1.5 border-l-2 border-slate-800 pl-3">
-                                <div className="text-xs uppercase font-bold text-slate-500 flex items-center gap-1 mb-1">
+                            <div className="space-y-1.5 border-l-2 border-border pl-3">
+                                <div className="text-xs uppercase font-bold text-muted-foreground flex items-center gap-1 mb-1">
                                     <Zap size={10} className="text-yellow-500" /> Prescriptive Mitigations
                                 </div>
                                 {mitigations.slice(0, 2).map((m, idx) => (
-                                    <div key={idx} className="text-xs text-slate-300 leading-tight">
+                                    <div key={idx} className="text-xs text-foreground leading-tight">
                                         • {m}
                                     </div>
                                 ))}

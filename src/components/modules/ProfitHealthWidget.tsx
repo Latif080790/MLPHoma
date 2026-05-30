@@ -78,7 +78,7 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
             </DialogHeader>
             <div className="flex-1 overflow-auto mt-4 border rounded-md">
                 <Table>
-                    <TableHeader className="sticky top-0 bg-white dark:bg-slate-900 z-10">
+                    <TableHeader className="sticky top-0 bg-card z-10">
                         <TableRow>
                             <TableHead className="text-xs font-bold uppercase">Work Package / WBS</TableHead>
                             <TableHead className="text-right text-xs font-bold uppercase">RAB (Est)</TableHead>
@@ -102,7 +102,7 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
                                     <TableCell className="text-right font-mono py-2">{(item.rabTotal || 0).toLocaleString('id-ID')}</TableCell>
                                     <TableCell className="text-right font-mono py-2">{(item.rapBudget || 0).toLocaleString('id-ID')}</TableCell>
                                     <TableCell className="text-right font-mono py-2 text-amber-600">{(totalBurn).toLocaleString('id-ID')}</TableCell>
-                                    <TableCell className="text-right font-mono py-2 text-slate-400">{(item.profitTarget || 0).toLocaleString('id-ID')}</TableCell>
+                                    <TableCell className="text-right font-mono py-2 text-muted-foreground">{(item.profitTarget || 0).toLocaleString('id-ID')}</TableCell>
                                     <TableCell className={`text-right font-mono font-bold py-2 ${item.profitActual >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                                         {(item.profitActual || 0).toLocaleString('id-ID')}
                                     </TableCell>
@@ -117,7 +117,7 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
                     </TableBody>
                 </Table>
             </div>
-            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border flex justify-between items-center text-xs">
+            <div className="mt-4 p-3 bg-muted/30 rounded-lg border flex justify-between items-center text-xs">
                 <div className="flex gap-4">
                     <div className="flex flex-col">
                         <span className="text-xs text-muted-foreground uppercase">Target Margin</span>
@@ -142,7 +142,7 @@ export function ProfitHealthWidget({ projectId, compact = false }: ProfitHealthW
         return (
             <Dialog>
                 <DialogTrigger asChild>
-                    <Card className={`group cursor-pointer hover:border-slate-400 transition-all border-l-4 ${isCritical ? 'border-l-red-500' : isHealthy ? 'border-l-emerald-500' : 'border-l-amber-500'}`}>
+                    <Card className={`group cursor-pointer hover:border-border transition-all border-l-4 ${isCritical ? 'border-l-red-500' : isHealthy ? 'border-l-emerald-500' : 'border-l-amber-500'}`}>
                         <CardContent className="p-4 relative">
                             <ExternalLink size={12} className="absolute right-2 top-2 opacity-30 transition-opacity md:opacity-0 md:group-hover:opacity-40" />
                             <div className="flex justify-between items-center">

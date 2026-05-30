@@ -27,7 +27,7 @@ export default function HistoryPanel({ projectId = 'default' }: HistoryPanelProp
   const audit = useRabStore((s) => s.audit.filter((a) => a.projectId === projectId).slice(-20))
 
   return (
-    <div className="rounded-md border p-3 bg-white shadow-sm">
+    <div className="rounded-md border p-3 bg-card shadow-sm">
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm font-medium">History & Undo/Redo</div>
         <div className="text-xs text-neutral-500">past: {past} · future: {future}</div>

@@ -74,7 +74,7 @@ const MemoizedVirtualRow = React.memo(({
     <TableRow
       data-index={virtualRow.index}
       className={cn(
-        "group transition-colors hover:bg-slate-50 dark:hover:bg-slate-900 border-b",
+        "group transition-colors hover:bg-muted/40 dark:hover:bg-muted/20 border-b",
         onRowClick && "cursor-pointer",
         rowClassName?.(row.original)
       )}
@@ -90,6 +90,7 @@ const MemoizedVirtualRow = React.memo(({
     </TableRow>
   )
 })
+MemoizedVirtualRow.displayName = 'MemoizedVirtualRow'
 
 /**
  * DataTable
@@ -171,35 +172,35 @@ export function DataTable<TData, TValue>({
   }
 
   return (
-    <div className={cn("rounded-md border bg-white dark:bg-slate-950", className)}>
-      <div 
+    <div className={cn("rounded-md border bg-card", className)}>
+      <div
         ref={tableContainerRef}
         className="relative overflow-auto custom-scrollbar"
         style={{ height: isVirtualized ? maxHeight : 'auto' }}
       >
         <Table className="relative w-full border-separate border-spacing-0 table-fixed">
-          <TableHeader className="sticky top-0 z-10 bg-slate-50 dark:bg-slate-900 shadow-sm">
+          <TableHeader className="sticky top-0 z-10 bg-muted/60 dark:bg-background/80 backdrop-blur-sm shadow-sm">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead 
+                    <TableHead
                       key={header.id}
-                      className="h-9 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b"
+                      className="h-9 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b"
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : (
                         header.column.getCanSort() ? (
                           <button
-                            className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100 transition-colors select-none w-full"
+                            className="inline-flex items-center gap-1 hover:text-foreground transition-colors select-none w-full"
                             onClick={header.column.getToggleSortingHandler()}
                             title={`Sort by ${typeof header.column.columnDef.header === 'string' ? header.column.columnDef.header : ''}`}
                           >
                             {flexRender(header.column.columnDef.header, header.getContext())}
                             {header.column.getIsSorted() === 'asc' ? (
-                              <ArrowUp size={10} className="shrink-0 text-blue-500" />
+                              <ArrowUp size={10} className="shrink-0 text-primary" />
                             ) : header.column.getIsSorted() === 'desc' ? (
-                              <ArrowDown size={10} className="shrink-0 text-blue-500" />
+                              <ArrowDown size={10} className="shrink-0 text-primary" />
                             ) : (
                               <ArrowUpDown size={10} className="shrink-0 opacity-30" />
                             )}
@@ -258,7 +259,7 @@ export function DataTable<TData, TValue>({
                   <React.Fragment key={row.id}>
                     <TableRow
                       className={cn(
-                          "group transition-colors hover:bg-slate-50 dark:hover:bg-slate-900 border-b",
+                          "group transition-colors hover:bg-muted/40 dark:hover:bg-muted/20 border-b",
                           onRowClick && "cursor-pointer",
                           rowClassName?.(row.original)
                       )}
@@ -273,7 +274,7 @@ export function DataTable<TData, TValue>({
                       ))}
                     </TableRow>
                     {row.getIsExpanded() && renderSubComponent && (
-                      <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
+                      <TableRow className="bg-muted/20">
                         <TableCell colSpan={row.getVisibleCells().length} className="p-0">
                           {renderSubComponent({ row })}
                         </TableCell>
@@ -284,7 +285,7 @@ export function DataTable<TData, TValue>({
               )
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-slate-400">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
                   {emptyMessage}
                 </TableCell>
               </TableRow>

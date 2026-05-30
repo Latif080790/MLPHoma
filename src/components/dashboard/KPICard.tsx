@@ -33,7 +33,7 @@ export default function KPICard({
   accentClassName,
 }: KPICardProps) {
   return (
-    <div className="rounded-xl border bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="rounded-xl border bg-card p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{label}</p>
         {icon && <div className="text-neutral-500 dark:text-neutral-400">{icon}</div>}

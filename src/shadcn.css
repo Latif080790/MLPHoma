@@ -6,9 +6,8 @@
 @tailwind utilities;
 
 :root {
-  /* Google Stitch: Slate-50 */
+  /* Light mode — orange primary (brand-aligned) */
   --background: 210 40% 98%;
-  /* Slate-900 for text */
   --foreground: 222 47% 11%;
 
   --card: 0 0% 100%;
@@ -17,11 +16,10 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
 
-  /* Google Stitch: Blue-600 (#2563eb) */
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
+  /* Orange primary — NATA LABA brand */
+  --primary: 25 95% 53%;
+  --primary-foreground: 0 0% 100%;
 
-  /* Slate-100 */
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222 47% 11%;
 
@@ -36,76 +34,73 @@
 
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 221 83% 53%;
+  --ring: 25 95% 53%;
 
   --radius: 0.75rem;
-  /* Rounded-xl for modern feel */
 
-  --chart-1: 12 76% 61%;
-  --chart-2: 173 58% 39%;
-  --chart-3: 197 37% 24%;
-  --chart-4: 43 74% 66%;
-  --chart-5: 27 87% 67%;
+  /* Charts — EVM semantic palette */
+  --chart-1: 25 95% 53%;    /* orange — cost/actions/ACWP */
+  --chart-2: 188 86% 53%;   /* cyan — data live/BCWP/actual */
+  --chart-3: 221 83% 53%;   /* blue — baseline/BCWS/reference */
+  --chart-4: 142 72% 36%;   /* green — success/on-track */
+  --chart-5: 45 93% 47%;    /* amber — warning/planned */
 
   --sidebar-background: 0 0% 100%;
   --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 240 5.9% 10%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-primary: 25 95% 53%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 210 40% 96.1%;
+  --sidebar-accent-foreground: 222 47% 11%;
   --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 217 91% 60%;
+  --sidebar-ring: 25 95% 53%;
 }
 
 .dark {
-  /* Google Stitch: Slate-900 (#0f172a) */
-  --background: 222 47% 11%;
-  /* Slate-50 */
-  --foreground: 210 40% 98%;
+  /* Dark Navy — v2 Design System */
+  --background: 222 55% 6%;        /* #070C18 canvas */
+  --foreground: 210 40% 97%;
 
-  /* Slate-900/Glassy */
-  --card: 222 47% 11%;
-  --card-foreground: 210 40% 98%;
+  --card: 220 45% 16%;             /* #16223A panel */
+  --card-foreground: 210 40% 97%;
 
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 40% 98%;
+  --popover: 218 38% 25%;          /* #273856 elevated */
+  --popover-foreground: 210 40% 97%;
 
-  /* Blue-600 */
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
+  /* Orange primary */
+  --primary: 25 95% 53%;           /* #F97316 */
+  --primary-foreground: 0 0% 100%;
 
-  /* Slate-800 */
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
+  --secondary: 220 39% 19%;        /* #1E2B45 hover */
+  --secondary-foreground: 210 40% 97%;
 
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
+  --muted: 220 39% 19%;
+  --muted-foreground: 215 16% 47%;
 
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
+  --accent: 220 39% 19%;
+  --accent-foreground: 210 40% 97%;
 
-  --destructive: 0 72% 50%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 221 83% 53%;
+  --border: 220 28% 18%;           /* ≈ rgba-white/0.08 */
+  --input: 220 28% 18%;
+  --ring: 25 95% 53%;              /* orange focus ring */
 
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
+  /* Charts — EVM semantic palette (dark) */
+  --chart-1: 25 95% 53%;    /* orange — cost/actions/ACWP */
+  --chart-2: 188 86% 53%;   /* cyan — data live/BCWP/actual */
+  --chart-3: 221 83% 53%;   /* blue — baseline/BCWS/reference */
+  --chart-4: 142 72% 36%;   /* green — success/on-track */
+  --chart-5: 45 93% 47%;    /* amber — warning/planned */
 
-  --sidebar-background: 222 47% 11%;
-  /* Match Dark Bg */
-  --sidebar-foreground: 240 4.8% 95.9%;
-  --sidebar-primary: 224.3 76.3% 48%;
+  --sidebar-background: 222 45% 10%;   /* #0E1525 page */
+  --sidebar-foreground: 210 40% 96%;
+  --sidebar-primary: 25 95% 53%;       /* orange active */
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 240 4.8% 95.9%;
-  --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 217 91% 60%;
+  --sidebar-accent: 220 39% 19%;       /* hover bg */
+  --sidebar-accent-foreground: 210 40% 96%;
+  --sidebar-border: 220 20% 14%;       /* subtle border */
+  --sidebar-ring: 25 95% 53%;
 }
 
 @layer utilities {
@@ -131,6 +126,9 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Brand ::selection — orange tint */
@@ -151,25 +149,32 @@
   }
 }
 
+/* Tabular numeric utility — pakai di semua angka/mata uang/KPI */
+.tnum {
+  font-family: 'DM Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
 /* Glassmorphism Utilities */
 .glass {
   @apply bg-white/70 backdrop-blur-md backdrop-saturate-150 border border-white/30 shadow-sm;
 }
 
 .dark .glass {
-  background-color: rgb(9 9 11 / 0.75);
+  background-color: rgb(14 21 37 / 0.80);   /* #0E1525 page */
   border-color: rgb(255 255 255 / 0.08);
 }
 
-/* Glass card — elevated panel with border glow */
+/* Glass card — elevated panel */
 .glass-card {
   @apply rounded-xl border bg-white/60 backdrop-blur-sm backdrop-saturate-150 shadow-sm transition-all duration-200;
   border-color: rgb(255 255 255 / 0.50);
 }
 
 .dark .glass-card {
-  background-color: rgb(24 24 27 / 0.70);
-  border-color: rgb(255 255 255 / 0.07);
+  background-color: rgb(22 34 58 / 0.75);   /* #16223A panel */
+  border-color: rgb(255 255 255 / 0.08);
 }
 
 /* Glass sidebar panel */
@@ -178,8 +183,8 @@
 }
 
 .dark .glass-sidebar {
-  background-color: rgb(9 9 11 / 0.92);
-  border-color: rgb(255 255 255 / 0.06);
+  background-color: rgb(14 21 37 / 0.95);   /* #0E1525 page */
+  border-color: rgb(255 255 255 / 0.08);
 }
 
 /* Frosted overlay — for modals/drawers */
@@ -205,15 +210,18 @@
 }
 
 .sticky-glass-panel {
-  @apply sticky top-0 z-10 rounded-lg border border-slate-200 bg-white/90 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/90;
+  @apply sticky top-0 z-10 rounded-lg border bg-white/90 backdrop-blur-sm;
+  @apply dark:border-[rgba(255,255,255,0.08)] dark:bg-[rgb(14_21_37/0.92)];
 }
 
 .sticky-glass-tablehead {
-  @apply sticky top-0 z-20 bg-slate-50/80 backdrop-blur-sm shadow-sm dark:bg-slate-900/80;
+  @apply sticky top-0 z-20 bg-slate-50/80 backdrop-blur-sm shadow-sm;
+  @apply dark:bg-[rgb(14_21_37/0.85)];
 }
 
 .sticky-glass-footer {
-  @apply sticky bottom-0 z-10 border border-slate-100 bg-slate-50/95 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95;
+  @apply sticky bottom-0 z-10 border bg-slate-50/95 backdrop-blur-sm;
+  @apply dark:border-[rgba(255,255,255,0.08)] dark:bg-[rgb(14_21_37/0.95)];
 }
 
 .control-compact {

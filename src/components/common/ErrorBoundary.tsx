@@ -173,7 +173,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         </div>
 
         {/* Error message */}
-        <div className="mb-4 rounded-md bg-white p-3 text-sm text-red-900 shadow-sm border border-red-200">
+        <div className="mb-4 rounded-md bg-card p-3 text-sm text-red-900 shadow-sm border border-red-200">
           <div className="font-semibold mb-1">Error Details:</div>
           <div className="text-red-700">{error?.message || 'Unknown error'}</div>
         </div>
@@ -183,7 +183,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           {!isCritical && (
             <button
               onClick={this.handleRetry}
-              className="inline-flex items-center gap-2 rounded-md bg-neutral-900 px-3 py-2 text-sm text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white transition-colors"
+              className="inline-flex items-center gap-2 rounded-md bg-neutral-900 px-3 py-2 text-sm text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-card transition-colors"
               aria-label="Coba lagi"
             >
               <RefreshCw className="h-4 w-4" />
@@ -222,7 +222,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <summary className="cursor-pointer font-medium text-red-800 hover:text-red-900 mb-2">
               Technical Details (Developer Mode)
             </summary>
-            <div className="rounded-md bg-white p-3 text-xs text-neutral-800 shadow-sm border border-red-200">
+            <div className="rounded-md bg-card p-3 text-xs text-neutral-800 shadow-sm border border-red-200">
               <div className="space-y-2 font-mono">
                 <div>
                   <span className="font-semibold">Error:</span>

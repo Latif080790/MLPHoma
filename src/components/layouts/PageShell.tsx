@@ -50,7 +50,7 @@ export function PageShell({
     return (
       <div className={cn('flex flex-col min-h-0 flex-1', className)}>
         {contextBar && (
-          <div className="shrink-0 border-b border-slate-200 dark:border-slate-800">
+          <div className="shrink-0 border-b border-border">
             {contextBar}
           </div>
         )}

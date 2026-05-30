@@ -78,7 +78,7 @@ const statusColor = (status: string) => {
         case 'UNPAID':
             return 'bg-orange-100 text-orange-700 border-orange-200'
         default:
-            return 'bg-slate-100 text-slate-700 border-slate-200'
+            return 'bg-muted/50 text-muted-foreground border-border'
     }
 }
 
@@ -193,7 +193,7 @@ export function ProcurementTracePanel({
 
                         {/* ── ARROW ── */}
                         <div className="flex justify-center">
-                            <ArrowDown className="h-4 w-4 text-slate-400" />
+                            <ArrowDown className="h-4 w-4 text-muted-foreground" />
                         </div>
 
                         {/* ── GRN NODES ── */}
@@ -203,7 +203,7 @@ export function ProcurementTracePanel({
                                 Goods Receipts ({grns.length})
                             </div>
                             {grns.length === 0 ? (
-                                <div className="text-xs text-muted-foreground italic pl-4 border-l-2 border-dashed border-slate-200 py-2">
+                                <div className="text-xs text-muted-foreground italic pl-4 border-l-2 border-dashed border-border py-2">
                                     No GRN recorded yet — awaiting material delivery
                                 </div>
                             ) : (
@@ -236,7 +236,7 @@ export function ProcurementTracePanel({
 
                         {/* ── ARROW ── */}
                         <div className="flex justify-center">
-                            <ArrowDown className="h-4 w-4 text-slate-400" />
+                            <ArrowDown className="h-4 w-4 text-muted-foreground" />
                         </div>
 
                         {/* ── INVOICE NODES ── */}
@@ -246,7 +246,7 @@ export function ProcurementTracePanel({
                                 Invoices ({invoices.length})
                             </div>
                             {invoices.length === 0 ? (
-                                <div className="text-xs text-muted-foreground italic pl-4 border-l-2 border-dashed border-slate-200 py-2">
+                                <div className="text-xs text-muted-foreground italic pl-4 border-l-2 border-dashed border-border py-2">
                                     No invoice generated — GRN verification pending
                                 </div>
                             ) : (
@@ -277,7 +277,7 @@ export function ProcurementTracePanel({
 
                         {/* ── SUMMARY ── */}
                         <Separator />
-                        <div className="rounded-lg border p-4 bg-slate-50 dark:bg-slate-900/50 space-y-2">
+                        <div className="rounded-lg border p-4 bg-muted/30 space-y-2">
                             <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 Trace Summary
                             </div>

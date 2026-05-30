@@ -279,13 +279,13 @@ export function MaterialTransferDialog({
                     {/* Emergency Toggle */}
                     <div className={`flex items-center justify-between p-3 rounded-lg border ${isEmergency
                         ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-                        : 'bg-slate-50 dark:bg-slate-800/50'
+                        : 'bg-muted/30'
                         }`}>
                         <div className="flex items-center gap-3">
                             {isEmergency ? (
                                 <Zap className="h-5 w-5 text-red-500" />
                             ) : (
-                                <AlertTriangle className="h-5 w-5 text-slate-400" />
+                                <AlertTriangle className="h-5 w-5 text-muted-foreground" />
                             )}
                             <div>
                                 <div className="text-sm font-medium">
@@ -318,7 +318,7 @@ export function MaterialTransferDialog({
                             disabled={submitting}
                             className={`gap-2 ${isEmergency
                                 ? 'bg-red-600 hover:bg-red-700'
-                                : 'bg-blue-600 hover:bg-blue-700'
+                                : 'bg-primary hover:bg-primary/90'
                                 }`}
                         >
                             {submitting ? (

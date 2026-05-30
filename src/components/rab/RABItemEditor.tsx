@@ -41,7 +41,7 @@ export default function RABItemEditor({ item, onSave, onCancel }: RABItemEditorP
   }
 
   return (
-    <div className="rounded-md border p-4 bg-white shadow-sm space-y-3">
+    <div className="rounded-md border p-4 bg-card shadow-sm space-y-3">
       <div className="font-medium text-sm">Edit RAB Item</div>
 
       <div className="space-y-2">

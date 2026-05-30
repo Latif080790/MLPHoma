@@ -499,22 +499,22 @@ export function AHSPItemEditor({
   }, [resources])
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] p-0 gap-0 border-l border-slate-200 flex flex-col h-screen max-h-screen overflow-hidden bg-white shadow-2xl">
-        <SheetHeader className="px-8 py-6 border-b shrink-0 bg-white z-20 shadow-sm relative">
+      <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] p-0 gap-0 border-l border-border flex flex-col h-screen max-h-screen overflow-hidden bg-card shadow-2xl">
+        <SheetHeader className="px-8 py-6 border-b shrink-0 bg-card z-20 shadow-sm relative">
           <div className="flex items-center gap-4">
-            <div className="bg-blue-100 p-2 text-blue-700 rounded-lg shadow-sm ring-1 ring-blue-50">
+            <div className="bg-primary/10 p-2 text-primary rounded-lg shadow-sm ring-1 ring-primary/5">
               <Edit2 className="h-6 w-6" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3">
-                <SheetTitle className="text-lg font-semibold text-slate-900">
+                <SheetTitle className="text-lg font-semibold text-foreground">
                   {item ? 'Ubah Analisa AHSP' : 'Buat AHSP Baru'}
                 </SheetTitle>
                 {mode && !item && (
                   <Badge 
                     variant="secondary" 
                     className={`uppercase font-bold text-xs tracking-wider ${
-                      mode === 'sni' ? 'bg-blue-100 text-blue-700' : 
+                      mode === 'sni' ? 'bg-primary/10 text-primary' : 
                       mode === 'historical' ? 'bg-green-100 text-green-700' : 
                       'bg-purple-100 text-purple-700'
                     }`}
@@ -523,7 +523,7 @@ export function AHSPItemEditor({
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-slate-400 font-medium">Atur detail item dan komponen biaya</p>
+              <p className="text-sm text-muted-foreground font-medium">Atur detail item dan komponen biaya</p>
             </div>
           </div>
           {/* Step indicator */}
@@ -533,12 +533,12 @@ export function AHSPItemEditor({
               onClick={() => setCurrentStep(1)}
               className={`flex items-center gap-2 px-4 py-2 rounded-l-xl border text-xs font-bold transition-colors ${
                 currentStep === 1
-                  ? 'bg-blue-600 border-blue-600 text-white'
-                  : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : 'bg-background border-border text-muted-foreground hover:bg-muted/30'
               }`}
             >
               <span className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold ${
-                currentStep === 1 ? 'bg-white text-blue-600' : 'bg-slate-200 text-slate-500'
+                currentStep === 1 ? 'bg-background text-primary' : 'bg-muted text-muted-foreground'
               }`}>1</span>
               Info Dasar
             </button>
@@ -547,12 +547,12 @@ export function AHSPItemEditor({
               onClick={() => setCurrentStep(2)}
               className={`flex items-center gap-2 px-4 py-2 rounded-r-xl border-t border-b border-r text-xs font-bold transition-colors ${
                 currentStep === 2
-                  ? 'bg-blue-600 border-blue-600 text-white'
-                  : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : 'bg-background border-border text-muted-foreground hover:bg-muted/30'
               }`}
             >
               <span className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-semibold ${
-                currentStep === 2 ? 'bg-white text-blue-600' : 'bg-slate-200 text-slate-500'
+                currentStep === 2 ? 'bg-background text-primary' : 'bg-muted text-muted-foreground'
               }`}>2</span>
               Komponen
               {components.length + manualComponents.filter(c => !c.editing).length > 0 && (
@@ -569,37 +569,37 @@ export function AHSPItemEditor({
           <div className="flex-1 overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-0">
             {/* Section 1: Master Data — shown on Step 1 */}
             {currentStep === 1 && (
-            <div className="border-b border-slate-100 bg-white p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 lg:col-[1]">
-              <div className="flex items-center gap-3 pb-4 border-b-2 border-blue-100">
-                <div className="bg-blue-100 p-2 text-blue-700 rounded-xl text-white">
+            <div className="border-b border-border bg-card p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 lg:col-[1]">
+              <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
+                <div className="bg-primary/10 p-2 text-primary rounded-xl">
                   <Database className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg text-slate-900 uppercase tracking-wide">Master Data</h3>
-                  <p className="text-xs text-slate-500 font-medium">Identifikasi umum dan kategorisasi</p>
+                  <h3 className="font-semibold text-lg text-foreground uppercase tracking-wide">Master Data</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Identifikasi umum dan kategorisasi</p>
                 </div>
               </div>
               <div className="grid gap-8">
                 {/* Identification Grid */}
-                <div className="bg-slate-50/30 p-4 sm:p-6 rounded-xl border border-slate-100 space-y-6">
-                  <div className="flex items-center gap-2 text-slate-800 font-bold text-sm mb-4">
-                    <div className="h-4 w-1 bg-blue-600 rounded-full" />
+                <div className="bg-muted/30/30 p-4 sm:p-6 rounded-xl border border-border space-y-6">
+                  <div className="flex items-center gap-2 text-muted-foreground font-bold text-sm mb-4">
+                    <div className="h-4 w-1 bg-primary rounded-full" />
                     Identifikasi Umum
                   </div>
 
                   {/* SNI AHSP Selector - pull from database items with creationMode='sni' */}
                   {mode === 'sni' && !item && (
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border-2 border-slate-200 shadow-sm space-y-4 mb-6">
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border-2 border-border shadow-sm space-y-4 mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-2 text-blue-700 rounded-xl shadow-lg">
+                        <div className="bg-primary/10 p-2 text-primary rounded-xl shadow-lg">
                           <Database className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-blue-900 font-semibold text-sm">Pilih dari AHSP SNI yang Ada</h3>
-                          <p className="text-blue-600 text-xs">Template dari database proyek Anda</p>
+                          <h3 className="text-foreground font-semibold text-sm">Pilih dari AHSP SNI yang Ada</h3>
+                          <p className="text-muted-foreground text-xs">Template dari database proyek Anda</p>
                         </div>
                       </div>
-                      <p className="text-xs text-blue-700 leading-relaxed">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
                         Pilih AHSP SNI yang sudah ada untuk menyalin semua component & coefficient-nya
                       </p>
                       <Select 
@@ -610,26 +610,26 @@ export function AHSPItemEditor({
                           if (sniItem) await handleApplySNIItem(sniItem)
                         }}
                       >
-                        <SelectTrigger className="h-10 rounded-lg border-2 border-blue-300 bg-white hover:bg-blue-50 font-bold shadow-sm transition-all">
+                        <SelectTrigger className="h-10 rounded-lg border-2 border-border bg-background hover:bg-accent/40 font-bold shadow-sm transition-all">
                           <SelectValue placeholder="🔍 Pilih AHSP SNI dari database..." />
                         </SelectTrigger>
-                        <SelectContent className="rounded-lg border-2 border-slate-200 shadow-2xl max-h-96">
+                        <SelectContent className="rounded-lg border-2 border-border shadow-2xl max-h-96">
                           {sniAHSPItems.length === 0 ? (
-                            <div className="p-4 text-center text-slate-500 text-sm">
+                            <div className="p-4 text-center text-muted-foreground text-sm">
                               <Database className="h-8 w-8 mx-auto mb-2 opacity-50" />
                               <p>Belum ada AHSP SNI di database</p>
                               <p className="text-xs mt-1">Gunakan mode Custom untuk membuat yang pertama</p>
                             </div>
                           ) : (
                             sniAHSPItems.map(item => (
-                              <SelectItem key={item.id} value={item.id} className="py-4 font-semibold hover:bg-blue-50">
+                              <SelectItem key={item.id} value={item.id} className="py-4 font-semibold hover:bg-accent/40">
                                 <div className="flex flex-col">
-                                  <span className="font-bold text-blue-900">{item.code} - {item.name}</span>
+                                  <span className="font-bold text-foreground">{item.code} - {item.name}</span>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-slate-200">
+                                    <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
                                       {item.category}
                                     </Badge>
-                                    <span className="text-xs text-slate-500">
+                                    <span className="text-xs text-muted-foreground">
                                       {item.unit} • {formatIDR(item.finalPrice)}
                                     </span>
                                   </div>
@@ -640,12 +640,12 @@ export function AHSPItemEditor({
                         </SelectContent>
                       </Select>
                       {selectedSNIPreset && (
-                        <div className="p-4 bg-white rounded-lg border-2 border-green-200 shadow-sm">
+                        <div className="p-4 bg-card rounded-lg border-2 border-green-200 shadow-sm">
                           <div className="flex items-center gap-2 mb-2">
                             <Check className="h-4 w-4 text-green-600" />
                             <p className="text-xs text-green-700 font-semibold">Components Ter-load:</p>
                           </div>
-                          <p className="text-sm text-slate-700 font-bold">
+                          <p className="text-sm text-muted-foreground font-bold">
                             {componentsByAHSP[selectedSNIPreset]?.length || 0} komponen berhasil disalin
                           </p>
                         </div>
@@ -654,25 +654,25 @@ export function AHSPItemEditor({
                   )}
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest text-slate-400 pl-1">AHSP Code</Label>
+                      <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">AHSP Code</Label>
                       <Input
                         id="code"
                         value={formData.code}
                         onChange={(e) => handleChange('code', e.target.value)}
                         placeholder="e.g., A.2.2.1"
-                        className={`h-10 text-lg font-mono font-bold rounded-lg border-slate-200 transition-all focus:ring-4 focus:ring-blue-100 ${errors.code ? 'border-red-500 bg-red-50' : 'bg-white'}`}
+                        className={`h-10 text-lg font-mono font-bold rounded-lg border-border transition-all focus:ring-2 focus:ring-primary/10 ${errors.code ? 'border-red-500 bg-red-50' : 'bg-background'}`}
                         disabled={isSubmitting}
                       />
                       {errors.code && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.code}</p>}
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="unit" className="text-xs font-semibold uppercase tracking-widest text-slate-400 pl-1">Satuan</Label>
+                      <Label htmlFor="unit" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Satuan</Label>
                       <Select value={formData.unit} onValueChange={(value: string) => handleChange('unit', value)}>
-                        <SelectTrigger className="h-10 rounded-lg border-slate-200 bg-white font-bold transition-all focus:ring-4 focus:ring-blue-100">
+                        <SelectTrigger className="h-10 rounded-lg border-border bg-background font-bold transition-all focus:ring-2 focus:ring-primary/10">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-200 shadow-xl">
+                        <SelectContent className="rounded-xl border-border shadow-xl">
                           <SelectItem value="m3" className="font-bold py-3">m³ (Kubik)</SelectItem>
                           <SelectItem value="m2" className="font-bold py-3">m² (Luas)</SelectItem>
                           <SelectItem value="m" className="font-bold py-3">m (Meter Lari)</SelectItem>
@@ -689,7 +689,7 @@ export function AHSPItemEditor({
 
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label className="text-xs font-semibold uppercase tracking-widest text-slate-400 pl-1">Klasifikasi / Kategori</Label>
+                      <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Klasifikasi / Kategori</Label>
                       <Select
                         value={selectedCategory}
                         onValueChange={(value) => {
@@ -699,10 +699,10 @@ export function AHSPItemEditor({
                           if (category) handleChange('category', category.name)
                         }}
                       >
-                        <SelectTrigger className={`h-10 rounded-lg border-slate-200 bg-white font-bold transition-all focus:ring-4 focus:ring-blue-100 ${errors.category ? 'border-red-500 shadow-sm' : ''}`}>
+                        <SelectTrigger className={`h-10 rounded-lg border-border bg-background font-bold transition-all focus:ring-2 focus:ring-primary/10 ${errors.category ? 'border-red-500 shadow-sm' : ''}`}>
                           <SelectValue placeholder="Pilih kategori pekerjaan..." />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-200 shadow-xl max-h-80">
+                        <SelectContent className="rounded-xl border-border shadow-xl max-h-80">
                           {mainCategories.map(cat => (
                             <SelectItem key={cat.id} value={cat.id} className="py-3 font-semibold">
                               {cat.code} - {cat.name}
@@ -715,7 +715,7 @@ export function AHSPItemEditor({
 
                     {selectedCategory && getSubcategories(selectedCategory).length > 0 && (
                       <div className="space-y-2 animate-in fade-in slide-in-from-left-2 duration-300">
-                        <Label className="text-xs font-semibold uppercase tracking-widest text-slate-400 pl-1">Sub-Classification</Label>
+                        <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Sub-Classification</Label>
                         <Select
                           value={selectedSubcategory}
                           onValueChange={(value) => {
@@ -727,10 +727,10 @@ export function AHSPItemEditor({
                             }
                           }}
                         >
-                          <SelectTrigger className="h-10 rounded-lg border-slate-200 bg-white font-bold transition-all focus:ring-4 focus:ring-blue-100">
+                          <SelectTrigger className="h-10 rounded-lg border-border bg-background font-bold transition-all focus:ring-2 focus:ring-primary/10">
                             <SelectValue placeholder="Pilih sub-klasifikasi..." />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl border-slate-200 shadow-xl max-h-80">
+                          <SelectContent className="rounded-xl border-border shadow-xl max-h-80">
                             {getSubcategories(selectedCategory).map(subcat => (
                               <SelectItem key={subcat.id} value={subcat.id} className="py-3 font-semibold">
                                 {subcat.code} - {subcat.name}
@@ -745,35 +745,35 @@ export function AHSPItemEditor({
 
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-widest text-slate-400 pl-1">Judul Item / Uraian Pekerjaan</Label>
+                    <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Judul Item / Uraian Pekerjaan</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleChange('name', e.target.value)}
                       placeholder="e.g., Pemasangan 1m2 Dinding Bata Merah 1:4"
-                      className={`h-10 text-xl font-semibold rounded-lg border-slate-200 transition-all focus:ring-4 focus:ring-blue-100 ${errors.name ? 'border-red-500 bg-red-50 text-red-900' : 'bg-white text-slate-900'}`}
+                      className={`h-10 text-xl font-semibold rounded-lg border-border transition-all focus:ring-2 focus:ring-primary/10 ${errors.name ? 'border-red-500 bg-red-50 text-red-900' : 'bg-background text-foreground'}`}
                       disabled={isSubmitting}
                     />
                     {errors.name && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.name}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-widest text-slate-400 pl-1">Spesifikasi Teknis Detail</Label>
+                    <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Spesifikasi Teknis Detail</Label>
                     <Textarea
                       id="description"
                       value={formData.description}
                       onChange={(e) => handleChange('description', e.target.value)}
                       placeholder="Detail methods, materials requirements, and technical standards..."
                       rows={5}
-                      className="resize-none rounded-xl border-slate-200 bg-white p-4 text-slate-700 leading-relaxed transition-all focus:ring-4 focus:ring-blue-100"
+                      className="resize-none rounded-xl border-border bg-background p-4 text-muted-foreground leading-relaxed transition-all focus:ring-2 focus:ring-primary/10"
                       disabled={isSubmitting}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 border-t pt-6 sm:pt-8">
-                  <div className="bg-white p-6 rounded-xl border border-blue-100 space-y-4">
-                    <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
+                  <div className="bg-card p-6 rounded-xl border border-border space-y-4">
+                    <div className="flex items-center gap-2 text-muted-foreground font-bold text-sm">
                       <Calculator className="h-4 w-4" />
                       Faktor Overhead
                     </div>
@@ -782,15 +782,15 @@ export function AHSPItemEditor({
                         type="number"
                         value={formData.overheadPercentage}
                         onChange={(e) => handleChange('overheadPercentage', parseFloat(e.target.value) || 0)}
-                        className="h-10 pl-4 pr-10 text-xl font-mono font-semibold text-blue-700 rounded-lg border-slate-200 bg-white"
+                        className="h-10 pl-4 pr-10 text-xl font-mono font-semibold text-primary rounded-lg border-border bg-background"
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-blue-400">%</span>
                     </div>
                     <p className="text-xs text-blue-400 leading-tight font-medium uppercase tracking-wider">Biaya untuk manajemen proyek dan logistik lapangan</p>
                   </div>
 
-                  <div className="bg-white p-6 rounded-xl border border-emerald-100 space-y-4">
-                    <div className="flex items-center gap-2 text-slate-800 font-bold text-sm">
+                  <div className="bg-card p-6 rounded-xl border border-emerald-200/40 space-y-4">
+                    <div className="flex items-center gap-2 text-muted-foreground font-bold text-sm">
                       <Check className="h-4 w-4" />
                       Margin Keuntungan
                     </div>
@@ -799,7 +799,7 @@ export function AHSPItemEditor({
                         type="number"
                         value={formData.profitPercentage}
                         onChange={(e) => handleChange('profitPercentage', parseFloat(e.target.value) || 0)}
-                        className="h-10 pl-4 pr-10 text-xl font-mono font-semibold text-emerald-700 rounded-lg border-slate-200 bg-white"
+                        className="h-10 pl-4 pr-10 text-xl font-mono font-semibold text-emerald-700 rounded-lg border-border bg-background"
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-emerald-400">%</span>
                     </div>
@@ -812,24 +812,24 @@ export function AHSPItemEditor({
 
             {/* Section 2: Component Analysis — shown on Step 2 */}
             {currentStep === 2 && (
-            <div className="min-h-[600px] border-b border-slate-100 bg-slate-50/30 lg:col-[1]">
-              <div className="px-4 sm:px-6 lg:px-8 py-6 bg-white border-b flex items-center gap-3">
-                <div className="bg-blue-100 p-2 text-blue-700 rounded-xl text-white">
+            <div className="min-h-[600px] border-b border-border bg-muted/30/30 lg:col-[1]">
+              <div className="px-4 sm:px-6 lg:px-8 py-6 bg-card border-b flex items-center gap-3">
+                <div className="bg-primary/10 p-2 text-primary rounded-xl">
                   <Calculator className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg text-slate-900 uppercase tracking-wide">Analisa Komponen</h3>
-                  <p className="text-xs text-slate-500 font-medium">Struktur rincian biaya pekerjaan</p>
+                  <h3 className="font-semibold text-lg text-foreground uppercase tracking-wide">Analisa Komponen</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Struktur rincian biaya pekerjaan</p>
                 </div>
               </div>
               <div className="flex flex-col">
-                <div className="px-4 sm:px-6 lg:px-8 py-4 border-b bg-white flex items-center justify-end shrink-0">
+                <div className="px-4 sm:px-6 lg:px-8 py-4 border-b bg-card flex items-center justify-end shrink-0">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={handleAddManualComponent}
-                    className="h-9 px-4 rounded-xl border-slate-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 font-bold text-xs"
+                    className="h-9 px-4 rounded-xl border-border text-blue-600 hover:bg-accent/40 hover:border-blue-300 font-bold text-xs"
                   >
                     <Plus className="h-3.5 w-3.5 mr-2" />
                     Komponen Kustom
@@ -837,28 +837,28 @@ export function AHSPItemEditor({
                 </div>
 
                 <div className="p-4 md:p-8 min-h-[400px]">
-                  <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                  <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                     <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                       <Table className="min-w-[1200px]">
-                        <TableHeader className="bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10 border-b">
+                        <TableHeader className="bg-muted/30/80 backdrop-blur-sm sticky top-0 z-10 border-b">
                           <TableRow className="hover:bg-transparent">
-                            <TableHead className="w-32 text-xs font-semibold uppercase tracking-widest text-slate-500 py-4 pl-6">Type</TableHead>
-                            <TableHead className="min-w-[400px] text-xs font-semibold uppercase tracking-widest text-slate-500 py-4">Resource Description</TableHead>
-                            <TableHead className="w-24 text-center text-xs font-semibold uppercase tracking-widest text-slate-500 py-4">Unit</TableHead>
-                            <TableHead className="w-40 text-right text-xs font-semibold uppercase tracking-widest text-slate-500 py-4">Rate</TableHead>
-                            <TableHead className="w-36 text-center text-xs font-semibold uppercase tracking-widest text-slate-800 py-4 bg-blue-50/50 italic">Coeff</TableHead>
-                            <TableHead className="w-40 text-right text-xs font-semibold uppercase tracking-widest text-slate-900 py-4 pr-6">Subtotal</TableHead>
+                            <TableHead className="w-32 text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4 pl-6">Type</TableHead>
+                            <TableHead className="min-w-[400px] text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Resource Description</TableHead>
+                            <TableHead className="w-24 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Unit</TableHead>
+                            <TableHead className="w-40 text-right text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Rate</TableHead>
+                            <TableHead className="w-36 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4 bg-blue-50/50 italic">Coeff</TableHead>
+                            <TableHead className="w-40 text-right text-xs font-semibold uppercase tracking-widest text-foreground py-4 pr-6">Subtotal</TableHead>
                             <TableHead className="w-20"></TableHead>
                           </TableRow>
                         </TableHeader>
                       <TableBody>
                         {manualComponents.length === 0 && components.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={7} className="h-48 text-center bg-slate-50/30">
+                            <TableCell colSpan={7} className="h-48 text-center bg-muted/30/30">
                               <div className="flex flex-col items-center gap-2 opacity-30">
                                 <Plus className="h-10 w-10" />
-                                <p className="font-bold text-slate-400 uppercase tracking-widest text-xs">Belum ada komponen analisa.</p>
-                                <p className="text-xs text-slate-400">Cari resource di bawah untuk memulai analisa.</p>
+                                <p className="font-bold text-muted-foreground uppercase tracking-widest text-xs">Belum ada komponen analisa.</p>
+                                <p className="text-xs text-muted-foreground">Cari resource di bawah untuk memulai analisa.</p>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -866,9 +866,9 @@ export function AHSPItemEditor({
                           <>
                             {/* Manual Components */}
                             {manualComponents.map((comp) => (
-                              <TableRow key={comp.tempId} className="group hover:bg-slate-50/30 transition-colors border-b border-slate-100 last:border-0">
+                              <TableRow key={comp.tempId} className="group hover:bg-muted/30/30 transition-colors border-b border-border last:border-0">
                                 <TableCell className="pl-6">
-                                  <Badge variant="secondary" className="font-semibold text-xs uppercase tracking-wider h-5 bg-slate-100 text-slate-500 border-none">
+                                  <Badge variant="secondary" className="font-semibold text-xs uppercase tracking-wider h-5 bg-muted/50 text-muted-foreground border-none">
                                     {comp.type}
                                   </Badge>
                                 </TableCell>
@@ -877,18 +877,18 @@ export function AHSPItemEditor({
                                     <Input
                                       value={comp.resourceName}
                                       onChange={(e) => handleUpdateManualComponent(comp.tempId, 'resourceName', e.target.value)}
-                                      className="h-9 border-slate-200 rounded-lg text-sm font-bold bg-white"
+                                      className="h-9 border-border rounded-lg text-sm font-bold bg-background"
                                     />
                                   ) : (
-                                    <div className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                    <div className="font-bold text-muted-foreground text-sm flex items-center gap-2">
                                       {comp.resourceName}
                                     </div>
                                   )}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                  <span className="text-xs font-semibold text-slate-400 uppercase">{comp.unit}</span>
+                                  <span className="text-xs font-semibold text-muted-foreground uppercase">{comp.unit}</span>
                                 </TableCell>
-                                <TableCell className="text-right font-mono text-xs text-slate-500">
+                                <TableCell className="text-right font-mono text-xs text-muted-foreground">
                                   {formatIDR(comp.unitPrice)}
                                 </TableCell>
                                 <TableCell className="text-right bg-blue-50/20">
@@ -896,10 +896,10 @@ export function AHSPItemEditor({
                                     type="number"
                                     value={comp.coefficient}
                                     onChange={(e) => handleUpdateManualComponent(comp.tempId, 'coefficient', parseFloat(e.target.value) || 0)}
-                                    className="h-8 py-0 text-right font-semibold border-transparent bg-transparent hover:border-slate-200 focus:bg-white focus:border-blue-300 transition-all rounded-lg"
+                                    className="h-8 py-0 text-right font-semibold border-transparent bg-transparent hover:border-border focus:bg-background focus:border-primary/40 transition-all rounded-lg"
                                   />
                                 </TableCell>
-                                <TableCell className="text-right font-mono text-sm font-semibold text-slate-900 pr-6">
+                                <TableCell className="text-right font-mono text-sm font-semibold text-foreground pr-6">
                                   {formatIDR(comp.coefficient * comp.unitPrice)}
                                 </TableCell>
                                 <TableCell>
@@ -919,10 +919,10 @@ export function AHSPItemEditor({
 
                             {/* Resource-based Components */}
                             {components.map((component) => (
-                              <TableRow key={component.id} className="group hover:bg-blue-50/20 transition-colors border-b border-slate-100 last:border-0">
+                              <TableRow key={component.id} className="group hover:bg-accent/40/20 transition-colors border-b border-border last:border-0">
                                 <TableCell className="pl-6">
                                   <Badge
-                                    className={`font-semibold text-xs uppercase tracking-wider h-5 border-none ${component.type === 'material' ? 'bg-blue-100 text-blue-700' :
+                                    className={`font-semibold text-xs uppercase tracking-wider h-5 border-none ${component.type === 'material' ? 'bg-primary/10 text-primary' :
                                       component.type === 'labor' ? 'bg-orange-100 text-orange-700' :
                                         'bg-indigo-100 text-indigo-700'
                                       }`}
@@ -932,14 +932,14 @@ export function AHSPItemEditor({
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex flex-col">
-                                    <span className="font-bold text-slate-800 text-sm">{component.resource?.name}</span>
-                                    <span className="text-xs font-mono text-slate-400 lowercase tracking-widest">{component.resourceId}</span>
+                                    <span className="font-bold text-muted-foreground text-sm">{component.resource?.name}</span>
+                                    <span className="text-xs font-mono text-muted-foreground lowercase tracking-widest">{component.resourceId}</span>
                                   </div>
                                 </TableCell>
-                                <TableCell className="text-center font-semibold text-xs text-slate-400 uppercase">
+                                <TableCell className="text-center font-semibold text-xs text-muted-foreground uppercase">
                                   {component.unit}
                                 </TableCell>
-                                <TableCell className="text-right font-mono text-xs text-slate-500">
+                                <TableCell className="text-right font-mono text-xs text-muted-foreground">
                                   {formatIDR(component.unitPrice)}
                                 </TableCell>
                                 <TableCell className="bg-blue-50/10">
@@ -947,10 +947,10 @@ export function AHSPItemEditor({
                                     type="number"
                                     value={component.coefficient}
                                     onChange={(e) => handleUpdateComponent(component.id, 'coefficient', parseFloat(e.target.value) || 0)}
-                                    className="h-8 px-2 text-right font-semibold text-slate-900 border-transparent bg-transparent hover:border-slate-200 focus:bg-white focus:border-blue-400 transition-all rounded-lg"
+                                    className="h-8 px-2 text-right font-semibold text-foreground border-transparent bg-transparent hover:border-border focus:bg-background focus:border-primary/40 transition-all rounded-lg"
                                   />
                                 </TableCell>
-                                <TableCell className="text-right font-mono text-sm font-semibold text-slate-900 pr-6">
+                                <TableCell className="text-right font-mono text-sm font-semibold text-foreground pr-6">
                                   {formatIDR(component.subtotal)}
                                 </TableCell>
                                 <TableCell>
@@ -976,24 +976,24 @@ export function AHSPItemEditor({
                 </div>
 
                 {/* Integrated Import / Resource Search */}
-                <div className="shrink-0 p-4 sm:p-6 lg:p-8 border-t bg-white z-10 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
+                <div className="shrink-0 p-4 sm:p-6 lg:p-8 border-t bg-card z-10 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
                   <div className="max-w-4xl mx-auto space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Search className="h-4 w-4 text-blue-600" />
-                        <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Integrasi Resource Library</h4>
+                        <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Integrasi Resource Library</h4>
                       </div>
-                      <Badge variant="outline" className="text-xs font-bold uppercase tracking-widest text-slate-400 border-slate-200">
+                      <Badge variant="outline" className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-border">
                         {filteredResources.length} tersedia di katalog
                       </Badge>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Select value={selectedComponentType} onValueChange={(value: string) => setSelectedComponentType(value as ResourceType)}>
-                        <SelectTrigger className="w-full sm:w-40 h-10 rounded-lg border-slate-200 bg-slate-50 font-bold text-xs uppercase tracking-wider">
+                        <SelectTrigger className="w-full sm:w-40 h-10 rounded-lg border-border bg-muted/30 font-bold text-xs uppercase tracking-wider">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl border-slate-200 shadow-xl">
+                        <SelectContent className="rounded-xl border-border shadow-xl">
                           <SelectItem value="material" className="py-3 font-semibold">MATERIAL</SelectItem>
                           <SelectItem value="labor" className="py-3 font-semibold">LABOR / TENAGA</SelectItem>
                           <SelectItem value="equipment" className="py-3 font-semibold">EQUIPMENT / ALAT</SelectItem>
@@ -1002,39 +1002,39 @@ export function AHSPItemEditor({
                       </Select>
 
                       <div className="relative flex-1 group">
-                        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-blue-500 transition-colors" />
                         <Input
                           placeholder={`Cari resource ${selectedComponentType}...`}
                           value={resourceSearch}
                           onChange={(e) => setResourceSearch(e.target.value)}
-                          className="h-10 pl-12 pr-4 rounded-lg border-slate-200 bg-slate-50 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all font-medium"
+                          className="h-10 pl-12 pr-4 rounded-lg border-border bg-muted/30 focus:bg-background focus:ring-2 focus:ring-primary/10 transition-all font-medium"
                         />
                       </div>
                     </div>
 
                     {resourceSearch && filteredResources.length > 0 && (
-                      <div className="mt-2 rounded-lg border border-slate-200 bg-white shadow-2xl max-h-60 overflow-y-auto animate-in slide-in-from-top-2 duration-300 divide-y divide-slate-100 z-50 relative pointer-events-auto">
+                      <div className="mt-2 rounded-lg border border-border bg-background shadow-2xl max-h-60 overflow-y-auto animate-in slide-in-from-top-2 duration-300 divide-y divide-border z-50 relative pointer-events-auto">
                         {filteredResources.map((res) => (
                           <div
                             key={res.id}
-                            className="px-6 py-4 flex items-center justify-between hover:bg-blue-50/50 cursor-pointer transition-colors group"
+                            className="px-6 py-4 flex items-center justify-between hover:bg-accent/40/50 cursor-pointer transition-colors group"
                             onClick={() => handleAddResource(res)}
                           >
                             <div className="flex items-center gap-4">
-                              <div className="h-10 w-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 font-semibold group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                              <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground font-semibold group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
                                 {res.name[0]}
                               </div>
                               <div className="flex flex-col text-left">
-                                <span className="font-bold text-slate-800 text-sm group-hover:text-blue-700">{res.name}</span>
+                                <span className="font-bold text-muted-foreground text-sm group-hover:text-blue-700">{res.name}</span>
                                 <div className="flex items-center gap-3 mt-0.5">
-                                  <span className="text-xs font-mono font-medium text-slate-400 uppercase">{res.code}</span>
-                                  <div className="h-1 w-1 rounded-full bg-slate-200" />
-                                  <span className="text-xs bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-semibold uppercase">{res.unit}</span>
+                                  <span className="text-xs font-mono font-medium text-muted-foreground uppercase">{res.code}</span>
+                                  <div className="h-1 w-1 rounded-full bg-muted" />
+                                  <span className="text-xs bg-muted/50 px-1.5 py-0.5 rounded text-muted-foreground font-semibold uppercase">{res.unit}</span>
                                 </div>
                               </div>
                             </div>
                             <div className="flex flex-col items-end">
-                              <span className="font-mono text-sm font-semibold text-slate-900">{formatIDR(res.unitPrice)}</span>
+                              <span className="font-mono text-sm font-semibold text-foreground">{formatIDR(res.unitPrice)}</span>
                               <Button size="sm" variant="ghost" className="h-8 px-4 text-xs font-semibold uppercase text-blue-600 opacity-100 transition-opacity">
                                 Tambahkan
                               </Button>
@@ -1050,18 +1050,18 @@ export function AHSPItemEditor({
             )}
 
             {/* Section 3: Cost Distribution Summary — always visible right sidebar */}
-            <div className="bg-white p-4 sm:p-6 space-y-6 lg:col-[2] lg:row-[1/span_2] lg:border-l lg:border-slate-200 lg:sticky lg:top-0 lg:h-fit lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
-              <div className="flex items-center gap-3 pb-4 border-b-2 border-blue-100">
-                <div className="bg-blue-100 p-2 text-blue-700 rounded-xl text-white">
+            <div className="bg-card p-4 sm:p-6 space-y-6 lg:col-[2] lg:row-[1/span_2] lg:border-l lg:border-border lg:sticky lg:top-0 lg:h-fit lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
+              <div className="flex items-center gap-3 pb-4 border-b-2 border-border">
+                <div className="bg-primary/10 p-2 text-primary rounded-xl">
                   <Check className="h-5 w-5" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg text-slate-900 uppercase tracking-wide">Distribusi Biaya</h3>
-                  <p className="text-xs text-slate-500 font-medium">Ringkasan komposisi dan harga</p>
+                  <h3 className="font-semibold text-lg text-foreground uppercase tracking-wide">Distribusi Biaya</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Ringkasan komposisi dan harga</p>
                 </div>
               </div>
               <div className="grid gap-8">
-                <div className="flex flex-col items-center justify-center py-6 px-6 rounded-xl bg-slate-900 text-white relative overflow-hidden shadow-2xl">
+                <div className="flex flex-col items-center justify-center py-6 px-6 rounded-xl bg-background text-white relative overflow-hidden shadow-2xl">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
                   <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-600/10 rounded-full blur-[80px] translate-y-1/3 -translate-x-1/4" />
 
@@ -1070,7 +1070,7 @@ export function AHSPItemEditor({
                     <div className="text-xl sm:text-2xl lg:text-3xl font-semibold font-mono tracking-tighter tabular-nums mb-2 break-all">
                       {formatIDR(totals.final)}
                     </div>
-                    <div className="flex items-center gap-2 text-slate-400 font-bold uppercase tracking-[0.2em] text-xs">
+                    <div className="flex items-center gap-2 text-muted-foreground font-bold uppercase tracking-[0.2em] text-xs">
                       Harga Satuan per <span className="text-white bg-white/10 px-2 py-1 rounded-lg">{formData.unit}</span>
                     </div>
                   </div>
@@ -1079,43 +1079,43 @@ export function AHSPItemEditor({
                 <div className="grid grid-cols-1 gap-6 lg:gap-8">
                   <div className="space-y-6">
                     <div className="flex items-center gap-2">
-                      <div className="h-4 w-1 bg-blue-500 rounded-full" />
-                      <h3 className="text-sm font-semibold uppercase tracking-tight text-slate-900">Rincian Biaya Dasar</h3>
+                      <div className="h-4 w-1 bg-primary rounded-full" />
+                      <h3 className="text-sm font-semibold uppercase tracking-tight text-foreground">Rincian Biaya Dasar</h3>
                     </div>
 
-                    <div className="space-y-4 bg-slate-50/30 p-8 rounded-xl border border-slate-100">
+                    <div className="space-y-4 bg-muted/30/30 p-8 rounded-xl border border-border">
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Biaya Material</span>
-                          <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.material)}</span>
+                          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Biaya Material</span>
+                          <span className="font-mono text-xs font-bold text-muted-foreground">{formatIDR(totals.material)}</span>
                         </div>
-                        <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: `${(totals.material / (totals.base || 1)) * 100}%` }} />
+                        <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+                          <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${(totals.material / (totals.base || 1)) * 100}%` }} />
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Biaya Tenaga Kerja</span>
-                          <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.labor)}</span>
+                          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Biaya Tenaga Kerja</span>
+                          <span className="font-mono text-xs font-bold text-muted-foreground">{formatIDR(totals.labor)}</span>
                         </div>
-                        <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
                           <div className="h-full bg-orange-500 rounded-full transition-all duration-1000" style={{ width: `${(totals.labor / (totals.base || 1)) * 100}%` }} />
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex justify-between items-end mb-1">
-                          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">Alat / Peralatan</span>
-                          <span className="font-mono text-xs font-bold text-slate-700">{formatIDR(totals.equipment + totals.subcontractor)}</span>
+                          <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Alat / Peralatan</span>
+                          <span className="font-mono text-xs font-bold text-muted-foreground">{formatIDR(totals.equipment + totals.subcontractor)}</span>
                         </div>
-                        <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
                           <div className="h-full bg-indigo-500 rounded-full transition-all duration-1000" style={{ width: `${((totals.equipment + totals.subcontractor) / (totals.base || 1)) * 100}%` }} />
                         </div>
                       </div>
 
-                      <div className="pt-4 mt-4 border-t border-slate-200 flex justify-between items-center">
-                        <span className="text-sm font-semibold text-slate-900 uppercase">Subtotal Biaya Dasar</span>
+                      <div className="pt-4 mt-4 border-t border-border flex justify-between items-center">
+                        <span className="text-sm font-semibold text-foreground uppercase">Subtotal Biaya Dasar</span>
                         <span className="text-lg font-semibold font-mono text-blue-600">{formatIDR(totals.base)}</span>
                       </div>
                     </div>
@@ -1124,23 +1124,23 @@ export function AHSPItemEditor({
                   <div className="space-y-6">
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-1 bg-emerald-500 rounded-full" />
-                      <h3 className="text-sm font-semibold uppercase tracking-tight text-slate-900">Overhead & Keuntungan</h3>
+                      <h3 className="text-sm font-semibold uppercase tracking-tight text-foreground">Overhead & Keuntungan</h3>
                     </div>
 
                     <div className="bg-emerald-50/20 p-8 rounded-xl border border-emerald-100 space-y-6 h-full flex flex-col justify-between">
                       <div className="space-y-6">
-                        <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-emerald-100/50">
+                        <div className="flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-emerald-500/15">
                           <div className="flex flex-col text-left">
                             <span className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Penyesuaian Overhead</span>
-                            <span className="text-xs font-bold text-slate-400">{formData.overheadPercentage}% of base</span>
+                            <span className="text-xs font-bold text-muted-foreground">{formData.overheadPercentage}% of base</span>
                           </div>
                           <span className="font-mono font-bold text-emerald-700 text-sm">+{formatIDR(totals.base * (formData.overheadPercentage / 100))}</span>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-emerald-100/50">
+                        <div className="flex items-center justify-between p-4 bg-card rounded-lg shadow-sm border border-emerald-500/15">
                           <div className="flex flex-col text-left">
                             <span className="text-xs font-semibold uppercase tracking-widest text-emerald-600 mb-1">Target Keuntungan</span>
-                            <span className="text-xs font-bold text-slate-400">{formData.profitPercentage}% of base</span>
+                            <span className="text-xs font-bold text-muted-foreground">{formData.profitPercentage}% of base</span>
                           </div>
                           <span className="font-mono font-bold text-emerald-700 text-sm">+{formatIDR(totals.base * (formData.profitPercentage / 100))}</span>
                         </div>
@@ -1157,14 +1157,14 @@ export function AHSPItemEditor({
             </div>
           </div>
 
-          <div className="shrink-0 px-4 sm:px-8 py-4 sm:py-6 border-t bg-white flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+          <div className="shrink-0 px-4 sm:px-8 py-4 sm:py-6 border-t bg-card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between z-30 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
             <div className="flex gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="h-11 sm:h-10 w-full sm:w-auto px-6 font-bold text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-xl"
+                className="h-11 sm:h-10 w-full sm:w-auto px-6 font-bold text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-xl"
               >
                 Batalkan
               </Button>
@@ -1174,7 +1174,7 @@ export function AHSPItemEditor({
                   variant="outline"
                   onClick={() => setCurrentStep(1)}
                   disabled={isSubmitting}
-                  className="h-11 sm:h-10 px-5 font-bold rounded-xl border-slate-200"
+                  className="h-11 sm:h-10 px-5 font-bold rounded-xl border-border"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Info Dasar
@@ -1191,13 +1191,13 @@ export function AHSPItemEditor({
                   variant="outline"
                   onClick={() => setCurrentStep(2)}
                   disabled={isSubmitting}
-                  className="h-11 sm:h-10 w-full sm:w-auto px-6 font-bold rounded-lg border-slate-200 text-blue-700 hover:bg-blue-50"
+                  className="h-11 sm:h-10 w-full sm:w-auto px-6 font-bold rounded-lg border-border text-blue-700 hover:bg-accent/40"
                 >
                   Komponen
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               )}
-              <Button type="submit" size="lg" className="h-11 sm:h-10 w-full sm:w-auto px-8 sm:px-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xl shadow-blue-200 transition-all hover:-translate-y-1 active:scale-95" disabled={isSubmitting}>
+              <Button type="submit" size="lg" className="h-11 sm:h-10 w-full sm:w-auto px-8 sm:px-10 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-xl shadow-orange-200/40 transition-all hover:-translate-y-1 active:scale-95" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <span className="flex items-center gap-3">
                     <Database className="animate-spin h-5 w-5" />

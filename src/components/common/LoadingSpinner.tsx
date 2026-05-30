@@ -117,7 +117,7 @@ export function PulseLoading({ className }: { className?: string }) {
  */
 export function CardLoading({ title = 'Memuat data...' }: { title?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg border border-neutral-200 bg-white p-8 dark:border-neutral-800 dark:bg-neutral-950">
+    <div className="flex flex-col items-center justify-center rounded-lg border border-neutral-200 bg-card p-8 dark:border-neutral-800 dark:bg-neutral-950">
       <Loader2 className="h-10 w-10 animate-spin text-neutral-600 dark:text-neutral-400" />
       <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">{title}</p>
     </div>

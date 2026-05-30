@@ -98,7 +98,7 @@ export default function RiskRegister({ projectId }: RiskRegisterProps) {
             {risks.length === 0 ? (
                 <EmptyState title="No Risks Logged" description="Identify and track project risks here." imageKeyword="risk" />
             ) : (
-                <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
                     <div className="max-h-[560px] overflow-auto">
                     <table className="w-full text-sm">
                         <thead className="sticky-glass-tablehead z-10 bg-muted/70 text-left">

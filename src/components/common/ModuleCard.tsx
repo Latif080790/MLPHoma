@@ -25,7 +25,7 @@ export interface ModuleCardProps {
  */
 export function ModuleCard({ icon, title, description, onOpen, onDocs }: ModuleCardProps) {
   return (
-    <div className="flex h-full flex-col rounded-xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="flex h-full flex-col rounded-xl border bg-card p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
       <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
         {icon}
       </div>
@@ -36,7 +36,7 @@ export function ModuleCard({ icon, title, description, onOpen, onDocs }: ModuleC
       <div className="mt-auto flex items-center gap-2">
         <button
           onClick={onOpen}
-          className="inline-flex items-center justify-center rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+          className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
           Open
         </button>

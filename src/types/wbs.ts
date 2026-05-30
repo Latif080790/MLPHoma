@@ -38,6 +38,19 @@ export interface WBSItem {
   qc_status?: 'PENDING' | 'PASSED' | 'FAILED' | 'NOT_REQUIRED'
   /** Progress percentage (0-100) */
   progress?: number
+  /**
+   * Origin of the current progress value.
+   * 'timeline' = automatically propagated from linked Timeline task averages (A3).
+   * 'manual'   = explicitly set by user via WBS editor or daily progress board.
+   * Default: undefined (legacy nodes with no source tracking).
+   */
+  progressSource?: 'timeline' | 'manual'
+  /**
+   * When true, the A3 Timeline→WBS progress propagation is suppressed for this node.
+   * Physical progress must be validated and entered manually (e.g., after QC inspection).
+   * Does not prevent manual progress updates.
+   */
+  physicalProgressLocked?: boolean
 }
 
 /** WBS Tree State */

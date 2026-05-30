@@ -120,7 +120,7 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null
   const v = payload[0].value as number
   return (
-    <div className="rounded-md border bg-white p-2 text-xs shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+    <div className="rounded-md border bg-card p-2 text-xs shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
       <div className="font-medium">{label}</div>
       <div className="text-blue-600 dark:text-blue-400">{fmtIDR(v)}</div>
     </div>

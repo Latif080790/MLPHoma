@@ -272,7 +272,7 @@ export function getMatchStatusColor(status: MatchStatus): string {
         case 'matched': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
         case 'partial': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
         case 'mismatch': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-        case 'no_po': return 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+        case 'no_po': return 'bg-muted/50 text-muted-foreground'
     }
 }
 

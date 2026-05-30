@@ -130,7 +130,7 @@ export function TraceChain({ chain, size = 'sm', onChipClick, className }: Trace
                     />
                     {idx < chain.length - 1 && (
                         <ArrowRight className={cn(
-                            'text-slate-400',
+                            'text-muted-foreground',
                             size === 'sm' ? 'h-2.5 w-2.5' : 'h-3 w-3'
                         )} />
                     )}

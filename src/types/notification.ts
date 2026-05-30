@@ -86,7 +86,7 @@ export const NOTIFICATION_CONFIG: Record<NotificationType, { icon: string; color
     TRANSFER_REQUEST: { icon: 'ArrowRightLeft', color: 'text-indigo-500', label: 'Transfer Request' },
     QUALITY_ALERT: { icon: 'ShieldAlert', color: 'text-red-500', label: 'Quality Alert' },
     CHANGE_ORDER: { icon: 'FileEdit', color: 'text-teal-500', label: 'Change Order' },
-    SYSTEM_INFO: { icon: 'Info', color: 'text-slate-500', label: 'System Info' },
+    SYSTEM_INFO: { icon: 'Info', color: 'text-muted-foreground', label: 'System Info' },
     BILLING_MILESTONE: { icon: 'Receipt', color: 'text-green-600', label: 'Billing Milestone' },
-    SYSTEM: { icon: 'Info', color: 'text-slate-400', label: 'System' },
+    SYSTEM: { icon: 'Info', color: 'text-muted-foreground', label: 'System' },
 }

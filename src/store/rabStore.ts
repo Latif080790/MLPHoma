@@ -87,6 +87,12 @@ interface RabState {
   createScenario: (projectId: string, name: string) => void
   setScenarioData: (projectId: string, versionId: string, data: unknown) => void
   switchScenario: (projectId: string, versionId: string) => void
+  /**
+   * applyMarginToAllItems — Batch-update semua item di project menggunakan
+   * formula margin: unit_price = base_price / (1 - (ohPct + profitPct) / 100)
+   * base_price dipreservasi. Gunakan saat user mengubah OH% atau Profit%.
+   */
+  applyMarginToAllItems: (projectId: string, ohPct: number, profitPct: number) => void
 }
 
 const STORAGE_KEY = 'rabStore:v2'
@@ -200,6 +206,44 @@ export const useRabStore = create<RabState>((set, get) => {
     createScenario: () => { toast.info('Scenario creation not available in this version.') },
     setScenarioData: () => {},
     switchScenario: () => { toast.info('Scenario switching coming soon.') },
+
+    applyMarginToAllItems: (projectId: string, ohPct: number, profitPct: number) => {
+      if (get().isLocked(projectId)) {
+        toast.error('RAB terkunci. Tidak dapat mengubah harga.')
+        return
+      }
+      const marginFraction = (ohPct + profitPct) / 100
+      if (marginFraction >= 1) {
+        toast.error('Total margin tidak boleh ≥ 100%')
+        return
+      }
+      const items = get().getItems(projectId)
+      if (!items.length) return
+
+      const updated = items.map(item => {
+        // base_price = biaya pokok AHSP. Fallback ke unit_price untuk item lama.
+        const base = Number(item.base_price) || Number(item.unit_price) || 0
+        const newUnitPrice = marginFraction > 0
+          ? Math.round(base / (1 - marginFraction))
+          : base
+        const newFinalTotal = newUnitPrice * Number(item.volume || 0)
+        return {
+          ...item,
+          base_price: base,
+          unit_price: newUnitPrice,
+          finalTotal: newFinalTotal,
+          final_total: newFinalTotal,
+          finalPrice: newFinalTotal,
+        }
+      })
+
+      set(s => ({
+        itemsByProject: { ...s.itemsByProject, [projectId]: updated },
+      }))
+      get().markUnsaved(projectId)
+      get().persist()
+      toast.success(`Harga satuan ${updated.length} item diperbarui dengan OH ${ohPct}% + Profit ${profitPct}%`)
+    },
 
     addItem: (projectId, item) => {
       if (get().isLocked(projectId)) {

@@ -220,7 +220,7 @@ export function GRNDialog({ open, onOpenChange, projectId }: GRNDialogProps) {
                         <div className="space-y-3">
                             <Label className="text-sm font-semibold">Detail Item</Label>
                             <div className="rounded-lg border overflow-hidden">
-                                <div className="grid grid-cols-12 gap-2 bg-slate-50 dark:bg-slate-800/50 px-3 py-2 text-xs font-medium text-slate-500">
+                                <div className="grid grid-cols-12 gap-2 bg-muted/30 px-3 py-2 text-xs font-medium text-muted-foreground">
                                     <div className="col-span-4">Item</div>
                                     <div className="col-span-2 text-right">Ordered</div>
                                     <div className="col-span-2 text-right">Received</div>
@@ -244,7 +244,7 @@ export function GRNDialog({ open, onOpenChange, projectId }: GRNDialogProps) {
                                             <div className="col-span-4 text-sm font-medium truncate pt-1.5">
                                                 {field.itemName}
                                             </div>
-                                            <div className="col-span-2 text-right text-sm text-slate-500 pt-1.5">
+                                            <div className="col-span-2 text-right text-sm text-muted-foreground pt-1.5">
                                                 {ordered}
                                             </div>
                                             <div className="col-span-2">
@@ -258,7 +258,7 @@ export function GRNDialog({ open, onOpenChange, projectId }: GRNDialogProps) {
                                                     <p className="mt-0.5 text-xs text-red-600">{itemError.message}</p>
                                                 )}
                                             </div>
-                                            <div className="col-span-2 text-sm text-slate-500 pt-1.5">
+                                            <div className="col-span-2 text-sm text-muted-foreground pt-1.5">
                                                 {field.unit}
                                             </div>
                                             <div className="col-span-2">

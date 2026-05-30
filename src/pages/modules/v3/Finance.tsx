@@ -745,11 +745,11 @@ export default function Finance() {
                     {filteredInvoices.length === 0 ? (
                         <EmptyState title="No Invoices Found" description="No invoice matches current search/filter." imageKeyword="invoice" />
                     ) : (
-                        <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+                        <div className="rounded-lg border border-border overflow-hidden shadow-sm bg-card">
                             <div ref={invScrollRef} className="max-h-[600px] overflow-auto relative">
                                 <Table>
-                                    <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
-                                        <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
+                                    <TableHeader className="bg-muted/30 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                                        <TableRow className="hover:bg-transparent border-border">
                                             <TableHead className="w-10 p-3">
                                                 <Checkbox
                                                     checked={isAllInvoicesSelected}
@@ -757,14 +757,14 @@ export default function Finance() {
                                                     aria-label="Select all invoices"
                                                 />
                                             </TableHead>
-                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
-                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Inv Number</TableHead>
-                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Trace</TableHead>
-                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Due Date</TableHead>
-                                            <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
-                                            <TableHead className="p-3 text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Match</TableHead>
-                                            <TableHead className="p-3 text-center font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
-                                            <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
+                                            <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Vendor</TableHead>
+                                            <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Inv Number</TableHead>
+                                            <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Trace</TableHead>
+                                            <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Due Date</TableHead>
+                                            <TableHead className="p-3 text-right font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Amount</TableHead>
+                                            <TableHead className="p-3 text-center font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Match</TableHead>
+                                            <TableHead className="p-3 text-center font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Status</TableHead>
+                                            <TableHead className="p-3 text-right font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -784,7 +784,7 @@ export default function Finance() {
                                             const upstreamCount = inv.po_id ? 1 : 0
 
                                             return (
-                                                <TableRow key={inv.id} data-index={vRow.index} ref={virtualInvoiceRows.measureElement} className={`group hover:bg-slate-50 dark:hover:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''} ${selectedInvoiceIds.has(inv.id) ? 'bg-orange-50/60 dark:bg-orange-900/10' : ''}`}>
+                                                <TableRow key={inv.id} data-index={vRow.index} ref={virtualInvoiceRows.measureElement} className={`group hover:bg-accent/40 border-b border-border transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''} ${selectedInvoiceIds.has(inv.id) ? 'bg-orange-50/60 dark:bg-orange-900/10' : ''}`}>
                                                     {/* v4 Sprint 2: checkbox */}
                                                     <TableCell className="p-3 w-10" onClick={e => e.stopPropagation()}>
                                                         <Checkbox
@@ -793,8 +793,8 @@ export default function Finance() {
                                                             aria-label={`Select invoice ${inv.invoice_number}`}
                                                         />
                                                     </TableCell>
-                                                    <TableCell className="p-3 font-medium text-slate-700 dark:text-slate-300">{inv.vendor_name}</TableCell>
-                                                    <TableCell className="p-3 font-mono text-xs text-slate-600 dark:text-slate-400">{inv.invoice_number}</TableCell>
+                                                    <TableCell className="p-3 font-medium text-muted-foreground">{inv.vendor_name}</TableCell>
+                                                    <TableCell className="p-3 font-mono text-xs text-muted-foreground">{inv.invoice_number}</TableCell>
                                                     <TableCell className="p-3">
                                                         {traceChain.length > 0 ? (
                                                             <div className="flex items-center gap-1.5">
@@ -805,11 +805,11 @@ export default function Finance() {
                                                                 />
                                                             </div>
                                                         ) : (
-                                                            <span className="text-xs text-slate-400">-</span>
+                                                            <span className="text-xs text-muted-foreground">-</span>
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="p-3 text-xs text-slate-500">{format(new Date(inv.due_date || new Date()), 'dd MMM yyyy')}</TableCell>
-                                                    <TableCell className="p-3 text-right font-mono tabular-nums text-xs font-semibold text-slate-700 dark:text-slate-300">Rp {inv.total_amount.toLocaleString()}</TableCell>
+                                                    <TableCell className="p-3 text-xs text-muted-foreground">{format(new Date(inv.due_date || new Date()), 'dd MMM yyyy')}</TableCell>
+                                                    <TableCell className="p-3 text-right font-mono tabular-nums text-xs font-semibold text-muted-foreground">Rp {inv.total_amount.toLocaleString()}</TableCell>
                                                     <TableCell className="p-3 text-center">
                                                         {(() => {
                                                             const matchResult = matchInvoice(inv, purchaseOrders, inventoryTransactions)
@@ -996,23 +996,23 @@ export default function Finance() {
                         <CardHeader><CardTitle>Transaction Ledger</CardTitle></CardHeader>
                         <CardContent>
                             {transactions.length === 0 ? <p className="text-neutral-500 text-sm">No transactions recorded.</p> : (
-                                <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                                <div className="rounded-lg border border-border overflow-hidden shadow-sm">
                                     <div className="max-h-[400px] overflow-auto relative">
                                         <Table>
-                                            <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20">
-                                                <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
-                                                    <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Date</TableHead>
-                                                    <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Description</TableHead>
-                                                    <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Category</TableHead>
-                                                    <TableHead className="p-3 text-right font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Amount</TableHead>
+                                            <TableHeader className="bg-muted/30 backdrop-blur-sm sticky top-0 z-20">
+                                                <TableRow className="hover:bg-transparent border-border">
+                                                    <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Date</TableHead>
+                                                    <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Description</TableHead>
+                                                    <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Category</TableHead>
+                                                    <TableHead className="p-3 text-right font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Amount</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {transactions.map(t => (
-                                                    <TableRow key={t.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                                        <TableCell className="p-3 text-xs text-slate-500 font-mono">{format(new Date(t.transaction_date), 'dd MMM yyyy')}</TableCell>
-                                                        <TableCell className="p-3 text-sm text-slate-700 dark:text-slate-300">{t.description}</TableCell>
-                                                        <TableCell className="p-3"><Badge variant="outline" className="text-xs font-normal text-slate-500">{t.category}</Badge></TableCell>
+                                                    <TableRow key={t.id} className="border-b border-border hover:bg-accent/40 transition-colors">
+                                                        <TableCell className="p-3 text-xs text-muted-foreground font-mono">{format(new Date(t.transaction_date), 'dd MMM yyyy')}</TableCell>
+                                                        <TableCell className="p-3 text-sm text-muted-foreground">{t.description}</TableCell>
+                                                        <TableCell className="p-3"><Badge variant="outline" className="text-xs font-normal text-muted-foreground">{t.category}</Badge></TableCell>
                                                         <TableCell className={`p-3 text-right font-bold font-mono tabular-nums text-xs ${t.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                             Rp {t.amount.toLocaleString()}
                                                         </TableCell>

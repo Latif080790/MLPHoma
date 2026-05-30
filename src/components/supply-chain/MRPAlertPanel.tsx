@@ -42,7 +42,7 @@ function SeverityBadge({ severity }: { severity: MaterialAlert['severity'] }) {
 
 function AlertRow({ alert, onCreateMR }: { alert: MaterialAlert; onCreateMR?: (alert: MaterialAlert) => void }) {
     return (
-        <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+        <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg border border-border hover:bg-accent/40 transition-colors">
             {/* Icon */}
             <div className={`shrink-0 p-1.5 rounded-md ${alert.severity === 'critical' ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' :
                     alert.severity === 'warning' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400' :
@@ -56,20 +56,20 @@ function AlertRow({ alert, onCreateMR }: { alert: MaterialAlert; onCreateMR?: (a
             {/* Content */}
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate capitalize">
+                    <span className="text-sm font-medium text-foreground truncate capitalize">
                         {alert.resourceName}
                     </span>
                     <SeverityBadge severity={alert.severity} />
                 </div>
-                <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    <span>Need: <strong className="text-slate-700 dark:text-slate-300">{alert.totalNeeded.toLocaleString()}</strong> {alert.unit}</span>
+                <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                    <span>Need: <strong className="text-muted-foreground">{alert.totalNeeded.toLocaleString()}</strong> {alert.unit}</span>
                     <span>Stock: <strong>{alert.currentStock.toLocaleString()}</strong></span>
                     <span className="text-red-600 dark:text-red-400 font-semibold">
                         Shortfall: {alert.shortfall.toLocaleString()}
                     </span>
                 </div>
                 {alert.taskName && (
-                    <div className="flex items-center gap-1 mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                    <div className="flex items-center gap-1 mt-0.5 text-xs text-muted-foreground">
                         <Clock size={10} />
                         <span>{alert.taskName}</span>
                         {alert.daysUntilNeeded !== null && (
@@ -144,7 +144,7 @@ export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProp
     const displayAlerts = compact ? alerts.slice(0, 3) : alerts
 
     return (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="border-border shadow-sm">
             <CardHeader className="pb-2 pt-4 px-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -175,7 +175,7 @@ export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProp
 
             <CardContent className="px-4 pb-4">
                 {totalAlerts === 0 ? (
-                    <div className="text-center py-6 text-sm text-slate-400 dark:text-slate-500">
+                    <div className="text-center py-6 text-sm text-muted-foreground">
                         <Package size={28} className="mx-auto mb-2 opacity-40" />
                         <p>No material shortages detected.</p>
                         <p className="text-xs mt-1">All materials are within planned supply levels.</p>
@@ -186,7 +186,7 @@ export function MRPAlertPanel({ compact = false, onCreateMR }: MRPAlertPanelProp
                             <AlertRow key={alert.id} alert={alert} onCreateMR={onCreateMR} />
                         ))}
                         {compact && totalAlerts > 3 && (
-                            <p className="text-center text-xs text-slate-400 mt-2">
+                            <p className="text-center text-xs text-muted-foreground mt-2">
                                 +{totalAlerts - 3} more alerts in Supply Chain module
                             </p>
                         )}

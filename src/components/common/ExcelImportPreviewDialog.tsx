@@ -104,7 +104,7 @@ function StepBar({ step }: { step: Step }) {
     <div className="flex items-center gap-1 mb-4">
       {STEPS.map((label, i) => (
         <React.Fragment key={label}>
-          {i > 0 && <ArrowRight size={12} className="text-slate-400" />}
+          {i > 0 && <ArrowRight size={12} className="text-muted-foreground" />}
           <span
             className={[
               'px-2 py-1 rounded-full text-xs font-medium',
@@ -112,7 +112,7 @@ function StepBar({ step }: { step: Step }) {
                 ? 'bg-orange-500 text-white'
                 : step > i
                   ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500',
+                  : 'bg-muted/50 text-muted-foreground',
             ].join(' ')}
           >
             {i + 1}. {label}
@@ -276,13 +276,13 @@ export function ExcelImportPreviewDialog({
 
         {/* ── Step 0: Upload ─────────────────────────────────────────────── */}
         {step === 0 && (
-          <label className="flex flex-col items-center justify-center py-14 border-2 border-dashed rounded-xl border-slate-300 dark:border-slate-700 cursor-pointer hover:border-orange-400 transition-colors gap-3">
-            <FileUp size={36} className="text-slate-400" />
+          <label className="flex flex-col items-center justify-center py-14 border-2 border-dashed rounded-xl border-border cursor-pointer hover:border-orange-400 transition-colors gap-3">
+            <FileUp size={36} className="text-muted-foreground" />
             <div className="text-center">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+              <p className="text-sm font-medium text-muted-foreground">
                 Klik untuk pilih file
               </p>
-              <p className="text-xs text-slate-400 mt-1">CSV atau XLSX (Excel)</p>
+              <p className="text-xs text-muted-foreground mt-1">CSV atau XLSX (Excel)</p>
             </div>
             <input type="file" accept=".csv,.xlsx,.xls" onChange={handleFile} className="sr-only" />
           </label>
@@ -291,20 +291,20 @@ export function ExcelImportPreviewDialog({
         {/* ── Step 1: Column Mapping ─────────────────────────────────────── */}
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-xs text-slate-500">
-              File: <span className="font-medium text-slate-700 dark:text-slate-200">{fileName}</span> — {rawRows.length} baris data
+            <p className="text-xs text-muted-foreground">
+              File: <span className="font-medium text-muted-foreground">{fileName}</span> — {rawRows.length} baris data
             </p>
             <div className="space-y-3">
               {targetFields.map(tf => (
                 <div key={tf.key} className="flex items-center gap-3">
-                  <label className="w-40 text-xs font-medium text-slate-700 dark:text-slate-200 shrink-0">
+                  <label className="w-40 text-xs font-medium text-muted-foreground shrink-0">
                     {tf.label}
                     {tf.required && <span className="text-red-500 ml-0.5">*</span>}
                   </label>
                   <select
                     value={mapping[tf.key] ?? ''}
                     onChange={e => setMapping(prev => ({ ...prev, [tf.key]: e.target.value }))}
-                    className="flex-1 text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-slate-900 dark:text-slate-100"
+                    className="flex-1 text-xs rounded-md border border-border bg-card px-2 py-1.5 text-foreground"
                   >
                     <option value="">— Tidak dimap —</option>
                     {headers.map(h => (
@@ -342,12 +342,12 @@ export function ExcelImportPreviewDialog({
             </div>
             <ScrollArea className="h-72 border rounded-lg">
               <table className="w-full text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">
+                <thead className="bg-muted/30 sticky top-0">
                   <tr>
-                    <th className="text-left px-2 py-1.5 text-slate-500 w-8">#</th>
-                    <th className="text-left px-2 py-1.5 text-slate-500 w-8">Status</th>
+                    <th className="text-left px-2 py-1.5 text-muted-foreground w-8">#</th>
+                    <th className="text-left px-2 py-1.5 text-muted-foreground w-8">Status</th>
                     {targetFields.map(tf => (
-                      <th key={tf.key} className="text-left px-2 py-1.5 text-slate-500 whitespace-nowrap">{tf.label}</th>
+                      <th key={tf.key} className="text-left px-2 py-1.5 text-muted-foreground whitespace-nowrap">{tf.label}</th>
                     ))}
                   </tr>
                 </thead>
@@ -356,17 +356,17 @@ export function ExcelImportPreviewDialog({
                     const isConflict = conflicts.includes(i)
                     return (
                       <tr key={i} className={[
-                        'border-t border-slate-100 dark:border-slate-800',
+                        'border-t border-border',
                         isConflict ? 'bg-amber-50 dark:bg-amber-900/10' : '',
                       ].join(' ')}>
-                        <td className="px-2 py-1 text-slate-400">{i + 1}</td>
+                        <td className="px-2 py-1 text-muted-foreground">{i + 1}</td>
                         <td className="px-2 py-1">
                           {isConflict
                             ? <AlertTriangle size={12} className="text-amber-500" />
                             : <CheckCircle2 size={12} className="text-green-500" />}
                         </td>
                         {targetFields.map(tf => (
-                          <td key={tf.key} className="px-2 py-1 text-slate-700 dark:text-slate-300 max-w-[160px] truncate">
+                          <td key={tf.key} className="px-2 py-1 text-muted-foreground max-w-[160px] truncate">
                             {String(row[tf.key] ?? '')}
                           </td>
                         ))}
@@ -376,7 +376,7 @@ export function ExcelImportPreviewDialog({
                 </tbody>
               </table>
               {previewRows.length > maxPreviewRows && (
-                <p className="text-xs text-slate-400 text-center py-2">
+                <p className="text-xs text-muted-foreground text-center py-2">
                   ... dan {previewRows.length - maxPreviewRows} baris lainnya
                 </p>
               )}

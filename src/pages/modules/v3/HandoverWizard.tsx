@@ -288,10 +288,10 @@ export default function HandoverWizard() {
                                         <div className="text-2xl font-bold text-blue-800">{summary.schedule.status}</div>
                                         <div className="text-xs text-blue-600 mt-1">Actual: {summary.schedule.actualFinish}</div>
                                     </div>
-                                    <div className="p-4 border rounded-lg bg-slate-50 border-slate-200">
-                                        <div className="text-sm text-slate-700 font-medium">Safety Record</div>
-                                        <div className="text-2xl font-bold text-slate-800">{summary.safety.incidents} Incidents</div>
-                                        <div className="text-xs text-slate-600 mt-1">{summary.safety.manhours.toLocaleString()} Manhours</div>
+                                    <div className="p-4 border rounded-lg bg-muted/30 border-border">
+                                        <div className="text-sm text-muted-foreground font-medium">Safety Record</div>
+                                        <div className="text-2xl font-bold text-muted-foreground">{summary.safety.incidents} Incidents</div>
+                                        <div className="text-xs text-muted-foreground mt-1">{summary.safety.manhours.toLocaleString()} Manhours</div>
                                     </div>
                                 </div>
                             )}
@@ -300,7 +300,7 @@ export default function HandoverWizard() {
                             {step === 2 && (
                                 <div className="rounded-md border">
                                     <table className="w-full text-sm">
-                                        <thead className="bg-slate-50 border-b">
+                                        <thead className="bg-muted/30 border-b">
                                             <tr>
                                                 <th className="p-3 text-left">Item Name</th>
                                                 <th className="p-3 text-right">Qty</th>
@@ -309,7 +309,7 @@ export default function HandoverWizard() {
                                         </thead>
                                         <tbody>
                                             {summary?.inventory.map((i: InventoryItem, idx: number) => (
-                                                <tr key={idx} className="border-b last:border-0 hover:bg-slate-50">
+                                                <tr key={idx} className="border-b last:border-0 hover:bg-muted/30">
                                                     <td className="p-3">{i.materialName}</td>
                                                     <td className="p-3 text-right">{i.current} {i.unit}</td>
                                                     <td className="p-3 text-right">Rp {i.value.toLocaleString()}</td>
@@ -344,8 +344,8 @@ export default function HandoverWizard() {
 
                             {step === 4 && (
                                 <div className="space-y-6">
-                                    <div className="p-6 border-2 border-dashed rounded-lg bg-slate-50 flex flex-col items-center justify-center text-center space-y-4">
-                                        <FileText className="w-12 h-12 text-slate-400" />
+                                    <div className="p-6 border-2 border-dashed rounded-lg bg-muted/30 flex flex-col items-center justify-center text-center space-y-4">
+                                        <FileText className="w-12 h-12 text-muted-foreground" />
                                         <div>
                                             <h3 className="font-medium">Final Project Report</h3>
                                             <p className="text-sm text-muted-foreground max-w-sm">
@@ -421,7 +421,7 @@ export default function HandoverWizard() {
                     )}
                 </CardContent>
 
-                <div className="p-6 border-t bg-slate-50 flex justify-between">
+                <div className="p-6 border-t bg-muted/30 flex justify-between">
                     <Button variant="outline" onClick={() => setStep(s => Math.max(1, s - 1))} disabled={step === 1}>
                         Back
                     </Button>

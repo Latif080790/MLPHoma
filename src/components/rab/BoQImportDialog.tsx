@@ -248,7 +248,7 @@ export default function BoQImportDialog({ open, onOpenChange, projectId }: BoQIm
                     {(['upload', 'map', 'classify', 'preview'] as const).map((s, i) => (
                         <React.Fragment key={s}>
                             {i > 0 && <ArrowRight size={12} className="text-neutral-400" />}
-                            <span className={`px-2 py-1 rounded-full ${step === s ? 'bg-blue-600 text-white' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'}`}>
+                            <span className={`px-2 py-1 rounded-full ${step === s ? 'bg-primary text-primary-foreground' : 'bg-neutral-100 text-neutral-500 dark:bg-neutral-800'}`}>
                                 {s === 'upload' ? '1. Upload' : s === 'map' ? '2. Mapping' : s === 'classify' ? '3. Klasifikasi' : '4. Import'}
                             </span>
                         </React.Fragment>
@@ -282,7 +282,7 @@ export default function BoQImportDialog({ open, onOpenChange, projectId }: BoQIm
                                     <select
                                         value={mapping[t.key] || ''}
                                         onChange={e => setMapping({ ...mapping, [t.key]: e.target.value })}
-                                        className="flex-1 border rounded px-2 py-1.5 text-sm bg-white dark:bg-neutral-900 dark:border-neutral-700"
+                                        className="flex-1 border rounded px-2 py-1.5 text-sm bg-background"
                                     >
                                         <option value="">-- pilih kolom --</option>
                                         {headers.map(h => <option key={h} value={h}>{h}</option>)}
@@ -369,7 +369,7 @@ export default function BoQImportDialog({ open, onOpenChange, projectId }: BoQIm
                         {/* Summary */}
                         <div className="flex items-center gap-4 text-xs mb-4 p-3 bg-neutral-50 dark:bg-neutral-800 rounded">
                             <div className="flex items-center gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-blue-500" />
+                                <div className="w-3 h-3 rounded-full bg-primary" />
                                 <span><strong>{directCount}</strong> Biaya Langsung</span>
                             </div>
                             <div className="flex items-center gap-1.5">

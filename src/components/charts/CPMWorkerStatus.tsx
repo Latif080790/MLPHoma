@@ -24,11 +24,11 @@ export function CPMWorkerStatus({
       "flex items-center gap-3 px-3 py-1.5 rounded-md border transition-all duration-700",
       isCalculating 
         ? "bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-800 animate-pulse" 
-        : "bg-slate-50 border-slate-200 dark:bg-slate-900/50 dark:border-slate-800"
+        : "bg-muted/30 border-border"
     )}>
       <div className="relative">
         <Cpu size={14} className={cn(
-          "text-slate-400",
+          "text-muted-foreground",
           isCalculating && "text-blue-500"
         )} />
         {isCalculating && (
@@ -41,17 +41,17 @@ export function CPMWorkerStatus({
 
       <div className="flex flex-col">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             {isCalculating ? 'Recalculating Critical Path...' : 'CPM Engine Standby'}
           </span>
           {lastDurationMs > 0 && !isCalculating && (
-            <span className="text-[9px] font-mono text-slate-400">
+            <span className="text-xs font-mono text-muted-foreground">
               ({lastDurationMs}ms)
             </span>
           )}
         </div>
         {!isCalculating && taskCount > 0 && (
-          <div className="text-[9px] text-slate-400 leading-none">
+          <div className="text-xs text-muted-foreground leading-none">
             {taskCount} tasks monitored via Pert/CPM
           </div>
         )}

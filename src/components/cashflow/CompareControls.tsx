@@ -66,7 +66,7 @@ const CompareControls: React.FC<CompareControlsProps> = ({ projectId }) => {
 
         <select
           aria-label="Select Compare A scenario"
-          className="rounded-md border px-2 py-1 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+          className="rounded-md border px-2 py-1  bg-card  text-sm"
           value={compareAId}
           onChange={(e) => setCompareAId(e.target.value)}
           disabled={!hasScenarios}
@@ -93,7 +93,7 @@ const CompareControls: React.FC<CompareControlsProps> = ({ projectId }) => {
             onChange={(e) => setShowCompareACumIn(e.target.checked)}
             disabled={!compareAId}
           />
-          <span className="text-neutral-600 dark:text-neutral-300">Cum In</span>
+          <span className="text-muted-foreground ">Cum In</span>
         </label>
 
         <label className="inline-flex items-center gap-1">
@@ -103,7 +103,7 @@ const CompareControls: React.FC<CompareControlsProps> = ({ projectId }) => {
             onChange={(e) => setShowCompareACumOut(e.target.checked)}
             disabled={!compareAId}
           />
-          <span className="text-neutral-600 dark:text-neutral-300">Cum Out</span>
+          <span className="text-muted-foreground ">Cum Out</span>
         </label>
       </div>
 
@@ -112,7 +112,7 @@ const CompareControls: React.FC<CompareControlsProps> = ({ projectId }) => {
 
         <select
           aria-label="Select Compare B scenario"
-          className="rounded-md border px-2 py-1 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+          className="rounded-md border px-2 py-1  bg-card  text-sm"
           value={compareBId}
           onChange={(e) => setCompareBId(e.target.value)}
           disabled={!hasScenarios}
@@ -139,7 +139,7 @@ const CompareControls: React.FC<CompareControlsProps> = ({ projectId }) => {
             onChange={(e) => setShowCompareBCumIn(e.target.checked)}
             disabled={!compareBId}
           />
-          <span className="text-neutral-600 dark:text-neutral-300">Cum In</span>
+          <span className="text-muted-foreground ">Cum In</span>
         </label>
 
         <label className="inline-flex items-center gap-1">
@@ -149,12 +149,12 @@ const CompareControls: React.FC<CompareControlsProps> = ({ projectId }) => {
             onChange={(e) => setShowCompareBCumOut(e.target.checked)}
             disabled={!compareBId}
           />
-          <span className="text-neutral-600 dark:text-neutral-300">Cum Out</span>
+          <span className="text-muted-foreground ">Cum Out</span>
         </label>
       </div>
 
       {/* Simple status summary */}
-      <div className="ml-2 text-xs text-neutral-500 dark:text-neutral-400">
+      <div className="ml-2 text-xs text-muted-foreground ">
         {hasScenarios ? <span>{scenarios.length} saved {scenarios.length === 1 ? 'scenario' : 'scenarios'}</span> : <span>No saved scenarios</span>}
       </div>
     </div>

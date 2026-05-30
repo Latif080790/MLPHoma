@@ -27,9 +27,9 @@ const ICON_MAP: Record<NotificationType, React.ReactNode> = {
     TRANSFER_REQUEST: <ArrowRightLeft size={16} className="text-indigo-500" />,
     QUALITY_ALERT: <ShieldAlert size={16} className="text-red-500" />,
     CHANGE_ORDER: <FileEdit size={16} className="text-teal-500" />,
-    SYSTEM_INFO: <Info size={16} className="text-slate-500" />,
+    SYSTEM_INFO: <Info size={16} className="text-muted-foreground" />,
     BILLING_MILESTONE: <CheckCircle size={16} className="text-green-600" />,
-    SYSTEM: <Info size={16} className="text-slate-400" />,
+    SYSTEM: <Info size={16} className="text-muted-foreground" />,
 }
 
 const SEVERITY_STYLES: Record<NotificationSeverity, string> = {
@@ -159,7 +159,7 @@ export function NotificationCenter() {
                                 >
                                     {/* Icon */}
                                     <div className="mt-0.5 shrink-0">
-                                        {ICON_MAP[n.type] || <Info size={16} className="text-slate-400" />}
+                                        {ICON_MAP[n.type] || <Info size={16} className="text-muted-foreground" />}
                                     </div>
 
                                     {/* Content */}

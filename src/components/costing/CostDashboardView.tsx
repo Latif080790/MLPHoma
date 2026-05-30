@@ -55,13 +55,13 @@ export function CostDashboardView() {
 
         {/* Cost Type Breakdown */}
         <div className="col-span-12 lg:col-span-4">
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden h-full">
-            <div className="px-4 py-2.5 border-b border-slate-100">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Breakdown Biaya</span>
+          <div className="rounded-lg border border-border bg-card overflow-hidden h-full">
+            <div className="px-4 py-2.5 border-b border-border">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Breakdown Biaya</span>
             </div>
             <div className="p-4">
               {!snapshot ? (
-                <div className="animate-pulse rounded bg-slate-100 h-40" />
+                <div className="animate-pulse rounded bg-muted/50 h-40" />
               ) : (
                 <CostTypeBreakdownChart breakdown={snapshot.costTypeBreakdown} totalRab={snapshot.rabTotal} />
               )}
@@ -71,11 +71,11 @@ export function CostDashboardView() {
 
         {/* EVM Performance Chart */}
         <div className="col-span-12 lg:col-span-8">
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">EVM Performance — PV / EV / AC</span>
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">EVM Performance — PV / EV / AC</span>
               <div className="flex items-center gap-3">
-                <div className="hidden sm:flex items-center gap-4 text-xs text-slate-400">
+                <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1.5">
                     <span className="inline-block w-6 h-px" style={{ background: '#f59e0b' }} /> PV
                   </span>
@@ -83,7 +83,7 @@ export function CostDashboardView() {
                     <span className="inline-block w-6 h-px" style={{ background: '#10b981' }} /> EV
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="inline-block w-5 h-px border-t border-dashed border-slate-400" /> AC
+                    <span className="inline-block w-5 h-px border-t border-dashed border-border" /> AC
                   </span>
                 </div>
                 <button
@@ -94,7 +94,7 @@ export function CostDashboardView() {
                       fh(activeProjectId)
                     }).catch(() => {})
                   }}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-muted-foreground transition-colors"
                   title="Generate EVM snapshot"
                 >
                   <RefreshCw size={10} />
@@ -104,9 +104,9 @@ export function CostDashboardView() {
             </div>
             <div className="p-4">
               {evmChartData.length < 2 ? (
-                <div className="flex flex-col items-center justify-center h-40 text-xs text-slate-400">
+                <div className="flex flex-col items-center justify-center h-40 text-xs text-muted-foreground">
                   <span>Belum ada data metrik harian</span>
-                  <span className="mt-1 text-slate-300">Klik tombol Snapshot untuk generate data EVM</span>
+                  <span className="mt-1 text-foreground">Klik tombol Snapshot untuk generate data EVM</span>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
@@ -152,8 +152,8 @@ export function CostDashboardView() {
                   </AreaChart>
                 </ResponsiveContainer>
               )}
-              <div className="mt-3 pt-3 border-t border-slate-100">
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Burn Rate — 12 bulan terakhir</p>
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Burn Rate — 12 bulan terakhir</p>
                 <BurnRateSparkline history={history} limit={12} />
               </div>
             </div>
@@ -163,9 +163,9 @@ export function CostDashboardView() {
 
       {/* Row 3: EAC Projections */}
       {projections && (
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-slate-100">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">EAC Projections</span>
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-border">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">EAC Projections</span>
           </div>
           <div className="px-4 py-3">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -176,9 +176,9 @@ export function CostDashboardView() {
                 { label: 'VAC', value: projections.varianceAtCompletion, colored: true },
               ].map(({ label, value, colored }) => (
                 <div key={label}>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">{label}</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
                   <p className={`text-base font-bold font-mono ${
-                    colored ? (value < 0 ? 'text-red-500' : 'text-emerald-600') : 'text-slate-800'
+                    colored ? (value < 0 ? 'text-red-500' : 'text-emerald-600') : 'text-muted-foreground'
                   }`}>
                     {formatIDR(value)}
                   </p>

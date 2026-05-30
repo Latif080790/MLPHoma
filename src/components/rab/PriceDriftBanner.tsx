@@ -65,7 +65,7 @@ export function PriceDriftBanner({ projectId, isLocked }: PriceDriftBannerProps)
                         {' '}Harga RAB saat ini tetap terlindungi oleh snapshot baseline.
                     </div>
                     {lastChecked && (
-                        <div className="text-xs text-slate-400 mt-1">
+                        <div className="text-xs text-muted-foreground mt-1">
                             Terakhir diperiksa: {new Date(lastChecked).toLocaleString('id-ID')}
                         </div>
                     )}

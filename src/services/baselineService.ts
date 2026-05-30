@@ -9,6 +9,9 @@
  */
 
 import { useRabStore } from '../store/rabStore'
+import { useRabWbsLinkStore } from '../store/rabWbsLinkStore'
+import { useWBSStore } from '../store/wbsStore'
+import { allocatedAmount } from '../types/rabWbsLink'
 import { generateId } from '../lib/idGenerator'
 import { auditService } from './auditService'
 import { useAuthStore } from '../store/authStore'
@@ -28,6 +31,12 @@ export interface BaselineSnapshot {
     totalCost: number
     /** Frozen RAB items */
     items: BaselineItem[]
+    /**
+     * Snapshot of WBS budget allocation at freeze time.
+     * Key = wbsItemId, Value = allocated budget (IDR).
+     * Includes parent rollup. Immutable after freeze — used as PV basis for EVM.
+     */
+    wbsAllocations: Record<string, number>
 }
 
 export interface BaselineItem {
@@ -102,6 +111,33 @@ export const baselineService = {
         const totalCost = baselineItems.reduce((sum, i) => sum + i.totalPrice, 0)
         const now = new Date().toISOString()
 
+        // ── Compute WBS allocation snapshot ──────────────────────────────────
+        // Mirror the same rollup logic as WBS.tsx kpiData so the frozen snapshot
+        // matches exactly what the user sees at the moment of freeze.
+        const linksByRabItem = useRabWbsLinkStore.getState().linksByRabItem
+        const wbsItems = useWBSStore.getState().itemsByProject[projectId] || []
+
+        const directBudget = new Map<string, number>()
+        rabItems.forEach(rabItem => {
+            const links = linksByRabItem[rabItem.id] || []
+            const itemTotal = (rabItem.volume || 0) * (rabItem.unit_price || 0)
+            links.forEach(link => {
+                const amt = allocatedAmount(itemTotal, link.allocationPct)
+                directBudget.set(link.wbsItemId, (directBudget.get(link.wbsItemId) || 0) + amt)
+            })
+        })
+        // Rollup direct allocations to parent nodes (deepest level first)
+        const itemById = new Map(wbsItems.map(i => [i.id, i]))
+        const sorted = [...wbsItems].sort((a, b) => (b.level || 0) - (a.level || 0))
+        sorted.forEach(item => {
+            const budget = directBudget.get(item.id) || 0
+            if (budget > 0 && item.parentId && itemById.has(item.parentId)) {
+                directBudget.set(item.parentId, (directBudget.get(item.parentId) || 0) + budget)
+            }
+        })
+        const wbsAllocations: Record<string, number> = Object.fromEntries(directBudget)
+        // ─────────────────────────────────────────────────────────────────────
+
         const snapshot: BaselineSnapshot = {
             id: generateId('bsl'),
             projectId,
@@ -110,6 +146,7 @@ export const baselineService = {
             itemCount: baselineItems.length,
             totalCost,
             items: baselineItems,
+            wbsAllocations,
         }
 
         const { error } = await client
@@ -122,6 +159,7 @@ export const baselineService = {
                 item_count: snapshot.itemCount,
                 total_cost: totalCost,
                 items: baselineItems,
+                wbs_allocations: wbsAllocations,
                 updated_at: now,
             }, { onConflict: 'project_id' })
 
@@ -172,6 +210,7 @@ export const baselineService = {
             itemCount: data.item_count,
             totalCost: data.total_cost,
             items: (data.items as BaselineItem[]) || [],
+            wbsAllocations: (data.wbs_allocations as Record<string, number>) || {},
         }
     },
 

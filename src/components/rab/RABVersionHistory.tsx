@@ -82,7 +82,7 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
       case 'bulk_update': return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-200 dark:border-purple-800'
       case 'import': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-200 dark:border-amber-800'
       case 'restore': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800'
-      default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+      default: return 'bg-muted/50 text-muted-foreground'
     }
   }
 
@@ -100,16 +100,16 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden">
         {/* ─── Header ─── */}
-        <DialogHeader className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 shrink-0">
+        <DialogHeader className="px-6 py-5 border-b border-border bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 shrink-0">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <DialogTitle className="flex items-center gap-2.5 text-xl font-bold text-slate-900 dark:text-white">
-                <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/50 shrink-0">
+              <DialogTitle className="flex items-center gap-2.5 text-xl font-bold text-foreground">
+                <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/10 text-primary shadow-md shadow-orange-200/20 shrink-0">
                   <History className="h-5 w-5" />
                 </div>
                 RAB Version History
               </DialogTitle>
-              <DialogDescription className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              <DialogDescription className="mt-1 text-sm text-muted-foreground">
                 Track changes, compare versions, and restore previous states
               </DialogDescription>
             </div>
@@ -133,18 +133,18 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
         {/* ─── Body ─── */}
         <div className="flex-1 overflow-hidden flex flex-col md:flex-row min-h-0">
           {/* ─── Left: Version List ─── */}
-          <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 border-r border-slate-200 dark:border-slate-700 flex flex-col bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 border-r border-border flex flex-col bg-muted/30/50">
             {/* Compare selectors */}
             {compareMode && (
-              <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-blue-50/50 dark:bg-blue-950/20">
+              <div className="p-4 border-b border-border bg-blue-50/50 dark:bg-blue-950/20">
                 <p className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-3">
                   Select Versions to Compare
                 </p>
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
-                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block font-medium">From</label>
+                    <label className="text-xs text-muted-foreground mb-1 block font-medium">From</label>
                     <Select value={compareFrom?.toString()} onValueChange={(v) => setCompareFrom(Number(v))}>
-                      <SelectTrigger className="h-9 bg-white dark:bg-slate-800 text-sm">
+                      <SelectTrigger className="h-9 bg-card text-sm">
                         <SelectValue placeholder="v..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -156,11 +156,11 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                       </SelectContent>
                     </Select>
                   </div>
-                  <ArrowRight className="h-4 w-4 text-slate-400 mb-2.5 shrink-0" />
+                  <ArrowRight className="h-4 w-4 text-muted-foreground mb-2.5 shrink-0" />
                   <div className="flex-1">
-                    <label className="text-xs text-slate-500 dark:text-slate-400 mb-1 block font-medium">To</label>
+                    <label className="text-xs text-muted-foreground mb-1 block font-medium">To</label>
                     <Select value={compareTo?.toString()} onValueChange={(v) => setCompareTo(Number(v))}>
-                      <SelectTrigger className="h-9 bg-white dark:bg-slate-800 text-sm">
+                      <SelectTrigger className="h-9 bg-card text-sm">
                         <SelectValue placeholder="v..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -188,7 +188,7 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
             <ScrollArea className="flex-1 min-h-0">
               <div className="p-3 space-y-2">
                 {versions.length === 0 ? (
-                  <div className="text-center py-12 text-slate-400 dark:text-slate-500">
+                  <div className="text-center py-12 text-muted-foreground">
                     <History className="h-10 w-10 mx-auto mb-3 opacity-20" />
                     <p className="text-sm font-medium">No version history yet</p>
                     <p className="text-xs mt-1">Save a scenario to create first version</p>
@@ -202,13 +202,13 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                         key={version.id}
                         className={`w-full text-left rounded-xl border transition-all duration-150 p-4 ${isSelected
                             ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-600 shadow-md shadow-blue-100 dark:shadow-blue-900/30 ring-1 ring-blue-300 dark:ring-blue-700'
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm'
+                            : 'border-border bg-card hover:border-border dark:hover:border-border hover:shadow-sm'
                           }`}
                         onClick={() => setSelectedVersion(version)}
                       >
                         {/* Row 1: Version badge + change type + status */}
                         <div className="flex items-center gap-2 mb-2.5">
-                          <span className="inline-flex items-center justify-center h-7 min-w-[40px] rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black tracking-wide px-2 shrink-0">
+                          <span className="inline-flex items-center justify-center h-7 min-w-[40px] rounded-lg bg-background dark:bg-card text-white text-xs font-black tracking-wide px-2 shrink-0">
                             v{version.version}
                           </span>
                           <Badge className={`text-xs font-semibold uppercase tracking-wider border ${getChangeTypeStyle(version.changeType)}`}>
@@ -223,12 +223,12 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                         </div>
 
                         {/* Row 2: Description */}
-                        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-snug mb-2 line-clamp-2">
+                        <p className="text-sm font-semibold text-foreground leading-snug mb-2 line-clamp-2">
                           {version.description}
                         </p>
 
                         {/* Row 3: Metadata */}
-                        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
                           <span className="inline-flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {formatDate(version.createdAt)}, {formatTime(version.createdAt)}
@@ -240,12 +240,12 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                         </div>
 
                         {/* Row 4: Stats */}
-                        <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-700 text-xs">
-                          <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-400 font-medium">
+                        <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-border text-xs">
+                          <span className="inline-flex items-center gap-1 text-muted-foreground font-medium">
                             <Package className="h-3 w-3" />
                             {version.snapshot.totalItems} items
                           </span>
-                          <span className="inline-flex items-center gap-1 font-mono font-bold text-slate-700 dark:text-slate-300">
+                          <span className="inline-flex items-center gap-1 font-mono font-bold text-muted-foreground">
                             <Coins className="h-3 w-3" />
                             {formatIDR(version.snapshot.totalCost)}
                           </span>
@@ -263,14 +263,14 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
             {comparison ? (
               /* ─── Comparison View ─── */
               <div className="flex-1 overflow-hidden flex flex-col">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
-                  <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
+                <div className="px-6 py-4 border-b border-border bg-muted/30/50 shrink-0">
+                  <h3 className="font-bold text-foreground flex items-center gap-2 text-base">
                     <GitCompare className="h-5 w-5 text-purple-600" />
                     Version Comparison
                   </h3>
                   <div className="flex items-center gap-3 text-sm mt-2">
                     <Badge variant="outline" className="font-mono font-bold">v{compareFrom}</Badge>
-                    <ArrowRight className="h-4 w-4 text-slate-400" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     <Badge variant="outline" className="font-mono font-bold">v{compareTo}</Badge>
                   </div>
                 </div>
@@ -361,7 +361,7 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                           {comparison.modified.map((mod, idx) => {
                             const modItem = mod.item as { item_code?: string; name?: string }
                             return (
-                              <div key={idx} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+                              <div key={idx} className="bg-card p-3 rounded-lg border border-blue-100 dark:border-blue-800">
                                 <div className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
                                   {modItem.item_code} — {modItem.name}
                                 </div>
@@ -393,10 +393,10 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
             ) : selectedVersion ? (
               /* ─── Version Detail View ─── */
               <div className="flex-1 overflow-hidden flex flex-col">
-                <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 shrink-0">
+                <div className="px-6 py-4 border-b border-border bg-muted/30/50 shrink-0">
                   <div className="flex items-center justify-between gap-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
-                      <span className="inline-flex items-center justify-center h-7 min-w-[40px] rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black px-2">
+                    <h3 className="font-bold text-foreground flex items-center gap-2 text-base">
+                      <span className="inline-flex items-center justify-center h-7 min-w-[40px] rounded-lg bg-background dark:bg-card text-white text-xs font-black px-2">
                         v{selectedVersion.version}
                       </span>
                       Version Details
@@ -426,52 +426,52 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                   <div className="p-6 space-y-5">
                     {/* Description */}
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Description</h4>
-                      <p className="text-sm text-slate-700 dark:text-slate-300">{selectedVersion.description}</p>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Description</h4>
+                      <p className="text-sm text-muted-foreground">{selectedVersion.description}</p>
                     </div>
 
                     {/* Metadata grid */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="rounded-lg bg-slate-50 dark:bg-slate-800 p-3 border border-slate-100 dark:border-slate-700">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
+                      <div className="rounded-lg bg-muted/30 p-3 border border-border">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1.5">
                           <Clock className="h-3 w-3" />
                           Created
                         </h4>
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <p className="text-sm font-medium text-muted-foreground">
                           {formatDate(selectedVersion.createdAt)}, {formatTime(selectedVersion.createdAt)}
                         </p>
                       </div>
-                      <div className="rounded-lg bg-slate-50 dark:bg-slate-800 p-3 border border-slate-100 dark:border-slate-700">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1.5">
+                      <div className="rounded-lg bg-muted/30 p-3 border border-border">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 flex items-center gap-1.5">
                           <User className="h-3 w-3" />
                           Author
                         </h4>
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{selectedVersion.createdByName}</p>
+                        <p className="text-sm font-medium text-muted-foreground">{selectedVersion.createdByName}</p>
                       </div>
                     </div>
 
                     {/* Snapshot */}
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Snapshot Summary</h4>
-                      <div className="rounded-xl bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-800 dark:to-blue-900/20 p-4 space-y-2.5 border border-slate-200 dark:border-slate-700">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Snapshot Summary</h4>
+                      <div className="rounded-xl bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-800 dark:to-blue-900/20 p-4 space-y-2.5 border border-border">
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
+                          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
                             <Package className="h-3.5 w-3.5" />
                             Total Items
                           </span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">{selectedVersion.snapshot.totalItems}</span>
+                          <span className="font-bold text-foreground">{selectedVersion.snapshot.totalItems}</span>
                         </div>
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5">
+                          <span className="text-muted-foreground font-medium flex items-center gap-1.5">
                             <Coins className="h-3.5 w-3.5" />
                             Total Cost
                           </span>
-                          <span className="font-bold font-mono text-slate-800 dark:text-slate-200">{formatIDR(selectedVersion.snapshot.totalCost)}</span>
+                          <span className="font-bold font-mono text-foreground">{formatIDR(selectedVersion.snapshot.totalCost)}</span>
                         </div>
                         {selectedVersion.snapshot.metadata.categories && (
                           <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-500 dark:text-slate-400 font-medium">Categories</span>
-                            <span className="font-bold text-slate-800 dark:text-slate-200">{selectedVersion.snapshot.metadata.categories.length}</span>
+                            <span className="text-muted-foreground font-medium">Categories</span>
+                            <span className="font-bold text-foreground">{selectedVersion.snapshot.metadata.categories.length}</span>
                           </div>
                         )}
                       </div>
@@ -480,17 +480,17 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
                     {/* Change log */}
                     {selectedVersion.changes.length > 0 && (
                       <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
                           Changes ({selectedVersion.changes.length})
                         </h4>
-                        <div className="space-y-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 p-4 border border-slate-100 dark:border-slate-700 max-h-64 overflow-y-auto">
+                        <div className="space-y-2 rounded-xl bg-muted/30 p-4 border border-border max-h-64 overflow-y-auto">
                           {selectedVersion.changes.map((change, idx) => (
-                            <div key={idx} className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 text-xs">
-                              <div className="font-semibold text-slate-900 dark:text-slate-200 mb-1 text-sm">
+                            <div key={idx} className="bg-card p-3 rounded-lg border border-border text-xs">
+                              <div className="font-semibold text-foreground mb-1 text-sm">
                                 {change.itemCode} — {change.itemName}
                               </div>
-                              <div className="text-slate-600 dark:text-slate-400 mb-1">{change.changeDescription}</div>
-                              <div className="flex items-center gap-2 text-slate-500 flex-wrap">
+                              <div className="text-muted-foreground mb-1">{change.changeDescription}</div>
+                              <div className="flex items-center gap-2 text-muted-foreground flex-wrap">
                                 <Badge variant="outline" className="text-xs font-bold uppercase">{change.field}</Badge>
                                 {change.oldValue !== undefined && (
                                   <>
@@ -510,13 +510,13 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
               </div>
             ) : (
               /* ─── Empty State ─── */
-              <div className="flex-1 flex items-center justify-center text-slate-400 dark:text-slate-500 bg-slate-50/30 dark:bg-slate-900/30">
+              <div className="flex-1 flex items-center justify-center text-muted-foreground bg-muted/30/30">
                 <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
                     <History className="h-8 w-8 opacity-30" />
                   </div>
-                  <p className="font-semibold text-slate-500 dark:text-slate-400">Select a version to view details</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Click on any version card on the left</p>
+                  <p className="font-semibold text-muted-foreground">Select a version to view details</p>
+                  <p className="text-xs text-muted-foreground mt-1">Click on any version card on the left</p>
                 </div>
               </div>
             )}

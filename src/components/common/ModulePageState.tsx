@@ -20,7 +20,7 @@ export function ModulePageState({ title, description, icon, variant, message, on
       <ModuleHeader icon={icon} title={title} description={description} />
 
       {variant === 'loading' ? (
-        <div className="rounded-xl border bg-white p-10 dark:border-neutral-800 dark:bg-neutral-900">
+        <div className="rounded-xl border bg-card p-10 dark:border-neutral-800 dark:bg-neutral-900">
           <div className="flex justify-center">
             <LoadingSpinner size="lg" text={message || 'Loading data...'} />
           </div>

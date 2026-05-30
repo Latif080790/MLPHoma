@@ -81,7 +81,7 @@ export const MTR_STATUS_LABELS: Record<MTRStatus, string> = {
 }
 
 export const MTR_STATUS_COLORS: Record<MTRStatus, string> = {
-    DRAFT: 'bg-slate-100 text-slate-700',
+    DRAFT: 'bg-muted/50 text-muted-foreground',
     SUBMITTED: 'bg-blue-100 text-blue-700',
     APPROVED: 'bg-emerald-100 text-emerald-700',
     POSTED: 'bg-green-100 text-green-800',

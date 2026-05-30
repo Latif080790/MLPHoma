@@ -108,7 +108,7 @@ export default function RAPGeneratorSimple({ projectId = 'default' }: { projectI
   }, [distribution])
 
   return (
-    <div className="rounded-md border p-4 bg-white shadow-sm">
+    <div className="rounded-md border p-4 bg-card shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-sm font-medium">RAP Generator (prototype)</h4>
         <div className="text-xs text-neutral-500">Preview cashflow dari distribusi RAB (biaya produksi = AHSP base price)</div>

@@ -59,7 +59,7 @@ export function ApprovalQueueWidget() {
                             {pendingApprovals.slice(0, 5).map(approval => (
                                 <div
                                     key={approval.id}
-                                    className="flex items-start gap-3 rounded-lg border bg-white/60 dark:bg-slate-900/60 p-3 cursor-pointer hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-colors"
+                                    className="flex items-start gap-3 rounded-lg border bg-white/60 p-3 cursor-pointer hover:bg-purple-50/50 dark:hover:bg-purple-900/10 transition-colors"
                                     onClick={() => setSelectedApproval(approval)}
                                 >
                                     <div className="mt-0.5">

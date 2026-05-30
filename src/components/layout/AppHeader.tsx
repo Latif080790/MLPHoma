@@ -58,7 +58,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
     : 'U'
 
   return (
-    <header className="sticky top-0 z-50 h-14 flex items-center justify-between px-4 lg:px-6 gap-4 border-b border-black/5 dark:border-white/8 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-zinc-950/70 transition-shadow">
+    <header className="sticky top-0 z-50 h-14 flex items-center justify-between px-4 lg:px-6 gap-4 border-b border-border/50 bg-background/80 backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-background/70 transition-shadow">
       {/* Left: Hamburger (mobile) + Breadcrumbs + Project Switcher */}
       <div className="flex items-center min-w-0 flex-1 gap-2">
         {onMenuToggle && (
@@ -90,7 +90,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
                   onClick={() => { if (isOnline && queue.length > 0) syncQueue() }}
                   className={`relative inline-flex items-center justify-center h-8 w-8 rounded-md transition-colors ${
                     !isOnline
-                      ? 'text-slate-400 dark:text-slate-500'
+                      ? 'text-muted-foreground'
                       : 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30'
                   }`}
                   aria-label={!isOnline ? 'Offline' : `${queue.length} perubahan pending — klik untuk sync`}
@@ -118,14 +118,14 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
         {activeProjectId && peers.length > 0 && (
           <div className="flex items-center gap-3 mr-2 animate-in fade-in slide-in-from-right-4 duration-500">
             <PresenceAvatars users={peers} />
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
+            <div className="h-6 w-px bg-muted" />
           </div>
         )}
 
         {/* P1.2.2: Cmd+K palette trigger */}
         <button
           onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }))}
-          className="hidden md:flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-slate-200 dark:border-slate-700 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 transition-colors bg-transparent"
+          className="hidden md:flex items-center gap-1.5 h-8 px-2.5 rounded-md border border-border text-xs text-muted-foreground hover:text-muted-foreground dark:hover:text-foreground hover:border-border dark:hover:border-border transition-colors bg-transparent"
           title="Open command palette  Ctrl+K"
           aria-label="Open command palette"
         >
@@ -135,12 +135,12 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
         {/* Search Bar (Collapsible on mobile) */}
         {onSearch && (
           <div className="relative hidden md:block group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-orange-500 transition-colors" size={16} />
             <input
               type="text"
               placeholder="Search..."
               onChange={(e) => onSearch(e.target.value)}
-              className="h-9 w-64 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-slate-400"
+              className="h-9 w-64 rounded-full border border-border bg-muted/40 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder:text-muted-foreground"
             />
           </div>
         )}
@@ -156,7 +156,7 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
           </span>
         )}
 
-        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2" />
+        <div className="h-6 w-px bg-muted mx-2" />
 
         {/* Notifications */}
         <NotificationCenter />
@@ -168,9 +168,9 @@ export function AppHeader({ projectName, onSearch, onMenuToggle, menuOpen }: App
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-9 w-9 rounded-full select-none">
-              <Avatar className="h-9 w-9 border-2 border-white dark:border-slate-800 shadow-sm cursor-pointer transition-transform hover:scale-105">
+              <Avatar className="h-9 w-9 border-2 border-white shadow-sm cursor-pointer transition-transform hover:scale-105">
                 <AvatarImage src={user?.user_metadata?.avatar_url} />
-                <AvatarFallback className="bg-gradient-to-br from-[#1d5fcc] to-[#f97316] text-white font-medium text-xs">
+                <AvatarFallback className="bg-[rgba(249,115,22,0.2)] border border-[rgba(249,115,22,0.3)] text-[#FB923C] font-semibold text-xs">
                   {initials}
                 </AvatarFallback>
               </Avatar>

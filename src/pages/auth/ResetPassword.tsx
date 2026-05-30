@@ -1,9 +1,9 @@
 /**
  * ResetPassword.tsx
- * 
+ *
  * Password reset completion page.
  * Users land here after clicking the reset link from their email.
- * Supports dark mode and Indonesian language.
+ * Navy dark design system — NATA LABA v2.
  */
 
 import React, { useState, useEffect } from 'react'
@@ -11,12 +11,20 @@ import { Link, useNavigate } from 'react-router'
 import { authService } from '../../lib/authService'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuthStore } from '../../store/authStore'
+import { Button } from '../../components/ui/button'
+import { Input } from '../../components/ui/input'
+import { Label } from '../../components/ui/label'
+import { Alert, AlertDescription } from '../../components/ui/alert'
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { AuthLayout } from '../../components/layouts/AuthLayout'
 
 export default function ResetPassword() {
   const navigate = useNavigate()
   const { session } = useAuthStore()
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [validationError, setValidationError] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -45,7 +53,7 @@ export default function ResetPassword() {
 
           if (accessToken && refreshToken) {
             if (!supabase) {
-              setError("Konfigurasi sistem tidak lengkap. Hubungi administrator.")
+              setError('Konfigurasi sistem tidak lengkap. Hubungi administrator.')
               return
             }
 
@@ -61,7 +69,7 @@ export default function ResetPassword() {
             return
           }
         } catch (err) {
-          setError("Gagal memverifikasi link reset password. Link mungkin sudah kedaluwarsa.")
+          setError('Gagal memverifikasi link reset password. Link mungkin sudah kedaluwarsa.')
         }
       }
 
@@ -70,7 +78,7 @@ export default function ResetPassword() {
       setTimeout(() => {
         const currentSession = useAuthStore.getState().session
         if (!currentSession) {
-          setError("Sesi tidak ditemukan. Silakan minta link reset password baru.")
+          setError('Sesi tidak ditemukan. Silakan minta link reset password baru.')
         }
         setVerifying(false)
       }, 2000)
@@ -84,7 +92,6 @@ export default function ResetPassword() {
     setValidationError('')
     setError('')
 
-    // Validation
     if (!newPassword || !confirmPassword) {
       setValidationError('Password harus diisi')
       return
@@ -112,133 +119,147 @@ export default function ResetPassword() {
     setSuccess(true)
   }
 
-  if (success) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 dark:bg-neutral-950 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
-          <div className="rounded-md bg-green-50 p-6 text-center dark:bg-green-900/20">
-            <h2 className="text-2xl font-bold text-green-800 dark:text-green-400">
-              Password Berhasil Diperbarui!
-            </h2>
-            <p className="mt-4 text-sm text-green-700 dark:text-green-300">
-              Password Anda telah berhasil diperbarui. Silakan masuk dengan password baru Anda.
-            </p>
-            <Link
-              to="/login"
-              className="mt-6 inline-block rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600"
-            >
-              Masuk ke Akun
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (verifying) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 dark:bg-neutral-950 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mx-auto"></div>
-          <p className="mt-4 text-neutral-600 dark:text-neutral-400">Memverifikasi link...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 dark:bg-neutral-950 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-            Reset Password
-          </h2>
-          <p className="mt-2 text-center text-sm text-neutral-600 dark:text-neutral-400">
-            Masukkan password baru Anda
-          </p>
-        </div>
-
-        {error ? (
-          <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/20 text-center">
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-400">{error}</h3>
-            <div className="mt-4">
-              <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-500">
-                Kirim ulang link reset
-              </Link>
-            </div>
+    <AuthLayout>
+      {/* ── Verifying State ── */}
+      {verifying ? (
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-[#16223A]">
+            <Loader2 className="h-6 w-6 animate-spin text-[#F97316]" />
           </div>
-        ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="newPassword" className="sr-only">
-                  Password Baru
-                </label>
-                <input
+          <p className="text-sm text-white/50">Memverifikasi link reset...</p>
+        </div>
+      ) : success ? (
+        /* ── Success State ── */
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-green-500/30 bg-green-500/10">
+            <CheckCircle2 className="h-7 w-7 text-green-400" />
+          </div>
+          <h2 className="font-display text-xl font-bold text-white">Password Berhasil Diperbarui!</h2>
+          <p className="mt-3 text-sm leading-relaxed text-white/50">
+            Password Anda telah berhasil diperbarui. Silakan masuk dengan password baru Anda.
+          </p>
+          <Button asChild className="mt-8 h-11 w-full bg-[#F97316] font-semibold text-white hover:bg-[#EA580C]">
+            <Link to="/login">Masuk ke Akun</Link>
+          </Button>
+        </div>
+      ) : (
+        /* ── Form ── */
+        <>
+          {/* Title */}
+          <div className="mb-8">
+            <h1 className="font-display text-2xl font-bold text-white">Buat Password Baru</h1>
+            <p className="mt-1 text-sm text-white/50">Masukkan password baru Anda di bawah.</p>
+          </div>
+
+          {/* Session/link error */}
+          {error && (
+            <Alert variant="destructive" className="mb-5 border-red-500/30 bg-red-500/10">
+              <AlertCircle className="h-4 w-4 text-red-400" />
+              <AlertDescription className="text-red-300">
+                {error}{' '}
+                <Link to="/forgot-password" className="underline">
+                  Kirim ulang link reset
+                </Link>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Validation error */}
+          {validationError && (
+            <Alert variant="destructive" className="mb-5 border-red-500/30 bg-red-500/10">
+              <AlertCircle className="h-4 w-4 text-red-400" />
+              <AlertDescription className="text-red-300">{validationError}</AlertDescription>
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Password Baru */}
+            <div className="space-y-1.5">
+              <Label htmlFor="newPassword" className="text-sm font-medium text-white/70">
+                Password Baru
+              </Label>
+              <div className="relative">
+                <Input
                   id="newPassword"
                   name="newPassword"
-                  type="password"
+                  type={showNew ? 'text' : 'password'}
                   autoComplete="new-password"
-                  required
+                  placeholder="Minimal 6 karakter"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="relative block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder-neutral-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-400 sm:text-sm"
-                  placeholder="Password Baru (minimal 6 karakter)"
+                  className="h-11 border-white/10 bg-[#16223A] pr-10 text-white placeholder:text-white/30 focus-visible:border-[#F97316] focus-visible:ring-[#F97316]/20"
                   disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNew((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                  tabIndex={-1}
+                  aria-label={showNew ? 'Sembunyikan password' : 'Tampilkan password'}
+                >
+                  {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
-              <div>
-                <label htmlFor="confirmPassword" className="sr-only">
-                  Konfirmasi Password
-                </label>
-                <input
+            </div>
+
+            {/* Konfirmasi Password */}
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-white/70">
+                Konfirmasi Password
+              </Label>
+              <div className="relative">
+                <Input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type="password"
+                  type={showConfirm ? 'text' : 'password'}
                   autoComplete="new-password"
-                  required
+                  placeholder="Ulangi password baru"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="relative block w-full rounded-md border border-neutral-300 px-3 py-2 text-neutral-900 placeholder-neutral-500 focus:z-10 focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:placeholder-neutral-400 sm:text-sm"
-                  placeholder="Konfirmasi Password"
+                  className="h-11 border-white/10 bg-[#16223A] pr-10 text-white placeholder:text-white/30 focus-visible:border-[#F97316] focus-visible:ring-[#F97316]/20"
                   disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                  tabIndex={-1}
+                  aria-label={showConfirm ? 'Sembunyikan password' : 'Tampilkan password'}
+                >
+                  {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
-            {validationError && (
-              <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/20">
-                <div className="flex">
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
-                      {validationError}
-                    </h3>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-offset-neutral-900"
-              >
-                {loading ? 'Memproses...' : 'Perbarui Password'}
-              </button>
-            </div>
-
-            <div className="text-center">
-              <Link
-                to="/login"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                Kembali ke halaman login
-              </Link>
-            </div>
+            {/* CTA */}
+            <Button
+              type="submit"
+              disabled={loading || !!error}
+              className="h-11 w-full bg-[#F97316] font-semibold text-white hover:bg-[#EA580C] focus-visible:ring-[#F97316]/40 disabled:opacity-60"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Menyimpan...
+                </>
+              ) : (
+                'Simpan Password Baru'
+              )}
+            </Button>
           </form>
-        )}
-      </div>
-    </div>
+
+          {/* Back link */}
+          <p className="mt-6 text-center text-sm text-white/40">
+            <Link
+              to="/login"
+              className="font-medium text-[#F97316] hover:text-[#FB923C] transition-colors"
+            >
+              ← Kembali ke Login
+            </Link>
+          </p>
+        </>
+      )}
+    </AuthLayout>
   )
 }

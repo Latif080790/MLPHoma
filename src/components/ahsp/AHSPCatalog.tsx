@@ -61,7 +61,7 @@ function CostMixBar({ mat, lab, eqp, sub }: { mat: number; lab: number; eqp: num
       className="flex h-1.5 w-full max-w-[160px] rounded-full overflow-hidden mt-1 opacity-70"
       title={tip}
     >
-      {matPct > 0 && <div className="bg-blue-500 h-full" style={{ width: `${matPct}%` }} />}
+      {matPct > 0 && <div className="bg-primary h-full" style={{ width: `${matPct}%` }} />}
       {labPct > 0 && <div className="bg-orange-400 h-full" style={{ width: `${labPct}%` }} />}
       {eqpPct > 0 && <div className="bg-indigo-400 h-full" style={{ width: `${eqpPct}%` }} />}
       {subPct > 0 && <div className="bg-purple-400 h-full" style={{ width: `${subPct}%` }} />}
@@ -509,22 +509,22 @@ export function AHSPCatalog({
       )}
 
       {/* Filter + Action Toolbar */}
-      <div className="sticky top-0 z-10 bg-white border border-slate-200 rounded-lg overflow-hidden">
+      <div className="sticky top-0 z-10 bg-card border border-border rounded-lg overflow-hidden">
         <div className="flex items-center gap-2 px-3 py-2">
           {/* Search */}
           <div className="relative flex-1 min-w-0 max-w-xs">
-            <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+            <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari item AHSP..."
-              className="w-full h-7 pl-7 pr-6 text-xs border border-slate-200 rounded bg-slate-50 focus:outline-none focus:border-orange-400 focus:bg-white transition-colors placeholder:text-slate-300"
+              className="w-full h-7 pl-7 pr-6 text-xs border border-border rounded bg-muted/30 focus:outline-none focus:border-orange-400 focus:bg-card transition-colors placeholder:text-foreground"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground hover:text-muted-foreground"
               >
                 <X size={9} />
               </button>
@@ -533,7 +533,7 @@ export function AHSPCatalog({
 
           {/* Category */}
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="h-7 w-[152px] text-xs border-slate-200 bg-slate-50 focus:ring-0 focus:border-orange-400 rounded">
+            <SelectTrigger className="h-7 w-[152px] text-xs border-border bg-muted/30 focus:ring-0 focus:border-orange-400 rounded">
               <SelectValue placeholder="Kategori" />
             </SelectTrigger>
             <SelectContent>
@@ -550,10 +550,10 @@ export function AHSPCatalog({
               <SelectTrigger className={`h-7 w-[148px] text-xs focus:ring-0 rounded ${
                 selectedZone !== 'default'
                   ? 'border-orange-300 bg-orange-50 text-orange-700 focus:border-orange-400'
-                  : 'border-slate-200 bg-slate-50 focus:border-orange-400'
+                  : 'border-border bg-muted/30 focus:border-orange-400'
               }`}>
                 <div className="flex items-center gap-1 min-w-0">
-                  <MapPin size={9} className={selectedZone !== 'default' ? 'text-orange-500 shrink-0' : 'text-slate-300 shrink-0'} />
+                  <MapPin size={9} className={selectedZone !== 'default' ? 'text-orange-500 shrink-0' : 'text-foreground shrink-0'} />
                   <SelectValue placeholder="Zona" />
                 </div>
               </SelectTrigger>
@@ -568,20 +568,20 @@ export function AHSPCatalog({
           </div>
 
           {/* Separator */}
-          <div className="h-4 w-px bg-slate-200 mx-0.5 shrink-0" />
+          <div className="h-4 w-px bg-muted mx-0.5 shrink-0" />
 
           {/* Actions */}
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => handleExport()}
               title="Ekspor katalog AHSP"
-              className="flex items-center gap-1 text-xs text-slate-500 h-7 px-2.5 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
+              className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all"
             >
               <Download size={11} />
               <span>Ekspor</span>
             </button>
 
-            <label className="flex items-center gap-1 text-xs text-slate-500 h-7 px-2.5 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer">
+            <label className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all cursor-pointer">
               <Upload size={11} />
               <span>Impor</span>
               <input type="file" accept=".json" onChange={handleImport} className="hidden" />
@@ -597,7 +597,7 @@ export function AHSPCatalog({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center justify-center text-slate-400 h-7 w-7 rounded border border-slate-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-600 transition-all">
+                <button className="flex items-center justify-center text-muted-foreground h-7 w-7 rounded border border-border hover:border-border hover:bg-muted/30 hover:text-muted-foreground transition-all">
                   <MoreHorizontal size={12} />
                   <span className="sr-only">More actions</span>
                 </button>
@@ -640,14 +640,14 @@ export function AHSPCatalog({
       )}
 
       {/* Main Table Content */}
-      <div className="hidden rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900 md:block">
+      <div className="hidden rounded-lg border border-border overflow-hidden shadow-sm bg-card md:block">
         <div
           ref={parentRef}
           className="max-h-[600px] overflow-auto relative"
         >
           {loading.ahspItems ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : displayItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
@@ -681,9 +681,9 @@ export function AHSPCatalog({
               renderCustomRow={(row: any) => (
                 <TableRow
                   key={`section-${row.label}`}
-                  className="bg-slate-50 dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900/40"
+                  className="bg-muted/30 hover:bg-accent/40"
                 >
-                  <TableCell colSpan={10} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <TableCell colSpan={10} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     {row.label}
                   </TableCell>
                 </TableRow>
@@ -695,11 +695,11 @@ export function AHSPCatalog({
         {/* Bulk Action Bar */}
         {selectedIds.size > 0 && (
           <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 border border-slate-800 ring-4 ring-slate-900/10 backdrop-blur-md">
-              <div className="flex items-center gap-3 pr-6 border-r border-slate-700">
-                <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+            <div className="bg-background text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 border border-border ring-4 ring-slate-900/10 backdrop-blur-md">
+              <div className="flex items-center gap-3 pr-6 border-r border-border">
+                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                 <span className="text-sm font-bold tracking-tight">
-                  <span className="text-blue-400 pr-1">{selectedIds.size}</span> Item Dipilih
+                  <span className="text-primary pr-1">{selectedIds.size}</span> Item Dipilih
                 </span>
               </div>
 
@@ -707,7 +707,7 @@ export function AHSPCatalog({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="text-slate-300 hover:text-white hover:bg-slate-800 gap-2 h-9 px-4 font-semibold text-xs"
+                  className="text-foreground hover:text-white hover:bg-muted gap-2 h-9 px-4 font-semibold text-xs"
                   onClick={() => setSelectedIds(new Set())}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -725,7 +725,7 @@ export function AHSPCatalog({
 
                 <Button
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-9 px-4 font-bold text-xs shadow-lg shadow-blue-900/20"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-9 px-4 font-bold text-xs shadow-lg shadow-orange-900/20"
                   onClick={() => {
                     handleExport(displayItems.filter(i => selectedIds.has(i.id)))
                     toast.success('Mengekspor item terpilih...')
@@ -740,22 +740,22 @@ export function AHSPCatalog({
         )}
 
         {!loading.ahspItems && displayItems.length > 0 && (
-          <div className="border-t border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4 dark:border-slate-800 dark:bg-slate-900/80 sticky bottom-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <div className="border-t border-border bg-white/80 backdrop-blur-sm px-6 py-4 sticky bottom-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <div className="grid grid-cols-2 gap-4 md:grid-cols-6 items-center">
               <div className="md:col-span-1">
-                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-1">Material</div>
-                <div className="font-mono text-xs font-bold text-blue-700">{formatIDR(totals.materialTotal)}</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Material</div>
+                <div className="font-mono text-xs font-bold text-primary">{formatIDR(totals.materialTotal)}</div>
               </div>
               <div className="md:col-span-1">
-                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-1">Labor</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Labor</div>
                 <div className="font-mono text-xs font-bold text-orange-700">{formatIDR(totals.laborTotal)}</div>
               </div>
               <div className="md:col-span-1">
-                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-1">Equipment</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Equipment</div>
                 <div className="font-mono text-xs font-bold text-indigo-700">{formatIDR(totals.equipmentTotal)}</div>
               </div>
               <div className="md:col-span-1">
-                <div className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-1">Subcon</div>
+                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Subcon</div>
                 <div className="font-mono text-xs font-bold text-purple-700">{formatIDR(totals.subconTotal)}</div>
               </div>
               {totals.unallocatedTotal > 0 && (
@@ -765,8 +765,8 @@ export function AHSPCatalog({
                 </div>
               )}
               <div className={totals.unallocatedTotal > 0 ? "md:col-span-1 text-right" : "md:col-span-2 text-right"}>
-                <div className="text-xs uppercase font-bold tracking-widest text-slate-500 mb-1">Grand Total Katalog</div>
-                <div className="font-mono text-lg font-black text-slate-900 dark:text-white tabular-nums">
+                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Grand Total Katalog</div>
+                <div className="font-mono text-lg font-black text-foreground tabular-nums">
                   {formatIDR(totals.grandTotal)}
                 </div>
               </div>

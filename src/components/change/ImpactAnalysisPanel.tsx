@@ -48,7 +48,7 @@ function StatusPipeline({ currentStatus }: { currentStatus: ChangeOrderStatus })
                 const isPassed = idx < currentIdx && !isRejected
                 const colorClass = isActive ? CCO_STATUS_COLORS[status] :
                     isPassed ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
-                        'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
+                        'bg-muted/50 text-muted-foreground'
 
                 return (
                     <React.Fragment key={status}>
@@ -56,7 +56,7 @@ function StatusPipeline({ currentStatus }: { currentStatus: ChangeOrderStatus })
                             {isPassed ? '✓' : ''} {CCO_STATUS_LABELS[status]}
                         </div>
                         {idx < LIFECYCLE_ORDER.length - 1 && (
-                            <ArrowRight size={10} className={`shrink-0 ${isPassed ? 'text-emerald-400' : 'text-slate-300'}`} />
+                            <ArrowRight size={10} className={`shrink-0 ${isPassed ? 'text-emerald-400' : 'text-foreground'}`} />
                         )}
                     </React.Fragment>
                 )
@@ -79,13 +79,13 @@ function ImpactGauge({ label, value, icon, suffix, isNegative }: {
     label: string; value: number; icon: React.ReactNode; suffix?: string; isNegative?: boolean
 }) {
     const color = isNegative
-        ? (value > 0 ? 'text-red-600' : value < 0 ? 'text-green-600' : 'text-slate-500')
-        : (value > 0 ? 'text-emerald-600' : 'text-slate-500')
+        ? (value > 0 ? 'text-red-600' : value < 0 ? 'text-green-600' : 'text-muted-foreground')
+        : (value > 0 ? 'text-emerald-600' : 'text-muted-foreground')
 
     return (
-        <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-            <div className="text-slate-400 mb-1">{icon}</div>
-            <p className="text-xs text-slate-500 uppercase font-semibold">{label}</p>
+        <div className="p-3 rounded-lg border border-border text-center">
+            <div className="text-muted-foreground mb-1">{icon}</div>
+            <p className="text-xs text-muted-foreground uppercase font-semibold">{label}</p>
             <p className={`text-lg font-mono font-bold mt-1 ${color}`}>
                 {value > 0 ? '+' : ''}{typeof value === 'number' && suffix === 'Rp'
                     ? formatIDR(value)
@@ -133,7 +133,7 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
     }
 
     return (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="border-border shadow-sm">
             <CardHeader className="pb-2 pt-4 px-4">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2">
@@ -186,17 +186,17 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
                         </>
                     ) : (
                         <>
-                            <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
-                                <p className="text-xs text-slate-400 uppercase font-semibold">Items</p>
-                                <p className="text-lg font-mono font-bold text-slate-600 mt-1">{changeOrder.items?.length || 0}</p>
+                            <div className="p-3 rounded-lg border border-border text-center">
+                                <p className="text-xs text-muted-foreground uppercase font-semibold">Items</p>
+                                <p className="text-lg font-mono font-bold text-muted-foreground mt-1">{changeOrder.items?.length || 0}</p>
                             </div>
-                            <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
+                            <div className="p-3 rounded-lg border border-border text-center">
                                 {loading ? (
-                                    <Loader2 size={16} className="mx-auto animate-spin text-slate-400 mt-2" />
+                                    <Loader2 size={16} className="mx-auto animate-spin text-muted-foreground mt-2" />
                                 ) : (
                                     <>
-                                        <p className="text-xs text-slate-400 uppercase font-semibold">Preview</p>
-                                        <p className="text-xs text-slate-400 mt-2">Available after review</p>
+                                        <p className="text-xs text-muted-foreground uppercase font-semibold">Preview</p>
+                                        <p className="text-xs text-muted-foreground mt-2">Available after review</p>
                                     </>
                                 )}
                             </div>
@@ -206,19 +206,19 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
 
                 {/* Change Items List */}
                 {changeOrder.items && changeOrder.items.length > 0 && (
-                    <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
-                        <div className="bg-slate-50 dark:bg-slate-900/80 px-3 py-2 text-xs font-semibold text-slate-500 uppercase">
+                    <div className="rounded-lg border border-border overflow-hidden">
+                        <div className="bg-muted/30 px-3 py-2 text-xs font-semibold text-muted-foreground uppercase">
                             Change Items ({changeOrder.items.length})
                         </div>
-                        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <div className="divide-y divide-border">
                             {changeOrder.items.map(item => (
                                 <div key={item.id} className="flex items-center justify-between px-3 py-2 text-xs">
                                     <div className="flex-1 min-w-0">
-                                        <span className="text-slate-700 dark:text-slate-300 font-medium truncate block">{item.item_description}</span>
-                                        {item.wbs_name && <span className="text-xs text-slate-400">WBS: {item.wbs_name}</span>}
+                                        <span className="text-muted-foreground font-medium truncate block">{item.item_description}</span>
+                                        {item.wbs_name && <span className="text-xs text-muted-foreground">WBS: {item.wbs_name}</span>}
                                     </div>
                                     <div className="text-right font-mono shrink-0 ml-3">
-                                        <span className="text-slate-500">Δ Vol: {item.volume_delta > 0 ? '+' : ''}{item.volume_delta}</span>
+                                        <span className="text-muted-foreground">Δ Vol: {item.volume_delta > 0 ? '+' : ''}{item.volume_delta}</span>
                                         <span className={`block font-semibold ${item.total_delta > 0 ? 'text-red-600' : 'text-green-600'}`}>
                                             {item.total_delta > 0 ? '+' : ''}{formatIDR(item.total_delta)}
                                         </span>
@@ -231,7 +231,7 @@ export function ImpactAnalysisPanel({ changeOrder, onTransitioned }: ImpactAnaly
 
                 {/* Action Section */}
                 {nextStatuses.length > 0 && (
-                    <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div className="space-y-3 pt-2 border-t border-border">
                         {/* Comment required for Review/Approve/Reject */}
                         {nextStatuses.some(s => ['REVIEWED', 'APPROVED', 'REJECTED'].includes(s)) && (
                             <Textarea

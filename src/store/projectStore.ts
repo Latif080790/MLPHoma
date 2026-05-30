@@ -63,6 +63,12 @@ export interface Project {
   zoneId?: string
   /** Misc free-form metadata */
   meta?: Record<string, unknown>
+  /** Overall project completion percentage (0-100), computed from EVM data */
+  progress?: number
+  /** Cost Performance Index (EVM), computed from daily metrics */
+  cpi?: number
+  /** Schedule Performance Index (EVM), computed from daily metrics */
+  spi?: number
 }
 
 /**

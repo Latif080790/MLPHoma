@@ -429,7 +429,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
 
                   <div>
                     <Label>End Date</Label>
-                    <div className="rounded-md border p-2 text-sm dark:border-neutral-800 bg-slate-50 dark:bg-slate-900/50 font-mono">
+                    <div className="rounded-md border p-2 text-sm dark:border-neutral-800 bg-muted/30 font-mono">
                       {calculateEndDate(form.startDate, form.duration) || '—'}
                     </div>
                   </div>
@@ -448,7 +448,7 @@ export default function TaskEditor({ projectId, task, isOpen, onClose, onSave }:
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="resourceInput">Add Resource</Label>
-                  <p className="text-xs text-slate-500 mb-2">Ketik nama posisi (misal: &quot;Tukang&quot;) atau nama alat (misal: &quot;Excavator&quot;) lalu tekan **Enter**.</p>
+                  <p className="text-xs text-muted-foreground mb-2">Ketik nama posisi (misal: &quot;Tukang&quot;) atau nama alat (misal: &quot;Excavator&quot;) lalu tekan **Enter**.</p>
                   <Input
                     id="resourceInput"
                     placeholder="Contoh: 1 Unit PC-200, 5 Tukang Besi... (Enter)"

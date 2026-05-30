@@ -124,7 +124,7 @@ function CreateSpkDialog({ open, onOpenChange, projectId, onCreated }: CreateSpk
                             <Input type="number" step="0.01" value={form.maxVolume || ''} onChange={e => setForm(p => ({ ...p, maxVolume: Number(e.target.value) }))} required />
                         </div>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg text-sm">
+                    <div className="bg-muted/30 p-3 rounded-lg text-sm">
                         <span className="text-muted-foreground">Plafon SPK: </span>
                         <span className="font-bold text-lg">Rp {maxAmount.toLocaleString('id-ID')}</span>
                     </div>
@@ -277,7 +277,7 @@ function PaymentDialog({ open, onOpenChange, workOrder, onDone }: PaymentDialogP
                             required
                         />
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg text-sm space-y-1">
+                    <div className="bg-muted/30 p-3 rounded-lg text-sm space-y-1">
                         <div>Opname: {workOrder.actualVolume} {workOrder.unit} × Rp {workOrder.unitPrice.toLocaleString('id-ID')} = <strong>Rp {maxPayable.toLocaleString('id-ID')}</strong></div>
                         <div>Sudah Bayar: Rp {workOrder.paidAmount.toLocaleString('id-ID')}</div>
                         <div className="text-emerald-600 font-semibold">Sisa: Rp {remainingPayment.toLocaleString('id-ID')}</div>
@@ -348,11 +348,11 @@ export function WorkOrderPanel({ projectId }: WorkOrderPanelProps) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'DRAFT': return 'bg-slate-100 text-slate-600 border-slate-200'
+            case 'DRAFT': return 'bg-muted/50 text-muted-foreground border-border'
             case 'ACTIVE': return 'bg-blue-100 text-blue-700 border-blue-200'
             case 'COMPLETED': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
             case 'CANCELLED': return 'bg-red-100 text-red-700 border-red-200'
-            default: return 'bg-slate-100 text-slate-600'
+            default: return 'bg-muted/50 text-muted-foreground'
         }
     }
 
@@ -406,9 +406,9 @@ export function WorkOrderPanel({ projectId }: WorkOrderPanelProps) {
                     </CardContent>
                 </Card>
             ) : (
-                <div className="rounded-xl border bg-white dark:bg-slate-900 overflow-hidden shadow-sm">
+                <div className="rounded-xl border bg-card overflow-hidden shadow-sm">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-800/50">
+                        <TableHeader className="bg-muted/30">
                             <TableRow>
                                 <TableHead>No. SPK</TableHead>
                                 <TableHead>Mandor</TableHead>

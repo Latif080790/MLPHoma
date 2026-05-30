@@ -79,7 +79,7 @@ export function ResourceUsageDialog({ open, onOpenChange, projectId }: ResourceU
                         <div className="grid gap-2">
                             <Label htmlFor="hours">Jam Operasi</Label>
                             <div className="relative">
-                                <Clock className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                                <Clock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     id="hours"
                                     type="number"
@@ -118,7 +118,7 @@ export function ResourceUsageDialog({ open, onOpenChange, projectId }: ResourceU
                     <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
                         Cancel
                     </Button>
-                    <Button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                    <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90" disabled={loading}>
                         {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                         Save Log
                     </Button>

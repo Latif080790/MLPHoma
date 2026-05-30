@@ -179,17 +179,17 @@ export default function StrategySimulation() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* CONTROLS (4 cols) */}
-                <Card className="lg:col-span-4 border-slate-200 dark:border-slate-800 shadow-sm">
+                <Card className="lg:col-span-4 border-border shadow-sm">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                              Interactive Modeling
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-8">
-                        <div className="space-y-4 bg-slate-50/50 dark:bg-neutral-900/30 p-4 rounded-xl border border-slate-100 dark:border-neutral-800">
+                        <div className="space-y-4 bg-muted/30/50 dark:bg-neutral-900/30 p-4 rounded-xl border border-border dark:border-neutral-800">
                             <div className="flex justify-between items-center">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Upstream Delay</label>
-                                <Badge variant="secondary" className="font-mono bg-white border shadow-sm">{delay} Days</Badge>
+                                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none">Upstream Delay</label>
+                                <Badge variant="secondary" className="font-mono bg-card border shadow-sm">{delay} Days</Badge>
                             </div>
                             <Slider
                                 value={[delay]}
@@ -200,15 +200,15 @@ export default function StrategySimulation() {
                             />
                             <div className="grid grid-cols-[auto,1fr,auto] gap-2">
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateDelay(delay - 1)}>-</Button>
-                                <Input type="number" value={delay} onChange={(e) => updateDelay(Number(e.target.value || 0))} className="h-8 text-center font-mono text-xs border-none bg-white shadow-inner" />
+                                <Input type="number" value={delay} onChange={(e) => updateDelay(Number(e.target.value || 0))} className="h-8 text-center font-mono text-xs border-none bg-card shadow-inner" />
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateDelay(delay + 1)}>+</Button>
                             </div>
-                            <p className="text-xs text-slate-400 italic font-medium leading-tight">Simulates permit lags or material procurement bottlenecks.</p>
+                            <p className="text-xs text-muted-foreground italic font-medium leading-tight">Simulates permit lags or material procurement bottlenecks.</p>
                         </div>
 
-                        <div className="space-y-4 bg-slate-50/50 dark:bg-neutral-900/30 p-4 rounded-xl border border-slate-100 dark:border-neutral-800">
+                        <div className="space-y-4 bg-muted/30/50 dark:bg-neutral-900/30 p-4 rounded-xl border border-border dark:border-neutral-800">
                             <div className="flex justify-between items-center">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Labor Capacity</label>
+                                <label className="text-xs font-black text-muted-foreground uppercase tracking-widest leading-none">Labor Capacity</label>
                                 <Badge variant="outline" className="font-mono bg-red-50 text-red-600 border-red-200">-{resourceShift}%</Badge>
                             </div>
                             <Slider
@@ -220,10 +220,10 @@ export default function StrategySimulation() {
                             />
                             <div className="grid grid-cols-[auto,1fr,auto] gap-2">
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateResourceShift(resourceShift - 1)}>-</Button>
-                                <Input type="number" value={resourceShift} onChange={(e) => updateResourceShift(Number(e.target.value || 0))} className="h-8 text-center font-mono text-xs border-none bg-white shadow-inner" />
+                                <Input type="number" value={resourceShift} onChange={(e) => updateResourceShift(Number(e.target.value || 0))} className="h-8 text-center font-mono text-xs border-none bg-card shadow-inner" />
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateResourceShift(resourceShift + 1)}>+</Button>
                             </div>
-                            <p className="text-xs text-slate-400 italic font-medium leading-tight">Simulates shifting labor to other emergency priority sites.</p>
+                            <p className="text-xs text-muted-foreground italic font-medium leading-tight">Simulates shifting labor to other emergency priority sites.</p>
                         </div>
 
                         <div className="pt-2 flex gap-2">
@@ -235,7 +235,7 @@ export default function StrategySimulation() {
                                 {simulating ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Play size={14} className="mr-2 fill-white" />}
                                 {simulating ? "Calculating..." : "Run Forecast"}
                             </Button>
-                            <Button variant="outline" size="icon" aria-label="Reset" className="h-10 w-10 border-slate-200" onClick={reset}>
+                            <Button variant="outline" size="icon" aria-label="Reset" className="h-10 w-10 border-border" onClick={reset}>
                                 <RotateCcw size={14} />
                             </Button>
                         </div>
@@ -244,8 +244,8 @@ export default function StrategySimulation() {
 
                 {/* RESULTS (8 cols) */}
                 <div className="lg:col-span-8 space-y-6">
-                    <Card className="border-slate-200 dark:border-slate-800 bg-white shadow-sm overflow-hidden">
-                        <CardHeader className="border-b bg-slate-50/50">
+                    <Card className="border-border bg-card shadow-sm overflow-hidden">
+                        <CardHeader className="border-b bg-muted/30/50">
                             <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center justify-between">
                                 Simulated Portfolio Impact
                                 {result && (
@@ -262,8 +262,8 @@ export default function StrategySimulation() {
                                         <BrainCircuit size={40} />
                                     </div>
                                     <div className="space-y-1">
-                                        <h3 className="text-slate-700 dark:text-slate-300 font-bold">Heuristic Engine Computing...</h3>
-                                        <p className="text-xs text-slate-400">Re-shaping portfolio curves based on new parameters.</p>
+                                        <h3 className="text-muted-foreground font-bold">Heuristic Engine Computing...</h3>
+                                        <p className="text-xs text-muted-foreground">Re-shaping portfolio curves based on new parameters.</p>
                                     </div>
                                 </div>
                             ) : pageError && !result ? (
@@ -275,38 +275,38 @@ export default function StrategySimulation() {
                                         <h3 className="font-bold text-red-700">Calculation Error</h3>
                                         <p className="text-xs text-red-600/80">{pageError}</p>
                                     </div>
-                                    <Button size="sm" variant="outline" className="bg-white border-red-200 text-red-700" onClick={runSimulation}>Retry Calculation</Button>
+                                    <Button size="sm" variant="outline" className="bg-card border-red-200 text-red-700" onClick={runSimulation}>Retry Calculation</Button>
                                 </div>
                             ) : !result ? (
                                 <div className="text-center space-y-4 py-12 opacity-60">
-                                    <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                                    <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mx-auto text-foreground">
                                         <History size={40} />
                                     </div>
                                     <div className="space-y-1">
-                                        <h3 className="text-slate-500 font-bold text-lg leading-none">Sandbox Idle</h3>
-                                        <p className="text-sm text-slate-400 max-w-[240px]">Adjust parameters and run a forecast to visualize potential project ripple effects.</p>
+                                        <h3 className="text-muted-foreground font-bold text-lg leading-none">Sandbox Idle</h3>
+                                        <p className="text-sm text-muted-foreground max-w-[240px]">Adjust parameters and run a forecast to visualize potential project ripple effects.</p>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="p-6 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-1 shadow-inner group transition-all hover:bg-white hover:shadow-md">
-                                            <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingDown size={12} /> Schedule Impact (Avg SPI)</div>
+                                        <div className="p-6 bg-muted/30/50 rounded-2xl border border-border flex flex-col items-center gap-1 shadow-inner group transition-all hover:bg-card hover:shadow-md">
+                                            <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingDown size={12} /> Schedule Impact (Avg SPI)</div>
                                             <div className="flex items-center gap-4">
-                                                <span className="text-3xl font-mono font-black text-slate-300 line-through decoration-slate-400/30">{result.originalAvgSpi.toFixed(2)}</span>
+                                                <span className="text-3xl font-mono font-black text-foreground line-through decoration-slate-400/30">{result.originalAvgSpi.toFixed(2)}</span>
                                                 <span className="text-4xl font-mono font-black text-red-600 drop-shadow-sm">{result.simulatedAvgSpi.toFixed(2)}</span>
                                             </div>
-                                            <div className="mt-2 h-1.5 w-full max-w-[120px] bg-slate-200 rounded-full overflow-hidden">
+                                            <div className="mt-2 h-1.5 w-full max-w-[120px] bg-muted rounded-full overflow-hidden">
                                                 <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: `${result.simulatedAvgSpi * 100}%` }} />
                                             </div>
                                         </div>
-                                        <div className="p-6 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center gap-1 shadow-inner group transition-all hover:bg-white hover:shadow-md">
-                                            <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingUp size={12} /> Liquidity Gap (M)</div>
+                                        <div className="p-6 bg-muted/30/50 rounded-2xl border border-border flex flex-col items-center gap-1 shadow-inner group transition-all hover:bg-card hover:shadow-md">
+                                            <div className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingUp size={12} /> Liquidity Gap (M)</div>
                                             <div className="flex items-center gap-4">
-                                                <span className="text-3xl font-mono font-black text-slate-300 line-through decoration-slate-400/30">{Math.round(result.originalCashflow)}M</span>
+                                                <span className="text-3xl font-mono font-black text-foreground line-through decoration-slate-400/30">{Math.round(result.originalCashflow)}M</span>
                                                 <span className="text-4xl font-mono font-black text-emerald-600 drop-shadow-sm">{Math.round(result.simulatedCashflow)}M</span>
                                             </div>
-                                            <div className="mt-2 h-1.5 w-full max-w-[120px] bg-slate-200 rounded-full overflow-hidden">
+                                            <div className="mt-2 h-1.5 w-full max-w-[120px] bg-muted rounded-full overflow-hidden">
                                                 <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${(result.simulatedCashflow / result.originalCashflow) * 100}%` }} />
                                             </div>
                                         </div>
@@ -335,31 +335,31 @@ export default function StrategySimulation() {
                     </Card>
 
                     {/* HISTORY PANEL */}
-                    <Card className="border-slate-200 dark:border-slate-800 shadow-sm flex flex-col overflow-hidden max-h-[300px]">
+                    <Card className="border-border shadow-sm flex flex-col overflow-hidden max-h-[300px]">
                         <CardHeader className="pb-3 flex-shrink-0 border-b">
-                            <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 flex items-center justify-between">
+                            <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center justify-between">
                                 Simulation History
                                 <History size={12} />
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-0 overflow-hidden flex-1">
                             {loadingHistory ? (
-                                <div className="p-8 text-center text-xs text-slate-400">Loading history...</div>
+                                <div className="p-8 text-center text-xs text-muted-foreground">Loading history...</div>
                             ) : savedSims.length === 0 ? (
-                                <div className="p-8 text-center text-xs text-slate-400 font-medium italic">No saved scenarios. Save a simulation to compare later.</div>
+                                <div className="p-8 text-center text-xs text-muted-foreground font-medium italic">No saved scenarios. Save a simulation to compare later.</div>
                             ) : (
                                 <ScrollArea className="h-full">
-                                    <div className="divide-y divide-slate-100 dark:divide-neutral-800">
+                                    <div className="divide-y divide-border dark:divide-neutral-800">
                                         {savedSims.map((sim) => (
-                                            <div key={sim.id} className="group flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+                                            <div key={sim.id} className="group flex items-center justify-between p-4 hover:bg-muted/30 transition-colors">
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center gap-2 mb-0.5">
-                                                        <span className="font-bold text-sm text-slate-800 truncate">{sim.name}</span>
-                                                        <Badge variant="outline" className="text-xs px-1 h-3.5 border-slate-200 text-slate-500 font-mono">
+                                                        <span className="font-bold text-sm text-muted-foreground truncate">{sim.name}</span>
+                                                        <Badge variant="outline" className="text-xs px-1 h-3.5 border-border text-muted-foreground font-mono">
                                                             {sim.result.impactSeverity}
                                                         </Badge>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
+                                                    <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
                                                         <span>{format(new Date(sim.created_at), 'dd MMM HH:mm')}</span>
                                                         <span>•</span>
                                                         <span>Delay: {sim.params.delay}d</span>
@@ -398,7 +398,7 @@ export default function StrategySimulation() {
                     </DialogHeader>
                     <div className="py-4 space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="scen-name" className="text-xs font-bold uppercase tracking-wider text-slate-500">Scenario Name</Label>
+                            <Label htmlFor="scen-name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Scenario Name</Label>
                             <Input 
                                 id="scen-name" 
                                 placeholder="e.g., Q3 Delay + Labor Shortage" 
@@ -407,7 +407,7 @@ export default function StrategySimulation() {
                                 className="h-10"
                             />
                         </div>
-                        <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-1.5">
+                        <div className="p-3 bg-muted/30 rounded-lg border border-border space-y-1.5">
                             <div className="flex justify-between text-xs font-bold">
                                 <span>SIMULATED SPI:</span>
                                 <span className="text-red-600 font-mono">{result?.simulatedAvgSpi.toFixed(2)}</span>

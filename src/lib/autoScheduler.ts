@@ -207,7 +207,7 @@ export function runForwardPass(tasks: TimelineTask[], projectStart: string): Tim
 
   const predAdj = new Map<string, Array<{ pred: TimelineTask; dep: TaskDependency }>>()
   tasks.forEach((t) => {
-    ;(t.dependencies ?? []).forEach((dep) => {
+    (t.dependencies ?? []).forEach((dep) => {
       const pred = taskMap.get(dep.predecessorId)
       if (!pred) return
       const list = predAdj.get(t.id) ?? []
@@ -219,14 +219,14 @@ export function runForwardPass(tasks: TimelineTask[], projectStart: string): Tim
   // Kahn's topological sort
   const inDegree = new Map<string, number>(tasks.map((t) => [t.id, 0]))
   tasks.forEach((t) => {
-    ;(t.dependencies ?? []).forEach((dep) => {
+    (t.dependencies ?? []).forEach((dep) => {
       inDegree.set(dep.successorId, (inDegree.get(dep.successorId) ?? 0) + 1)
     })
   })
 
   const succAdj = new Map<string, string[]>()
   tasks.forEach((t) => {
-    ;(t.dependencies ?? []).forEach((dep) => {
+    (t.dependencies ?? []).forEach((dep) => {
       const list = succAdj.get(dep.predecessorId) ?? []
       list.push(dep.successorId)
       succAdj.set(dep.predecessorId, list)

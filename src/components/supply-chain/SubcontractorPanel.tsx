@@ -104,16 +104,16 @@ export function SubcontractorPanel() {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-2 rounded-lg border shadow-sm">
-                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-md">
+            <div className="flex justify-between items-center bg-card p-2 rounded-lg border shadow-sm">
+                <div className="flex bg-muted/50 p-1 rounded-md">
                     <button
-                        className={`px-4 py-1.5 text-xs font-semibold rounded ${viewMode === 'SUBCONS' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}
+                        className={`px-4 py-1.5 text-xs font-semibold rounded ${viewMode === 'SUBCONS' ? 'bg-card shadow-sm text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`}
                         onClick={() => setViewMode('SUBCONS')}
                     >
                         <Users size={14} className="inline mr-1.5 mb-0.5" /> Directory
                     </button>
                     <button
-                        className={`px-4 py-1.5 text-xs font-semibold rounded ${viewMode === 'SPKS' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}
+                        className={`px-4 py-1.5 text-xs font-semibold rounded ${viewMode === 'SPKS' ? 'bg-card shadow-sm text-blue-600 dark:text-blue-400' : 'text-muted-foreground'}`}
                         onClick={() => setViewMode('SPKS')}
                     >
                         <FileSignature size={14} className="inline mr-1.5 mb-0.5" /> SPK Active
@@ -121,7 +121,7 @@ export function SubcontractorPanel() {
                 </div>
                 <div className="flex gap-2 items-center">
                     <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                         <Input className="h-8 pl-8 text-xs w-48" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
                     {viewMode === 'SUBCONS' ? (
@@ -129,7 +129,7 @@ export function SubcontractorPanel() {
                             <Plus size={14} className="mr-1.5" /> New Partner
                         </Button>
                     ) : (
-                        <Button size="sm" className="h-8 bg-blue-600" onClick={() => setSpkOpen(true)}>
+                        <Button size="sm" className="h-8 bg-primary" onClick={() => setSpkOpen(true)}>
                             <Plus size={14} className="mr-1.5" /> Issue SPK
                         </Button>
                     )}
@@ -142,17 +142,17 @@ export function SubcontractorPanel() {
                         <Card key={sub.id} className="hover:border-blue-300 transition-colors cursor-default group">
                             <CardContent className="p-4">
                                 <div className="flex justify-between items-start mb-2">
-                                    <div className="bg-slate-100 dark:bg-slate-800 p-2 rounded text-slate-600 dark:text-slate-300">
+                                    <div className="bg-muted/50 p-2 rounded text-muted-foreground">
                                         {sub.type === 'MANDOR' ? <HardHat size={20} /> : <Users size={20} />}
                                     </div>
                                     <Badge variant="outline" className={`text-xs ${sub.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' : ''}`}>
                                         {sub.status}
                                     </Badge>
                                 </div>
-                                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">{sub.name}</h4>
-                                <p className="text-xs text-slate-500 mb-3">{sub.specialty}</p>
+                                <h4 className="font-bold text-sm text-foreground">{sub.name}</h4>
+                                <p className="text-xs text-muted-foreground mb-3">{sub.specialty}</p>
                                 <div className="border-t pt-3 flex items-center justify-between text-xs">
-                                    <div className="text-slate-500 flex items-center gap-1.5">
+                                    <div className="text-muted-foreground flex items-center gap-1.5">
                                         <ShieldCheck size={14} className="text-emerald-500" />
                                         Rating: {sub.rating}/5
                                     </div>
@@ -160,7 +160,7 @@ export function SubcontractorPanel() {
                             </CardContent>
                         </Card>
                     ))}
-                    {subcons.length === 0 && <div className="col-span-3 text-center py-8 text-slate-500">No subcontractor profiles found.</div>}
+                    {subcons.length === 0 && <div className="col-span-3 text-center py-8 text-muted-foreground">No subcontractor profiles found.</div>}
                 </div>
             )}
 
@@ -169,7 +169,7 @@ export function SubcontractorPanel() {
                     <CardContent className="p-0">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
+                                <TableRow className="bg-muted/30/50">
                                     <TableHead>SPK No.</TableHead>
                                     <TableHead>Partner</TableHead>
                                     <TableHead>Description</TableHead>
@@ -187,13 +187,13 @@ export function SubcontractorPanel() {
                                             <TableCell className="font-medium text-blue-700 dark:text-blue-400">
                                                 {subcon?.name || 'Unknown'}
                                             </TableCell>
-                                            <TableCell className="text-slate-500">{spk.description}</TableCell>
+                                            <TableCell className="text-muted-foreground">{spk.description}</TableCell>
                                             <TableCell className="text-right font-mono font-semibold">
                                                 {spk.contractValue.toLocaleString('id-ID')}
                                             </TableCell>
                                             <TableCell className="text-center">
                                                 <Badge variant="outline" className={`text-xs ${spk.status === 'ACTIVE' ? 'bg-blue-50 text-blue-700' :
-                                                        spk.status === 'DRAFT' ? 'bg-slate-50 text-slate-600' :
+                                                        spk.status === 'DRAFT' ? 'bg-muted/30 text-muted-foreground' :
                                                             'bg-emerald-50 text-emerald-700'
                                                     }`}>
                                                     {spk.status}
@@ -211,7 +211,7 @@ export function SubcontractorPanel() {
                                 })}
                                 {spks.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="h-32 text-center text-slate-500">No SPKs issued for this project.</TableCell>
+                                        <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">No SPKs issued for this project.</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>

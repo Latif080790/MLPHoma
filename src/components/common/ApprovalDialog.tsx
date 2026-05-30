@@ -490,7 +490,7 @@ export function ApprovalDialog({ approval, open, onClose, onApproved, onRejected
 
                 {/* Request Info */}
                 <div className="space-y-4">
-                    <div className="rounded-lg bg-slate-50 dark:bg-slate-800/50 p-4 space-y-2">
+                    <div className="rounded-lg bg-muted/30 p-4 space-y-2">
                         <div className="flex items-center justify-between">
                             <span className="text-xs text-muted-foreground">Request</span>
                             <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-700">

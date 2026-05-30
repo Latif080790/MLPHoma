@@ -269,7 +269,7 @@ export default function ImportWizard({ projectId = 'default' }: { projectId?: st
   }
 
   return (
-    <div className="rounded-md border p-4 shadow-sm bg-white">
+    <div className="rounded-md border p-4 shadow-sm bg-card">
       <h3 className="text-sm font-semibold mb-2">Import AHSP (CSV / XLSX)</h3>
 
       <div className="flex gap-2 items-center mb-3">

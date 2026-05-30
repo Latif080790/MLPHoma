@@ -27,7 +27,11 @@ vi.mock('../../services/notificationService', () => ({
 }))
 
 vi.mock('../../services/supplyChainService', () => ({
-    supplyChainService: { updatePoStatus: vi.fn() }
+    supplyChainService: {
+        updatePoStatus: vi.fn(),
+        getPurchaseOrders: vi.fn().mockResolvedValue([]),
+        getInventoryTransactions: vi.fn().mockResolvedValue([]),
+    }
 }))
 
 describe('GRN Service Unit Tests', () => {
@@ -145,7 +149,11 @@ describe('GRN Service Unit Tests', () => {
 
             // 5. Insert Invoice
             mockFromFn.mockReturnValueOnce({
-                insert: vi.fn().mockResolvedValue({ error: null })
+                insert: vi.fn().mockReturnValue({
+                    select: vi.fn().mockReturnValue({
+                        single: vi.fn().mockResolvedValue({ data: { id: 'inv-new', invoice_number: 'INV-GRN-001' }, error: null })
+                    })
+                })
             })
 
             // 6. Check All GRNs (for full delivery check)

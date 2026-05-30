@@ -171,11 +171,17 @@ export const useWBSStore = create<WBSStore>()(
 
         let updatedItem: WBSItem | null = null
 
+        // If progress is explicitly set without a progressSource, mark as 'manual'
+        // (A3 timeline propagation always passes progressSource: 'timeline' explicitly)
+        const enrichedData = validation.data && 'progress' in (validation.data ?? {}) && !('progressSource' in (validation.data ?? {}))
+          ? { ...validation.data, progressSource: 'manual' as const }
+          : validation.data
+
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
           const updatedItems = currentItems.map(item => {
             if (item.id === id) {
-              updatedItem = { ...item, ...validation.data, updatedAt: new Date().toISOString() }
+              updatedItem = { ...item, ...enrichedData, updatedAt: new Date().toISOString() }
               return updatedItem
             }
             return item

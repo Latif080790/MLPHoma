@@ -29,11 +29,11 @@ export const PresenceAvatars: React.FC<PresenceAvatarsProps> = ({ users, max = 5
             <TooltipTrigger asChild>
               <div className="relative group cursor-default">
                 <Avatar className={cn(
-                  "h-8 w-8 ring-2 ring-white dark:ring-slate-900 border border-slate-200 dark:border-slate-800 transition-transform hover:z-10 hover:-translate-y-0.5",
+                  "h-8 w-8 ring-2 ring-white dark:ring-slate-900 border border-border transition-transform hover:z-10 hover:-translate-y-0.5",
                   user.status === 'editing' && "ring-blue-500"
                 )}>
                   <AvatarImage src={user.avatar_url} />
-                  <AvatarFallback className="bg-slate-100 dark:bg-slate-800 text-xs uppercase font-bold text-slate-500">
+                  <AvatarFallback className="bg-muted/50 text-xs uppercase font-bold text-muted-foreground">
                     {user.full_name.substring(0, 2)}
                   </AvatarFallback>
                 </Avatar>
@@ -42,13 +42,13 @@ export const PresenceAvatars: React.FC<PresenceAvatarsProps> = ({ users, max = 5
                   "absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-900",
                   user.status === 'online' ? "bg-emerald-500" :
                   user.status === 'editing' ? "bg-blue-500 animate-pulse" :
-                  "bg-slate-400"
+                  "bg-muted"
                 )} />
               </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="flex flex-col gap-1 p-2 bg-slate-900 text-white border-slate-800">
+            <TooltipContent side="bottom" className="flex flex-col gap-1 p-2 bg-background text-white border-border">
               <span className="font-bold text-xs">{user.full_name}</span>
-              <span className="text-xs text-slate-400 uppercase tracking-wider font-mono">
+              <span className="text-xs text-muted-foreground uppercase tracking-wider font-mono">
                 {user.role} • {user.status === 'editing' ? `Editing ${user.current_module || 'Module'}` : 'Viewing Proyek'}
               </span>
             </TooltipContent>
@@ -56,7 +56,7 @@ export const PresenceAvatars: React.FC<PresenceAvatarsProps> = ({ users, max = 5
         ))}
 
         {remainingCount > 0 && (
-          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800 ring-2 ring-white dark:ring-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-500">
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-muted/50 ring-2 ring-white dark:ring-slate-900 border border-border text-xs font-bold text-muted-foreground">
             +{remainingCount}
           </div>
         )}

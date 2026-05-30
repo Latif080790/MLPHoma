@@ -22,7 +22,7 @@ export default function AppToaster() {
       offset={16}
       toastOptions={{
         className:
-          'rounded-lg border border-neutral-200 bg-white text-neutral-900 shadow-lg dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-50',
+          'rounded-lg border border-neutral-200 bg-card text-neutral-900 shadow-lg dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-50',
       }}
     />
   )

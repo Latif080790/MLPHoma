@@ -28,18 +28,18 @@ const CONDITION_COLORS: Record<string, string> = {
 }
 
 const WO_PRIORITY_COLORS: Record<string, string> = {
-    LOW: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
+    LOW: 'bg-muted/50 text-muted-foreground',
     MEDIUM: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
     HIGH: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
     CRITICAL: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
 }
 
 const WO_STATUS_ICON: Record<string, React.ReactNode> = {
-    OPEN: <Clock className="h-3.5 w-3.5 text-slate-500" />,
+    OPEN: <Clock className="h-3.5 w-3.5 text-muted-foreground" />,
     IN_PROGRESS: <Wrench className="h-3.5 w-3.5 text-blue-500" />,
     PENDING_PARTS: <Package className="h-3.5 w-3.5 text-yellow-500" />,
     COMPLETED: <CheckCircle className="h-3.5 w-3.5 text-green-500" />,
-    CANCELLED: <XCircle className="h-3.5 w-3.5 text-slate-400" />,
+    CANCELLED: <XCircle className="h-3.5 w-3.5 text-muted-foreground" />,
 }
 
 // ── Default form states ─────────────────────────────────────────────────────

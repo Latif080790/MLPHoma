@@ -58,7 +58,7 @@ describe('financeService', () => {
               eq: () => ({
                 single: () => {
                   calls.push({ method: 'select-invoice', table })
-                  return Promise.resolve({ data: { id: 'inv-1', invoice_number: 'INV-1' }, error: null })
+                  return Promise.resolve({ data: { id: 'inv-1', invoice_number: 'INV-1', status: 'UNPAID' }, error: null })
                 }
               })
             }),

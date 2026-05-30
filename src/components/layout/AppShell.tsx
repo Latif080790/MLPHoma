@@ -80,7 +80,7 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
   }, [shouldOverlay])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-muted/30 text-foreground">
       {/* WCAG 2.4.1 Skip navigation — visually hidden until focused */}
       <a
         href="#main-content"
@@ -135,18 +135,17 @@ export function AppShell({ projectName, onSearch, children }: AppShellProps) {
 
         {/* Page Content — offset by fixed header height (h-14 = 56px) */}
         <main id="main-content" className="flex-1 overflow-x-hidden flex flex-col min-h-0 pt-14">
+          {/* Sync Status Bar — strip tipis di bawah header, WF01 */}
+          <SyncStatusBar 
+            state={syncState}
+            pendingCount={queue.length}
+            lastSynced={lastSynced}
+          />
           <div className="w-full flex-1 flex flex-col min-h-0 bg-surface-page">
             {children}
           </div>
         </main>
       </div>
-
-      {/* Persistence Feedback — WF01 */}
-      <SyncStatusBar 
-        state={syncState}
-        pendingCount={queue.length}
-        lastSynced={lastSynced}
-      />
     </div>
   )
 }

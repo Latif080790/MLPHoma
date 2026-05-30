@@ -41,8 +41,8 @@ function getActionConfig(action: AuditAction): ActionConfig {
         BUDGET_CHANGE: { icon: <DollarSign size={12} />, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30', label: 'Budget Changed' },
         TRANSFER: { icon: <Truck size={12} />, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', label: 'Transferred' },
         PAYMENT: { icon: <DollarSign size={12} />, color: 'text-green-600', bgColor: 'bg-green-100 dark:bg-green-900/30', label: 'Payment' },
-        LOGIN: { icon: <User size={12} />, color: 'text-slate-600', bgColor: 'bg-slate-100 dark:bg-slate-800', label: 'Login' },
-        EXPORT: { icon: <FileText size={12} />, color: 'text-slate-600', bgColor: 'bg-slate-100 dark:bg-slate-800', label: 'Exported' },
+        LOGIN: { icon: <User size={12} />, color: 'text-muted-foreground', bgColor: 'bg-muted/50', label: 'Login' },
+        EXPORT: { icon: <FileText size={12} />, color: 'text-muted-foreground', bgColor: 'bg-muted/50', label: 'Exported' },
         SNAPSHOT: { icon: <Archive size={12} />, color: 'text-indigo-600', bgColor: 'bg-indigo-100 dark:bg-indigo-900/30', label: 'Snapshot' },
         PRICE_OVERRIDE: { icon: <AlertTriangle size={12} />, color: 'text-orange-600', bgColor: 'bg-orange-100 dark:bg-orange-900/30', label: 'Price Override' },
         INVOICE_CREATED: { icon: <FileText size={12} />, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30', label: 'Invoice Created' },
@@ -64,8 +64,8 @@ function getActionConfig(action: AuditAction): ActionConfig {
 
     return configs[action] || {
         icon: <Eye size={12} />,
-        color: 'text-slate-600',
-        bgColor: 'bg-slate-100 dark:bg-slate-800',
+        color: 'text-muted-foreground',
+        bgColor: 'bg-muted/50',
         label: action.replace(/_/g, ' '),
     }
 }
@@ -74,7 +74,7 @@ function getActionConfig(action: AuditAction): ActionConfig {
 
 function DetailDiff({ details }: { details: Record<string, unknown> }) {
     if (!details || Object.keys(details).length === 0) {
-        return <p className="text-xs text-slate-400 italic">No additional details</p>
+        return <p className="text-xs text-muted-foreground italic">No additional details</p>
     }
 
     const { oldValue, newValue, reason, ...rest } = details
@@ -83,32 +83,32 @@ function DetailDiff({ details }: { details: Record<string, unknown> }) {
         <div className="space-y-2 text-xs">
             {!!reason && (
                 <div className="flex items-center gap-2">
-                    <span className="text-slate-500 font-medium">Reason:</span>
-                    <span className="text-slate-700 dark:text-slate-300">{String(reason)}</span>
+                    <span className="text-muted-foreground font-medium">Reason:</span>
+                    <span className="text-muted-foreground">{String(reason)}</span>
                 </div>
             )}
             {!!oldValue && !!newValue && (
                 <div className="grid grid-cols-2 gap-2">
                     <div className="p-2 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
                         <span className="text-xs text-red-500 uppercase font-semibold">Before</span>
-                        <pre className="mt-1 text-slate-600 dark:text-slate-400 whitespace-pre-wrap font-mono text-xs max-h-24 overflow-auto">
+                        <pre className="mt-1 text-muted-foreground whitespace-pre-wrap font-mono text-xs max-h-24 overflow-auto">
                             {typeof oldValue === 'object' ? JSON.stringify(oldValue, null, 2) : String(oldValue)}
                         </pre>
                     </div>
                     <div className="p-2 rounded bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
                         <span className="text-xs text-green-500 uppercase font-semibold">After</span>
-                        <pre className="mt-1 text-slate-600 dark:text-slate-400 whitespace-pre-wrap font-mono text-xs max-h-24 overflow-auto">
+                        <pre className="mt-1 text-muted-foreground whitespace-pre-wrap font-mono text-xs max-h-24 overflow-auto">
                             {typeof newValue === 'object' ? JSON.stringify(newValue, null, 2) : String(newValue)}
                         </pre>
                     </div>
                 </div>
             )}
             {Object.keys(rest).length > 0 && (
-                <div className="p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div className="p-2 rounded bg-muted/30 border border-border">
                     {Object.entries(rest).map(([key, value]) => (
                         <div key={key} className="flex gap-2">
-                            <span className="text-slate-500 font-medium min-w-[80px]">{key}:</span>
-                            <span className="text-slate-700 dark:text-slate-300 font-mono">
+                            <span className="text-muted-foreground font-medium min-w-[80px]">{key}:</span>
+                            <span className="text-muted-foreground font-mono">
                                 {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                             </span>
                         </div>
@@ -129,7 +129,7 @@ function AuditEventRow({ entry }: { entry: AuditLogEntry }) {
     return (
         <div className="group">
             <button
-                className="w-full flex items-start gap-3 py-2.5 px-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors text-left"
+                className="w-full flex items-start gap-3 py-2.5 px-3 rounded-lg hover:bg-accent/40 transition-colors text-left"
                 onClick={() => hasDetails && setExpanded(!expanded)}
             >
                 {/* Timeline dot */}
@@ -143,16 +143,16 @@ function AuditEventRow({ entry }: { entry: AuditLogEntry }) {
                         <Badge variant="outline" className={`text-xs px-1.5 py-0 h-4 ${config.color} border-current/20`}>
                             {config.label}
                         </Badge>
-                        <span className="text-xs text-slate-600 dark:text-slate-400 truncate">
+                        <span className="text-xs text-muted-foreground truncate">
                             {entry.entity}
                         </span>
                         {entry.entityType && (
-                            <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-slate-500">
+                            <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-muted-foreground">
                                 {entry.entityType}
                             </Badge>
                         )}
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-400">
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                         {entry.userName && (
                             <span className="flex items-center gap-1">
                                 <User size={10} /> {entry.userName}
@@ -167,7 +167,7 @@ function AuditEventRow({ entry }: { entry: AuditLogEntry }) {
 
                 {/* Expand indicator */}
                 {hasDetails && (
-                    <div className="shrink-0 text-slate-400 mt-1">
+                    <div className="shrink-0 text-muted-foreground mt-1">
                         {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                     </div>
                 )}
@@ -175,7 +175,7 @@ function AuditEventRow({ entry }: { entry: AuditLogEntry }) {
 
             {/* Expanded details */}
             {expanded && hasDetails && (
-                <div className="ml-10 mr-3 mb-2 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="ml-10 mr-3 mb-2 p-3 rounded-lg border border-border bg-muted/30/50">
                     <DetailDiff details={entry.details} />
                 </div>
             )}
@@ -247,7 +247,7 @@ export function AuditLogViewer({
     const displayLogs = compact ? logs.slice(0, 5) : logs
 
     return (
-        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="border-border shadow-sm">
             <CardHeader className="pb-2 pt-4 px-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -267,7 +267,7 @@ export function AuditLogViewer({
                 {/* Filters (full mode only) */}
                 {!compact && !entityType && (
                     <div className="flex items-center gap-2 mt-3">
-                        <Filter size={12} className="text-slate-400" />
+                        <Filter size={12} className="text-muted-foreground" />
                         <div className="flex gap-1 flex-wrap">
                             {ENTITY_TYPES.map(et => (
                                 <button
@@ -275,7 +275,7 @@ export function AuditLogViewer({
                                     onClick={() => setFilterType(et.value)}
                                     className={`px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${filterType === et.value
                                             ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
-                                            : 'bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                                            : 'bg-muted/50 text-muted-foreground hover:bg-muted'
                                         }`}
                                 >
                                     {et.label}
@@ -289,20 +289,20 @@ export function AuditLogViewer({
             <CardContent className="px-4 pb-4">
                 {loading && logs.length === 0 ? (
                     <div className="text-center py-8">
-                        <RefreshCw size={20} className="mx-auto mb-2 text-slate-300 animate-spin" />
-                        <p className="text-xs text-slate-400">Loading audit trail...</p>
+                        <RefreshCw size={20} className="mx-auto mb-2 text-foreground animate-spin" />
+                        <p className="text-xs text-muted-foreground">Loading audit trail...</p>
                     </div>
                 ) : displayLogs.length === 0 ? (
                     <div className="text-center py-8">
-                        <Shield size={28} className="mx-auto mb-2 text-slate-300 opacity-40" />
-                        <p className="text-sm text-slate-400">No audit events found.</p>
-                        <p className="text-xs text-slate-400 mt-1">Actions will appear here as changes are made.</p>
+                        <Shield size={28} className="mx-auto mb-2 text-foreground opacity-40" />
+                        <p className="text-sm text-muted-foreground">No audit events found.</p>
+                        <p className="text-xs text-muted-foreground mt-1">Actions will appear here as changes are made.</p>
                     </div>
                 ) : (
                     <div className="space-y-0.5 mt-1">
                         {/* Timeline line */}
                         <div className="relative">
-                            <div className="absolute left-[19px] top-4 bottom-4 w-px bg-slate-200 dark:bg-slate-800" />
+                            <div className="absolute left-[19px] top-4 bottom-4 w-px bg-muted" />
                             <div className="relative z-10 space-y-0.5">
                                 {displayLogs.map(entry => (
                                     <AuditEventRow key={entry.id} entry={entry} />
@@ -310,7 +310,7 @@ export function AuditLogViewer({
                             </div>
                         </div>
                         {compact && logs.length > 5 && (
-                            <p className="text-center text-xs text-slate-400 mt-2">
+                            <p className="text-center text-xs text-muted-foreground mt-2">
                                 +{logs.length - 5} more events
                             </p>
                         )}

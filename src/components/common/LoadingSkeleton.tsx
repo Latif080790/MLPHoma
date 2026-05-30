@@ -31,7 +31,7 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
  */
 export function CardSkeleton() {
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+    <div className="rounded-lg border border-neutral-200 bg-card p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="space-y-3">
         <Skeleton className="h-5 w-3/4" />
         <Skeleton className="h-4 w-full" />
@@ -61,7 +61,7 @@ export function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; column
           </div>
         </div>
         {/* Rows */}
-        <div className="divide-y divide-neutral-200 bg-white dark:divide-neutral-800 dark:bg-neutral-950">
+        <div className="divide-y divide-neutral-200 bg-card dark:divide-neutral-800 dark:bg-neutral-950">
           {Array.from({ length: rows }).map((_, rowIndex) => (
             <div key={`row-${rowIndex}`} className="flex gap-4 p-3">
               {Array.from({ length: columns }).map((_, colIndex) => (
@@ -106,7 +106,7 @@ export function ListSkeleton({ items = 5 }: { items?: number }) {
   return (
     <div className="space-y-2">
       {Array.from({ length: items }).map((_, i) => (
-        <div key={`item-${i}`} className="flex items-center gap-3 rounded-md border border-neutral-200 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-950">
+        <div key={`item-${i}`} className="flex items-center gap-3 rounded-md border border-neutral-200 bg-card p-3 dark:border-neutral-800 dark:bg-neutral-950">
           <Skeleton className="h-10 w-10 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4" />
@@ -130,7 +130,7 @@ export function ChartSkeleton() {
   )
 
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+    <div className="rounded-lg border border-neutral-200 bg-card p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="mb-4 space-y-2">
         <Skeleton className="h-5 w-32" />
         <Skeleton className="h-4 w-48" />
@@ -175,7 +175,7 @@ export function HeaderSkeleton() {
  */
 export function StatsCardSkeleton() {
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+    <div className="rounded-lg border border-neutral-200 bg-card p-4 dark:border-neutral-800 dark:bg-neutral-950">
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <Skeleton className="h-4 w-24" />

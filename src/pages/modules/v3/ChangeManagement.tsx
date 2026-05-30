@@ -238,18 +238,18 @@ export default function ChangeManagement() {
                             imageKeyword="contract"
                         />
                     ) : (
-                        <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+                        <div className="rounded-lg border border-border overflow-hidden shadow-sm bg-card">
                             <div ref={coScrollRef} className="max-h-[600px] overflow-auto relative">
                                 <Table>
-                                    <TableHeader className="bg-slate-50 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
-                                        <TableRow className="hover:bg-transparent border-slate-200 dark:border-slate-800">
-                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">VO Number</TableHead>
-                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Title</TableHead>
-                                            <TableHead className="p-3 font-semibold text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Status</TableHead>
-                                            <TableHead className="p-3 font-semibold text-right text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Cost Impact</TableHead>
-                                            <TableHead className="p-3 font-semibold text-right text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Time Impact</TableHead>
-                                            <TableHead className="p-3 font-semibold text-right text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Created At</TableHead>
-                                            <TableHead className="p-3 font-semibold text-center text-slate-700 dark:text-slate-300 h-9 text-xs uppercase tracking-wider">Actions</TableHead>
+                                    <TableHeader className="bg-muted/30 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
+                                        <TableRow className="hover:bg-transparent border-border">
+                                            <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">VO Number</TableHead>
+                                            <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Title</TableHead>
+                                            <TableHead className="p-3 font-semibold text-muted-foreground h-9 text-xs uppercase tracking-wider">Status</TableHead>
+                                            <TableHead className="p-3 font-semibold text-right text-muted-foreground h-9 text-xs uppercase tracking-wider">Cost Impact</TableHead>
+                                            <TableHead className="p-3 font-semibold text-right text-muted-foreground h-9 text-xs uppercase tracking-wider">Time Impact</TableHead>
+                                            <TableHead className="p-3 font-semibold text-right text-muted-foreground h-9 text-xs uppercase tracking-wider">Created At</TableHead>
+                                            <TableHead className="p-3 font-semibold text-center text-muted-foreground h-9 text-xs uppercase tracking-wider">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -260,11 +260,11 @@ export default function ChangeManagement() {
                                         {coVirtualizer.getVirtualItems().map(vRow => {
                                             const order = orders[vRow.index]
                                             return (
-                                            <TableRow key={order.id} data-index={vRow.index} ref={coVirtualizer.measureElement} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer border-b border-slate-100 dark:border-slate-800 transition-colors">
+                                            <TableRow key={order.id} data-index={vRow.index} ref={coVirtualizer.measureElement} className="group hover:bg-accent/40 cursor-pointer border-b border-border transition-colors">
                                                 <TableCell className="p-3 font-mono text-xs font-medium text-blue-600 dark:text-blue-400 border-r border-transparent">{order.vo_number}</TableCell>
                                                 <TableCell className="p-3">
-                                                    <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{order.title}</div>
-                                                    <div className="text-xs text-slate-500 truncate max-w-[300px]">{order.description}</div>
+                                                    <div className="font-medium text-sm text-foreground">{order.title}</div>
+                                                    <div className="text-xs text-muted-foreground truncate max-w-[300px]">{order.description}</div>
                                                 </TableCell>
                                                 <TableCell className="p-3">
                                                     <Badge className={`text-xs font-semibold px-2 py-0.5 ${CCO_STATUS_COLORS[order.status]}`}>
@@ -277,7 +277,7 @@ export default function ChangeManagement() {
                                                 <TableCell className={`p-3 text-right font-mono text-xs font-semibold ${order.schedule_impact_days > 0 ? 'text-red-600' : 'text-green-600'}`}>
                                                     {order.schedule_impact_days > 0 ? '+' : ''}{order.schedule_impact_days} Days
                                                 </TableCell>
-                                                <TableCell className="p-3 text-right text-xs text-slate-500 font-mono">{format(new Date(order.created_at), 'dd MMM yyyy')}</TableCell>
+                                                <TableCell className="p-3 text-right text-xs text-muted-foreground font-mono">{format(new Date(order.created_at), 'dd MMM yyyy')}</TableCell>
                                                 <TableCell className="p-3 text-center">
                                                     {(order.status === 'DRAFT' || order.status === 'PENDING_APPROVAL') ? (
                                                         <div className="flex items-center justify-center gap-1 opacity-100">
@@ -301,7 +301,7 @@ export default function ChangeManagement() {
                                                             </Button>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-xs text-slate-400">—</span>
+                                                        <span className="text-xs text-muted-foreground">—</span>
                                                     )}
                                                 </TableCell>
                                             </TableRow>
@@ -322,8 +322,8 @@ export default function ChangeManagement() {
                 <TabsContent value="analysis" className="space-y-6">
                     {/* Visual Impact Cascade Flow */}
                     {orders.length > 0 && (
-                        <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
-                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Cascade Impact Flow</p>
+                        <div className="rounded-xl border border-border bg-card p-4">
+                            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Cascade Impact Flow</p>
                             <div className="flex items-stretch gap-0 overflow-x-auto pb-1">
                                 {[
                                     {
@@ -347,16 +347,16 @@ export default function ChangeManagement() {
                                         icon: '📊',
                                         value: approvedCost > 0 ? `+Rp ${(approvedCost / 1e6).toFixed(1)}M` : '—',
                                         sub: 'committed cost',
-                                        color: approvedCost > 0 ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/30' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30',
-                                        textColor: approvedCost > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-400',
+                                        color: approvedCost > 0 ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/30' : 'border-border bg-muted/30',
+                                        textColor: approvedCost > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-muted-foreground',
                                     },
                                     {
                                         label: 'Schedule Slip',
                                         icon: '📅',
                                         value: totalTimeImpact > 0 ? `+${totalTimeImpact} hari` : '0 hari',
                                         sub: 'extension of time',
-                                        color: totalTimeImpact > 0 ? 'border-orange-400 bg-orange-50 dark:bg-orange-950/30' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30',
-                                        textColor: totalTimeImpact > 0 ? 'text-orange-700 dark:text-orange-300' : 'text-slate-400',
+                                        color: totalTimeImpact > 0 ? 'border-orange-400 bg-orange-50 dark:bg-orange-950/30' : 'border-border bg-muted/30',
+                                        textColor: totalTimeImpact > 0 ? 'text-orange-700 dark:text-orange-300' : 'text-muted-foreground',
                                     },
                                     {
                                         label: 'Finance Impact',
@@ -372,10 +372,10 @@ export default function ChangeManagement() {
                                             <div className="text-lg mb-1">{node.icon}</div>
                                             <div className={`text-xs font-bold uppercase tracking-wide mb-1 ${node.textColor}`}>{node.label}</div>
                                             <div className={`text-sm font-semibold ${node.textColor}`}>{node.value}</div>
-                                            <div className="text-xs text-slate-400 mt-0.5">{node.sub}</div>
+                                            <div className="text-xs text-muted-foreground mt-0.5">{node.sub}</div>
                                         </div>
                                         {idx < arr.length - 1 && (
-                                            <div className="flex items-center px-1 text-slate-300 dark:text-slate-600 shrink-0">
+                                            <div className="flex items-center px-1 text-foreground shrink-0">
                                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                                                     <path d="M7 5l6 5-6 5V5z" />
                                                 </svg>

@@ -45,7 +45,7 @@ export default function TaskListWithCPM({ projectId, onTaskClick }: Props) {
   const visibleTasks = showOnlyCritical ? tasks.filter((t) => criticalSet.has(t.id)) : tasks
 
   return (
-    <div className="rounded-md border p-3 bg-white shadow-sm">
+    <div className="rounded-md border p-3 bg-card shadow-sm">
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm font-medium">Tasks</div>
         <div className="text-xs text-neutral-500">
