@@ -45,6 +45,12 @@ export default function GanttLegend({ compact = false, palette }: GanttLegendPro
         <span className="inline-block h-3 w-3 rounded bg-red-600" />
         <span className="text-neutral-600">Today</span>
       </div>
+      <div className="flex items-center gap-2">
+        <span className="inline-flex items-center rounded border border-indigo-200 bg-indigo-100 px-1.5 py-0.5 text-xs font-medium text-indigo-700">
+          📎 WBS
+        </span>
+        <span className="text-neutral-600">Task terhubung ke WBS item</span>
+      </div>
     </div>
   )
 }

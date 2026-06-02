@@ -23,7 +23,7 @@ import CurvaSChart from '@/components/charts/CurvaSChart'
 
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
-import { GlobalContextBar, ModeSwitch, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
+import { GlobalContextBar, ModeSwitch, WorkspaceHeader, SummaryStrip, AlertStrip } from '@/components/patterns'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { usePresence } from '@/hooks/usePresence'
 import { PresenceAvatars } from '@/components/common/PresenceAvatars'
@@ -120,6 +120,7 @@ export default function ScheduleOps() {
         return searchParams.get('tab') || (searchParams.has('taskId') ? 'timeline' : 'timeline')
     })
     const [srStatus, setSrStatus] = React.useState('')
+    const [cpmBannerDismissed, setCpmBannerDismissed] = React.useState(false)
 
     // B.8: track actual CPM calculation duration
     const [cpmDuration, setCpmDuration] = React.useState(0)
@@ -127,6 +128,7 @@ export default function ScheduleOps() {
     React.useEffect(() => {
         if (isCPMCalculating) {
             cpmStartRef.current = performance.now()
+            setCpmBannerDismissed(false)
         } else if (cpmStartRef.current !== null) {
             setCpmDuration(Math.round(performance.now() - cpmStartRef.current))
             cpmStartRef.current = null
@@ -249,6 +251,22 @@ export default function ScheduleOps() {
                 <ResourceUsageDialog open={resourceOpen} onOpenChange={setResourceOpen} projectId={activeProjectId} />
             </Suspense>
 
+            {/* CPM Status Banners — shown only in Plan mode */}
+            {mode === 'plan' && isCPMCalculating && (
+                <div className="mb-3">
+                    <AlertStrip severity="info" message="⚡ Menghitung jalur kritis... (background worker)" />
+                </div>
+            )}
+            {mode === 'plan' && !isCPMCalculating && cpmDuration > 0 && !cpmBannerDismissed && (
+                <div className="mb-3">
+                    <AlertStrip
+                        severity="success"
+                        message="✓ Critical path diperbarui"
+                        action={{ label: 'Tutup', onClick: () => setCpmBannerDismissed(true) }}
+                    />
+                </div>
+            )}
+
             {/* Sub-tabs within the mode — B.4: Radix TabsList/TabsTrigger for keyboard nav */}
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                 <div className="flex items-center justify-between mb-4">
@@ -282,11 +300,18 @@ export default function ScheduleOps() {
                 {/* ─── Plan Mode Tabs ─────────────────────────────────────────── */}
                 <TabsContent value="timeline" className="outline-none">
                     <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[calc(100vh-280px)]">
-                        <ErrorBoundary errorMessage="Timeline failed to render">
-                            <Suspense fallback={<TabFallback minHeight={500} />}>
-                                <GanttChartLazy projectId={activeProjectId} />
-                            </Suspense>
-                        </ErrorBoundary>
+                        {mode === 'plan' && taskCount === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">Belum ada task</p>
+                                <p className="text-sm text-slate-400 mt-1">Impor dari WBS atau buat task secara manual.</p>
+                            </div>
+                        ) : (
+                            <ErrorBoundary errorMessage="Timeline failed to render">
+                                <Suspense fallback={<TabFallback minHeight={500} />}>
+                                    <GanttChartLazy projectId={activeProjectId} />
+                                </Suspense>
+                            </ErrorBoundary>
+                        )}
                     </div>
                 </TabsContent>
 
