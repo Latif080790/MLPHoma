@@ -1,7 +1,8 @@
 
 import React, { useEffect, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { GitPullRequest, DollarSign, Clock, Plus, TrendingUp, Check, X, Loader2, AlertTriangle } from "lucide-react"
+import { GitPullRequest, DollarSign, Clock, Plus, TrendingUp, Check, X, Loader2, AlertTriangle, ChevronDown, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -25,6 +26,40 @@ import { Skeleton } from "@/components/common/LoadingSkeleton"
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, ModeSwitch, SummaryStrip, AlertStrip } from '@/components/patterns'
+
+// CCO lifecycle states in order (used for state machine pill row)
+const CCO_STATES: ChangeOrderStatus[] = ['DRAFT', 'SUBMITTED', 'REVIEWED', 'PENDING_APPROVAL', 'APPROVED']
+
+// CCO state machine pill row for a given row status
+function CCOStateMachinePills({ status }: { status: ChangeOrderStatus }) {
+    const currentStateIdx = CCO_STATES.indexOf(status)
+    const isRejected = status === 'REJECTED'
+    return (
+        <div className="flex items-center gap-1 mt-1 flex-wrap">
+            {CCO_STATES.map((s, i) => (
+                <React.Fragment key={s}>
+                    <span className={cn(
+                        'px-1.5 py-0.5 rounded text-xs font-semibold',
+                        isRejected
+                            ? (i === 0 ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-400')
+                            : i < currentStateIdx ? 'bg-emerald-100 text-emerald-700'
+                            : i === currentStateIdx ? 'bg-blue-600 text-white'
+                            : 'bg-slate-100 text-slate-400'
+                    )}>
+                        {s.replace(/_/g, ' ')}
+                    </span>
+                    {i < CCO_STATES.length - 1 && <span className="text-slate-300 text-xs">›</span>}
+                </React.Fragment>
+            ))}
+            {isRejected && (
+                <>
+                    <span className="text-slate-300 text-xs">›</span>
+                    <span className="px-1.5 py-0.5 rounded text-xs font-semibold bg-rose-600 text-white">REJECTED</span>
+                </>
+            )}
+        </div>
+    )
+}
 
 export default function ChangeManagement() {
     const { activeProjectId } = useProjectStore()
@@ -50,6 +85,7 @@ export default function ChangeManagement() {
     const [pendingRejectId, setPendingRejectId] = useState<string | null>(null)
     const [actionLoading, setActionLoading] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
+    const [expandedRejectionId, setExpandedRejectionId] = useState<string | null>(null)
 
     useEffect(() => {
         if (activeProjectId) {
@@ -265,14 +301,42 @@ export default function ChangeManagement() {
                                                 <TableCell className="p-3">
                                                     <div className="font-medium text-sm text-foreground">{order.title}</div>
                                                     <div className="text-xs text-muted-foreground truncate max-w-[300px]">{order.description}</div>
+                                                    <CCOStateMachinePills status={order.status} />
+                                                    {order.status === 'REJECTED' && order.approval_comment && (
+                                                        <div className="mt-1">
+                                                            <button
+                                                                type="button"
+                                                                className="flex items-center gap-1 text-xs text-rose-600 hover:text-rose-700"
+                                                                onClick={e => { e.stopPropagation(); setExpandedRejectionId(prev => prev === order.id ? null : order.id) }}
+                                                            >
+                                                                {expandedRejectionId === order.id ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                                                                Alasan penolakan
+                                                            </button>
+                                                            {expandedRejectionId === order.id && (
+                                                                <div className="mt-1 text-xs text-rose-700 bg-rose-50 border border-rose-100 rounded px-2 py-1 max-w-[320px]">
+                                                                    {order.approval_comment}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className="p-3">
                                                     <Badge className={`text-xs font-semibold px-2 py-0.5 ${CCO_STATUS_COLORS[order.status]}`}>
                                                         {CCO_STATUS_LABELS[order.status]}
                                                     </Badge>
                                                 </TableCell>
-                                                <TableCell className={`p-3 text-right font-mono text-xs font-semibold ${order.cost_impact > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                    {order.cost_impact > 0 ? '+' : ''}Rp {order.cost_impact.toLocaleString()}
+                                                <TableCell className="p-3 text-right">
+                                                    {order.cost_impact !== 0 && (
+                                                        <span className={cn(
+                                                            'inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-xs font-bold font-mono',
+                                                            order.cost_impact > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                                                        )}>
+                                                            {order.cost_impact > 0 ? '+' : ''}Rp {order.cost_impact.toLocaleString()}
+                                                        </span>
+                                                    )}
+                                                    {order.cost_impact === 0 && (
+                                                        <span className="font-mono text-xs font-semibold text-muted-foreground">Rp 0</span>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className={`p-3 text-right font-mono text-xs font-semibold ${order.schedule_impact_days > 0 ? 'text-red-600' : 'text-green-600'}`}>
                                                     {order.schedule_impact_days > 0 ? '+' : ''}{order.schedule_impact_days} Days
