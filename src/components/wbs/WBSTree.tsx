@@ -16,6 +16,9 @@ import {
   Calculator,
   Clock,
   Lock,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
 } from 'lucide-react'
 import { formatIDR } from '../../lib/utils'
 import type { WBSItem } from '../../types/wbs'
@@ -205,7 +208,7 @@ function WBSTreeItem({
         onDrop={handleDrop}
         className={`
           group relative flex items-center gap-2 rounded-lg px-2 py-2 transition-colors
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-inset
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset
           ${rowBg}
           ${item.isDragging ? 'opacity-50' : ''}
           ${item.isDropTarget ? 'border-2 border-dashed border-blue-400' : ''}
@@ -240,9 +243,41 @@ function WBSTreeItem({
               <span className={`${nameClass} truncate min-w-0 flex-1`}>
                 {item.name}
               </span>
+              {/* Progress % badge — only when work has started */}
+              {(item.progress ?? 0) > 0 && (
+                <span
+                  title={`Progress fisik ${item.progress}%`}
+                  className={`hidden sm:inline-flex items-center gap-0.5 rounded-full px-1.5 py-0 text-xs font-mono font-semibold shrink-0 ml-auto ${
+                    (item.progress ?? 0) >= 100
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                      : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                  }`}
+                >
+                  {item.progress}%
+                </span>
+              )}
+              {/* QC status badge */}
+              {item.qc_status === 'PASSED' && (
+                <span title="QC lulus" className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 shrink-0">
+                  <CheckCircle2 size={9} />
+                  QC
+                </span>
+              )}
+              {item.qc_status === 'PENDING' && (
+                <span title="QC menunggu inspeksi" className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0 text-xs font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 shrink-0">
+                  <AlertCircle size={9} />
+                  QC
+                </span>
+              )}
+              {item.qc_status === 'FAILED' && (
+                <span title="QC gagal" className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-rose-50 px-1.5 py-0 text-xs font-semibold text-rose-700 dark:bg-rose-900/30 dark:text-rose-300 shrink-0">
+                  <XCircle size={9} />
+                  QC
+                </span>
+              )}
               {/* Budget badge (Task 18) */}
               {budget > 0 && (
-                <span className="hidden sm:inline-flex items-center gap-0.5 rounded-full bg-emerald-50 px-1.5 py-0 text-xs font-mono font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 shrink-0 ml-auto">
+                <span className="hidden md:inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-1.5 py-0 text-xs font-mono font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 shrink-0">
                   <Calculator size={9} />
                   {formatIDR(budget)}
                 </span>

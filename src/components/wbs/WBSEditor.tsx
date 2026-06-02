@@ -189,7 +189,7 @@ export function WBSEditor({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <GitBranch size={16} className="text-indigo-500" />
+            <GitBranch size={16} className="text-blue-500" />
             {item ? 'Edit WBS Item' : 'Tambah WBS Item'}
           </DialogTitle>
           <DialogDescription>
@@ -202,7 +202,7 @@ export function WBSEditor({
         {/* Hierarchy context strip */}
         <div className="flex items-center gap-2 -mt-1 px-1">
           {item?.code && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 font-mono text-xs font-bold text-indigo-700">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 border border-blue-200 font-mono text-xs font-bold text-blue-700 dark:bg-blue-950/30 dark:border-blue-800/40 dark:text-blue-400">
               {item.code}
             </span>
           )}
