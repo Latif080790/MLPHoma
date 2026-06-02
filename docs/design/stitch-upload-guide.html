@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLPHoma · Stitch Upload Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Nunito+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#060910; --surface:#0c1220; --el:#131c2e; --ov:#1a253c;
+  --bd:#192338; --bd2:#213047;
+  --t0:#E2EAF5; --t1:#7A90AB; --t2:#3D5068;
+  --cobalt:#3B82F6; --cobalt-l:#60A5FA; --cobalt-bg:rgba(59,130,246,.08);
+  --gold:#F59E0B; --gold-l:#FBBF24; --gold-bg:rgba(245,158,11,.08);
+  --jade:#22C55E; --jade-l:#4ADE80; --jade-bg:rgba(34,197,94,.08);
+  --coral:#F43F5E; --coral-l:#FB7185; --coral-bg:rgba(244,63,94,.08);
+  --amber:#F97316; --amber-l:#FB923C; --amber-bg:rgba(249,115,22,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Nunito Sans',sans-serif; font-size:14px; line-height:1.5;
+  color:var(--t0); background:var(--bg);
+  background-image:
+    linear-gradient(rgba(59,130,246,.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,.022) 1px,transparent 1px),
+    linear-gradient(rgba(59,130,246,.01) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,.01) 1px,transparent 1px);
+  background-size:80px 80px,80px 80px,16px 16px,16px 16px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:960px;margin:0 auto;padding:0 32px}
+
+/* Hero */
+.hero{padding:64px 0 48px;border-bottom:1px solid var(--bd);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:700px;height:400px;background:radial-gradient(ellipse,rgba(59,130,246,.08) 0%,transparent 65%);pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:var(--cobalt-bg);border:1.5px solid rgba(59,130,246,.2);border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--cobalt-l);margin-bottom:16px}
+.dot{width:5px;height:5px;background:var(--cobalt);border-radius:50%;box-shadow:0 0 6px var(--cobalt);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-.035em;line-height:1.1;margin-bottom:12px}
+h1 span{color:var(--cobalt-l)}
+.sub{font-size:14px;color:var(--t1);max-width:580px;line-height:1.65;margin-bottom:24px}
+
+/* Steps flow */
+.steps-flow{display:flex;gap:0;margin:32px 0 0;overflow:hidden;border-radius:10px;border:1px solid var(--bd)}
+.step-box{flex:1;padding:16px 18px;background:var(--surface);border-right:1px solid var(--bd);position:relative}
+.step-box:last-child{border-right:none}
+.step-num{width:24px;height:24px;background:var(--cobalt-bg);border:1.5px solid rgba(59,130,246,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--cobalt-l);margin-bottom:8px}
+.step-title{font-size:12px;font-weight:700;color:var(--t0);margin-bottom:3px}
+.step-desc{font-size:11px;color:var(--t1);line-height:1.5}
+.step-arrow{position:absolute;right:-10px;top:50%;transform:translateY(-50%);width:20px;height:20px;background:var(--cobalt);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;z-index:1;border:2px solid var(--bg)}
+
+/* Field sections */
+.section{padding:48px 0;border-bottom:1px solid var(--bd)}
+.section:last-child{border-bottom:none}
+.s-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--cobalt-bg);border:1.5px solid rgba(59,130,246,.25);border-radius:50%;font-size:11px;font-weight:800;color:var(--cobalt-l);margin-bottom:10px}
+.s-head{font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;letter-spacing:-.02em;color:var(--t0);margin-bottom:4px}
+.s-field{font-size:12px;color:var(--amber-l);font-weight:700;letter-spacing:.04em;margin-bottom:10px}
+.s-desc{font-size:13px;color:var(--t1);line-height:1.6;margin-bottom:20px;max-width:600px}
+
+/* Content box */
+.content-box{background:var(--surface);border:1px solid var(--bd);border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.cb-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--el);border-bottom:1px solid var(--bd)}
+.cb-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t2)}
+.copy-btn{display:flex;align-items:center;gap:5px;padding:5px 13px;background:var(--cobalt);border:none;border-radius:6px;font-family:'Nunito Sans',sans-serif;font-size:11px;font-weight:800;color:#fff;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:all .15s}
+.copy-btn:hover{background:var(--cobalt-l);transform:translateY(-1px)}
+.copy-btn.ok{background:var(--jade)}
+.cb-body{padding:16px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.7;color:var(--t0);white-space:pre-wrap;word-break:break-word;max-height:360px;overflow-y:auto}
+.cb-body::-webkit-scrollbar{width:4px}
+.cb-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+.cb-body::-webkit-scrollbar-track{background:transparent}
+
+/* Simple text content */
+.cb-simple{padding:16px;font-size:13px;line-height:1.7;color:var(--t0)}
+
+/* Inline tip */
+.tip{display:flex;gap:10px;padding:12px 16px;background:var(--jade-bg);border:1px solid rgba(34,197,94,.18);border-radius:8px;margin-bottom:16px;font-size:12px;color:var(--t1);line-height:1.6}
+.tip strong{color:var(--jade-l)}
+.warn{background:var(--amber-bg);border-color:rgba(249,115,22,.18)}
+.warn strong{color:var(--amber-l)}
+
+/* Visual field preview */
+.field-preview{display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--ov);border:1px solid var(--bd2);border-radius:8px;margin-bottom:16px}
+.fp-icon{font-size:24px;flex-shrink:0;margin-top:2px}
+.fp-label{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--t2);margin-bottom:3px}
+.fp-title{font-size:14px;font-weight:700;color:var(--t0);margin-bottom:2px}
+.fp-hint{font-size:11px;color:var(--t1)}
+
+/* Tag */
+.tag{padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.tag-req{background:var(--coral-bg);color:var(--coral-l)}
+.tag-opt{background:rgba(255,255,255,.06);color:var(--t1)}
+
+/* Footer */
+.footer{padding:40px 0;text-align:center;font-size:12px;color:var(--t2);border-top:1px solid var(--bd)}
+.footer strong{color:var(--t1)}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<div class="wrap">
+  <div class="eyebrow"><div class="dot"></div>Stitch Upload Guide · MLPHoma</div>
+  <h1>Isi Dialog Stitch<br><span>Step-by-step</span></h1>
+  <p class="sub">Panduan lengkap mengisi setiap field di dialog "Mulai dengan desain Anda" di Google Stitch untuk mendesign ulang MLPHoma dengan sistem MERIDIAN.</p>
+
+  <div class="steps-flow">
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-title">DESIGN.md</div>
+      <div class="step-desc">Paste isi DESIGN.md ke field utama</div>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-title">Upload File</div>
+      <div class="step-desc">Upload DESIGN.md + token CSS</div>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-title">Petunjuk</div>
+      <div class="step-desc">Paste instruksi tambahan</div>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">4</div>
+      <div class="step-title">Lanjutkan</div>
+      <div class="step-desc">Klik tombol Lanjutkan ✨</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- FIELD 1 — DESIGN.MD PASTE -->
+<div class="section">
+<div class="wrap">
+  <div class="s-num">1</div>
+  <div class="s-head">Tempel DESIGN.md yang ada</div>
+  <div class="s-field">↑ Field pertama di dialog · Wajib diisi</div>
+  <div class="s-desc">Copy seluruh konten di bawah ini, lalu tempel ke field "Tempel file DESIGN.md di sini..." di Stitch. Ini adalah inti dari seluruh design system MLPHoma.</div>
+
+  <div class="field-preview">
+    <div class="fp-icon">📋</div>
+    <div>
+      <div class="fp-label">Field di Stitch</div>
+      <div class="fp-title">Tempel file DESIGN.md di sini...</div>
+      <div class="fp-hint">Text area besar di bagian atas dialog · Copy semua konten di bawah ini</div>
+    </div>
+    <span class="tag tag-req" style="margin-left:auto;flex-shrink:0;">WAJIB</span>
+  </div>
+
+  <div class="content-box">
+    <div class="cb-head">
+      <span class="cb-label">DESIGN.md — MLPHoma MERIDIAN v1.0 (1.400+ kata)</span>
+      <button class="copy-btn" onclick="copyEl(this,'designmd')">📋 COPY SEMUA</button>
+    </div>
+    <div class="cb-body" id="designmd"># DESIGN.md — MLPHoma · NATA LABA Construction Suite
+
+## Product Overview
+
+**MLPHoma** is a professional web-based construction project management platform (PWA) for the Indonesian construction industry. It helps project teams — project managers to field supervisors — manage the full construction lifecycle: cost planning, scheduling, finance, procurement, and handover.
+
+**Primary users:** Project Manager, Quantity Surveyor (QS), Site Manager, Finance Officer, Procurement Admin, QHSE Officer, Directors.
+
+**Business context:** All monetary values are in Indonesian Rupiah (IDR). Follows SNI standards for AHSP and TKDN regulations.
+
+---
+
+## Design Language
+
+**System name:** MERIDIAN v1.0
+**Aesthetic:** Obsidian Precision × Indonesian Craft
+**Character:** Premium enterprise tool. Like Bloomberg Terminal designed for Indonesian infrastructure — dark, data-dense, trustworthy, with warm gold accents referencing Indonesian architectural heritage.
+**Primary theme:** Dark-first (obsidian surfaces + electric cobalt actions + warm gold for all financial data). Light mode: warm limestone parchment.
+**Signature rule:** Every Indonesian Rupiah value is ALWAYS in warm gold (#FBBF24 dark / #92400E light) using JetBrains Mono — never broken.
+
+---
+
+## Color Palette
+
+### Dark Mode (primary)
+- bg-page:      #060910  (obsidian black)
+- bg-surface:   #0C1220  (deep navy)
+- bg-elevated:  #131C2E  (modals/drawers)
+- bg-overlay:   #1A253C  (dropdowns)
+- border:       #192338 / #213047
+- text-primary: #E2EAF5  (15.2:1 contrast AAA)
+- text-secondary:#7A90AB  (6.1:1 AA+)
+- text-muted:   #3D5068
+- background has subtle blueprint grid: 80px major / 16px minor, very faint cobalt lines
+
+### Light Mode (warm limestone)
+- bg-page:    #F2EFE9  (warm limestone parchment, NOT pure white)
+- bg-surface: #FDFCF9  (warm white)
+- border:     #CEC8BA
+- text:       #1A1814 (warm near-black) / #50493E (secondary)
+- grid lines: warm sepia rgba(120,100,60,.05)
+
+### Accent Colors (adaptive per mode)
+- Cobalt Blue (action/selection): dark #3B82F6/#60A5FA · light #2563EB/#1E40AF
+- Warm Gold (ALL IDR values — mandatory): dark #F59E0B/#FBBF24 · light #D97706/#92400E
+- Jade Green (success/positive KPI): dark #22C55E/#4ADE80 · light #16A34A/#14532D
+- Coral Red (danger/error/overdue): dark #F43F5E/#FB7185 · light #E11D48/#9F1239
+- Amber Orange (warning/pending): dark #F97316/#FB923C · light #EA580C/#9A3412
+- Violet (analytics/AI): dark #8B5CF6/#A78BFA · light #7C3AED/#5B21B6
+- Teal (realtime/live): dark #14B8A6/#2DD4BF · light #0D9488/#134E4A
+
+---
+
+## Typography
+
+- Heading/Display: font "Bricolage Grotesque" — weights 700-800, letter-spacing -0.035em, variable opsz axis
+- Body/UI: font "Nunito Sans" — weights 400-700
+- Data/Numbers/KPIs: font "JetBrains Mono" — ALL numeric values only, tabular figures
+
+### Type Scale
+- 10px: table headers (uppercase, 0.12em tracking)
+- 12px: captions, badges
+- 14px: body small, sidebar
+- 16px: default body
+- 20-30px: section headings (Bricolage Grotesque)
+- 36-48px: KPI values (JetBrains Mono)
+
+### Rules
+- ALL Rupiah: JetBrains Mono + gold color — NO EXCEPTIONS
+- Format: "Rp 12.800.000.000" (dot=thousands, no decimal for whole)
+- Percentage: "34,5%" (comma=decimal, Indonesian locale)
+
+---
+
+## Spacing (4px base)
+- 4px, 8px, 12px, 16px, 24px, 32px, 48px
+- Card padding: 20px · Table cell: 9px×12px · Page: 24px horizontal
+
+## Border Radius
+- 2px (progress bars) · 4px (badges) · 6px (buttons/inputs) · 8px (dropdowns)
+- 12px (cards — most common) · 16px (drawers) · 9999px (pills/avatars)
+
+## Elevation
+- Cards: shadow-xs (0 1px 2px rgba(0,0,0,.5))
+- Hover/dropdown: shadow-md (0 4px 16px rgba(0,0,0,.5))
+- Modal: shadow-lg (0 16px 40px rgba(0,0,0,.6))
+- KPI card glow: 0 0 24px rgba(accent-color, 0.16)
+
+---
+
+## Layout Structure (every page)
+
+L1 — AppHeader (56px): Logo + brand name | Active project name + status badge | Search | Bell + Avatar
+L2 — GlobalContextBar (44px): Project code | Pipeline step | Status | "● LIVE" teal indicator | Day counter
+L3 — WorkspaceHeader: Title (Bricolage Grotesque 28px) | Subtitle (muted) | Action buttons right
+L4 — SummaryStrip: 5-6 horizontal KPI cards with 1px dividers
+L5 — AlertStrip: Conditional warning banner
+L6 — ContentArea: Main content (tree/table/chart/tabs)
+
+Navigation sidebar: 224px wide, collapsible to 60px.
+Groups: Overview | Cost Control | Schedule | Operations | Portfolio | System
+
+---
+
+## Components
+
+### Cards
+- Background: surface color · Border: 1px · Radius: 12px
+- TOP ACCENT STRIP: 3px solid colored bar matching category (mandatory)
+- Hover: translateY(-2px) + enhanced shadow
+
+### Status Pills (always full rounded)
+- 11px Nunito Sans 700 · Always includes 5px colored dot prefix "●"
+- ACTIVE/APPROVED/COMPLETED → jade · PENDING/IN PROGRESS → amber
+- OVERDUE/REJECTED → coral · PLANNING → cobalt · DRAFT → muted gray
+- LIVE/AUTO → teal · AI/ANALYTICS → violet
+
+### KPI Cards (Command Center, 2×4 grid)
+- Large JetBrains Mono value + colored top border + trend indicator
+- Financial values: always gold · Positive KPI: jade · Warning: amber · Negative: coral
+- "LIVE" badge: teal with pulsing dot animation
+
+### Data Tables
+- Headers: 10px uppercase, letter-spacing 0.12em, muted, sticky
+- Default row height: 38px · Alternating stripe: rgba(cobalt, 0.025)
+- Financial cells: right-aligned, JetBrains Mono, gold color
+- Density: compact 30px / default 38px / comfortable 50px
+
+### WBS Tree
+- L1 codes: cobalt pill background · L2: muted gray pill · L3: no background
+- Children indented 20px per level + 1.5px border-left connector
+- Drag handle: hover only · Action buttons: hover only (right side)
+- Selected row: cobalt bg rgba(8%) + cobalt border
+
+### WBS Badges (right side of each row)
+- Auto: teal (timeline auto-propagated) · Locked: amber (manual required)
+- Budget: gold (RAB linked amount) · QC Passed: jade · QC Pending: amber
+
+### Buttons
+- Primary: cobalt bg · Ghost: transparent · Outline: transparent+border · Destructive: coral
+- All: Nunito Sans 700, 12px, 6px×12px padding, radius 7px
+
+---
+
+## Interaction Patterns
+
+### Drag & Drop (WBS)
+- Dragging: 40% opacity + scale(1.02) + large shadow
+- Drop zone: 2px dashed cobalt border + cobalt bg 5%
+
+### Inline Edit (table cells)
+- Hover: subtle bg + 1px border
+- Active: cobalt border 1.5px + glow
+- Small [✓] [✗] buttons appear below
+
+### Delete Confirmation
+- Always an AlertDialog (never silent delete)
+- Shows: item name + child count + linked records to be unlinked
+- Amber warning box for cascade effects
+- [Batal] outline | [Hapus Semua] coral
+
+### Empty States
+- Centered icon in colored box + Indonesian title + brief description + CTA button
+
+### Toast Notifications
+- Jade ✓ success · Coral ✕ error · Amber ⚠ warning · Cobalt ℹ info
+- Position: bottom-right · Auto-dismiss: 4 seconds
+
+---
+
+## Real Data (use this — not lorem ipsum)
+
+Project: CMPLNG VILLAGE · Code: PRJ-2026-0019 · Status: ACTIVE
+Budget: Rp 12.800.000.000 · RAB: Rp 4.966.572.640 (39%)
+Actual Spent: Rp 1.847.293.150 (14,4%) · Sisa: Rp 10.952.706.850
+CPI: 1.12 (jade — efficient) · SPI: 0.87 (amber — slight delay)
+Progress: 34,5% (vs target 38,2%) · Hari ke-45 dari 180 hari
+EAC: Rp 11.400.000.000 · VAC: +Rp 1.400.000.000 (under budget)
+Approval Pending: 7 (3 overdue, 4 dalam SLA)
+
+WBS Structure:
+1 Pekerjaan Persiapan | Rp 450jt | 100% | QC PASSED
+  1.1 Mobilisasi | 100% | Auto | QC PASSED
+  1.2 Pembersihan Lahan | 100% | Auto | QC PASSED
+2 Pekerjaan Sipil | Rp 3,8M | 58% | QC PENDING
+  2.1 Pondasi | 85% | Auto
+    2.1.1 Galian Tanah | 100% | QC PASSED
+    2.1.2 Pengecoran Beton K-300 | 70% | LOCKED
+  2.2 Struktur Atas | 32% | Auto | Rp 2,1M
+3 MEP | Rp 716jt | 0% | QC PENDING
+
+---
+
+## Accessibility
+
+- WCAG AA minimum all text (4.5:1) · AAA for financial data (7:1)
+- Focus: 4px solid cobalt, 2px offset
+- All interactive: min 44px touch target
+- Full keyboard navigation: Tab, Enter, Escape, Arrow keys
+- aria-live regions for dynamic content
+
+## Device Priority
+
+Desktop-first (1280-1440px): Command Center, Costing, Schedule, Finance, Supply Chain
+Mobile-first (375px): Field Tasks only
+Tablet (768px+): Documents, QHSE, Handover, Settings
+
+## Brand
+
+Company: NATA LABA · Product: MLPHoma · Tagline: CONSTRUCTION SUITE
+Logo color: #F97316 (orange) — sidebar header only
+Stack: React 18 · TypeScript · Tailwind CSS · shadcn/ui · Supabase · PWA
+
+---
+*DESIGN.md v1.0 — MERIDIAN System — Juni 2026*</div>
+  </div>
+</div>
+</div>
+
+<!-- FIELD 2 — FILE UPLOAD -->
+<div class="section">
+<div class="wrap">
+  <div class="s-num">2</div>
+  <div class="s-head">Upload Kode, Gambar, Font, dan Logo</div>
+  <div class="s-field">↑ Tombol kedua: "Upload kode, gambar, font, dan logo" · Opsional tapi sangat direkomendasikan</div>
+  <div class="s-desc">Upload file-file ini dari folder <code style="font-family:'JetBrains Mono';font-size:11px;background:var(--el);padding:1px 6px;border-radius:3px;">docs/design/</code> proyek untuk memberi Stitch referensi visual lengkap.</div>
+
+  <div class="tip">
+    <span>💡</span>
+    <div><strong>File yang sudah siap upload:</strong> Semua file berikut sudah ada di folder <code style="font-family:'JetBrains Mono';font-size:11px;">docs/design/</code> proyek Anda.</div>
+  </div>
+
+  <div style="display:grid;gap:10px;">
+
+    <div class="field-preview" style="margin-bottom:0;">
+      <div class="fp-icon">🎨</div>
+      <div style="flex:1;">
+        <div class="fp-label">File 1 — Token System CSS</div>
+        <div class="fp-title" style="font-family:'JetBrains Mono';font-size:12px;">src/styles/design-tokens-meridian.css</div>
+        <div class="fp-hint">Seluruh CSS custom properties MERIDIAN: warna, tipografi, spacing, shadow, animasi. Stitch bisa membaca variabel CSS ini.</div>
+      </div>
+      <span class="tag" style="background:var(--jade-bg);color:var(--jade-l);margin-left:12px;flex-shrink:0;">UPLOAD</span>
+    </div>
+
+    <div class="field-preview" style="margin-bottom:0;">
+      <div class="fp-icon">🖼</div>
+      <div style="flex:1;">
+        <div class="fp-label">File 2 — Design Showcase HTML</div>
+        <div class="fp-title" style="font-family:'JetBrains Mono';font-size:12px;">docs/design/mlphoma-design-system.html</div>
+        <div class="fp-hint">Showcase visual lengkap: KPI cards, WBS tree, tabel RAB, semua status pills, interaction states — dengan data nyata CMPLNG VILLAGE.</div>
+      </div>
+      <span class="tag" style="background:var(--jade-bg);color:var(--jade-l);margin-left:12px;flex-shrink:0;">UPLOAD</span>
+    </div>
+
+    <div class="field-preview" style="margin-bottom:0;">
+      <div class="fp-icon">📸</div>
+      <div style="flex:1;">
+        <div class="fp-label">File 3 — Screenshot Aplikasi Saat Ini</div>
+        <div class="fp-title" style="font-family:'JetBrains Mono';font-size:12px;">Screenshot dari browser (Command Center, WBS, dll)</div>
+        <div class="fp-hint">Ambil screenshot halaman-halaman utama yang ada sekarang (Ctrl+Shift+S di Chrome). Ini membantu Stitch memahami struktur yang sudah ada.</div>
+      </div>
+      <span class="tag" style="background:var(--amber-bg);color:var(--amber-l);margin-left:12px;flex-shrink:0;">OPTIONAL</span>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- FIELD 3 — GITHUB REPO -->
+<div class="section">
+<div class="wrap">
+  <div class="s-num">3</div>
+  <div class="s-head">Repositori GitHub Publik</div>
+  <div class="s-field">↑ Field "https://github.com/owner/repo" · Opsional</div>
+  <div class="s-desc">Jika repo MLPHoma bersifat publik di GitHub, masukkan URL-nya di sini. Stitch akan membaca kode komponen React yang ada untuk memahami struktur.</div>
+
+  <div class="tip warn">
+    <span>⚠</span>
+    <div><strong>Repo Privat:</strong> Jika repo bersifat privat (tidak publik), kosongkan field ini. Stitch hanya bisa membaca repo publik. Lewati ke step berikutnya.</div>
+  </div>
+
+  <div class="content-box">
+    <div class="cb-head">
+      <span class="cb-label">Format URL (jika repo publik)</span>
+      <button class="copy-btn" onclick="copyEl(this,'github')">📋 COPY</button>
+    </div>
+    <div class="cb-body" id="github">https://github.com/[username]/MLPHoma</div>
+  </div>
+</div>
+</div>
+
+<!-- FIELD 4 — TAMBAHKAN SITUS -->
+<div class="section">
+<div class="wrap">
+  <div class="s-num">4</div>
+  <div class="s-head">Tambahkan Situs</div>
+  <div class="s-field">↑ Field "https://example.com" · Opsional</div>
+  <div class="s-desc">Jika aplikasi MLPHoma sudah di-deploy dan bisa diakses publik, masukkan URL-nya. Stitch akan "melihat" tampilan aslinya sebagai referensi.</div>
+
+  <div class="tip">
+    <span>💡</span>
+    <div><strong>Tips:</strong> Jika berjalan di localhost, Stitch tidak bisa mengaksesnya. Anda bisa deploy sementara ke Vercel/Netlify (gratis) dan masukkan URL-nya di sini. Atau kosongkan field ini jika belum deploy.</div>
+  </div>
+
+  <div class="content-box">
+    <div class="cb-head">
+      <span class="cb-label">URL Aplikasi (jika sudah deploy)</span>
+      <button class="copy-btn" onclick="copyEl(this,'situs')">📋 COPY</button>
+    </div>
+    <div class="cb-body" id="situs">https://mlphoma.vercel.app
+<!-- Atau URL deploy Anda yang lain -->
+<!-- Kosongkan jika belum deploy / masih localhost --></div>
+  </div>
+</div>
+</div>
+
+<!-- FIELD 5 — PETUNJUK TAMBAHAN -->
+<div class="section">
+<div class="wrap">
+  <div class="s-num">5</div>
+  <div class="s-head">Petunjuk Tambahan</div>
+  <div class="s-field">↑ Field "misalnya, Utamakan contoh mode gelap..." · Sangat direkomendasikan</div>
+  <div class="s-desc">Instruksi akhir yang paling menentukan arah desain. Copy salah satu versi di bawah sesuai kebutuhan Anda.</div>
+
+  <div style="display:flex;gap:10px;margin-bottom:16px;font-size:12px;color:var(--t1);">
+    <span>Pilih versi yang sesuai:</span>
+    <button onclick="showVersion('dark')" id="btn-dark" style="padding:4px 10px;border-radius:999px;border:none;cursor:pointer;font-family:'Nunito Sans';font-size:11px;font-weight:700;background:var(--cobalt-bg);color:var(--cobalt-l);">🌙 Dark Mode</button>
+    <button onclick="showVersion('light')" id="btn-light" style="padding:4px 10px;border-radius:999px;border:none;cursor:pointer;font-family:'Nunito Sans';font-size:11px;font-weight:700;background:var(--el);color:var(--t1);">☀️ Light Mode</button>
+    <button onclick="showVersion('both')" id="btn-both" style="padding:4px 10px;border-radius:999px;border:none;cursor:pointer;font-family:'Nunito Sans';font-size:11px;font-weight:700;background:var(--el);color:var(--t1);">☀️🌙 Keduanya</button>
+  </div>
+
+  <!-- Dark version -->
+  <div id="v-dark" class="content-box">
+    <div class="cb-head">
+      <span class="cb-label">Petunjuk Tambahan — Dark Mode Priority</span>
+      <button class="copy-btn" onclick="copyEl(this,'pd')">📋 COPY</button>
+    </div>
+    <div class="cb-body" id="pd">Redesign aplikasi manajemen proyek konstruksi Indonesia "MLPHoma" (NATA LABA Construction Suite) menggunakan sistem MERIDIAN yang sudah dijelaskan di DESIGN.md.
+
+PRIORITAS UTAMA:
+1. Gunakan DARK MODE sebagai theme utama dengan background #060910 (obsidian black)
+2. Tambahkan blueprint grid texture yang sangat halus di background halaman (garis kotak 80px)
+3. SEMUA nilai Rupiah/IDR wajib menggunakan font monospace warna gold (#FBBF24) — ini adalah aturan visual terpenting
+4. Font heading: Bricolage Grotesque 700-800 weight. Font body: Nunito Sans. Font angka/KPI: JetBrains Mono
+
+HALAMAN YANG DIDESIGN TERLEBIH DAHULU:
+- Command Center dashboard dengan 8 KPI cards (2 baris × 4 kolom)
+- WBS module dengan tree hierarki + detail panel samping (layout 2 kolom)
+
+TONE: Premium enterprise tool, tidak playful. Seperti Bloomberg Terminal tapi untuk konstruksi Indonesia. Data-dense, presisi tinggi, serius tapi tidak dingin.
+
+WARNA WAJIB:
+- Background halaman: #060910
+- Cards/panel: #0C1220
+- Action buttons: #3B82F6 cobalt blue
+- Semua angka IDR: #FBBF24 gold + JetBrains Mono font
+- Status berhasil/positif: #4ADE80 jade green
+- Status bahaya/negatif: #FB7185 coral red
+- Status pending/warning: #FB923C amber
+
+LAYOUT: Desktop-first 1440px. Sidebar navigasi 224px di kiri. Header 56px. Context bar 44px di bawah header.
+
+DATA PROYEK UNTUK DEMO:
+Nama: CMPLNG VILLAGE | Kode: PRJ-2026-0019 | Budget: Rp 12.800.000.000
+CPI: 1.12 | SPI: 0.87 | Progress: 34,5% | Hari ke-45 dari 180 hari
+Semua angka ini harus muncul di desain — jangan gunakan placeholder.</div>
+  </div>
+
+  <!-- Light version (hidden) -->
+  <div id="v-light" class="content-box" style="display:none;">
+    <div class="cb-head">
+      <span class="cb-label">Petunjuk Tambahan — Light Mode Priority</span>
+      <button class="copy-btn" onclick="copyEl(this,'pl')">📋 COPY</button>
+    </div>
+    <div class="cb-body" id="pl">Redesign aplikasi manajemen proyek konstruksi Indonesia "MLPHoma" (NATA LABA) menggunakan MERIDIAN LIGHT MODE.
+
+TEMA LIGHT: "Limestone" — hangat seperti kertas arsitektur, bukan putih dingin
+- Background halaman: #F2EFE9 (limestone warm — bukan pure white #FFFFFF)
+- Card surface: #FDFCF9 (warm white)
+- Border: #CEC8BA (warm gray)
+- Blueprint grid: garis sepia sangat halus rgba(120,100,60,.05)
+- Shadow: hangat rgba(60,50,30,.10) — bukan hitam dingin
+
+ATURAN WARNA LIGHT MODE (WAJIB):
+- Teks utama: #1A1814 (warm near-black, bukan pure black)
+- SEMUA nilai IDR/Rupiah: #92400E (dark amber) + JetBrains Mono — warna gold terang tidak bisa dibaca di light
+- Success/positive: #14532D (dark forest green) — bukan green terang
+- Danger/error: #9F1239 (dark rose) — bukan coral terang
+- Primary action: #2563EB (darker cobalt untuk kontras di light bg)
+
+TONE: Editorial, premium, seperti laporan keuangan high-end. Bersih tapi warm.
+
+Halaman: Command Center dashboard (1440px). Layout sama dengan dark mode tapi tone parchment.
+Data: CMPLNG VILLAGE | Rp 12.800.000.000 | CPI 1.12 | SPI 0.87 | Progress 34,5%</div>
+  </div>
+
+  <!-- Both version (hidden) -->
+  <div id="v-both" class="content-box" style="display:none;">
+    <div class="cb-head">
+      <span class="cb-label">Petunjuk Tambahan — Dark + Light Comparison</span>
+      <button class="copy-btn" onclick="copyEl(this,'pb')">📋 COPY</button>
+    </div>
+    <div class="cb-body" id="pb">Redesign MLPHoma (NATA LABA Construction Suite) dan tampilkan DUA versi side-by-side: Dark Mode dan Light Mode.
+
+DARK MODE (kiri layar):
+- Background: #060910 obsidian, cards: #0C1220, blueprint grid cobalt
+- IDR values: #FBBF24 gold, success: #4ADE80 jade, danger: #FB7185 coral
+
+LIGHT MODE (kanan layar):
+- Background: #F2EFE9 limestone (hangat, bukan pure white!), cards: #FDFCF9
+- IDR values: #92400E dark amber (bukan kuning terang!), success: #14532D, danger: #9F1239
+- Blueprint grid: sepia rgba(120,100,60,.05)
+
+KEDUANYA MENGGUNAKAN:
+- Font Bricolage Grotesque untuk heading, Nunito Sans untuk body, JetBrains Mono untuk angka
+- Layout identik: sidebar 224px, header 56px, 8 KPI cards 2×4
+- Status pills kompak dengan dot prefix ●
+- Cards dengan 3px top accent strip berwarna
+
+HALAMAN: Command Center dashboard. Data: CMPLNG VILLAGE, Rp 12.800.000.000, CPI 1.12, SPI 0.87, Progress 34,5%.
+
+Tunjukkan bagaimana design system yang sama bisa adaptif antara dark dan light mode dengan estetika yang konsisten.</div>
+  </div>
+</div>
+</div>
+
+<!-- SUMMARY -->
+<div class="section">
+<div class="wrap">
+  <div class="s-head">Ringkasan Pengisian Dialog</div>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--bd);border-radius:8px;">
+      <span style="font-size:18px;">1️⃣</span>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Tempel DESIGN.md</div><div style="font-size:11px;color:var(--t1);">Copy isi box "DESIGN.md" di atas → paste ke field textarea pertama</div></div>
+      <span class="tag tag-req">WAJIB</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--bd);border-radius:8px;">
+      <span style="font-size:18px;">2️⃣</span>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Upload file</div><div style="font-size:11px;color:var(--t1);">Upload: design-tokens-meridian.css + mlphoma-design-system.html</div></div>
+      <span class="tag" style="background:var(--jade-bg);color:var(--jade-l);">DISARANKAN</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--bd);border-radius:8px;">
+      <span style="font-size:18px;">3️⃣</span>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">GitHub repo</div><div style="font-size:11px;color:var(--t1);">Isi jika repo publik, kosongkan jika privat</div></div>
+      <span class="tag tag-opt">OPSIONAL</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--bd);border-radius:8px;">
+      <span style="font-size:18px;">4️⃣</span>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Tambahkan situs</div><div style="font-size:11px;color:var(--t1);">Isi URL deploy jika ada, kosongkan jika localhost</div></div>
+      <span class="tag tag-opt">OPSIONAL</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface);border:1px solid var(--bd);border-radius:8px;">
+      <span style="font-size:18px;">5️⃣</span>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Petunjuk tambahan</div><div style="font-size:11px;color:var(--t1);">Copy salah satu versi "Petunjuk Tambahan" di atas (Dark / Light / Keduanya)</div></div>
+      <span class="tag tag-req">WAJIB</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--cobalt-bg);border:1px solid rgba(59,130,246,.2);border-radius:8px;margin-top:4px;">
+      <span style="font-size:20px;">✨</span>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:700;color:var(--cobalt-l);">Klik "Lanjutkan"</div><div style="font-size:11px;color:var(--t1);">Stitch akan memproses semua input dan memulai desain MLPHoma dengan sistem MERIDIAN</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="footer">
+  <p><strong>MLPHoma · MERIDIAN Design System · Stitch Upload Guide</strong></p>
+  <p style="margin-top:4px;">Bricolage Grotesque · Nunito Sans · JetBrains Mono · Dark + Light · WCAG AA+</p>
+</div>
+
+<script>
+async function copyEl(btn, id) {
+  const text = document.getElementById(id).textContent;
+  await navigator.clipboard.writeText(text.trim());
+  btn.textContent = '✓ COPIED!';
+  btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = '📋 COPY SEMUA'; btn.classList.remove('ok'); }, 2000);
+}
+
+function showVersion(v) {
+  ['dark','light','both'].forEach(x => {
+    document.getElementById('v-'+x).style.display = x===v ? 'block' : 'none';
+    const btn = document.getElementById('btn-'+x);
+    if(x===v) { btn.style.background='var(--cobalt-bg)'; btn.style.color='var(--cobalt-l)'; }
+    else { btn.style.background='var(--el)'; btn.style.color='var(--t1)'; }
+  });
+}
+</script>
+</body>
+</html>

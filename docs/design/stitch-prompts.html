@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLPHoma · Stitch Design Prompts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:   #060910; --surface: #0c1220; --elevated: #131c2e; --overlay: #1a253c;
+  --bd:   #192338; --bd2: #213047; --focus: #3B82F6;
+  --t0:   #E2EAF5; --t1: #7A90AB; --t2: #3D5068;
+  --cobalt:#3B82F6; --cobalt-l:#60A5FA; --cobalt-bg:rgba(59,130,246,.08);
+  --gold:  #F59E0B; --gold-l:#FBBF24;   --gold-bg:rgba(245,158,11,.08);
+  --jade:  #22C55E; --jade-l:#4ADE80;   --jade-bg:rgba(34,197,94,.08);
+  --coral: #F43F5E; --coral-l:#FB7185;  --coral-bg:rgba(244,63,94,.08);
+  --amber: #F97316; --amber-l:#FB923C;  --amber-bg:rgba(249,115,22,.08);
+  --violet:#8B5CF6; --violet-l:#A78BFA; --violet-bg:rgba(139,92,246,.08);
+  --teal:  #14B8A6; --teal-l:#2DD4BF;   --teal-bg:rgba(20,184,166,.08);
+  --sh-md: 0 4px 16px rgba(0,0,0,.5), 0 2px 4px rgba(0,0,0,.4);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--bg);
+  background-image:
+    linear-gradient(rgba(59,130,246,.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,.022) 1px, transparent 1px),
+    linear-gradient(rgba(59,130,246,.01) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,.01) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+  color: var(--t0);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+/* ── Hero ──────────────────────────────────────────────── */
+.hero { padding: 72px 0 56px; border-bottom: 1px solid var(--bd); position: relative; overflow: hidden; }
+.hero::before {
+  content: ''; position: absolute; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 800px; height: 500px;
+  background: radial-gradient(ellipse, rgba(59,130,246,.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 13px; background: var(--cobalt-bg);
+  border: 1.5px solid rgba(59,130,246,.2); border-radius: 999px;
+  font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--cobalt-l); margin-bottom: 18px;
+}
+.live-dot { width:6px;height:6px;background:var(--cobalt);border-radius:50%;box-shadow:0 0 8px var(--cobalt);animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+h1 { font-family:'Bricolage Grotesque',sans-serif; font-size:clamp(32px,4vw,52px); font-weight:800; letter-spacing:-.035em; line-height:1.1; margin-bottom:14px; }
+h1 span { color: var(--cobalt-l); }
+.sub { font-size:15px; color:var(--t1); max-width:600px; line-height:1.65; margin-bottom:28px; }
+.chips { display:flex; gap:8px; flex-wrap:wrap; }
+.chip { display:flex;align-items:center;gap:5px; padding:4px 11px; background:var(--elevated); border:1px solid var(--bd2); border-radius:999px; font-size:11px;font-weight:600;color:var(--t1); }
+
+/* ── How to use box ────────────────────────────────────── */
+.how-box {
+  margin: 40px 0 0;
+  padding: 18px 22px;
+  background: var(--amber-bg); border: 1px solid rgba(249,115,22,.25); border-radius: 10px;
+}
+.how-box h3 { font-family:'Bricolage Grotesque',sans-serif; font-size:14px; font-weight:700; color:var(--amber-l); margin-bottom:10px; display:flex;align-items:center;gap:8px; }
+.how-steps { display:flex; flex-direction:column; gap:6px; }
+.how-step { display:flex; align-items:flex-start; gap:10px; font-size:12px; color:var(--t1); }
+.step-num { width:20px;height:20px;background:var(--amber-bg);border:1px solid rgba(249,115,22,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--amber-l);flex-shrink:0; }
+
+/* ── Section & Card ────────────────────────────────────── */
+section { padding: 64px 0; border-bottom: 1px solid var(--bd); }
+section:last-child { border-bottom: none; }
+.s-eye { font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--t2);margin-bottom:5px; }
+.s-head { font-family:'Bricolage Grotesque',sans-serif; font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--t0);margin-bottom:6px; }
+.s-desc { font-size:13px;color:var(--t1);margin-bottom:28px;line-height:1.6;max-width:640px; }
+
+.prompt-card {
+  background: var(--surface); border: 1px solid var(--bd);
+  border-radius: 12px; overflow: hidden;
+  box-shadow: var(--sh-md);
+  margin-bottom: 24px;
+}
+.pc-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--elevated); border-bottom: 1px solid var(--bd);
+}
+.pc-title { font-family:'Bricolage Grotesque',sans-serif; font-size:14px; font-weight:700; color:var(--t0); display:flex;align-items:center;gap:8px; }
+.pc-tags { display:flex; gap:6px; }
+.tag { padding:2px 8px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase; }
+.tag-desk  { background:var(--cobalt-bg);color:var(--cobalt-l); }
+.tag-mob   { background:var(--jade-bg);color:var(--jade-l); }
+.tag-dark  { background:rgba(255,255,255,.06);color:var(--t1); }
+.tag-light { background:rgba(255,248,220,.08);color:#D97706; }
+.tag-pri   { background:var(--coral-bg);color:var(--coral-l); }
+
+.pc-body { padding: 18px; }
+.pc-desc { font-size:12px;color:var(--t1);margin-bottom:14px;line-height:1.6; }
+
+.prompt-box {
+  background: var(--overlay); border: 1px solid var(--bd2);
+  border-radius: 8px; overflow: hidden;
+}
+.pb-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 8px 14px;
+  background: var(--elevated); border-bottom: 1px solid var(--bd);
+}
+.pb-label { font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--t2); }
+.copy-btn {
+  display:flex; align-items:center; gap:5px;
+  padding: 5px 12px;
+  background: var(--cobalt); border: none; border-radius: 6px;
+  font-family:'Nunito Sans',sans-serif; font-size:11px; font-weight:800;
+  color: #fff; cursor: pointer; letter-spacing:.04em; text-transform:uppercase;
+  transition: all .15s;
+}
+.copy-btn:hover { background:var(--cobalt-l); transform:translateY(-1px); }
+.copy-btn.copied { background:var(--jade); }
+.prompt-text {
+  padding: 16px; margin: 0;
+  font-family:'JetBrains Mono',monospace; font-size:11.5px; line-height:1.75;
+  color: var(--t0);
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 420px; overflow-y: auto;
+}
+.prompt-text::-webkit-scrollbar { width:4px; }
+.prompt-text::-webkit-scrollbar-track { background:transparent; }
+.prompt-text::-webkit-scrollbar-thumb { background:var(--bd2); border-radius:2px; }
+
+/* ── Token reference box ───────────────────────────────── */
+.token-ref {
+  background: var(--elevated); border: 1px solid var(--bd);
+  border-radius: 10px; padding: 18px; margin-bottom: 32px;
+}
+.tr-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin-top:14px; }
+.tr-item { display:flex; align-items:center; gap:8px; }
+.tr-swatch { width:28px;height:28px;border-radius:5px;flex-shrink:0;border:1px solid rgba(255,255,255,.1); }
+.tr-info { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t1); line-height:1.5; }
+.tr-info strong { display:block; color:var(--t0); font-size:11px; }
+
+/* ── Footer ────────────────────────────────────────────── */
+.footer { padding:40px 0; text-align:center; font-size:12px; color:var(--t2); }
+
+/* ── Scrollbar global ──────────────────────────────────── */
+::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--bg); } ::-webkit-scrollbar-thumb { background:var(--bd2); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+<div class="wrap">
+  <div class="eyebrow"><div class="live-dot"></div>Stitch Prompt Pack · MLPHoma MERIDIAN</div>
+  <h1>Redesign NATA LABA<br><span>dengan Google Stitch</span></h1>
+  <p class="sub">Kumpulan prompt siap-pakai untuk mendesign ulang seluruh modul MLPHoma menggunakan sistem MERIDIAN — termasuk semua token warna, tipografi, layout, dan data nyata proyek.</p>
+  <div class="chips">
+    <div class="chip">🎨 MERIDIAN Token System</div>
+    <div class="chip">☀️ Light + 🌙 Dark</div>
+    <div class="chip">🖥 Desktop-first</div>
+    <div class="chip">📱 Mobile (Field Tasks)</div>
+    <div class="chip">♿ WCAG AA+</div>
+    <div class="chip">🇮🇩 Bahasa Indonesia</div>
+  </div>
+
+  <div class="how-box" style="margin-top:32px;">
+    <h3>🚀 Cara Menggunakan Prompt Ini</h3>
+    <div class="how-steps">
+      <div class="how-step"><div class="step-num">1</div><span>Buka <strong style="color:var(--t0);">stitch.withgoogle.com</strong> di browser</span></div>
+      <div class="how-step"><div class="step-num">2</div><span>Salin <strong style="color:var(--t0);">PREAMBLE</strong> di bawah — ini wajib disertakan di setiap desain (berisi design system)</span></div>
+      <div class="how-step"><div class="step-num">3</div><span>Pilih screen yang ingin didesign, klik <strong style="color:var(--t0);">COPY PROMPT</strong>, tempel ke Stitch</span></div>
+      <div class="how-step"><div class="step-num">4</div><span>Untuk setiap screen baru: tempel <strong style="color:var(--t0);">PREAMBLE + Screen Prompt</strong> bersama-sama</span></div>
+      <div class="how-step"><div class="step-num">5</div><span>Iterasi: gunakan screenshot dari Stitch sebagai referensi untuk prompt berikutnya</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- §0 TOKEN REFERENCE -->
+<section>
+<div class="wrap">
+  <div class="s-eye">§ 0 — Wajib Ada</div>
+  <div class="s-head">PREAMBLE — Design System MERIDIAN</div>
+  <div class="s-desc">Salin ini PERTAMA. Tempel bersama setiap screen prompt. Berisi seluruh spesifikasi visual MERIDIAN yang harus dipahami Stitch.</div>
+
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">🔐 PREAMBLE — Design System (Wajib di setiap prompt)</div>
+      <div class="pc-tags"><span class="tag tag-pri">WAJIB</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Paste ini sebagai bagian pertama dari SETIAP prompt Stitch. Tanpa ini, Stitch tidak akan tahu design system yang dipakai.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PREAMBLE · Design System MERIDIAN v1.0</span>
+          <button class="copy-btn" onclick="copyText(this,'pre0')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="pre0">DESIGN SYSTEM: MERIDIAN v1.0 — NATA LABA Construction Suite
+Product: MLPHoma — Platform manajemen proyek konstruksi Indonesia (PWA, enterprise)
+Target users: Project Manager, Quantity Surveyor, Site Manager, Finance, Direksi
+
+=== TYPOGRAPHY ===
+• Heading/Display: font "Bricolage Grotesque" — weight 700–800, letter-spacing -0.035em, opsz variable axis for large display
+• Body/UI: font "Nunito Sans" — weight 400–700, readable and warm
+• Numbers/Code/KPI: font "JetBrains Mono" — tabular figures (tnum), financial data only
+• Table headers: uppercase, 10px, letter-spacing 0.12em, Nunito Sans 800
+
+=== COLOR — DARK MODE (primary) ===
+• Page background:    #060910  (obsidian black, near-void)
+• Card surface:       #0C1220  (deep navy surface)
+• Elevated panel:     #131C2E  (modals, drawers)
+• Dropdown overlay:   #1A253C
+• Border subtle:      #192338
+• Border default:     #213047
+• Text primary:       #E2EAF5  (contrast 15:1 — AAA)
+• Text secondary:     #7A90AB  (contrast 6.1:1 — AA+)
+• Text muted:         #3D5068  (placeholders only)
+• Background grid texture: very faint blueprint lines at 80px major grid, 16px minor grid
+
+=== COLOR — LIGHT MODE (warm limestone) ===
+• Page background:    #F2EFE9  (warm limestone parchment)
+• Card surface:       #FDFCF9  (warm white)
+• Elevated:           #FFFFFF
+• Border default:     #CEC8BA
+• Text primary:       #1A1814  (warm near-black)
+• Text secondary:     #50493E
+
+=== ACCENT COLORS (both modes) ===
+• Cobalt Blue (primary action, selection, links):
+    Dark: #3B82F6 / #60A5FA    Light: #2563EB / #1E40AF
+• Warm Gold (ALL IDR financial values — mandatory):
+    Dark: #F59E0B / #FBBF24    Light: #D97706 / #92400E
+• Jade Green (success, completed, positive CPI/SPI):
+    Dark: #22C55E / #4ADE80    Light: #16A34A / #14532D
+• Coral Red (danger, negative, error, rejection, overdue):
+    Dark: #F43F5E / #FB7185    Light: #E11D48 / #9F1239
+• Amber Orange (warning, pending, in-progress, SPI warn):
+    Dark: #F97316 / #FB923C    Light: #EA580C / #9A3412
+• Violet (analytics, AI, secondary insight):
+    Dark: #8B5CF6 / #A78BFA    Light: #7C3AED / #5B21B6
+• Teal (realtime, live data, auto-progress, online):
+    Dark: #14B8A6 / #2DD4BF    Light: #0D9488 / #134E4A
+
+=== STATUS PILLS ===
+Compact rounded badges (border-radius full), 11px Nunito Sans 700, with a 5px circle dot prefix.
+• ACTIVE / APPROVED / COMPLETED / PASSED → jade green
+• PENDING / IN PROGRESS / SUBMITTED → amber orange
+• OVERDUE / REJECTED / FAILED / ERROR → coral red
+• PLANNING / INFO / LINKED → cobalt blue
+• DRAFT / ARCHIVED / NEUTRAL → muted gray
+• LIVE / REALTIME / AUTO → teal
+• AI / ANALYTICS / SCENARIO → violet
+• Budget/Financial context → warm gold
+
+=== CARDS ===
+• Background: surface color (dark: #0C1220, light: #FDFCF9)
+• Border: 1px border-default
+• Border radius: 12px
+• Top accent strip: 3px colored border-top matching card category color
+• Hover: slight translateY(-2px) + enhanced shadow
+• Glow effect on KPI cards: 0 0 24px rgba(color, 0.16)
+
+=== LAYOUT STRUCTURE (every page) ===
+L1 — AppHeader (56px): Logo left | Active project + status center | Avatar/notif right
+L2 — GlobalContextBar (44px): Project code | Name | Pipeline step | Status | Live indicator
+L3 — WorkspaceHeader: Page title (Bricolage Grotesque font) + subtitle + action buttons right
+L4 — SummaryStrip: Horizontal KPI cards (5-6 items), separated by 1px dividers
+L5 — AlertStrip: Contextual warning banner (shown only when needed)
+L6 — ContentArea: Main content (tree, table, chart, tabs)
+
+=== NAVIGATION SIDEBAR (224px) ===
+Dark: #0E1525 background, Groups: Overview, Cost Control, Schedule, Operations, Portfolio, System
+Active item: cobalt blue highlight with left border accent
+Icons: 16px Lucide icons, consistent
+
+=== FINANCIAL DATA RULES ===
+• ALL Rupiah (IDR) values MUST use JetBrains Mono font
+• IDR values in dark mode: #FBBF24 (gold) color always
+• IDR values in light mode: #92400E (dark amber) always
+• Format: "Rp 12.800.000.000" (dot as thousands separator, no decimal for whole numbers)
+• Percentage: "34,5%" (comma as decimal — Indonesian locale)
+• Positive variance: jade green, Negative variance: coral red
+
+=== WBS CODE BADGES ===
+• L1 codes (1, 2, 3): cobalt blue pill background, JetBrains Mono bold
+• L2 codes (1.1, 2.3): muted gray background, JetBrains Mono medium
+• L3 codes (1.1.2): no background, muted text, JetBrains Mono
+
+=== SHADOWS (dark mode) ===
+• xs: 0 1px 2px rgba(0,0,0,0.5)
+• sm: 0 2px 6px rgba(0,0,0,0.4)
+• md: 0 4px 16px rgba(0,0,0,0.5)
+• lg: 0 16px 40px rgba(0,0,0,0.6)
+
+=== WCAG ACCESSIBILITY ===
+• All text minimum 4.5:1 contrast ratio (AA)
+• Financial data minimum 7:1 contrast ratio (AAA)
+• Focus ring: 4px solid cobalt, 2px offset
+• All interactive elements 44px minimum touch target</pre>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- §1 COMMAND CENTER -->
+<section>
+<div class="wrap">
+  <div class="s-eye">§ 1 — Phase 1 Priority · Desktop</div>
+  <div class="s-head">Command Center Dashboard</div>
+  <div class="s-desc">Halaman utama yang dilihat pertama setelah login. Berisi KPI utama, activity feed, dan approval inbox. Terpenting untuk kesan pertama.</div>
+
+  <!-- Dark -->
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">🌙 Command Center — Dark Mode</div>
+      <div class="pc-tags"><span class="tag tag-desk">Desktop 1440px</span><span class="tag tag-dark">Dark</span><span class="tag tag-pri">Priority 1</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Dashboard utama proyek konstruksi. 8 KPI cards, activity stream, approval inbox. Data nyata CMPLNG VILLAGE.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PROMPT · Command Center Dark</span>
+          <button class="copy-btn" onclick="copyText(this,'p1d')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="p1d">[PASTE PREAMBLE ABOVE FIRST]
+
+Design a desktop Command Center dashboard (1440×900px) for MLPHoma construction project management.
+Theme: MERIDIAN dark mode. Page background #060910 with very subtle blueprint grid lines.
+
+=== APP SHELL ===
+Left sidebar (224px, background #0E1525):
+  Top: "NATA LABA" logo in #F97316 orange + "CONSTRUCTION SUITE" small subtitle
+  Navigation groups with Lucide icons:
+  - OVERVIEW: Command Center (ACTIVE, cobalt highlight), Projects, Project Overview
+  - COST CONTROL: Project Costing, Cost Forecast
+  - SCHEDULE: Schedule & Operations
+  - OPERATIONS: Supply Chain, Field Tasks, Finance, Change Management, Documents, Handover, TKDN, QHSE, Subcontractor
+  - PORTFOLIO: Resource Heatmap, Portfolio KPIs, BI Reports, Strategy Sim
+  Bottom: "< Ciutkan" collapse button
+
+Top header (56px, #0C1220 background, 1px bottom border):
+  Left: Breadcrumb "🏠 › Command Center"
+  Center: Empty or search
+  Right: "⌘K" shortcut badge | bell icon | "Dark" toggle | "L" avatar circle in orange
+
+GlobalContextBar (44px, #131C2E):
+  "| PRJ-2026-0019  CMPLNG VILLAGE ━━━━━━ 4/4  ACTIVE  ● LIVE |"
+  Right side: "Hari ke-45 dari 180 hari" in JetBrains Mono muted
+
+=== PAGE CONTENT ===
+WorkspaceHeader:
+  Title: "Command Center" in Bricolage Grotesque 32px bold
+  Subtitle: "CMPLNG VILLAGE — Ringkasan Proyek Aktif" in muted text
+  Right buttons: [Refresh] [Export PDF] [⚙ Settings]
+
+SummaryStrip (horizontal, 5 cards separated by 1px dividers):
+  1. "BUDGET" — "Rp 12,8 M" gold JetBrains Mono — "Total Anggaran"
+  2. "PROGRESS" — "34,5%" cobalt — "vs rencana 38.2%"
+  3. "CPI" — "1.12" jade — "Efisien"
+  4. "SPI" — "0.87" amber — "Sedikit terlambat"
+  5. "APPROVAL" — "7" coral — "Pending review"
+
+=== MAIN KPI GRID (2 rows × 4 cols) ===
+Card 1 "BUDGET TOTAL" — accent top bar: gold
+  Value: "Rp 12.800.000.000" — JetBrains Mono 24px, color #FBBF24 gold
+  Subtext: "Anggaran Tetap · Active"
+  Bottom: progress bar 100% gold
+  LIVE badge top-right: teal dot + "LIVE" text
+
+Card 2 "RAB / BUDGET" — accent: cobalt blue
+  Value: "39%" — cobalt #60A5FA, 36px JetBrains Mono bold
+  Subtext: "Rp 4.966.572.640"
+  Trend: "↑ target 100% sebelum konstruksi" in jade small
+  Progress bar at 39% cobalt
+
+Card 3 "PROGRESS FISIK" — accent: jade
+  Value: "34,5%" — jade #4ADE80 36px
+  Subtext: "Target hari ini: 38,2%"
+  Trend: "↓ –3.7% dari rencana" in coral red
+  Mini progress bar: 34.5% jade fill
+
+Card 4 "CPI — Cost Performance" — accent: jade, glow effect jade
+  Value: "1.12" — jade #4ADE80 48px JetBrains Mono
+  Subtext: "Efisien — under planned cost"
+  Badge: "● GOOD" jade pill
+  Footnote: "EV/AC = 1.847M / 1.649M"
+
+Card 5 "SPI — Schedule Performance" — accent: amber, no glow
+  Value: "0.87" — amber #FB923C 48px
+  Subtext: "Sedikit terlambat dari jadwal"
+  Badge: "⚠ WATCH" amber pill
+  Footnote: "EV/PV = 1.847M / 2.123M"
+
+Card 6 "ACTUAL SPENT" — accent: gold
+  Value: "Rp 1,84 M" — gold 28px
+  Subtext: "14,4% dari total budget · Rp 10,95M sisa"
+  Progress bar: 14.4% gold fill on dark track
+
+Card 7 "EAC PROYEKSI" — accent: violet
+  Value: "Rp 11,4 M" — violet #A78BFA 24px
+  Subtext: "Estimate at Completion"
+  Below: "VAC: +Rp 1.400.000.000" jade green
+
+Card 8 "APPROVAL PENDING" — accent: coral, glow coral
+  Value: "7" — coral #FB7185 56px huge
+  Subtext: "3 overdue · 4 dalam SLA"
+  Badge: "2 eskalasi" coral pill
+  Trend: "↑ naik dari kemarin" coral
+
+=== BOTTOM SECTION (2 columns) ===
+LEFT (60%) — Activity Log Stream:
+  Title: "Aliran Aktivitas" with refresh icon
+  List of 6 items, each with:
+    - Avatar circle (initial + color)
+    - Action text: "Latif P. mengupdate progress WBS 2.1.1 → 85%" in small Nunito Sans
+    - Timestamp: "2 menit lalu" muted
+    - Category badge (pill): WBS / RAB / FINANCE / QC
+  Subtle separator lines between items
+
+RIGHT (40%) — Approval Inbox:
+  Title: "Approval Inbox" + badge "7"
+  List of 4 items, each:
+    - Icon for type (invoice, change order, PO)
+    - Title: "Invoice INV-2026-0034" bold
+    - Subtitle: "Vendor: PT Beton Jaya · Rp 85.500.000" gold
+    - Status badge: OVERDUE coral / PENDING amber / IN SLA cobalt
+    - Days overdue: "3 hari" in coral
+    - Micro-buttons: [✓ Approve] [✗ Reject] small
+
+=== FOOTER STATUS BAR ===
+Bottom: "● Online · Supabase Connected · Terakhir sync: 14:32:05" teal dot + JetBrains Mono small</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Light -->
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">☀️ Command Center — Light Mode (Limestone)</div>
+      <div class="pc-tags"><span class="tag tag-desk">Desktop 1440px</span><span class="tag tag-light">Light</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Versi light mode yang warm — background limestone #F2EFE9, surface #FDFCF9. IDR tetap amber gelap #92400E untuk keterbacaan.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PROMPT · Command Center Light</span>
+          <button class="copy-btn" onclick="copyText(this,'p1l')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="p1l">[PASTE PREAMBLE ABOVE FIRST]
+
+Same as Command Center Dark, but apply MERIDIAN LIGHT MODE:
+- Page background: #F2EFE9 (warm limestone, not pure white)
+- Blueprint grid: warm sepia lines rgba(120,100,60,.05) instead of blue
+- Card surface: #FDFCF9 (warm white)
+- Card border: #CEC8BA
+- All shadows: warm rgba(60,50,30,.10) not cold black
+- Text primary: #1A1814 (warm near-black)
+- Text secondary: #50493E
+
+CRITICAL color adjustments for light mode:
+- ALL IDR/Rupiah values: #92400E (dark amber) — NOT yellow, it won't be readable
+- Success jade: #14532D (dark forest green) — NOT bright #4ADE80
+- Danger coral: #9F1239 (dark rose) — NOT bright pink
+- Cobalt action: #2563EB (darker) — NOT light blue
+- SPI warning: #9A3412 (dark amber-red)
+
+KPI cards in light mode:
+- White background (#FDFCF9) with warm box-shadow (no inner dark)
+- 3px top border accent still colored
+- Hover: subtle warm shadow lift
+- No glow effects (replace with subtle border darkening on hover)
+
+Sidebar in light mode: #F5F0E8 background, border-right #CEC8BA
+Header: #FDFCF9 background
+
+Keep all layout, data, and component positions exactly the same as dark version.
+Keep all text content in Indonesian language.
+
+Data to show (same as dark):
+Budget: "Rp 12.800.000.000" | CPI: "1.12" | SPI: "0.87" | Progress: "34,5%" | Spent: "Rp 1,84 M"
+Project: CMPLNG VILLAGE · PRJ-2026-0019 · Hari ke-45 dari 180</pre>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- §2 PROJECT COSTING / WBS -->
+<section>
+<div class="wrap">
+  <div class="s-eye">§ 2 — Phase 1 Priority · Desktop</div>
+  <div class="s-head">Project Costing — WBS Tab</div>
+  <div class="s-desc">Modul paling complex. Pipeline 5 langkah (AHSP→WBS→RAB→RAP→Resource). WBS tab menampilkan hierarki pekerjaan + panel detail samping.</div>
+
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">🌙 Project Costing · WBS — Dark</div>
+      <div class="pc-tags"><span class="tag tag-desk">Desktop 1440px</span><span class="tag tag-dark">Dark</span><span class="tag tag-pri">Priority 1</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Tree hierarki WBS 3 level dengan panel detail samping. Toolbar lengkap, summary strip, badge progress/QC/Auto.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PROMPT · WBS Module Dark</span>
+          <button class="copy-btn" onclick="copyText(this,'p2d')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="p2d">[PASTE PREAMBLE ABOVE FIRST]
+
+Design the WBS (Work Breakdown Structure) module tab in MLPHoma Project Costing page.
+Desktop 1440px, MERIDIAN dark mode.
+
+=== WORKFLOW STEPPER (top, full width) ===
+Horizontal 5-step pipeline with connectors (arrows →):
+AHSP ○ → WBS ● (ACTIVE, orange underline, bold) → RAB ○ → RAP ○ → Resource ○
+Stepper sits below the GlobalContextBar. Active step "WBS" has cobalt underline + checkmark on completed steps.
+
+=== WORKSPACE HEADER ===
+Left: "WBS Structure" in Bricolage Grotesque 28px bold | "CMPLNG VILLAGE — 11 items" muted subtitle
+Right buttons: [⟳ Generate Codes] [↑↓ Import] [⬇ Export JSON] [+ Root Item] (cobalt primary)
+
+=== FULL-WIDTH TOOLBAR ===
+Background #131C2E, border 1px #213047, border-radius 10px:
+[ 🔍 Search input: "Cari item WBS..." placeholder ]  [ Level ▾ dropdown ]  |  [ ⬆ Expand All ] [ ⬇ Collapse ]  |  [ ↑↓ Import ] [ ⬇ Export ] [ ⟳ Gen Codes ]  |  [ + Root Item ] (cobalt button)
+
+=== SUMMARY STRIP (5 cards, full width) ===
+Horizontal bar separated by 1px borders:
+1. "TOTAL ITEM" — "11" cobalt | "3 level hierarki"
+2. "PROGRESS RATA" — "34,5%" jade | "vs rencana 38.2%"
+3. "BUDGET RAB" — "Rp 4,96 M" gold JetBrains Mono | "dari RAB linked"
+4. "QC PASSED" — "3" jade | "dari 11 items"
+5. "TIMELINE TASKS" — "8" cobalt | "tasks linked"
+
+=== MAIN CONTENT (2-column) ===
+
+LEFT COLUMN (flex-1, tree panel, card #0C1220):
+WBS hierarchical tree. Row height ~36px, gap 2px between rows.
+Each row contains: [⠿ drag handle] [▼/▶ chevron] [code badge] [item name] [badges right] [action buttons on hover]
+
+Tree structure:
+▼ [1] PEKERJAAN PERSIAPAN — L1: code "1" cobalt pill #60A5FA bg #1E3A5F, name Bricolage Grotesque 700 bold, RIGHT: [Rp 450 jt gold] [✓ QC jade]
+  — [1.1] Mobilisasi — L2: code "1.1" gray pill, name 600 weight, RIGHT: [⟳ Auto teal]
+  — [1.2] Pembersihan Lahan — L2: SELECTED ROW (cobalt blue bg rgba 8%), RIGHT: [⟳ Auto teal] [✓ jade]
+
+▼ [2] PEKERJAAN SIPIL — L1: cobalt code, bold name, RIGHT: [Rp 3,8 M gold] [⏳ QC amber]
+  ▼ [2.1] Pondasi — L2, RIGHT: [⟳ Auto teal]
+      — [2.1.1] Galian Tanah Pondasi — L3: muted code, smaller 12px text, RIGHT: [✓ jade small]
+      — [2.1.2] Pengecoran Beton K-300 — L3, RIGHT: [🔒 Locked amber badge]
+  ▶ [2.2] Struktur Atas — L2 collapsed, RIGHT: [⟳ Auto] [Rp 2,1 M gold]
+
+▶ [3] MEP (Mekanikal Elektrikal Plumbing) — L1 collapsed, RIGHT: [Rp 716 jt gold] [⏳ QC amber]
+
+Tree visual details:
+- L1 rows: slightly taller, bolder, faint muted bg
+- Vertical connector lines (1.5px border-left) for children
+- Left padding increases per level: L1=8px, L2=32px, L3=56px
+- Action buttons (+ Edit ✎ Delete ⌫) appear only on row hover, right side
+
+RIGHT COLUMN (fixed 320px, sticky, detail panel card):
+Header: "Item Detail" label (muted 10px caps) | "[1.2]" code badge (cobalt pill)
+       "Pembersihan Lahan" title in Bricolage Grotesque 18px bold
+
+Status badges row: [COMPLETED jade] [● Auto Progress teal] [Level 2 gold]
+
+Divider line.
+
+Fields (12px, label + value pairs):
+"PROGRESS FISIK" — full jade progress bar (100%), "100%" in jade JetBrains Mono bold
+"PROGRESS SOURCE" — "⟳ Timeline Auto-propagated" teal pill
+"QC STATUS" — "✓ PASSED" jade pill
+"BUDGET RAB LINKED" — "Rp 185.000.000" gold JetBrains Mono 16px bold
+"TIMELINE TASKS" — "2 tasks terhubung" cobalt text
+"DESKRIPSI" — "Pembersihan lahan dan persiapan permukaan sebelum pengerjaan pondasi dimulai." muted small
+"PHYSICAL LOCK" — "Tidak Dikunci" neutral pill
+
+Divider line.
+Bottom buttons: [✎ Edit outline button] [⌫ Hapus ghost coral]</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- RAB Table -->
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">🌙 Project Costing · RAB Tab — Data Table</div>
+      <div class="pc-tags"><span class="tag tag-desk">Desktop 1440px</span><span class="tag tag-dark">Dark</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Tabel RAB (Rencana Anggaran Biaya) dengan data real — volume, harga satuan, total IDR, breakdown biaya, TKDN, status approval.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PROMPT · RAB Table Dark</span>
+          <button class="copy-btn" onclick="copyText(this,'p2rab')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="p2rab">[PASTE PREAMBLE ABOVE FIRST]
+
+Design the RAB (Rencana Anggaran Biaya) tab in MLPHoma Project Costing, desktop 1440px, dark mode.
+RAB = Budget Plan / Bill of Quantities for Indonesian construction project.
+
+=== WORKSPACE HEADER ===
+"Rencana Anggaran Biaya" Bricolage Grotesque 28px | "CMPLNG VILLAGE · 5 items · Total Rp 297.025.000" muted
+Right: [+ Tambah Item] [Import Excel] [Export] [Version History ▾]
+
+BudgetHealthPanel (horizontal strip, 4 KPI boxes):
+BOX 1: "BUDGET" — "Rp 12.800.000.000" gold | "Anggaran Proyek"
+BOX 2: "RAB TOTAL" — "Rp 4.966.572.640" gold | "39% dari budget"
+BOX 3: "RAP PLANNED" — "Rp 4.200.000.000" cobalt | "32.8% dari budget"
+BOX 4: "CPI" — "1.12" jade | "Cost efficient"
+
+=== DATA TABLE (full width, density: default) ===
+Table background #0C1220, header background #131C2E.
+Row height 38px. Alternating subtle stripe on odd rows rgba(59,130,246,.02).
+
+Headers (10px uppercase, JetBrains Mono 700, muted, letter-spacing 0.1em):
+Kode | Pekerjaan | WBS | Satuan | Volume | Harga Satuan | Total RAB | Breakdown | TKDN | Status
+
+Row 1:
+Kode: [1.1] cobalt chip | Pekerjaan: "Galian Tanah Pondasi" 700 weight | WBS: [2.1.1] cobalt chip
+Satuan: "m³" mono | Volume: "250,00" right-aligned mono | Harga: "Rp 125.000" gold mono right
+Total: "Rp 31.250.000" gold mono right 600 weight | Breakdown: 3 colored dots (blue=material, amber=labor, violet=equipment)
+TKDN: [85% jade pill] | Status: [✓ APPROVED jade pill]
+
+Row 2:
+[1.2] | "Timbunan Batu Kali" | [2.1.1] | m³ | 120,00 | "Rp 450.000" | "Rp 54.000.000" gold | 2 dots (blue+amber) | [92% jade] | [⏳ PENDING amber]
+
+Row 3:
+[1.3] | "Pengecoran Beton K-300" 700 | [2.1.2] | m³ | 85,50 | "Rp 1.250.000" | "Rp 106.875.000" gold | 4 dots (all types) | [67% amber] | [DRAFT neutral]
+
+Row 4:
+[1.4] | "Pemasangan Besi Tulangan Ø16" | [2.1.2] | kg | 4.200,00 | "Rp 18.500" | "Rp 77.700.000" gold | 2 dots | [100% jade] | [✓ APPROVED jade]
+
+Row 5 (warning row, subtle amber bg):
+[1.5] | "⚠ Pemasangan Bekisting" amber text | [2.2] | m² | 320,00 | "Rp 85.000" | "Rp 27.200.000" gold | 2 dots | [42% coral] | [✕ REJECTED coral]
+
+Footer row (bold, double-top-border):
+"TOTAL RAB (5 item)" | colspan | | | | | "Rp 297.025.000" gold 16px 800 weight | | |
+
+=== BREAKDOWN DOT LEGEND ===
+Small legend below table: ● Material (cobalt) ● Tenaga (amber) ● Alat (violet) ● Subkon (teal)
+
+=== TOOLBAR (above table) ===
+[🔍 Search items...] [WBS Filter ▾] [Status ▾] [TKDN ▾] | [Bulk Select] | [Import Excel] [Export ▾]</pre>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- §3 SCHEDULE -->
+<section>
+<div class="wrap">
+  <div class="s-eye">§ 3 — Phase 1 Priority · Desktop</div>
+  <div class="s-head">Schedule & Operations — Plan Mode</div>
+  <div class="s-desc">Halaman jadwal dengan Gantt chart, WBS panel, dan mode switcher (Plan/Track/Analyze). Memerlukan layar lebar 1440px+.</div>
+
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">🌙 Schedule · Plan Mode — Gantt Chart</div>
+      <div class="pc-tags"><span class="tag tag-desk">Desktop 1440px+</span><span class="tag tag-dark">Dark</span><span class="tag tag-pri">Priority 1</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Gantt chart dengan WBS tasks, dependencies, progress fill, CPM highlight. Mode switcher Plan/Track/Analyze di atas.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PROMPT · Schedule Plan Mode</span>
+          <button class="copy-btn" onclick="copyText(this,'p3')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="p3">[PASTE PREAMBLE ABOVE FIRST]
+
+Design the Schedule & Operations module, Plan Mode, for MLPHoma. Desktop 1440px, dark theme.
+
+=== MODE SWITCHER (below GlobalContextBar) ===
+3 toggle tabs, pill style:
+[📐 Plan (ACTIVE, cobalt bg)] [📊 Track] [🔍 Analyze]
+
+=== WORKSPACE HEADER ===
+"Jadwal Proyek" Bricolage Grotesque 28px | "CMPLNG VILLAGE · 8 tasks · Hari ke-45/180"
+Right: [+ Tambah Task] [Link WBS ▾] [CPM Calculate] [Export Gantt]
+
+=== MAIN LAYOUT (split: left WBS list 280px + right Gantt chart) ===
+
+LEFT — WBS/Task list panel (280px, sticky):
+Column headers: "Task" | "Dur." | "Progress"
+Each row matches a Gantt bar row height (~32px):
+  • "Pekerjaan Persiapan" — bold L1 — "30d" — "100%"
+    ↳ "Mobilisasi" — L2 indented — "15d" — "100%" jade bar
+    ↳ "Pembersihan Lahan" — L2 — "15d" — "100%" jade bar
+  • "Pekerjaan Sipil" — bold L1 — "90d" — "58%"
+    ↳ "Galian Tanah" — L2 — "20d" — "100%" jade
+    ↳ "Pengecoran Beton" — L2 — "30d" — "70%" cobalt bar partial
+    ↳ "Struktur Atas" — L2 — "40d" — "32%" cobalt partial
+  • "MEP" — bold L1 — "60d" — "0%"
+    ↳ "Mekanikal" — L2 — "30d" — "0%"
+    ↳ "Elektrikal" — L2 — "30d" — "0%"
+
+RIGHT — Gantt chart (flex-1, scrollable horizontally):
+Month columns: JAN 2026 | FEB 2026 | MAR 2026 | APR 2026 | MAY 2026 | JUN 2026
+Today line: vertical red dashed line at day-45 position with "Hari ini" label
+Gantt bars (each row ~32px height, border-radius 4px):
+  - Completed bars: jade #22C55E solid fill
+  - In-progress bars: cobalt #3B82F6 fill with lighter unfilled portion
+  - Not started bars: muted #213047 outline only
+  - Critical path tasks: coral red #F43F5E border outline glow
+  - Progress fill inside bar: darker shade vs bar color
+  - Dependency arrows: thin gray lines connecting bar ends (→ predecessor arrows)
+  - Milestone diamond: gold #FBBF24 diamond shape
+Row heights match left panel exactly.
+Subtle vertical grid lines for each week.
+Current day highlighted column: very faint cobalt wash.
+
+=== CRITICAL PATH INDICATOR ===
+CPM status bar below header: "⚡ Critical Path: Galian Tanah → Pengecoran → Struktur Atas (90 hari)" in amber
+Badge: "● CPM Ready" teal
+
+=== BOTTOM PANEL (collapsible) ===
+Tabs: [Task Detail] [Resources] [Dependencies]
+Shows selected task: "Pengecoran Beton K-300"
+  Start: 15 Feb 2026 | End: 17 Mar 2026 | Duration: 30 hari
+  Progress: 70% | Status: [IN PROGRESS cobalt] | WBS: [2.1.2]
+  Assigned: 3 resources (avatar chips)</pre>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- §4 FINANCE -->
+<section>
+<div class="wrap">
+  <div class="s-eye">§ 4 — Phase 1 Priority · Desktop</div>
+  <div class="s-head">Finance Module</div>
+  <div class="s-desc">Modul keuangan dengan tab AP/AR/Cashflow/Opname/3-Way Match. Data invoice IDR, status payment, aging report.</div>
+
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">🌙 Finance · AP (Accounts Payable) — Dark</div>
+      <div class="pc-tags"><span class="tag tag-desk">Desktop 1280px</span><span class="tag tag-dark">Dark</span><span class="tag tag-pri">Priority 1</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Daftar invoice vendor yang harus dibayar. Status DRAFT/ISSUED/PENDING/OVERDUE/PAID. Nilai IDR dalam gold, overdue dalam coral.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PROMPT · Finance AP Dark</span>
+          <button class="copy-btn" onclick="copyText(this,'p4')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="p4">[PASTE PREAMBLE ABOVE FIRST]
+
+Design the Finance module, Accounts Payable (AP) tab for MLPHoma. Desktop 1280px, dark mode.
+
+=== TAB NAVIGATION ===
+Horizontal tabs below workspace header:
+[AP — Payable (ACTIVE, cobalt underline)] [AR — Receivable] [Cashflow] [Opname] [3-Way Match]
+
+=== WORKSPACE HEADER ===
+"Akun Payable (AP)" Bricolage Grotesque 28px | "CMPLNG VILLAGE · 12 invoice · Rp 487.250.000 outstanding"
+Right: [+ Buat Invoice] [Import] [Export Excel]
+
+=== SUMMARY KPI STRIP (4 cards) ===
+1. "OUTSTANDING" — "Rp 487.250.000" gold large | "12 invoice belum bayar"
+2. "OVERDUE"      — "Rp 185.000.000" coral     | "3 invoice melewati due date"
+3. "DALAM SLA"    — "Rp 302.250.000" cobalt    | "9 invoice on-time"
+4. "DIBAYAR (MTD)"— "Rp 1.200.000.000" jade    | "Month to date"
+
+=== FILTER TOOLBAR ===
+[🔍 Search invoice/vendor...] [Status ▾] [Vendor ▾] [Due date range] | [Bulk Approve] [Bulk Export]
+
+=== INVOICE TABLE ===
+Table background #0C1220, compact density (row 36px).
+
+Headers: No. Invoice | Vendor | Keterangan | Tanggal | Jatuh Tempo | Jumlah | PO Link | GRN | Status | Aksi
+
+Row 1 — OVERDUE:
+"INV-2026-0031" JetBrains Mono | "PT Beton Nusantara" bold | "Pengecoran Pondasi" | "12/01/2026" mono | "10/02/2026" mono coral (overdue) | "Rp 85.500.000" gold right | [PO-2026-011] cobalt chip | [GRN-031] teal chip | [OVERDUE coral pill] | [👁] [✓] [✗]
+
+Row 2 — OVERDUE:
+"INV-2026-0033" | "CV Besi Jaya" | "Besi Tulangan Ø16" | "15/01/2026" | "14/02/2026" coral | "Rp 67.800.000" gold | [PO-2026-013] | [GRN-033] | [OVERDUE coral] | buttons
+
+Row 3 — PENDING:
+"INV-2026-0037" | "PT Kayu Prima" | "Bekisting Pondasi" | "20/01/2026" | "20/03/2026" normal | "Rp 45.200.000" gold | [PO-2026-017] | No GRN | [⏳ PENDING amber] | buttons
+
+Row 4 — PENDING:
+"INV-2026-0038" | "UD Pasir Mas" | "Material Timbunan" | "22/01/2026" | "25/03/2026" | "Rp 28.750.000" gold | [PO-2026-018] | [GRN-038] | [⏳ PENDING amber] | buttons
+
+Row 5 — ISSUED:
+"INV-2026-0040" | "PT Semen Indonesia" | "Semen Portland 50kg" | "25/01/2026" | "25/04/2026" | "Rp 112.400.000" gold | [PO-2026-020] | No GRN yet | [ISSUED cobalt] | buttons
+
+Row 6 — PAID:
+"INV-2026-0028" | "PT Galvanis Pipa" | "Pipa SCH40 DN 12" | "05/01/2026" | "05/02/2026" muted | "Rp 148.000.000" muted (paid) | [PO-2026-008] | [GRN-028] | [✓ PAID jade] | [👁]
+
+=== AGING REPORT PANEL (right sidebar, 280px, sticky) ===
+Title: "Aging Report" Bricolage Grotesque 16px bold
+Bar chart (horizontal):
+  0–30 hari:  Rp 302.250.000  cobalt bar long
+  31–60 hari: Rp 118.500.000  amber bar medium
+  61–90 hari: Rp 45.000.000   coral bar short
+  > 90 hari:  Rp 21.500.000   coral bar very short
+Total outstanding: "Rp 487.250.000" gold bold at bottom
+
+=== 3-WAY MATCH STATUS ===
+Small indicator at bottom of page:
+"3-Way Match: 8 invoice matched ✓ | 4 pending GRN confirmation"</pre>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- §5 FIELD TASKS MOBILE -->
+<section>
+<div class="wrap">
+  <div class="s-eye">§ 5 — Mobile Priority</div>
+  <div class="s-head">Field Tasks — Mobile (375px)</div>
+  <div class="s-desc">Satu-satunya modul yang mobile-first. Digunakan di lapangan dengan satu tangan. Kompak, touch-friendly, offline-capable.</div>
+
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">📱 Field Tasks — Mobile Light</div>
+      <div class="pc-tags"><span class="tag tag-mob">Mobile 375px</span><span class="tag tag-light">Light</span><span class="tag tag-pri">Priority 2</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Tampilan mobile untuk worker/pengawas lapangan. Card-based tasks, swipe actions, camera upload, GPS check-in.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PROMPT · Field Tasks Mobile Light</span>
+          <button class="copy-btn" onclick="copyText(this,'p5')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="p5">[PASTE PREAMBLE ABOVE FIRST]
+
+Design the Field Tasks mobile screen for MLPHoma. 375×812px iPhone-sized screen. MERIDIAN LIGHT MODE.
+
+This screen is used by construction workers and site supervisors in the field. Must work with one hand. Large touch targets (min 44px). Offline-first design.
+
+=== STATUS BAR (top) ===
+Standard mobile status bar. Below it:
+NATA LABA orange logo small | "Field Tasks" title | bell icon | avatar
+
+=== OFFLINE INDICATOR (if offline) ===
+Orange banner: "● Offline Mode — Data tersimpan lokal, akan sync saat online" with dismiss X
+
+=== DATE & FILTER BAR ===
+"Senin, 2 Juni 2026" in Bricolage Grotesque 16px bold left
+[Today] [Minggu ini] horizontal pill filters, cobalt active
+
+=== TASK COUNT SUMMARY ===
+Horizontal 3-pill row:
+[● 5 TODO gray] [● 2 IN PROGRESS cobalt] [● 3 DONE jade]
+
+=== TASK CARDS (scrollable list, vertical stack) ===
+Card style: white #FDFCF9, border-radius 12px, warm shadow, border-left 4px accent strip
+
+Card 1 — IN PROGRESS:
+Left border: cobalt 4px
+Tag: [IN PROGRESS cobalt pill]
+Title: "Pengecoran Beton K-300 — Area A" Bricolage Grotesque 15px bold
+Meta: "📍 Zona Pondasi · WBS 2.1.2" small muted
+Worker: avatar circle "BW" + "Budi Wicaksono" small
+Progress: 70% bar cobalt fill + "70%" JetBrains Mono
+Time: "Mulai: 08:15 · Durasi: 3j 45m" muted small
+Right: [📷 Foto] [✓ Update] — large touch buttons
+
+Card 2 — TODO:
+Left border: amber 4px
+Tag: [TODO amber]
+Title: "Inspeksi Tulangan Besi Ø16" 15px bold
+Meta: "📍 Zona Pondasi · WBS 2.1.2"
+Assignee: "Ahmad Fauzi"
+Due: "Due: 14:00" amber text
+Right: [▶ Mulai] large cobalt button
+
+Card 3 — DONE:
+Left border: jade 4px, background slightly dimmed
+Tag: [✓ SELESAI jade]
+Title: "Galian Tanah Pondasi — Sektor B" bold muted
+Meta: "WBS 2.1.1 · Selesai 11:30"
+Progress: 100% jade full bar
+Evidence: small "📷 3 foto" teal badge
+Right: [👁 Detail] ghost
+
+Card 4 — TODO (different task):
+Left border: muted
+Tag: [TODO]
+Title: "Pembersihan Area Cetakan Beton"
+Meta: "WBS 2.1.2 · Belum dimulai"
+Right: [▶ Mulai]
+
+=== BOTTOM ACTION BAR (fixed) ===
+Large rounded button full-width: [+ Laporkan Tugas Baru] in cobalt
+Below: [📊 Hari ini] [📅 Jadwal] [📷 Bukti] [👤 Profil] bottom tab bar
+
+=== GPS CHECK-IN MODAL (shown floating) ===
+Small card popping up at bottom:
+"📍 GPS: Bekasi Selatan, Jawa Barat"
+"Koordinat: -6.2382, 106.9756"
+[✓ Konfirmasi Lokasi] cobalt | [Lewati] ghost</pre>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- §6 EMPTY + LOADING STATES -->
+<section>
+<div class="wrap">
+  <div class="s-eye">§ 6 — States & Micro-UX</div>
+  <div class="s-head">States — Empty, Loading & Error</div>
+  <div class="s-desc">States penting yang sering terlupakan. Sangat berpengaruh pada kesan profesional aplikasi.</div>
+
+  <div class="prompt-card">
+    <div class="pc-head">
+      <div class="pc-title">🌙 UI States Sheet — Dark</div>
+      <div class="pc-tags"><span class="tag tag-desk">Desktop</span><span class="tag tag-dark">Dark</span></div>
+    </div>
+    <div class="pc-body">
+      <p class="pc-desc">Sheet berisi semua UI states: empty, loading skeleton, error, success toast, delete confirm dialog, drag-drop indicator, inline edit.</p>
+      <div class="prompt-box">
+        <div class="pb-bar">
+          <span class="pb-label">PROMPT · UI States Sheet</span>
+          <button class="copy-btn" onclick="copyText(this,'p6')">📋 COPY</button>
+        </div>
+        <pre class="prompt-text" id="p6">[PASTE PREAMBLE ABOVE FIRST]
+
+Design a UI States reference sheet for MLPHoma showing all component states.
+Desktop view, MERIDIAN dark mode. Layout: grid of state cards.
+This is a design reference sheet — show multiple states side by side.
+
+=== EMPTY STATES (3 variants) ===
+Card 1 "Empty — WBS Kosong":
+  Center-aligned, 48px icon (tree/branch) in cobalt bg box
+  "Belum ada item WBS" bold 14px
+  "Mulai dengan membuat struktur pekerjaan pertama untuk proyek ini." muted small
+  [+ Buat WBS Pertama] cobalt button
+
+Card 2 "Empty — No Results":
+  Search icon, "Tidak ada hasil untuk 'beton'"
+  "Coba kata kunci berbeda atau hapus filter" muted
+  [✕ Hapus Filter] ghost button
+
+Card 3 "Empty — First Project":
+  Celebration icon, "Selamat Datang di MLPHoma!"
+  "Buat proyek pertama Anda untuk memulai."
+  [+ Buat Proyek Baru] cobalt large button
+
+=== LOADING SKELETONS ===
+Card 4 "Loading — WBS Tree":
+  4 skeleton rows at different indent levels
+  Each row: small square skeleton + 2 rectangle skeletons (different widths)
+  Shimmer animation (lighter gradient passes through)
+  Skeleton color: #1A253C shimmer to #213047
+
+Card 5 "Loading — KPI Card":
+  Full card shape skeleton
+  Top: small rectangle (label)
+  Middle: large rectangle (value)
+  Bottom: thin bar (progress)
+
+=== ERROR STATES ===
+Card 6 "Error — Network":
+  Red/coral background #F43F5E08, coral border
+  ⚠ icon | "Gagal memuat data WBS" bold coral
+  "Koneksi database terputus. Coba lagi." muted
+  [Coba Lagi] coral ghost | [Refresh] ghost
+
+Card 7 "Error — Validation":
+  Form field with red border
+  Input showing invalid value
+  "Nama harus diisi" in coral 11px below field
+
+=== SUCCESS STATES ===
+Card 8 "Toast — Success":
+  Green floating toast, bottom-right position
+  "✓ WBS Item ditambahkan" jade bold
+  "Pembersihan Lahan telah disimpan ke database." small
+  Auto-dismiss progress bar at bottom
+
+Card 9 "Toast — Error":
+  Coral floating toast
+  "✕ Gagal menyimpan" coral bold
+  "Koneksi timeout. Item tersimpan offline." small
+
+=== INTERACTION STATES ===
+Card 10 "Drag & Drop":
+  3 WBS rows stacked
+  Middle row: 40% opacity (being dragged), slight scale up
+  Below: dashed cobalt border drop zone "Drop di sini →"
+
+Card 11 "Inline Edit":
+  Table cell in edit mode: cobalt border 1.5px + cobalt glow
+  Input value: "250,00" in JetBrains Mono
+  [✓ Save] [✕ Cancel] small buttons below
+
+Card 12 "Delete Confirmation Dialog":
+  Modal overlay, dialog card center:
+  "🗑 Hapus WBS Item?" Bricolage Grotesque 16px bold
+  "[2.1] Pondasi — dan 2 child items"
+  Amber warning box: "⚠ 3 Timeline Tasks akan ter-unlink: Galian A · Cor Day-1 · Cor Day-2"
+  [Batal] outline | [Hapus Semua] coral button
+
+=== LOADING SPINNER ===
+Card 13 "Loading Indicator":
+  18px spinner (cobalt top arc)
+  "Menyinkronkan data... (offline queue)"
+
+Card 14 "Progress Upload":
+  File icon + "foto_pondasi_01.jpg"
+  Progress bar: 67% cobalt fill
+  "2.4 MB / 3.6 MB · 1.2 MB/s"</pre>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- TIPS -->
+<section>
+<div class="wrap">
+  <div class="s-eye">§ 7 — Tips Penggunaan</div>
+  <div class="s-head">Tips Agar Hasil Stitch Optimal</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
+
+    <div style="background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:16px;border-top:3px solid var(--cobalt);">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--cobalt-l);margin-bottom:8px;">💡 Struktur Prompt</div>
+      <p style="font-size:12px;color:var(--t1);line-height:1.6;">Selalu mulai dengan PREAMBLE. Kemudian screen prompt. Stitch membaca secara urut — design system di awal = hasil lebih konsisten.</p>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:16px;border-top:3px solid var(--jade);">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--jade-l);margin-bottom:8px;">✅ Data Nyata</div>
+      <p style="font-size:12px;color:var(--t1);line-height:1.6;">Gunakan data real: "Rp 12.800.000.000" bukan "IDR Value". "CMPLNG VILLAGE" bukan "Project Name". Data spesifik = hasil lebih realistis.</p>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:16px;border-top:3px solid var(--gold);">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-l);margin-bottom:8px;">🔢 IDR Format</div>
+      <p style="font-size:12px;color:var(--t1);line-height:1.6;">Selalu tulis: "Rp 12.800.000.000" (titik sebagai pemisah ribuan). Stitch akan merender angka ini dengan font JetBrains Mono + warna gold.</p>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:16px;border-top:3px solid var(--violet);">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--violet-l);margin-bottom:8px;">🎨 Iterasi</div>
+      <p style="font-size:12px;color:var(--t1);line-height:1.6;">Jika hasil kurang akurat, screenshot hasilnya dan tempel sebagai referensi di prompt berikutnya: "Pertahankan layout ini, tapi ubah..."</p>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:16px;border-top:3px solid var(--amber);">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--amber-l);margin-bottom:8px;">📐 Ukuran Frame</div>
+      <p style="font-size:12px;color:var(--t1);line-height:1.6;">Sebutkan ukuran frame di awal: "1440×900px desktop" atau "375×812px mobile". Stitch akan menyesuaikan density dan layout komponen.</p>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:16px;border-top:3px solid var(--coral);">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--coral-l);margin-bottom:8px;">⚠ Perhatikan</div>
+      <p style="font-size:12px;color:var(--t1);line-height:1.6;">Stitch mungkin tidak merender font custom (Bricolage Grotesque/JetBrains). Anggap sebagai panduan style — implementasi aktual tetap di codebase.</p>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<div class="footer">
+  <p><strong>MLPHoma · MERIDIAN Design System · Stitch Prompt Pack</strong></p>
+  <p style="margin-top:4px;">6 screens · Light + Dark · Desktop + Mobile · Data real CMPLNG VILLAGE</p>
+</div>
+
+<script>
+async function copyText(btn, id) {
+  const text = document.getElementById(id).textContent;
+  await navigator.clipboard.writeText(text);
+  btn.textContent = '✓ COPIED!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = '📋 COPY'; btn.classList.remove('copied'); }, 2000);
+}
+</script>
+</body>
+</html>

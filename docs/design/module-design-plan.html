@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLPHoma · Master Design Plan — All Modules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#060910; --s:#0c1220; --el:#131c2e; --ov:#1a253c;
+  --bd:#192338; --bd2:#213047;
+  --t0:#E2EAF5; --t1:#7A90AB; --t2:#3D5068;
+  --co:#3B82F6; --col:#60A5FA; --cob:rgba(59,130,246,.08);
+  --go:#F59E0B; --gol:#FBBF24; --gob:rgba(245,158,11,.08);
+  --ja:#22C55E; --jal:#4ADE80; --jab:rgba(34,197,94,.08);
+  --cr:#F43F5E; --crl:#FB7185; --crb:rgba(244,63,94,.08);
+  --am:#F97316; --aml:#FB923C; --amb:rgba(249,115,22,.08);
+  --vi:#8B5CF6; --vil:#A78BFA; --vib:rgba(139,92,246,.08);
+  --te:#14B8A6; --tel:#2DD4BF; --teb:rgba(20,184,166,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Nunito Sans',sans-serif; font-size:13px; line-height:1.55;
+  color:var(--t0); background:var(--bg);
+  background-image:
+    linear-gradient(rgba(59,130,246,.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,.022) 1px,transparent 1px),
+    linear-gradient(rgba(59,130,246,.01) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(59,130,246,.01) 1px,transparent 1px);
+  background-size:80px 80px,80px 80px,16px 16px,16px 16px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── Sticky header ────────────────── */
+.sticky-nav {
+  position:sticky; top:0; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 40px;
+  background:rgba(6,9,16,.92); backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--bd);
+}
+.nav-logo { font-family:'Bricolage Grotesque',sans-serif; font-size:14px; font-weight:800; color:var(--col); letter-spacing:-.01em; }
+.nav-phases { display:flex; gap:4px; }
+.nav-phase { padding:4px 10px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; cursor:pointer; transition:.15s; border:none; }
+.np1 { background:var(--cob); color:var(--col); } .np1:hover { background:rgba(59,130,246,.15); }
+.np2 { background:var(--gob); color:var(--gol); } .np2:hover { background:rgba(245,158,11,.15); }
+.np3 { background:var(--jab); color:var(--jal); } .np3:hover { background:rgba(34,197,94,.15); }
+.np4 { background:var(--vib); color:var(--vil); } .np4:hover { background:rgba(139,92,246,.15); }
+
+/* ── Layout ───────────────────────── */
+.wrap { max-width:1100px; margin:0 auto; padding:0 40px; }
+.two-col { display:grid; grid-template-columns:220px 1fr; gap:0; min-height:100vh; }
+@media(max-width:768px) {
+  .wrap { padding:0 20px; }
+  .two-col { grid-template-columns:1fr; }
+}
+@media(max-width:480px) {
+  .wrap { padding:0 14px; }
+}
+
+/* ── Sidebar TOC ──────────────────── */
+.toc {
+  position:sticky; top:52px; height:calc(100vh - 52px);
+  overflow-y:auto; padding:24px 0;
+  border-right:1px solid var(--bd);
+  background:rgba(12,18,32,.6);
+  flex-shrink:0;
+}
+.toc::-webkit-scrollbar{width:3px} .toc::-webkit-scrollbar-thumb{background:var(--bd2)}
+.toc-phase {
+  padding:6px 16px 3px;
+  font-size:9px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--t2);
+}
+.toc-item {
+  display:flex; align-items:center; gap:6px;
+  padding:5px 16px; font-size:11px; font-weight:600; color:var(--t1);
+  cursor:pointer; transition:.12s; text-decoration:none; line-height:1.3;
+}
+.toc-item:hover { background:var(--el); color:var(--t0); }
+.toc-item.active { background:var(--cob); color:var(--col); border-left:2px solid var(--co); }
+.toc-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.dot-ok  { background:var(--ja); }
+.dot-fix { background:var(--am); }
+.dot-new { background:var(--co); }
+.dot-warn{ background:var(--cr); }
+
+/* ── Main content ─────────────────── */
+.main { padding:40px; }
+
+/* ── Hero ─────────────────────────── */
+.hero { padding:56px 0 48px; border-bottom:1px solid var(--bd); position:relative; overflow:hidden; }
+.hero::before { content:''; position:absolute; top:-100px; left:50%; transform:translateX(-50%); width:700px; height:400px; background:radial-gradient(ellipse,rgba(59,130,246,.08) 0%,transparent 65%); pointer-events:none; }
+.eyebrow { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; background:var(--cob); border:1.5px solid rgba(59,130,246,.2); border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--col); margin-bottom:14px; }
+.live-dot { width:5px; height:5px; background:var(--co); border-radius:50%; box-shadow:0 0 6px var(--co); animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+h1 { font-family:'Bricolage Grotesque',sans-serif; font-size:clamp(28px,3.5vw,44px); font-weight:800; letter-spacing:-.035em; line-height:1.1; margin-bottom:10px; }
+h1 em { color:var(--col); font-style:normal; }
+.sub { font-size:14px; color:var(--t1); max-width:560px; line-height:1.65; margin-bottom:24px; }
+
+/* ── Phase overview ───────────────── */
+.phase-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:32px 0; }
+.phase-card { padding:16px; border-radius:10px; border:1px solid; }
+.ph1 { background:var(--cob); border-color:rgba(59,130,246,.2); }
+.ph2 { background:var(--gob); border-color:rgba(245,158,11,.2); }
+.ph3 { background:var(--jab); border-color:rgba(34,197,94,.2); }
+.ph4 { background:var(--vib); border-color:rgba(139,92,246,.2); }
+.ph-label { font-size:9px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; margin-bottom:5px; }
+.ph1 .ph-label { color:var(--col); } .ph2 .ph-label { color:var(--gol); } .ph3 .ph-label { color:var(--jal); } .ph4 .ph-label { color:var(--vil); }
+.ph-title { font-family:'Bricolage Grotesque',sans-serif; font-size:13px; font-weight:700; margin-bottom:4px; }
+.ph-modules { font-size:11px; color:var(--t1); line-height:1.5; }
+.ph-effort { font-family:'JetBrains Mono',monospace; font-size:10px; margin-top:6px; }
+.ph1 .ph-effort { color:var(--col); } .ph2 .ph-effort { color:var(--gol); } .ph3 .ph-effort { color:var(--jal); } .ph4 .ph-effort { color:var(--vil); }
+
+/* ── Module section ───────────────── */
+.module-section { padding:48px 0; border-bottom:1px solid var(--bd); }
+.module-section:last-child { border-bottom:none; }
+.m-phase-tag { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:999px; font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; }
+.mt1 { background:var(--cob); color:var(--col); }
+.mt2 { background:var(--gob); color:var(--gol); }
+.mt3 { background:var(--jab); color:var(--jal); }
+.mt4 { background:var(--vib); color:var(--vil); }
+.m-head { font-family:'Bricolage Grotesque',sans-serif; font-size:22px; font-weight:700; letter-spacing:-.02em; margin-bottom:4px; }
+.m-path { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t2); margin-bottom:14px; }
+
+/* Status bar */
+.status-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.status-pill { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:999px; font-size:10px; font-weight:700; }
+.sp-ok   { background:var(--jab); color:var(--jal); }
+.sp-warn { background:var(--amb); color:var(--aml); }
+.sp-fix  { background:var(--crb); color:var(--crl); }
+.sp-new  { background:var(--cob); color:var(--col); }
+.sp-part { background:var(--gob); color:var(--gol); }
+
+/* Cards */
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+.info-card { background:var(--s); border:1px solid var(--bd); border-radius:10px; padding:14px; }
+.ic-label { font-size:9px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--t2); margin-bottom:8px; }
+.ic-content { font-size:12px; color:var(--t1); line-height:1.65; }
+.ic-content strong { color:var(--t0); display:block; }
+.ic-content code { font-family:'JetBrains Mono',monospace; font-size:10.5px; background:var(--el); padding:1px 5px; border-radius:3px; color:var(--col); }
+
+/* Issues list */
+.issue-list { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+.issue-item { display:flex; align-items:flex-start; gap:8px; padding:8px 12px; border-radius:7px; }
+.ii-critical { background:var(--crb); border:1px solid rgba(244,63,94,.15); }
+.ii-warn { background:var(--amb); border:1px solid rgba(249,115,22,.15); }
+.ii-improve { background:var(--cob); border:1px solid rgba(59,130,246,.15); }
+.ii-icon { font-size:12px; flex-shrink:0; margin-top:1px; }
+.ii-text { font-size:11px; line-height:1.55; }
+.ii-critical .ii-text { color:var(--crl); } .ii-critical strong { color:var(--crl); }
+.ii-warn .ii-text { color:var(--aml); } .ii-warn strong { color:var(--aml); }
+.ii-improve .ii-text { color:var(--col); } .ii-improve strong { color:var(--col); }
+
+/* Layout spec */
+.layout-spec { background:var(--el); border:1px solid var(--bd2); border-radius:8px; padding:14px; margin-bottom:16px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--t1); line-height:1.75; white-space:pre; overflow-x:auto; }
+.layout-spec::-webkit-scrollbar{height:3px} .layout-spec::-webkit-scrollbar-thumb{background:var(--bd2)}
+
+/* File table */
+.file-table { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:16px; }
+.file-table th { padding:6px 10px; text-align:left; font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--t2); background:var(--el); border-bottom:1px solid var(--bd2); }
+.file-table td { padding:7px 10px; border-bottom:1px solid var(--bd); color:var(--t1); vertical-align:top; }
+.file-table td code { font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--col); background:var(--cob); padding:1px 5px; border-radius:3px; }
+.act-create { color:var(--jal); font-weight:700; font-size:10px; }
+.act-modify { color:var(--aml); font-weight:700; font-size:10px; }
+.act-none   { color:var(--t2);  font-weight:700; font-size:10px; }
+
+/* Effort badge */
+.effort { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; background:var(--el); border:1px solid var(--bd2); border-radius:5px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--t1); margin-bottom:14px; }
+
+/* Section dividers */
+h4.sub-head { font-family:'Bricolage Grotesque',sans-serif; font-size:13px; font-weight:700; color:var(--t0); margin:16px 0 8px; display:flex; align-items:center; gap:6px; }
+h4.sub-head::after { content:''; flex:1; height:1px; background:var(--bd); margin-left:4px; }
+
+/* Data flow */
+.flow { display:flex; flex-direction:column; gap:3px; padding:14px; background:var(--el); border:1px solid var(--bd2); border-radius:8px; font-family:'JetBrains Mono',monospace; font-size:11px; }
+.flow-line { color:var(--t1); display:flex; align-items:center; gap:6px; }
+.flow-arrow { color:var(--t2); }
+.flow-em { color:var(--col); font-weight:600; }
+.flow-gold { color:var(--gol); }
+.flow-jade { color:var(--jal); }
+
+/* Sprint table */
+.sprint-table { width:100%; border-collapse:collapse; font-size:11px; }
+.sprint-table th { padding:6px 10px; background:var(--el); border-bottom:1px solid var(--bd2); font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--t2); text-align:left; }
+.sprint-table td { padding:8px 10px; border-bottom:1px solid var(--bd); color:var(--t1); }
+.sprint-table td:first-child { font-weight:700; color:var(--t0); }
+.sp-w1{background:rgba(59,130,246,.03)} .sp-w2{background:rgba(245,158,11,.03)} .sp-w3{background:rgba(34,197,94,.03)} .sp-w4{background:rgba(139,92,246,.03)}
+
+.footer { padding:40px 0; text-align:center; font-size:11px; color:var(--t2); border-top:1px solid var(--bd); }
+.footer strong { color:var(--t1); }
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.f1{animation:fadeUp .4s ease .05s both}
+.f2{animation:fadeUp .4s ease .15s both}
+.f3{animation:fadeUp .4s ease .25s both}
+
+@media(max-width:768px){
+  .two-col{grid-template-columns:1fr}
+  .toc{display:none}
+  .phase-grid{grid-template-columns:1fr 1fr}
+  .info-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .phase-grid{grid-template-columns:1fr}
+  .sprint-table { font-size:10px; }
+  .sprint-table td,th { padding:6px 8px; }
+  .nav-phases { flex-direction:column; gap:2px; }
+  .nav-phase { padding:3px 8px; font-size:9px; }
+  .s-head { font-size:18px; }
+  .status-bar { flex-direction:column; }
+  .status-pill { width:100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sticky nav -->
+<nav class="sticky-nav">
+  <div class="nav-logo">MLPHoma · Master Design Plan</div>
+  <div class="nav-phases">
+    <button class="nav-phase np1" onclick="scrollTo('phase1')">Phase 1</button>
+    <button class="nav-phase np2" onclick="scrollTo('phase2')">Phase 2</button>
+    <button class="nav-phase np3" onclick="scrollTo('phase3')">Phase 3</button>
+    <button class="nav-phase np4" onclick="scrollTo('phase4')">Phase 4</button>
+  </div>
+</nav>
+
+<script>
+function scrollTo(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
+</script>
+
+<div class="two-col">
+
+<!-- TOC -->
+<aside class="toc">
+  <div class="toc-phase">Phase 1 — Core</div>
+  <a class="toc-item" href="#wbs"><div class="toc-dot dot-warn"></div>WBS Module</a>
+  <a class="toc-item" href="#rab"><div class="toc-dot dot-fix"></div>RAB</a>
+  <a class="toc-item" href="#cc"><div class="toc-dot dot-fix"></div>Command Center</a>
+  <div class="toc-phase" style="margin-top:10px;">Phase 2 — Operations</div>
+  <a class="toc-item" href="#schedule"><div class="toc-dot dot-fix"></div>Schedule</a>
+  <a class="toc-item" href="#finance"><div class="toc-dot dot-fix"></div>Finance</a>
+  <a class="toc-item" href="#supply"><div class="toc-dot dot-fix"></div>Supply Chain</a>
+  <a class="toc-item" href="#field"><div class="toc-dot dot-fix"></div>Field Tasks</a>
+  <div class="toc-phase" style="margin-top:10px;">Phase 3 — Support</div>
+  <a class="toc-item" href="#ahsp"><div class="toc-dot dot-ok"></div>AHSP</a>
+  <a class="toc-item" href="#rap"><div class="toc-dot dot-new"></div>RAP</a>
+  <a class="toc-item" href="#resource"><div class="toc-dot dot-new"></div>Resource Plan</a>
+  <a class="toc-item" href="#cco"><div class="toc-dot dot-fix"></div>Change Mgmt</a>
+  <a class="toc-item" href="#tkdn"><div class="toc-dot dot-fix"></div>TKDN</a>
+  <a class="toc-item" href="#qhse"><div class="toc-dot dot-fix"></div>QHSE</a>
+  <a class="toc-item" href="#docs"><div class="toc-dot dot-fix"></div>Documents</a>
+  <a class="toc-item" href="#handover"><div class="toc-dot dot-fix"></div>Handover</a>
+  <div class="toc-phase" style="margin-top:10px;">Phase 4 — Intelligence</div>
+  <a class="toc-item" href="#forecast"><div class="toc-dot dot-fix"></div>Cost Forecast</a>
+  <a class="toc-item" href="#portfolio"><div class="toc-dot dot-fix"></div>Portfolio</a>
+  <a class="toc-item" href="#bi"><div class="toc-dot dot-new"></div>BI Reports</a>
+  <a class="toc-item" href="#strat"><div class="toc-dot dot-fix"></div>Strategy Sim</a>
+  <a class="toc-item" href="#settings"><div class="toc-dot dot-fix"></div>Settings</a>
+  <div class="toc-phase" style="margin-top:10px;">Legend</div>
+  <div style="padding:4px 16px;display:flex;flex-direction:column;gap:4px;">
+    <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--t2);"><div class="toc-dot dot-warn"></div>Critical fix needed</span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--t2);"><div class="toc-dot dot-fix"></div>Minor improvements</span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--t2);"><div class="toc-dot dot-new"></div>New / rebuild</span>
+    <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--t2);"><div class="toc-dot dot-ok"></div>Mostly complete</span>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+<!-- Hero -->
+<div class="hero f1">
+  <div class="eyebrow"><div class="live-dot"></div>MLPHoma · Master Design Plan</div>
+  <h1>20 Modul. 4 Fase.<br><em>Satu sistem visual.</em></h1>
+  <p class="sub">Plan komprehensif redesign semua modul MLPHoma dengan MERIDIAN design system. Setiap modul mencakup: current issues, logic improvements, layout spec, file changes, dan effort estimate.</p>
+</div>
+
+<!-- Phase overview -->
+<div class="phase-grid f2">
+  <div class="phase-card ph1">
+    <div class="ph-label">Phase 1 — Sprint 1</div>
+    <div class="ph-title">Core Revenue</div>
+    <div class="ph-modules">WBS · RAB · Command Center</div>
+    <div class="ph-effort">~22 jam · Highest impact</div>
+  </div>
+  <div class="phase-card ph2">
+    <div class="ph-label">Phase 2 — Sprint 2</div>
+    <div class="ph-title">Operations</div>
+    <div class="ph-modules">Schedule · Finance · Supply Chain · Field Tasks</div>
+    <div class="ph-effort">~18 jam · Daily workflow</div>
+  </div>
+  <div class="phase-card ph3">
+    <div class="ph-label">Phase 3 — Sprint 3</div>
+    <div class="ph-title">Support</div>
+    <div class="ph-modules">AHSP · RAP · Resource · CCO · TKDN · QHSE · Docs · Handover</div>
+    <div class="ph-effort">~38 jam · Compliance</div>
+  </div>
+  <div class="phase-card ph4">
+    <div class="ph-label">Phase 4 — Sprint 4</div>
+    <div class="ph-title">Intelligence</div>
+    <div class="ph-modules">Cost Forecast · Portfolio · BI · Strategy · Settings</div>
+    <div class="ph-effort">~24 jam · Analytics</div>
+  </div>
+</div>
+
+<!-- Data flow -->
+<div style="margin-bottom:40px;">
+  <h4 class="sub-head" style="font-size:12px;margin-bottom:10px;">Data Flow — Inter-Module Dependencies</h4>
+  <div class="flow">
+    <div class="flow-line"><span class="flow-em">AHSP</span> <span class="flow-arrow">→ price lookup →</span> <span class="flow-em">RAB</span> <span class="flow-arrow">→ wbsId →</span> <span class="flow-em">WBS</span></div>
+    <div class="flow-line"><span class="flow-em">WBS</span> <span class="flow-arrow">← progress propagation (bidirectional) →</span> <span class="flow-em">Timeline</span></div>
+    <div class="flow-line"><span class="flow-em">Timeline</span> <span class="flow-arrow">→ actual cost →</span> <span class="flow-em">Finance AP</span> <span class="flow-arrow">→</span> <span class="flow-em">Cost Forecast (AC)</span></div>
+    <div class="flow-line"><span class="flow-em">Change Order APPROVED</span> <span class="flow-arrow">→ cascade →</span> <span class="flow-em">RAB + Timeline</span></div>
+    <div class="flow-line"><span class="flow-em">AHSP price update</span> <span class="flow-arrow">→ drift detection →</span> <span class="flow-em">RAB PriceDriftBanner</span></div>
+    <div class="flow-line"><span class="flow-em">Cost Forecast</span> <span class="flow-arrow">→ KPI aggregation →</span> <span class="flow-em">Command Center + Portfolio</span></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PHASE 1
+     ════════════════════════════════ -->
+<div id="phase1" style="padding-top:32px;margin-bottom:24px;">
+  <div style="font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--col);margin-bottom:6px;">Phase 1 — Core Revenue</div>
+  <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--t0);">Sprint 1 · ~22 jam</div>
+</div>
+
+<!-- WBS -->
+<div class="module-section" id="wbs">
+  <div class="m-phase-tag mt1">Phase 1 · Priority #1</div>
+  <div class="m-head">🌿 WBS — Work Breakdown Structure</div>
+  <div class="m-path">src/pages/modules/WBS.tsx</div>
+  <div class="effort">⏱ 16 jam · CRITICAL REWRITE</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-fix">🚨 Flat list — tidak ada hierarki</span>
+    <span class="status-pill sp-fix">🚨 WBSTree tidak terhubung</span>
+    <span class="status-pill sp-fix">🚨 WBSEditor tidak terhubung</span>
+    <span class="status-pill sp-fix">🚨 Delete dialog tidak ada</span>
+    <span class="status-pill sp-new">✦ WBSDetailPanel (buat baru)</span>
+    <span class="status-pill sp-new">✦ WBSToolbar (buat baru)</span>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-label">Current State</div>
+      <div class="ic-content">
+        <strong>❌ Renders flat &lt;ul&gt; list</strong>
+        WBSTree, WBSEditor, semua store CRUD actions, dan <code>pendingDeleteConfirmation</code> sudah ada tapi 100% disconnected dari halaman ini.
+        Store logic sudah lengkap — masalahnya hanya di UI layer.
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">Logic Gaps</div>
+      <div class="ic-content">
+        1. Flat list, bukan tree hierarkis<br>
+        2. Tidak ada toolbar (search, expand, import, export)<br>
+        3. WBSEditor tidak ter-wire (add/edit)<br>
+        4. <code>pendingDeleteConfirmation</code> tidak trigger AlertDialog<br>
+        5. Tidak ada progress/QC summary strip<br>
+        6. Tidak ada detail panel kanan
+      </div>
+    </div>
+  </div>
+
+  <h4 class="sub-head">Logic Improvements</h4>
+  <div class="issue-list">
+    <div class="issue-item ii-critical"><span class="ii-icon">🔴</span><div class="ii-text"><strong>CRITICAL:</strong> Rewrite WBS.tsx — wire WBSTree + WBSEditor + AlertDialog. Semua komponen sudah ada, hanya perlu disambungkan ke halaman.</div></div>
+    <div class="issue-item ii-critical"><span class="ii-icon">🔴</span><div class="ii-text"><strong>CRITICAL:</strong> Delete confirmation AlertDialog wajib ada — store sudah handle <code>pendingDeleteConfirmation</code> tapi UI tidak pernah menampilkan dialog ini.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>FIX:</strong> SummaryStrip perlu data dari wbsStore + rabStore + timelineStore: total items, avg progress, budget RAB linked, QC passed count, timeline tasks linked.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>ENHANCE:</strong> Expand/collapse all state disimpan di local React state (bukan store). Filter by level hanya filter display, bukan data fetch.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>ENHANCE:</strong> Keyboard nav: ArrowUp/Down navigasi item, Enter untuk edit, Delete untuk delete, F2 untuk rename (sudah ada di WBSTreeItem — hanya perlu expose ke parent).</div></div>
+  </div>
+
+  <h4 class="sub-head">Layout Spec</h4>
+  <div class="layout-spec">WBS.tsx
+├── GlobalContextBar (existing pattern component)
+├── WorkspaceHeader: "WBS Structure" | "{project} — {n} items" | actions
+├── WBSToolbar (NEW: src/components/wbs/WBSToolbar.tsx)
+│   ├── SearchInput → filterText state
+│   ├── LevelSelect → levelFilter state (All / L1 / L2 / L3)
+│   ├── [Expand All] [Collapse All] → expandedIds state
+│   ├── [Import] [Export] → wbsStore.importWBS / exportWBS
+│   ├── [Generate Codes] → wbsStore.generateCodes
+│   └── [+ Root Item] (primary cobalt) → setEditorOpen(true), setEditorParentId(null)
+│
+├── SummaryStrip (5 items)
+│   ├── Total Items — items.length (cobalt)
+│   ├── Avg Progress — avg of item.progress (jade)
+│   ├── Budget RAB — sum RAB items linked to WBS (gold IDR)
+│   ├── QC Passed — count items where qc_status==='PASSED' (jade)
+│   └── Timeline Linked — count tasks with wbsId match (cobalt)
+│
+├── ContentArea (flex row, gap-4)
+│   ├── WBSTree (flex-1, overflow-y-auto)    ← existing, add QC badge
+│   └── WBSDetailPanel (w-80, sticky top-4)  ← NEW
+│
+├── WBSEditor Dialog (existing)              ← wire to add/edit
+└── AlertDialog (pendingDeleteConfirmation)  ← wire to confirmDelete/cancelDelete</div>
+
+  <h4 class="sub-head">Files</h4>
+  <table class="file-table">
+    <thead><tr><th>Action</th><th>File</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="act-warn">REWRITE</td><td><code>src/pages/modules/WBS.tsx</code></td><td>Shell layout — wire semua komponen</td></tr>
+      <tr><td class="act-create">CREATE</td><td><code>src/components/wbs/WBSToolbar.tsx</code></td><td>Toolbar lengkap, emit callbacks saja (no store direct access)</td></tr>
+      <tr><td class="act-create">CREATE</td><td><code>src/components/wbs/WBSDetailPanel.tsx</code></td><td>Panel kanan — selected item detail, edit/delete</td></tr>
+      <tr><td class="act-modify">MODIFY</td><td><code>src/components/wbs/WBSTree.tsx</code></td><td>Tambah QC badge + progress % badge ke rows</td></tr>
+      <tr><td class="act-none">NO CHANGE</td><td><code>src/components/wbs/WBSEditor.tsx</code></td><td>Sudah lengkap</td></tr>
+      <tr><td class="act-none">NO CHANGE</td><td><code>src/store/wbsStore.ts</code></td><td>Sudah lengkap — semua CRUD + confirmDelete</td></tr>
+    </tbody>
+  </table>
+
+  <h4 class="sub-head">WBSDetailPanel — Spec</h4>
+  <div class="info-card" style="margin-bottom:16px;">
+    <div class="ic-content" style="font-size:11px;line-height:1.7;">
+      <strong>Props:</strong> <code>item: WBSItem | null</code> · <code>onEdit: (item) => void</code> · <code>onDelete: (item) => void</code><br><br>
+      <strong>Content when item selected:</strong><br>
+      • Header: code badge (cobalt pill) + item name (Bricolage Grotesque font 16px)<br>
+      • Status row: progress source pill + QC pill + level pill<br>
+      • Progress bar: 6px, jade fill for 100%, cobalt for partial<br>
+      • Fields: Progress%, QC Status, Budget RAB (gold IDR mono), Timeline Tasks count, Description, physicalProgressLocked<br>
+      • Footer: [Edit outline btn] [Delete ghost coral btn]<br><br>
+      <strong>Content when no item selected:</strong><br>
+      Empty state: "Pilih item untuk melihat detail" with tree icon
+    </div>
+  </div>
+</div>
+
+<!-- RAB -->
+<div class="module-section" id="rab">
+  <div class="m-phase-tag mt1">Phase 1 · Priority #2</div>
+  <div class="m-head">💰 RAB — Rencana Anggaran Biaya</div>
+  <div class="m-path">src/pages/modules/RAB.tsx</div>
+  <div class="effort">⏱ 4 jam · VISUAL + BUDGET GUARD</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-ok">✓ Logic sophisticated</span>
+    <span class="status-pill sp-ok">✓ Real-time Supabase</span>
+    <span class="status-pill sp-ok">✓ EVMGuardPanel ada</span>
+    <span class="status-pill sp-ok">✓ Presence avatars</span>
+    <span class="status-pill sp-warn">⚠ No budget overrun warning</span>
+    <span class="status-pill sp-warn">⚠ KPI style generic</span>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-label">Current State</div>
+      <div class="ic-content">Already sophisticated: ResizablePanelGroup, EVMGuardPanel, PriceDriftBanner, real-time listener, rate config (OH/Profit/Tax). Logic is sound — hanya perlu visual polish + budget guard.</div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">Logic Improvements</div>
+      <div class="ic-content">
+        1. <code>BudgetHealthBanner</code>: jika <code>summary.total &gt; project.budget</code> → coral alert "RAB melebihi budget Rp X"<br>
+        2. Budget utilization %: <code>(total/budget)*100</code> di SummaryStrip<br>
+        3. Lock state harus block add/edit/delete action (bukan hanya visual)<br>
+        4. Zero-price warning → AlertStrip pattern (bukan inline div)
+      </div>
+    </div>
+  </div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Budget Guard:</strong> Ketika <code>summary.total &gt; currentProject.budget</code>, tampilkan AlertStrip coral: "RAB melebihi budget proyek sebesar {formatIDR(overrun)}. Tinjau item atau perbarui budget proyek."</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>SummaryStrip:</strong> Tambahkan "BUDGET UTILIZATION" sebagai KPI ke-5: <code>{(summary.total/project.budget*100).toFixed(1)}%</code> — jade jika &lt;80%, amber jika 80-100%, coral jika &gt;100%.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>MERIDIAN tokens:</strong> Final Total value → <code>idr-value</code> class (JetBrains Mono + gold). KPI card top accent strips. SummaryStrip pattern component.</div></div>
+  </div>
+</div>
+
+<!-- Command Center -->
+<div class="module-section" id="cc">
+  <div class="m-phase-tag mt1">Phase 1 · Priority #3</div>
+  <div class="m-head">🎯 Command Center</div>
+  <div class="m-path">src/pages/modules/v3/CommandCenter.tsx</div>
+  <div class="effort">⏱ 2 jam · VISUAL + DAY COUNTER</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-ok">✓ react-query wired</span>
+    <span class="status-pill sp-ok">✓ Supabase Realtime</span>
+    <span class="status-pill sp-ok">✓ TelemetryHUD, PerformanceKPIs</span>
+    <span class="status-pill sp-ok">✓ Portfolio mode</span>
+    <span class="status-pill sp-warn">⚠ KPI cards tidak clickable</span>
+    <span class="status-pill sp-warn">⚠ Day counter tidak ditampilkan</span>
+  </div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Day Counter:</strong> <code>differenceInDays</code> sudah diimport tapi tidak pernah di-render. Harus muncul di GlobalContextBar: "Hari ke-45 dari 180 hari".</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>KPI Navigation:</strong> Setiap KPI card → onClick → navigate ke modul terkait: Budget→/costing, Progress→/schedule, CPI→/cost-forecast, Approval→/approvals. Tambah <code>cursor-pointer hover:shadow-md</code>.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>MERIDIAN:</strong> KPI values → gold color + JetBrains Mono. KPI cards → 3px top accent strip. Blueprint grid background.</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PHASE 2
+     ════════════════════════════════ -->
+<div id="phase2" style="padding-top:32px;margin-bottom:24px;">
+  <div style="font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gol);margin-bottom:6px;">Phase 2 — Operations</div>
+  <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--t0);">Sprint 2 · ~18 jam</div>
+</div>
+
+<!-- Schedule -->
+<div class="module-section" id="schedule">
+  <div class="m-phase-tag mt2">Phase 2</div>
+  <div class="m-head">📅 Schedule & Operations</div>
+  <div class="m-path">src/pages/modules/v3/ScheduleOps.tsx</div>
+  <div class="effort">⏱ 4 jam · CPM STATUS + EMPTY STATES</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-ok">✓ Plan/Track/Analyze modes</span>
+    <span class="status-pill sp-ok">✓ CPM Web Worker</span>
+    <span class="status-pill sp-ok">✓ Curva-S chart</span>
+    <span class="status-pill sp-warn">⚠ CPM status tidak prominent</span>
+    <span class="status-pill sp-warn">⚠ Empty state Plan mode</span>
+    <span class="status-pill sp-warn">⚠ Photo upload progress missing</span>
+  </div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>CPM Status Banner:</strong> Ketika CPM calculating → sticky AlertStrip cobalt: "⚡ Menghitung jalur kritis..." dengan spinner. Ketika selesai → success dismissible: "✓ Critical path diperbarui".</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>WBS Badge pada Task:</strong> Task yang linked ke WBS tampilkan badge kecil "[2.1.1]" di row Gantt. Membantu user memahami koneksi WBS↔Timeline.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Empty state Plan mode:</strong> Jika tidak ada tasks → "Belum ada task jadwal. Import dari WBS atau buat manual." dengan tombol aksi primer.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Photo upload progress:</strong> Track mode — saat upload bukti foto, tampilkan "Mengupload foto 2/5..." sebagai toast atau inline progress bar.</div></div>
+  </div>
+</div>
+
+<!-- Finance -->
+<div class="module-section" id="finance">
+  <div class="m-phase-tag mt2">Phase 2</div>
+  <div class="m-head">💳 Finance</div>
+  <div class="m-path">src/pages/modules/v3/Finance.tsx</div>
+  <div class="effort">⏱ 6 jam · OVERDUE VISUAL + 3-WAY MATCH</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-ok">✓ AP/AR/Cashflow/Opname/3-Way Match</span>
+    <span class="status-pill sp-ok">✓ InvoiceDialog, ClaimDialog</span>
+    <span class="status-pill sp-ok">✓ AgingReport</span>
+    <span class="status-pill sp-warn">⚠ Overdue rows tidak highlight</span>
+    <span class="status-pill sp-warn">⚠ 3-Way Match chain tidak visual</span>
+    <span class="status-pill sp-warn">⚠ AgingReport tidak ada chart</span>
+  </div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-critical"><span class="ii-icon">🔴</span><div class="ii-text"><strong>Overdue Highlighting:</strong> AP rows dimana <code>dueDate &lt; today AND status !== 'PAID'</code> → row background coral tint <code>bg-coral-950/20</code> + "OVERDUE" coral pill. Auto-sort by due date ascending.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>3-Way Match Visual:</strong> Setiap match row tampilkan chain: <code>[PO-xxx ✓] → [GRN-xxx ✓] → [INV-xxx ⏳]</code> dengan status dot per dokumen. Saat ini hanya list biasa.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Aging Report Chart:</strong> AgingReport.tsx harus punya horizontal bar chart per bucket (0-30 / 31-60 / 61-90 / &gt;90 hari). Amber untuk 31-60, coral untuk 61+.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Post-GRN Suggestion:</strong> Setelah GRN dibuat → auto-suggest "Buat invoice AP untuk PO-xxx?" dengan tombol shortcut. Mengurangi friction untuk finance officer.</div></div>
+  </div>
+</div>
+
+<!-- Supply Chain -->
+<div class="module-section" id="supply">
+  <div class="m-phase-tag mt2">Phase 2</div>
+  <div class="m-head">🏗 Supply Chain</div>
+  <div class="m-path">src/pages/modules/v3/SupplyChain.tsx</div>
+  <div class="effort">⏱ 4 jam · MRP VISUAL + TRACE CHAIN</div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>MRP Alert Visual:</strong> Setiap alert row tampilkan: <code>[Dibutuhkan: 250 m³] [Stok: 80 m³] [Gap: 170 m³ 🔴]</code>. Gap badge coral jika &gt;50%, amber jika 20-50%.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Procurement Trace:</strong> Di tab PO, setiap row tampilkan chain status: <code>PO ✓ → GRN ⏳ → INV —</code>. Click chain → navigasi ke dokumen terkait.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Bulk Action Confirmation:</strong> Approve/reject bulk selalu tampilkan AlertDialog: "Anda akan approve X item senilai Rp Y. Lanjutkan?" Mencegah accidental bulk approval.</div></div>
+  </div>
+</div>
+
+<!-- Field Tasks -->
+<div class="module-section" id="field">
+  <div class="m-phase-tag mt2">Phase 2</div>
+  <div class="m-head">📱 Field Tasks (Mobile-first)</div>
+  <div class="m-path">src/pages/modules/v3/ScheduleOps.tsx (Track mode)</div>
+  <div class="effort">⏱ 4 jam · GPS GATE + OFFLINE CLARITY</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-ok">✓ Offline queue</span>
+    <span class="status-pill sp-ok">✓ GPS geofence</span>
+    <span class="status-pill sp-ok">✓ Photo EXIF</span>
+    <span class="status-pill sp-warn">⚠ GPS gate opsional</span>
+    <span class="status-pill sp-warn">⚠ Offline indicator tidak sticky</span>
+    <span class="status-pill sp-warn">⚠ Photo progress missing</span>
+  </div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Offline Banner:</strong> Sticky amber banner di atas saat offline: "● Offline — X operasi antri, akan sync otomatis saat online." Tidak boleh dismissible saat offline.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>GPS Gate:</strong> Sebelum task di-start → check geofence via geofenceService. Jika di luar zona → warning dialog (bisa di-override oleh manager dengan keterangan).</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>QC Gate untuk WBS Locked:</strong> Jika task linked ke WBS item dengan <code>physicalProgressLocked === true</code> dan progress akan 100% → modal "QC inspeksi diperlukan sebelum menyelesaikan task ini."</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Task Sort:</strong> IN_PROGRESS → DUE_TODAY → TODO → DONE (kolaps default). User dapat fokus pada yang paling mendesak tanpa scroll panjang.</div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PHASE 3
+     ════════════════════════════════ -->
+<div id="phase3" style="padding-top:32px;margin-bottom:24px;">
+  <div style="font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--jal);margin-bottom:6px;">Phase 3 — Support</div>
+  <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--t0);">Sprint 3 · ~38 jam</div>
+</div>
+
+<!-- AHSP -->
+<div class="module-section" id="ahsp">
+  <div class="m-phase-tag mt3">Phase 3</div>
+  <div class="m-head">📊 AHSP — Analisis Harga Satuan</div>
+  <div class="m-path">src/pages/modules/AHSP/index.tsx</div>
+  <div class="effort">⏱ 4 jam · ZONE DELTA + IMPORT VALIDATION</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-ok">✓ Mostly complete</span>
+    <span class="status-pill sp-ok">✓ Zone pricing</span>
+    <span class="status-pill sp-ok">✓ Price history chart</span>
+    <span class="status-pill sp-warn">⚠ Zone delta tidak visual</span>
+    <span class="status-pill sp-warn">⚠ Import tidak validasi duplikat</span>
+  </div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Zone Price Delta Badge:</strong> Di ZonePriceEditor, setiap harga tampilkan delta vs base: <code>+12%</code> jade atau <code>-5%</code> coral. Formula: <code>((zonePrice - basePrice) / basePrice * 100).toFixed(1)</code>.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Import Duplicate Check:</strong> Sebelum import AHSP items, cek code uniqueness: jika ada duplikat → show conflict list "3 kode sudah ada: AHSP-6.3.1, AHSP-6.3.2, AHSP-6.4.1. Override atau skip?"</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>RAB Usage Count:</strong> Setiap AHSP row → badge "Digunakan di 3 RAB items" yang clickable → filter RAB by ahsp_id. Membantu user tahu dampak perubahan harga.</div></div>
+  </div>
+</div>
+
+<!-- RAP -->
+<div class="module-section" id="rap">
+  <div class="m-phase-tag mt3">Phase 3</div>
+  <div class="m-head">📋 RAP — Rencana Anggaran Pelaksanaan</div>
+  <div class="m-path">src/pages/modules/RAP.tsx</div>
+  <div class="effort">⏱ 8 jam · MARGIN ANALYSIS BUILD</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-warn">⚠ File baru — perlu implement</span>
+    <span class="status-pill sp-ok">✓ rapStore lengkap</span>
+    <span class="status-pill sp-ok">✓ rapService + rapProfitService</span>
+  </div>
+
+  <div class="info-card" style="margin-bottom:16px;">
+    <div class="ic-label">Konsep RAP</div>
+    <div class="ic-content">RAP = perspektif biaya kontraktor (lebih rendah dari RAB). Selisih RAB-RAP = margin/profit proyek. KPI utama: "Margin Proyek: Rp X (Y%)". Setiap item RAP harus bisa diverifikasi vs item RAB equivalennya.</div>
+  </div>
+
+  <div class="layout-spec">RAP.tsx
+├── SummaryStrip
+│   ├── RAB Total (gold) — reference
+│   ├── RAP Total (cobalt) — execution cost
+│   ├── Margin Rp (jade if positive, coral if negative)
+│   ├── Margin % (jade/coral)
+│   └── Item Count
+├── MarginHealthBar — horizontal bar showing RAB (full) vs RAP (portion)
+├── Toolbar — [+Item] [Import dari RAB] [Export] [Lock/Unlock]
+└── RAP Table (same as RAB + Variance column)
+    Variance: (rabPrice - rapPrice) / rabPrice * 100
+    Color: jade if positive margin, coral if negative</div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-critical"><span class="ii-icon">🔴</span><div class="ii-text"><strong>BUAT BARU:</strong> RAP module harus menampilkan perbandingan RAP vs RAB per item. Ini adalah core value proposition modul ini — tanpa ini, RAP tidak berguna.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Import dari RAB:</strong> Copy semua RAB items ke RAP dengan harga yang sama, biarkan user edit ke bawah. Ini adalah starting point yang wajar untuk estimasi biaya pelaksana.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Lock synchronization:</strong> Jika RAB dikunci, RAP juga harus terkunci (perubahan RAB setelah lock akan merusak perbandingan historis).</div></div>
+  </div>
+</div>
+
+<!-- Resource Plan -->
+<div class="module-section" id="resource">
+  <div class="m-phase-tag mt3">Phase 3</div>
+  <div class="m-head">👥 Resource Plan</div>
+  <div class="m-path">src/pages/modules/ResourcePlan.tsx</div>
+  <div class="effort">⏱ 8 jam · MATRIX BUILD</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-warn">⚠ File baru — perlu implement</span>
+    <span class="status-pill sp-ok">✓ resourceService lengkap</span>
+    <span class="status-pill sp-ok">✓ resourcePlanService</span>
+  </div>
+
+  <div class="layout-spec">ResourcePlan.tsx
+├── SummaryStrip: Total Resources | Overallocated | Peak Week | Estimated Cost
+├── ResourceTypeFilter: Labor | Material | Equipment | Subcontractor (pills)
+├── ResourceMatrix (main content, flex row)
+│   ├── Left panel: Resource list (name, type, rate/unit)
+│   └── Right: Time grid (weeks/months as columns)
+│       Cells = allocation per resource per period
+│       Heat map: Overallocated (coral) | Optimal (jade) | Under (cobalt dim)
+└── ResourceDetailDrawer: on cell click → breakdown by task/WBS</div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-critical"><span class="ii-icon">🔴</span><div class="ii-text"><strong>BUAT BARU:</strong> Resource matrix adalah deliverable utama. Rows = resources, columns = time periods. Cells di-aggregate dari Timeline tasks yang punya resource assignments.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Heat map logic:</strong> <code>allocation &gt; capacity * 1.0</code> → coral (overallocated). <code>0.5-1.0</code> → jade. <code>&lt;0.5</code> → cobalt dim (underutilized). Capacity dari resource.maxCapacity field.</div></div>
+  </div>
+</div>
+
+<!-- Change Management -->
+<div class="module-section" id="cco">
+  <div class="m-phase-tag mt3">Phase 3</div>
+  <div class="m-head">🔄 Change Management (CCO)</div>
+  <div class="m-path">src/pages/modules/v3/ChangeManagement.tsx</div>
+  <div class="effort">⏱ 4 jam · STATE MACHINE VISUAL + CASCADE PREVIEW</div>
+
+  <div class="status-bar">
+    <span class="status-pill sp-ok">✓ ccoStateMachine service</span>
+    <span class="status-pill sp-ok">✓ changeOrderCascade service</span>
+    <span class="status-pill sp-ok">✓ ChangeOrderDialog</span>
+    <span class="status-pill sp-warn">⚠ State machine tidak visual di rows</span>
+    <span class="status-pill sp-warn">⚠ Cascade preview tidak ditampilkan</span>
+  </div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-critical"><span class="ii-icon">🔴</span><div class="ii-text"><strong>State Machine Visual:</strong> Setiap CCO row harus tampilkan progress pills: <code>DRAFT → ● PENDING → APPROVED → IMPLEMENTED</code>. Current step di-highlight dengan accent color.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Cascade Preview:</strong> Sebelum APPROVE CCO → modal "Perubahan yang akan terjadi: RAB item X akan berubah Rp Y → Rp Z. Task T akan bergeser 5 hari." User confirm dulu sebelum cascade.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Budget Guard:</strong> Jika CCO approval akan membuat total RAB &gt; project.budget → BLOCK dengan coral alert: "Persetujuan ini akan melampaui budget proyek sebesar Rp X. Perbarui budget dulu."</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Cost Impact Badge:</strong> Setiap CCO row → <code>+Rp 145jt</code> jade atau <code>-Rp 85jt</code> coral badge. Langsung terlihat dampak finansialnya tanpa harus buka dialog.</div></div>
+  </div>
+</div>
+
+<!-- TKDN, QHSE, Docs, Handover — condensed -->
+<div class="module-section" id="tkdn">
+  <div class="m-phase-tag mt3">Phase 3</div>
+  <div class="m-head">🇮🇩 TKDN + QHSE + Documents + Handover</div>
+  <div class="effort">⏱ 10 jam total (2+2+4+2)</div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-label">TKDN · 2 jam</div>
+      <div class="ic-content">
+        <strong>Gap:</strong> Tidak ada compliance gauge visual<br>
+        <strong>Fix:</strong> Circular gauge: actual TKDN% vs target (misal 40%). Coral jika di bawah target. Export report format LKPP.<br>
+        <strong>Logic:</strong> TKDN% = sum(RAB items dengan is_domestic * finalTotal) / total RAB * 100
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">QHSE · 2 jam</div>
+      <div class="ic-content">
+        <strong>Gap:</strong> Incident severity tidak visual. Checklist % missing.<br>
+        <strong>Fix:</strong> Severity badge: CRITICAL (coral pulsing) / MAJOR (amber) / MINOR (cobalt) / NEAR_MISS (violet).<br>
+        Checklist: show "12/18 (67%)" progress bar per inspection.
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">Documents · 4 jam</div>
+      <div class="ic-content">
+        <strong>Gap:</strong> Tidak ada folder tree visual. QR scan workflow incomplete. Bulk download missing.<br>
+        <strong>Fix:</strong> Left panel: folder tree (pattern seperti WBSTree). Kamera button → scan QR → auto-navigate. Checkbox multi-select → "Download as ZIP".
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">Handover · 2 jam</div>
+      <div class="ic-content">
+        <strong>Gap:</strong> Step prerequisites tidak jelas. Archive terlalu mudah diactivate.<br>
+        <strong>Fix:</strong> Per step: show "✓ 3/4 prerequisites met, 1 remaining: {desc}". Archive: 3-step confirm — button → type project code → final confirm.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PHASE 4
+     ════════════════════════════════ -->
+<div id="phase4" style="padding-top:32px;margin-bottom:24px;">
+  <div style="font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--vil);margin-bottom:6px;">Phase 4 — Intelligence & Admin</div>
+  <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:var(--t0);">Sprint 4 · ~24 jam</div>
+</div>
+
+<div class="module-section" id="forecast">
+  <div class="m-phase-tag mt4">Phase 4</div>
+  <div class="m-head">📈 Cost Forecast — EVM Dashboard</div>
+  <div class="m-path">src/pages/modules/v3/CostForecastDashboard.tsx</div>
+  <div class="effort">⏱ 6 jam · SCENARIOS + CONFIDENCE BAND</div>
+
+  <div class="issue-list">
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>EAC Confidence Band:</strong> Chart Curva-S tampilkan shaded area ±10% di sekitar EAC line. Menunjukkan range ketidakpastian yang realistis.</div></div>
+    <div class="issue-item ii-warn"><span class="ii-icon">🟡</span><div class="ii-text"><strong>Scenario Toggle:</strong> Optimistis (CPI tetap 1.12) vs Pesimistis (CPI kembali ke 1.0) vs Current. Tampilkan 3 EAC lines berbeda warna.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Period Comparison:</strong> "vs minggu lalu: CPI ↑0.03, SPI ↓0.01" sebagai trend indicator kecil di bawah setiap metric value.</div></div>
+    <div class="issue-item ii-improve"><span class="ii-icon">🔵</span><div class="ii-text"><strong>Date Range Picker:</strong> Week / Month / Quarter / Full Project selector untuk chart period. Default: Full Project.</div></div>
+  </div>
+</div>
+
+<div class="module-section" id="portfolio">
+  <div class="m-phase-tag mt4">Phase 4</div>
+  <div class="m-head">🌐 Portfolio + BI Reports + Strategy Sim</div>
+  <div class="effort">⏱ 14 jam (4+6+4)</div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-label">Portfolio Analytics · 4 jam</div>
+      <div class="ic-content">
+        <strong>PHI Tooltip:</strong> Tampilkan formula: "PHI = weighted avg(CPI, SPI, schedule adherence)"<br>
+        <strong>Normalization:</strong> "CPI per Rp 1M budget" untuk fair cross-project comparison<br>
+        <strong>Risk Aggregation:</strong> Top 5 highest-severity risks across all projects
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">BI Report Builder · 6 jam</div>
+      <div class="ic-content">
+        <strong>Template Gallery:</strong> "Laporan Kemajuan Mingguan", "Laporan Biaya Bulanan", "Executive Summary"<br>
+        <strong>Print Preview:</strong> A4 WYSIWYG preview mode<br>
+        <strong>Schedule:</strong> "Kirim setiap Senin 08:00 ke email X"
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">Strategy Simulation · 4 jam</div>
+      <div class="ic-content">
+        <strong>3-Scenario:</strong> A vs B vs C side-by-side (saat ini hanya 2)<br>
+        <strong>Crash Program:</strong> Input tambahan resources → lihat time savings vs extra cost<br>
+        <strong>Validation:</strong> Budget cut max 50%, delay max 365 hari
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="ic-label">Settings · 4 jam</div>
+      <div class="ic-content">
+        <strong>Notifikasi Tab:</strong> Per-user toggle per event type<br>
+        <strong>Hak Akses Tab:</strong> RBAC role assignment per member<br>
+        <strong>Reset to Default:</strong> Per-module config reset dengan confirmation
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sprint Plan -->
+<div class="module-section" id="strat">
+  <div class="m-head">🗓 Sprint Execution Plan</div>
+  <table class="sprint-table">
+    <thead><tr><th>Sprint</th><th>Tasks</th><th>Effort</th><th>KPI</th></tr></thead>
+    <tbody>
+      <tr class="sp-w1"><td>Sprint 1<br><span style="font-size:10px;color:var(--t2);">Week 1</span></td><td>Global tokens setup · WBS full rewrite · RAB budget guard · Command Center day counter</td><td style="font-family:'JetBrains Mono';color:var(--col);">~22 jam</td><td>WBS fungsional sepenuhnya</td></tr>
+      <tr class="sp-w2"><td>Sprint 2<br><span style="font-size:10px;color:var(--t2);">Week 2</span></td><td>Schedule CPM status · Finance overdue + 3-way · Supply Chain MRP visual · Field Tasks GPS gate</td><td style="font-family:'JetBrains Mono';color:var(--gol);">~18 jam</td><td>Operational modules polished</td></tr>
+      <tr class="sp-w3"><td>Sprint 3<br><span style="font-size:10px;color:var(--t2);">Week 3</span></td><td>AHSP zone delta · RAP margin build · Resource matrix · CCO cascade preview · TKDN/QHSE/Docs/Handover</td><td style="font-family:'JetBrains Mono';color:var(--jal);">~38 jam</td><td>Support modules complete</td></tr>
+      <tr class="sp-w4"><td>Sprint 4<br><span style="font-size:10px;color:var(--t2);">Week 4</span></td><td>Cost Forecast scenarios · Portfolio normalization · BI templates · Strategy 3-way · Settings notifications</td><td style="font-family:'JetBrains Mono';color:var(--vil);">~24 jam</td><td>Intelligence layer ready</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:12px;padding:12px 16px;background:var(--cob);border:1px solid rgba(59,130,246,.2);border-radius:8px;font-size:12px;color:var(--col);">
+    <strong>Total: ~102 jam</strong> — estimasi untuk 1 developer. Dengan 2 developer paralel (Phase 1+2 dan Phase 3+4 bersamaan): <strong>~3 minggu deployment-ready.</strong>
+  </div>
+</div>
+
+<div class="footer">
+  <p><strong>MLPHoma · Master Design Plan · MERIDIAN v1.0 · Juni 2026</strong></p>
+  <p style="margin-top:4px;">20 modul · 4 fase · ~102 jam total · Bricolage Grotesque + Nunito Sans + JetBrains Mono</p>
+  <p style="margin-top:4px;">Saved: <code style="font-family:'JetBrains Mono';font-size:10px;">docs/superpowers/plans/2026-06-02-mlphoma-full-module-design-plan.md</code></p>
+</div>
+
+</main>
+</div>
+
+</body>
+</html>

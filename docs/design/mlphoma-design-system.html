@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLPHoma · MERIDIAN Design System v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+
+/* ═══════════════════════════════════════════
+   MERIDIAN — LIGHT MODE (default)
+   Aesthetic: Warm Limestone × Engineering Ink
+   ═══════════════════════════════════════════ */
+[data-theme="light"] {
+  --bg-page:      #F2EFE9;
+  --bg-surface:   #FDFCF9;
+  --bg-hover:     #F4F1EB;
+  --bg-elevated:  #FFFFFF;
+  --bg-overlay:   #F0EDE5;
+  --bg-popup:     #FFFFFF;
+
+  --border-subtle:  #E3DED3;
+  --border-default: #CEC8BA;
+  --border-strong:  #B8B0A0;
+  --border-focus:   #2563EB;
+
+  --text-primary:   #1A1814;
+  --text-secondary: #50493E;
+  --text-muted:     #96907F;
+  --text-inverse:   #FDFCF9;
+
+  /* Financial — dark amber for light bg (contrast ~7:1) */
+  --text-idr:       #92400E;
+  --text-idr-pos:   #14532D;
+  --text-idr-neg:   #881337;
+
+  /* Accents — deepened for light backgrounds */
+  --cobalt:   #2563EB; --cobalt-l: #1E40AF; --cobalt-bg: rgba(37,99,235,.07);
+  --gold:     #D97706; --gold-l:   #92400E; --gold-bg:   rgba(217,119,6,.07);
+  --jade:     #16A34A; --jade-l:   #14532D; --jade-bg:   rgba(22,163,74,.07);
+  --coral:    #E11D48; --coral-l:  #9F1239; --coral-bg:  rgba(225,29,72,.07);
+  --amber:    #EA580C; --amber-l:  #9A3412; --amber-bg:  rgba(234,88,12,.07);
+  --violet:   #7C3AED; --violet-l: #5B21B6; --violet-bg: rgba(124,58,237,.07);
+  --teal:     #0D9488; --teal-l:   #134E4A; --teal-bg:   rgba(13,148,136,.07);
+
+  /* Shadows — warm, not cold */
+  --shadow-xs: 0 1px 3px rgba(60,50,30,.10);
+  --shadow-sm: 0 2px 6px rgba(60,50,30,.09), 0 1px 2px rgba(60,50,30,.07);
+  --shadow-md: 0 4px 16px rgba(60,50,30,.10), 0 2px 4px rgba(60,50,30,.07);
+  --shadow-lg: 0 12px 32px rgba(60,50,30,.12), 0 4px 8px rgba(60,50,30,.08);
+
+  /* Glows — lighter for day */
+  --glow-cobalt: 0 0 20px rgba(37,99,235,.10), 0 4px 16px rgba(37,99,235,.08);
+  --glow-gold:   0 0 20px rgba(217,119,6,.12),  0 4px 16px rgba(217,119,6,.08);
+  --glow-jade:   0 0 20px rgba(22,163,74,.10),  0 4px 16px rgba(22,163,74,.08);
+  --glow-coral:  0 0 20px rgba(225,29,72,.10),  0 4px 16px rgba(225,29,72,.08);
+
+  /* Status semantic */
+  --s-ok-fg: var(--jade-l);   --s-ok-bg: var(--jade-bg);
+  --s-warn-fg:var(--amber-l); --s-warn-bg:var(--amber-bg);
+  --s-err-fg: var(--coral-l); --s-err-bg: var(--coral-bg);
+  --s-inf-fg: var(--cobalt-l);--s-inf-bg: var(--cobalt-bg);
+  --s-neu-fg: var(--text-secondary); --s-neu-bg: rgba(80,73,62,.07);
+  --s-fin-fg: var(--gold-l);  --s-fin-bg: var(--gold-bg);
+  --s-live-fg:var(--teal-l);  --s-live-bg:var(--teal-bg);
+  --s-ai-fg:  var(--violet-l);--s-ai-bg:  var(--violet-bg);
+
+  /* Blueprint grid (warm sepia tones) */
+  --grid-color-lg: rgba(120,100,60,.06);
+  --grid-color-sm: rgba(120,100,60,.03);
+
+  /* Table */
+  --table-head-bg: var(--bg-hover);
+  --table-stripe:  rgba(37,99,235,.025);
+  --table-hover:   var(--bg-hover);
+
+  /* KPI card */
+  --kpi-surface:  var(--bg-elevated);
+  --kpi-border:   var(--border-default);
+
+  /* Skeleton */
+  --skel-base:    #E8E3D8;
+  --skel-shine:   #F0EBE0;
+
+  /* Interactive */
+  --btn-ghost-hover: var(--bg-hover);
+  --input-bg: var(--bg-elevated);
+
+  /* Bar/accent top */
+  --accent-bar-opacity: 1;
+}
+
+/* ═══════════════════════════════════════════
+   MERIDIAN — DARK MODE
+   Aesthetic: Obsidian × Electric Cobalt
+   ═══════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg-page:    #060910;
+  --bg-surface: #0c1220;
+  --bg-hover:   #131c2e;
+  --bg-elevated:#131c2e;
+  --bg-overlay: #1a253c;
+  --bg-popup:   #21304a;
+
+  --border-subtle:  #111929;
+  --border-default: #192338;
+  --border-strong:  #213047;
+  --border-focus:   #3B82F6;
+
+  --text-primary:   #E2EAF5;
+  --text-secondary: #7A90AB;
+  --text-muted:     #3D5068;
+  --text-inverse:   #060910;
+
+  --text-idr:       #FBBF24;
+  --text-idr-pos:   #4ADE80;
+  --text-idr-neg:   #FB7185;
+
+  --cobalt:   #3B82F6; --cobalt-l: #60A5FA; --cobalt-bg: rgba(59,130,246,.08);
+  --gold:     #F59E0B; --gold-l:   #FBBF24; --gold-bg:   rgba(245,158,11,.08);
+  --jade:     #22C55E; --jade-l:   #4ADE80; --jade-bg:   rgba(34,197,94,.08);
+  --coral:    #F43F5E; --coral-l:  #FB7185; --coral-bg:  rgba(244,63,94,.08);
+  --amber:    #F97316; --amber-l:  #FB923C; --amber-bg:  rgba(249,115,22,.08);
+  --violet:   #8B5CF6; --violet-l: #A78BFA; --violet-bg: rgba(139,92,246,.08);
+  --teal:     #14B8A6; --teal-l:   #2DD4BF; --teal-bg:   rgba(20,184,166,.08);
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.5);
+  --shadow-sm: 0 2px 4px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.5);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.4);
+  --shadow-lg: 0 16px 40px rgba(0,0,0,.6);
+
+  --glow-cobalt: 0 0 24px rgba(59,130,246,.16),0 0 48px rgba(59,130,246,.06);
+  --glow-gold:   0 0 24px rgba(245,158,11,.18),0 0 48px rgba(245,158,11,.07);
+  --glow-jade:   0 0 24px rgba(34,197,94,.15), 0 0 48px rgba(34,197,94,.06);
+  --glow-coral:  0 0 24px rgba(244,63,94,.15), 0 0 48px rgba(244,63,94,.06);
+
+  --s-ok-fg: var(--jade-l);   --s-ok-bg: var(--jade-bg);
+  --s-warn-fg:var(--amber-l); --s-warn-bg:var(--amber-bg);
+  --s-err-fg: var(--coral-l); --s-err-bg: var(--coral-bg);
+  --s-inf-fg: var(--cobalt-l);--s-inf-bg: var(--cobalt-bg);
+  --s-neu-fg: var(--text-secondary); --s-neu-bg: rgba(122,144,171,.10);
+  --s-fin-fg: var(--gold-l);  --s-fin-bg: var(--gold-bg);
+  --s-live-fg:var(--teal-l);  --s-live-bg:var(--teal-bg);
+  --s-ai-fg:  var(--violet-l);--s-ai-bg:  var(--violet-bg);
+
+  --grid-color-lg: rgba(59,130,246,.025);
+  --grid-color-sm: rgba(59,130,246,.012);
+
+  --table-head-bg: var(--bg-surface);
+  --table-stripe:  rgba(59,130,246,.025);
+  --table-hover:   var(--bg-elevated);
+
+  --kpi-surface:  var(--bg-surface);
+  --kpi-border:   var(--border-default);
+
+  --skel-base:    #131c2e;
+  --skel-shine:   #1a253c;
+
+  --btn-ghost-hover: var(--bg-elevated);
+  --input-bg: var(--bg-elevated);
+  --accent-bar-opacity: 1;
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  font-size: 14px; line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  background-image:
+    linear-gradient(var(--grid-color-lg) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color-lg) 1px, transparent 1px),
+    linear-gradient(var(--grid-color-sm) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color-sm) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .35s ease, color .35s ease;
+}
+
+/* ── Toggle Button ─────────────────────────────────────────────────────── */
+#theme-toggle {
+  position: fixed; top: 20px; right: 24px; z-index: 999;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border-default);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-md);
+  transition: all .2s ease;
+  letter-spacing: .04em;
+}
+#theme-toggle:hover { color: var(--text-primary); border-color: var(--border-strong); transform: translateY(-1px); }
+@media(max-width: 480px) {
+  #theme-toggle { top: 12px; right: 12px; padding: 6px 10px; font-size: 11px; }
+}
+.toggle-icon { font-size: 14px; transition: transform .4s ease; }
+[data-theme="light"] .toggle-icon { content: '☀'; }
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 40px; }
+.section { padding: 72px 0; border-bottom: 1px solid var(--border-subtle); }
+@media(max-width: 768px) {
+  .wrap { padding: 0 20px; }
+  .section { padding: 48px 0; }
+}
+@media(max-width: 480px) {
+  .wrap { padding: 0 14px; }
+  .section { padding: 32px 0; }
+}
+.section:last-child { border-bottom: none; }
+.s-eye {
+  font-size: 10px; font-weight: 800; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 6px; font-family: 'Nunito Sans', sans-serif;
+}
+.s-head {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 26px; font-weight: 700; letter-spacing: -.022em;
+  color: var(--text-primary); margin-bottom: 36px;
+}
+.lbl {
+  font-size: 10px; font-weight: 800; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text-muted);
+  font-family: 'Nunito Sans', sans-serif;
+}
+hr.rule { border: none; border-top: 1px solid var(--border-subtle); margin: 20px 0; }
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+.hero {
+  padding: 96px 0 72px;
+  border-bottom: 1px solid var(--border-subtle);
+  position: relative; overflow: hidden;
+}
+@media(max-width: 768px) {
+  .hero { padding: 64px 0 48px; }
+}
+@media(max-width: 480px) {
+  .hero { padding: 40px 0 32px; }
+}
+/* Light: warm radial glow */
+[data-theme="light"] .hero::before {
+  content: '';
+  position: absolute; top: -160px; left: 50%;
+  transform: translateX(-50%);
+  width: 900px; height: 500px;
+  background: radial-gradient(ellipse, rgba(217,119,6,.06) 0%, rgba(37,99,235,.04) 50%, transparent 70%);
+  pointer-events: none;
+}
+[data-theme="dark"] .hero::before {
+  content: '';
+  position: absolute; top: -200px; left: 50%;
+  transform: translateX(-50%);
+  width: 900px; height: 600px;
+  background: radial-gradient(ellipse, rgba(59,130,246,.09) 0%, transparent 65%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 14px;
+  background: var(--cobalt-bg);
+  border: 1.5px solid rgba(37,99,235,.18);
+  border-radius: 999px;
+  font-size: 10px; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--cobalt-l);
+  margin-bottom: 22px;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  background: var(--cobalt); border-radius: 50%;
+  box-shadow: 0 0 8px var(--cobalt);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+.hero-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: clamp(38px, 5vw, 62px);
+  font-weight: 800; letter-spacing: -.038em; line-height: 1.08;
+  color: var(--text-primary); margin-bottom: 18px;
+}
+[data-theme="light"] .hero-accent { color: var(--cobalt); }
+[data-theme="dark"]  .hero-accent { color: var(--cobalt-l); }
+.hero-sub {
+  font-size: 16px; color: var(--text-secondary);
+  max-width: 540px; line-height: 1.65; margin-bottom: 36px;
+}
+.hero-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.chip-meta {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 11px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+}
+
+/* ── Color swatches ─────────────────────────────────────────────────────── */
+.palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; }
+.swatch { border-radius: 10px; overflow: hidden; border: 1px solid var(--border-default); box-shadow: var(--shadow-xs); }
+.sw-color { height: 68px; }
+.sw-info { padding: 8px 10px; background: var(--bg-elevated); }
+.sw-name { font-size: 11px; font-weight: 700; color: var(--text-primary); }
+.sw-hex  { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.sw-use  { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Pills ─────────────────────────────────────────────────────────────── */
+.pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; font-family: 'Nunito Sans', sans-serif;
+}
+.pill::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.75; }
+.p-ok   { color:var(--s-ok-fg);   background:var(--s-ok-bg); }
+.p-warn { color:var(--s-warn-fg); background:var(--s-warn-bg); }
+.p-err  { color:var(--s-err-fg);  background:var(--s-err-bg); }
+.p-inf  { color:var(--s-inf-fg);  background:var(--s-inf-bg); }
+.p-neu  { color:var(--s-neu-fg);  background:var(--s-neu-bg); }
+.p-fin  { color:var(--s-fin-fg);  background:var(--s-fin-bg); }
+.p-live { color:var(--s-live-fg); background:var(--s-live-bg); }
+.p-ai   { color:var(--s-ai-fg);   background:var(--s-ai-bg); }
+.pill-row { display:flex; gap:7px; flex-wrap:wrap; align-items:center; }
+
+/* live badge */
+.live-badge {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 8px; border-radius:999px;
+  background:var(--teal-bg); border:1px solid rgba(13,148,136,.2);
+  font-size:9px; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--s-live-fg);
+}
+.live-badge::before { content:''; width:5px;height:5px; border-radius:50%; background:var(--teal-l); box-shadow:0 0 6px var(--teal); animation:pulse 1.5s ease-in-out infinite; }
+
+/* ── Typography ─────────────────────────────────────────────────────────── */
+.type-row {
+  display:flex; align-items:baseline; gap:24px;
+  padding:14px 0; border-bottom:1px solid var(--border-subtle);
+}
+.type-meta { width:130px; flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); line-height:1.6; }
+.type-specimen { flex:1; color:var(--text-primary); }
+
+/* ── KPI Cards ─────────────────────────────────────────────────────────── */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:14px; }
+@media(max-width: 768px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media(max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}
+.kpi-card {
+  background: var(--kpi-surface);
+  border: 1px solid var(--kpi-border);
+  border-radius: 12px; padding: 20px;
+  position: relative; overflow: hidden;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.kpi-card:hover { transform: translateY(-2px); }
+.kpi-card::after {
+  content:''; position:absolute; top:0; left:0; right:0;
+  height:3px; background:var(--acc,var(--cobalt)); opacity:var(--accent-bar-opacity);
+  border-radius:12px 12px 0 0;
+}
+/* Light mode: colored left-side accent strip */
+[data-theme="light"] .kpi-card {
+  box-shadow: var(--shadow-sm);
+}
+[data-theme="light"] .kpi-card:hover {
+  box-shadow: var(--shadow-md);
+}
+.kpi-card.c-cobalt { --acc:var(--cobalt); }
+.kpi-card.c-gold   { --acc:var(--gold);   box-shadow:var(--shadow-sm),var(--glow-gold); }
+.kpi-card.c-jade   { --acc:var(--jade);   box-shadow:var(--shadow-sm),var(--glow-jade); }
+.kpi-card.c-coral  { --acc:var(--coral);  box-shadow:var(--shadow-sm),var(--glow-coral); }
+.kpi-card.c-amber  { --acc:var(--amber); }
+.kpi-card.c-violet { --acc:var(--violet); }
+.kpi-lbl {
+  font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--text-muted); margin-bottom:10px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.kpi-val {
+  font-family:'JetBrains Mono',monospace;
+  font-size:28px; font-weight:700; letter-spacing:-.025em; line-height:1;
+  margin-bottom:5px;
+}
+.kpi-card.c-gold   .kpi-val { color:var(--gold-l); }
+.kpi-card.c-jade   .kpi-val { color:var(--jade-l); }
+.kpi-card.c-coral  .kpi-val { color:var(--coral-l); }
+.kpi-card.c-cobalt .kpi-val { color:var(--cobalt-l); }
+.kpi-card.c-amber  .kpi-val { color:var(--amber-l); }
+.kpi-card.c-violet .kpi-val { color:var(--violet-l); }
+.kpi-sub { font-size:11px; color:var(--text-secondary); margin-bottom:10px; }
+.kpi-trend { display:flex; align-items:center; gap:4px; font-size:11px; font-weight:700; }
+.kpi-trend.up   { color:var(--jade-l); }
+.kpi-trend.down { color:var(--coral-l); }
+.kpi-trend.flat { color:var(--text-secondary); }
+.kpi-bar-track { height:3px; background:rgba(128,128,128,.12); border-radius:99px; margin-top:12px; overflow:hidden; }
+.kpi-bar-fill  { height:100%; border-radius:99px; background:var(--acc,var(--cobalt)); }
+
+/* context bar */
+.ctx-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 16px;
+  background:var(--bg-elevated); border:1px solid var(--border-default);
+  border-radius:10px; margin-bottom:16px; font-size:12px;
+  box-shadow:var(--shadow-xs);
+}
+
+/* ── WBS Tree ─────────────────────────────────────────────────────────── */
+.wbs-tree { display:flex; flex-direction:column; gap:2px; }
+.wbs-row {
+  display:flex; align-items:center; gap:7px;
+  padding:7px 10px; border-radius:7px;
+  border:1px solid transparent; cursor:pointer;
+  transition:background .12s, border-color .12s;
+}
+.wbs-row:hover { background:var(--bg-hover); border-color:var(--border-subtle); }
+.wbs-row.sel  { background:var(--cobalt-bg); border-color:rgba(37,99,235,.22); }
+.grip  { color:var(--text-muted); opacity:0; font-size:11px; flex-shrink:0; cursor:grab; }
+.wbs-row:hover .grip { opacity:1; }
+.chevron { width:14px; flex-shrink:0; font-size:9px; color:var(--text-muted); }
+.code {
+  font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600;
+  padding:1px 6px; border-radius:3px; flex-shrink:0;
+}
+.code.l1 { color:var(--cobalt-l); background:var(--cobalt-bg); }
+.code.l2 { color:var(--text-secondary); background:var(--bg-hover); }
+.code.l3 { color:var(--text-muted); }
+.wname { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.wname.l1 { font-size:13px; font-weight:700; }
+.wname.l2 { font-size:13px; font-weight:600; }
+.wname.l3 { font-size:12px; font-weight:500; color:var(--text-secondary); }
+.wbadge {
+  display:inline-flex; align-items:center; gap:3px;
+  padding:1px 6px; border-radius:99px;
+  font-size:10px; font-weight:700; flex-shrink:0;
+}
+.wbadge.auto   { color:var(--s-live-fg); background:var(--teal-bg); }
+.wbadge.locked { color:var(--s-warn-fg); background:var(--amber-bg); }
+.wbadge.budget { color:var(--s-fin-fg);  background:var(--gold-bg); font-family:'JetBrains Mono',monospace; }
+.wbadge.qcok   { color:var(--s-ok-fg);  background:var(--jade-bg); }
+.wbadge.qcpend { color:var(--s-warn-fg);background:var(--amber-bg); }
+.wbs-actions { display:flex; gap:2px; opacity:0; transition:opacity .1s; }
+.wbs-row:hover .wbs-actions { opacity:1; }
+.wa {
+  width:22px; height:22px; display:flex; align-items:center; justify-content:center;
+  border:none; background:transparent; border-radius:4px;
+  color:var(--text-muted); cursor:pointer; font-size:11px; transition:.1s;
+}
+.wa:hover { background:var(--bg-overlay); color:var(--text-primary); }
+.wa.del:hover { background:var(--coral-bg); color:var(--coral-l); }
+.wbs-children {
+  margin-left:20px; border-left:1.5px solid var(--border-subtle);
+  padding-left:4px; display:flex; flex-direction:column; gap:2px; margin-top:2px;
+}
+
+/* summary strip */
+.sum-strip {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  border:1px solid var(--border-default); border-radius:10px; overflow:hidden;
+  gap:0; background:var(--border-default); margin-bottom:14px;
+  box-shadow:var(--shadow-xs);
+}
+.sum-item { background:var(--bg-elevated); padding:12px 16px; }
+.sum-lbl  { font-size:9px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:3px; }
+.sum-val  { font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:700; letter-spacing:-.02em; }
+.sum-sub  { font-size:10px; color:var(--text-muted); margin-top:2px; }
+
+/* toolbar */
+.toolbar {
+  display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+  padding:8px 10px;
+  background:var(--bg-elevated); border:1px solid var(--border-default);
+  border-radius:10px; margin-bottom:14px; box-shadow:var(--shadow-xs);
+}
+.tb-sep { width:1px; height:22px; background:var(--border-strong); margin:0 2px; }
+.btn {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:6px 12px; border-radius:7px;
+  font-size:12px; font-weight:700; font-family:'Nunito Sans',sans-serif;
+  border:none; cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.btn-primary { background:var(--cobalt); color:#fff; }
+.btn-primary:hover { filter:brightness(1.1); }
+.btn-ghost   { background:transparent; color:var(--text-secondary); }
+.btn-ghost:hover { background:var(--btn-ghost-hover); color:var(--text-primary); }
+.btn-outline { background:transparent; color:var(--text-secondary); border:1px solid var(--border-strong); }
+.btn-outline:hover { background:var(--btn-ghost-hover); }
+.s-input {
+  display:flex; align-items:center; gap:6px;
+  padding:6px 10px;
+  background:var(--input-bg); border:1px solid var(--border-default);
+  border-radius:7px; flex:1; min-width:160px; max-width:260px;
+  font-size:12px; color:var(--text-secondary);
+}
+.s-input input { background:transparent; border:none; outline:none; color:var(--text-primary); font-family:'Nunito Sans',sans-serif; font-size:12px; flex:1; }
+.s-input input::placeholder { color:var(--text-muted); }
+.sel-btn {
+  display:flex; align-items:center; gap:4px;
+  padding:6px 10px; background:var(--input-bg); border:1px solid var(--border-default);
+  border-radius:7px; font-size:12px; font-family:'Nunito Sans',sans-serif;
+  color:var(--text-secondary); cursor:pointer;
+}
+.sel-btn:hover { background:var(--btn-ghost-hover); }
+
+/* card */
+.card {
+  background:var(--bg-elevated); border:1px solid var(--border-default);
+  border-radius:12px; padding:20px; box-shadow:var(--shadow-xs);
+}
+
+/* 2-col */
+.two-col { display:grid; grid-template-columns:1fr 380px; gap:20px; align-items:start; }
+@media(max-width:900px){ .two-col { grid-template-columns:1fr; } }
+
+/* detail panel */
+.dp-title { font-family:'Bricolage Grotesque',sans-serif; font-size:16px; font-weight:700; color:var(--text-primary); }
+
+/* ── Data Table ─────────────────────────────────────────────────────────── */
+.dt { width:100%; border-collapse:collapse; font-size:12px; }
+.dt thead tr { border-bottom:2px solid var(--border-strong); background:var(--table-head-bg); }
+.dt th {
+  padding:9px 12px; text-align:left;
+  font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--text-muted); white-space:nowrap;
+}
+.dt th.r { text-align:right; }
+.dt tbody tr { border-bottom:1px solid var(--border-subtle); transition:background .1s; }
+.dt tbody tr:hover { background:var(--table-hover); }
+.dt tbody tr:nth-child(odd) { background:var(--table-stripe); }
+.dt tbody tr:nth-child(odd):hover { background:var(--table-hover); }
+.dt td { padding:9px 12px; vertical-align:middle; }
+.dt td.r { text-align:right; }
+.dt td.mono { font-family:'JetBrains Mono',monospace; font-size:11px; font-feature-settings:"tnum" 1; }
+.dt td.idr  { color:var(--text-idr); font-family:'JetBrains Mono',monospace; font-size:11px; text-align:right; font-feature-settings:"tnum" 1; font-weight:600; }
+.dt td.pos  { color:var(--text-idr-pos); }
+.dt td.neg  { color:var(--text-idr-neg); }
+.code-chip { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--cobalt-l); background:var(--cobalt-bg); padding:1px 6px; border-radius:3px; }
+.cat-dots { display:flex; gap:3px; }
+.dot { width:8px; height:8px; border-radius:50%; }
+.dot.m { background:var(--cobalt); } .dot.l { background:var(--gold); }
+.dot.e { background:var(--violet); } .dot.s { background:var(--teal); }
+.dt tfoot td { padding:10px 12px; font-weight:700; border-top:2px solid var(--border-strong); }
+
+/* ── States ─────────────────────────────────────────────────────────────── */
+.states-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; }
+.state-card { background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:12px; padding:16px; box-shadow:var(--shadow-xs); }
+.state-lbl { font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; }
+
+/* empty */
+.empty { display:flex; flex-direction:column; align-items:center; padding:28px 16px; text-align:center; }
+.empty-icon { width:44px; height:44px; background:var(--cobalt-bg); border:1px solid rgba(37,99,235,.18); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:10px; }
+
+/* skeleton */
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.sk { border-radius:4px; background:linear-gradient(90deg, var(--skel-base) 25%, var(--skel-shine) 50%, var(--skel-base) 75%); background-size:200% 100%; animation:shimmer 1.6s linear infinite; }
+.sk-row { display:flex; gap:8px; align-items:center; padding:6px 0; }
+
+/* error */
+.err-box { display:flex; gap:10px; align-items:flex-start; padding:12px; background:var(--coral-bg); border:1px solid rgba(225,29,72,.2); border-radius:8px; }
+.err-title { font-size:12px; font-weight:700; color:var(--coral-l); }
+.err-sub   { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+
+/* spinner */
+.spinner { width:18px; height:18px; border:2px solid rgba(37,99,235,.15); border-top-color:var(--cobalt); border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* drag */
+.drag-list { display:flex; flex-direction:column; gap:4px; }
+.drag-item { display:flex; align-items:center; gap:7px; padding:8px 10px; background:var(--bg-hover); border:1px solid var(--border-default); border-radius:7px; font-size:12px; cursor:grab; }
+.drag-item.dragging { opacity:.35; transform:scale(1.01); box-shadow:var(--shadow-lg); }
+.drag-item.drop-zone { border:2px dashed var(--cobalt); background:var(--cobalt-bg); }
+.drag-handle { color:var(--text-muted); }
+
+/* inline edit */
+.ie-cell {
+  padding:5px 8px; border-radius:5px; font-size:12px; font-family:'JetBrains Mono',monospace;
+  border:1.5px solid transparent; cursor:text; transition:all .15s;
+}
+.ie-cell:not(.editing):hover { background:var(--bg-hover); border-color:var(--border-default); }
+.ie-cell.editing { background:var(--cobalt-bg); border-color:var(--cobalt); outline:none; box-shadow:0 0 0 3px rgba(37,99,235,.15); }
+
+/* delete confirm */
+.del-dialog { padding:14px; background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:10px; }
+.del-warn { padding:8px 10px; background:var(--amber-bg); border:1px solid rgba(234,88,12,.2); border-radius:7px; margin-bottom:10px; font-size:11px; color:var(--amber-l); font-weight:700; }
+
+/* ── Shape ─────────────────────────────────────────────────────────────── */
+.radius-grid { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+.r-box { background:var(--cobalt-bg); border:1.5px solid rgba(37,99,235,.3); display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--cobalt-l); font-weight:700; text-align:center; line-height:1.3; }
+
+/* ── Device map ─────────────────────────────────────────────────────────── */
+.mod-map { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:8px; }
+.mod-item { display:flex; align-items:center; justify-content:space-between; padding:9px 13px; background:var(--bg-elevated); border:1px solid var(--border-default); border-radius:7px; font-size:12px; box-shadow:var(--shadow-xs); }
+.mod-name { font-weight:700; }
+.mod-chip { padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
+.chip-desk   { background:var(--cobalt-bg); color:var(--cobalt-l); }
+.chip-mobile { background:var(--jade-bg);   color:var(--jade-l); }
+.chip-tablet { background:var(--amber-bg);  color:var(--amber-l); }
+
+/* ── WCAG ─────────────────────────────────────────────────────────────── */
+.wcag-t { width:100%; border-collapse:collapse; font-size:12px; }
+.wcag-t th, .wcag-t td { padding:9px 12px; border-bottom:1px solid var(--border-subtle); text-align:left; }
+.wcag-t th { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); background:var(--table-head-bg); }
+.ratio-val { font-family:'JetBrains Mono',monospace; font-weight:700; }
+.badge-aaa { background:var(--jade-bg); color:var(--jade-l); padding:1px 7px; border-radius:999px; font-size:10px; font-weight:800; }
+.badge-aa  { background:var(--cobalt-bg);color:var(--cobalt-l);padding:1px 7px;border-radius:999px;font-size:10px;font-weight:800;}
+.badge-lg  { background:var(--amber-bg); color:var(--amber-l); padding:1px 7px;border-radius:999px;font-size:10px;font-weight:800;}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+.footer { padding:48px 0; text-align:center; font-size:12px; color:var(--text-muted); border-top:1px solid var(--border-subtle); }
+.footer strong { color:var(--text-secondary); }
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.f1{animation:fadeUp .5s ease .05s both}
+.f2{animation:fadeUp .5s ease .15s both}
+.f3{animation:fadeUp .5s ease .25s both}
+.f4{animation:fadeUp .5s ease .35s both}
+
+/* transition all key elements */
+.card, .kpi-card, .toolbar, .sum-strip, .sum-item,
+.ctx-bar, .wbs-row, .btn, .dt, .dt td, .dt th,
+.swatch, .state-card, .mod-item {
+  transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease, color .3s ease;
+}
+</style>
+</head>
+<body>
+
+<!-- Toggle -->
+<button id="theme-toggle" onclick="toggleTheme()">
+  <span class="toggle-icon" id="ti">☀️</span>
+  <span id="tl">LIGHT MODE</span>
+</button>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('ti').textContent = isDark ? '☀️' : '🌙';
+  document.getElementById('tl').textContent = isDark ? 'LIGHT MODE' : 'DARK MODE';
+}
+</script>
+
+<!-- ═══════════════════════════════
+     HERO
+     ═══════════════════════════════ -->
+<div class="hero">
+<div class="wrap">
+  <div class="hero-eyebrow f1"><div class="live-dot"></div>MERIDIAN Design System · v1.0</div>
+  <h1 class="hero-title f2">Precision meets<br><span class="hero-accent">Indonesian Craft</span></h1>
+  <p class="hero-sub f3">Sistem visual MLPHoma. Obsidian dark × Limestone light. Cobalt untuk aksi, Gold hangat untuk semua data IDR, Jade untuk KPI positif. Toggle ☀️/🌙 di kanan atas.</p>
+  <div class="hero-chips f4">
+    <div class="chip-meta">🔤 <strong>Bricolage Grotesque</strong> Display</div>
+    <div class="chip-meta">📝 <strong>Nunito Sans</strong> Body</div>
+    <div class="chip-meta">🔢 <strong>JetBrains Mono</strong> Data</div>
+    <div class="chip-meta">♿ <strong>WCAG AA+</strong></div>
+    <div class="chip-meta">☀️ <strong>Light</strong> + 🌙 <strong>Dark</strong></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §1 COLOR
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 1 — Foundation</div>
+  <div class="s-head">Color System</div>
+
+  <div class="lbl" style="margin-bottom:10px;">Backgrounds (berubah per mode)</div>
+  <div class="palette" style="margin-bottom:28px;">
+    <div class="swatch">
+      <div class="sw-color" style="background:var(--bg-page);border-bottom:1px solid var(--border-subtle);"></div>
+      <div class="sw-info"><div class="sw-name">bg-page</div><div class="sw-hex">page · body</div><div class="sw-use">Root background</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);"></div>
+      <div class="sw-info"><div class="sw-name">bg-elevated</div><div class="sw-hex">cards · panels</div><div class="sw-use">All card surfaces</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:var(--bg-hover);border-bottom:1px solid var(--border-subtle);"></div>
+      <div class="sw-info"><div class="sw-name">bg-hover</div><div class="sw-hex">hover state</div><div class="sw-use">Row hover</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:var(--bg-overlay);border-bottom:1px solid var(--border-subtle);"></div>
+      <div class="sw-info"><div class="sw-name">bg-overlay</div><div class="sw-hex">dropdowns</div><div class="sw-use">Menus · selects</div></div>
+    </div>
+  </div>
+
+  <div class="lbl" style="margin-bottom:10px;">Brand Accents (adaptive per mode)</div>
+  <div class="palette" style="margin-bottom:28px;">
+    <div class="swatch">
+      <div class="sw-color" style="background:linear-gradient(135deg,var(--cobalt),var(--cobalt-l));"></div>
+      <div class="sw-info"><div class="sw-name">Cobalt</div><div class="sw-hex">Action · links</div><div class="sw-use">Buttons, selection, focus</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:linear-gradient(135deg,var(--gold),var(--gold-l));"></div>
+      <div class="sw-info"><div class="sw-name">Warm Gold</div><div class="sw-hex">Financial · IDR</div><div class="sw-use">Semua nilai Rupiah</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:linear-gradient(135deg,var(--jade),var(--jade-l));"></div>
+      <div class="sw-info"><div class="sw-name">Jade</div><div class="sw-hex">Success · CPI+</div><div class="sw-use">Done, positive KPI</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:linear-gradient(135deg,var(--coral),var(--coral-l));"></div>
+      <div class="sw-info"><div class="sw-name">Coral</div><div class="sw-hex">Danger · Error</div><div class="sw-use">Delete, negative, overdue</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:linear-gradient(135deg,var(--amber),var(--amber-l));"></div>
+      <div class="sw-info"><div class="sw-name">Amber</div><div class="sw-hex">Warning · SPI</div><div class="sw-use">Pending, delay, partial</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:linear-gradient(135deg,var(--violet),var(--violet-l));"></div>
+      <div class="sw-info"><div class="sw-name">Violet</div><div class="sw-hex">Analytics · AI</div><div class="sw-use">Scenario, insight</div></div>
+    </div>
+    <div class="swatch">
+      <div class="sw-color" style="background:linear-gradient(135deg,var(--teal),var(--teal-l));"></div>
+      <div class="sw-info"><div class="sw-name">Teal</div><div class="sw-hex">Realtime · Live</div><div class="sw-use">Auto-progress, online</div></div>
+    </div>
+  </div>
+
+  <div class="lbl" style="margin-bottom:10px;">Status Pills</div>
+  <div class="pill-row">
+    <span class="pill p-ok">ACTIVE</span><span class="pill p-ok">APPROVED</span><span class="pill p-ok">COMPLETED</span>
+    <span class="pill p-warn">PENDING</span><span class="pill p-warn">IN PROGRESS</span>
+    <span class="pill p-err">OVERDUE</span><span class="pill p-err">REJECTED</span>
+    <span class="pill p-inf">PLANNING</span>
+    <span class="pill p-neu">DRAFT</span><span class="pill p-neu">ARCHIVED</span>
+    <span class="pill p-fin">ACTIVE BUDGET</span>
+    <span class="pill p-live">● LIVE</span>
+    <span class="pill p-ai">AI INSIGHT</span>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §2 TYPOGRAPHY
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 2 — Foundation</div>
+  <div class="s-head">Typography System</div>
+
+  <div class="lbl" style="margin-bottom:10px;">Bricolage Grotesque — Display & Headings</div>
+  <div style="margin-bottom:28px;">
+    <div class="type-row">
+      <div class="type-meta">5xl / 48px<br>wt 800<br>ls -0.038em</div>
+      <div class="type-specimen" style="font-family:'Bricolage Grotesque';font-size:48px;font-weight:800;letter-spacing:-.038em;line-height:1.1;">Command Center</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">3xl / 30px<br>wt 700<br>ls -0.025em</div>
+      <div class="type-specimen" style="font-family:'Bricolage Grotesque';font-size:30px;font-weight:700;letter-spacing:-.025em;">CMPLNG VILLAGE · WBS Structure</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">xl / 20px<br>wt 600</div>
+      <div class="type-specimen" style="font-family:'Bricolage Grotesque';font-size:20px;font-weight:600;">Rencana Anggaran Biaya</div>
+    </div>
+  </div>
+
+  <div class="lbl" style="margin-bottom:10px;">Nunito Sans — Body & UI Labels</div>
+  <div style="margin-bottom:28px;">
+    <div class="type-row">
+      <div class="type-meta">base / 16px<br>wt 400</div>
+      <div class="type-specimen" style="font-size:16px;">Pipeline proyek konstruksi: AHSP → WBS → RAB → RAP → Resource Planning.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">sm / 14px<br>wt 500</div>
+      <div class="type-specimen" style="font-size:14px;font-weight:500;">Pembuatan 1 m² pagar sementara dari kayu · Status: ACTIVE · Hari ke-45 dari 180</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">xs / 11px<br>wt 800<br>UPPERCASE</div>
+      <div class="type-specimen" style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);">RENCANA ANGGARAN BIAYA · PROGRESS FISIK · TOTAL ANGGARAN</div>
+    </div>
+  </div>
+
+  <div class="lbl" style="margin-bottom:10px;">JetBrains Mono — Numbers, Codes & KPIs</div>
+  <div>
+    <div class="type-row">
+      <div class="type-meta">4xl / 36px<br>wt 700<br>tnum, financial</div>
+      <div class="type-specimen" style="font-family:'JetBrains Mono';font-size:36px;font-weight:700;letter-spacing:-.02em;color:var(--text-idr);font-feature-settings:'tnum' 1;">Rp 12.800.000.000</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">2xl / 24px<br>wt 700<br>KPI metrics</div>
+      <div class="type-specimen" style="font-family:'JetBrains Mono';font-size:24px;font-weight:700;font-feature-settings:'tnum' 1;color:var(--jade-l);">CPI 1.12 · SPI 0.87 · 34,5%</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">sm / 13px<br>wt 500<br>table cells</div>
+      <div class="type-specimen" style="font-family:'JetBrains Mono';font-size:13px;font-weight:500;font-feature-settings:'tnum' 1,'zero' 1;color:var(--text-idr);">Rp 4.966.572.640 · 39% RAB/Budget · WBS-2.1.2</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §3 KPI CARDS — Command Center
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 3 — Component · Command Center</div>
+  <div class="s-head">KPI Cards — Data Real CMPLNG VILLAGE</div>
+
+  <div class="ctx-bar">
+    <div style="display:flex;gap:14px;align-items:center;">
+      <span style="font-family:'Bricolage Grotesque';font-weight:700;color:var(--cobalt-l);letter-spacing:.01em;">PRJ-2026-0019</span>
+      <span style="font-weight:700;">CMPLNG VILLAGE</span>
+      <span class="pill p-ok">ACTIVE</span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <span class="live-badge">LIVE</span>
+      <span style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">Hari ke-45 / 180</span>
+      <span class="pill p-inf">DEV</span>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card c-gold">
+      <div class="kpi-lbl">Budget Total <span class="live-badge">LIVE</span></div>
+      <div class="kpi-val" style="font-size:22px;">Rp 12,8 M</div>
+      <div class="kpi-sub" style="font-family:'JetBrains Mono';font-size:10px;">Rp 12.800.000.000</div>
+      <div class="kpi-trend flat">— Anggaran tetap</div>
+      <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:100%"></div></div>
+    </div>
+
+    <div class="kpi-card c-cobalt">
+      <div class="kpi-lbl">RAB / Budget</div>
+      <div class="kpi-val">39%</div>
+      <div class="kpi-sub" style="font-family:'JetBrains Mono';font-size:10px;">Rp 4.966.572.640</div>
+      <div class="kpi-trend up">↑ target 100% sebelum konstruksi</div>
+      <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:39%"></div></div>
+    </div>
+
+    <div class="kpi-card c-jade">
+      <div class="kpi-lbl">Progress Fisik</div>
+      <div class="kpi-val">34,5%</div>
+      <div class="kpi-sub">Target hari ini: 38,2%</div>
+      <div class="kpi-trend down">↓ –3.7% dari rencana (SPI rendah)</div>
+      <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:34.5%"></div></div>
+    </div>
+
+    <div class="kpi-card c-jade">
+      <div class="kpi-lbl">CPI (Cost Index)</div>
+      <div class="kpi-val">1.12</div>
+      <div class="kpi-sub">Efisien — di bawah biaya rencana</div>
+      <div class="kpi-trend up">↑ +12% vs EVM baseline</div>
+    </div>
+
+    <div class="kpi-card c-amber">
+      <div class="kpi-lbl">SPI (Schedule Index)</div>
+      <div class="kpi-val">0.87</div>
+      <div class="kpi-sub">Sedikit terlambat dari jadwal</div>
+      <div class="kpi-trend down">↓ –13% perlu akselerasi</div>
+    </div>
+
+    <div class="kpi-card c-gold">
+      <div class="kpi-lbl">Actual Spent</div>
+      <div class="kpi-val" style="font-size:20px;">Rp 1,84 M</div>
+      <div class="kpi-sub" style="font-family:'JetBrains Mono';font-size:10px;">14,4% dari total budget</div>
+      <div class="kpi-trend flat">Rp 10,95 M sisa anggaran</div>
+      <div class="kpi-bar-track"><div class="kpi-bar-fill" style="width:14.4%"></div></div>
+    </div>
+
+    <div class="kpi-card c-violet">
+      <div class="kpi-lbl">EAC Proyeksi</div>
+      <div class="kpi-val" style="font-size:20px;">Rp 11,4 M</div>
+      <div class="kpi-sub" style="font-family:'JetBrains Mono';font-size:10px;">VAC: Rp +1.400.000.000</div>
+      <div class="kpi-trend up">↑ Di bawah budget +10.9%</div>
+    </div>
+
+    <div class="kpi-card c-coral">
+      <div class="kpi-lbl">Approval Pending</div>
+      <div class="kpi-val">7</div>
+      <div class="kpi-sub">3 overdue · 4 dalam SLA</div>
+      <div class="kpi-trend down">↓ 2 eskalasi hari ini</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §4 WBS TREE
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 4 — Component · Project Costing → WBS</div>
+  <div class="s-head">WBS Hierarchy + Detail Panel</div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="s-input"><span style="color:var(--text-muted);font-size:12px;">🔍</span><input placeholder="Cari item WBS..."></div>
+    <div class="sel-btn">Level ▾</div>
+    <div class="tb-sep"></div>
+    <button class="btn btn-ghost">⬆ Expand</button>
+    <button class="btn btn-ghost">⬇ Collapse</button>
+    <div class="tb-sep"></div>
+    <button class="btn btn-ghost">↑↓ Import</button>
+    <button class="btn btn-ghost">⬇ Export</button>
+    <button class="btn btn-ghost">⟳ Gen Codes</button>
+    <div class="tb-sep"></div>
+    <button class="btn btn-primary">+ Root Item</button>
+  </div>
+
+  <!-- Summary -->
+  <div class="sum-strip">
+    <div class="sum-item"><div class="sum-lbl">Total Item</div><div class="sum-val" style="color:var(--cobalt-l);">11</div><div class="sum-sub">3 level hierarki</div></div>
+    <div class="sum-item"><div class="sum-lbl">Progress Rata</div><div class="sum-val" style="color:var(--jade-l);">34,5%</div><div class="sum-sub">vs rencana 38.2%</div></div>
+    <div class="sum-item"><div class="sum-lbl">Budget RAB</div><div class="sum-val" style="color:var(--text-idr);">Rp 4,96 M</div><div class="sum-sub">terhubung ke RAB</div></div>
+    <div class="sum-item"><div class="sum-lbl">QC Passed</div><div class="sum-val" style="color:var(--jade-l);">3</div><div class="sum-sub">dari 11 items</div></div>
+    <div class="sum-item"><div class="sum-lbl">Timeline</div><div class="sum-val" style="color:var(--cobalt-l);">8</div><div class="sum-sub">tasks linked</div></div>
+  </div>
+
+  <!-- Tree + Detail -->
+  <div class="two-col">
+    <div class="card" style="padding:10px;">
+      <div class="wbs-tree">
+
+        <div class="wbs-row">
+          <span class="grip">⠿</span><span class="chevron">▼</span>
+          <span class="code l1">1</span>
+          <span class="wname l1">Pekerjaan Persiapan</span>
+          <div style="display:flex;gap:4px;margin-left:auto;">
+            <span class="wbadge budget">Rp 450 jt</span>
+            <span class="wbadge qcok">✓ QC</span>
+          </div>
+          <div class="wbs-actions"><button class="wa">+</button><button class="wa">✎</button><button class="wa del">⌫</button></div>
+        </div>
+        <div class="wbs-children">
+          <div class="wbs-row">
+            <span class="grip">⠿</span><span class="chevron">—</span>
+            <span class="code l2">1.1</span><span class="wname l2">Mobilisasi</span>
+            <div style="display:flex;gap:4px;margin-left:auto;"><span class="wbadge auto">⟳ Auto</span><span class="wbadge qcok">✓</span></div>
+            <div class="wbs-actions"><button class="wa">+</button><button class="wa">✎</button><button class="wa del">⌫</button></div>
+          </div>
+          <div class="wbs-row sel">
+            <span class="grip">⠿</span><span class="chevron">—</span>
+            <span class="code l2">1.2</span><span class="wname l2">Pembersihan Lahan</span>
+            <div style="display:flex;gap:4px;margin-left:auto;"><span class="wbadge auto">⟳ Auto</span><span class="wbadge qcok">✓</span></div>
+            <div class="wbs-actions"><button class="wa">+</button><button class="wa">✎</button><button class="wa del">⌫</button></div>
+          </div>
+        </div>
+
+        <div class="wbs-row">
+          <span class="grip">⠿</span><span class="chevron">▼</span>
+          <span class="code l1">2</span><span class="wname l1">Pekerjaan Sipil</span>
+          <div style="display:flex;gap:4px;margin-left:auto;"><span class="wbadge budget">Rp 3,8 M</span><span class="wbadge qcpend">⏳ QC</span></div>
+          <div class="wbs-actions"><button class="wa">+</button><button class="wa">✎</button><button class="wa del">⌫</button></div>
+        </div>
+        <div class="wbs-children">
+          <div class="wbs-row">
+            <span class="grip">⠿</span><span class="chevron">▼</span>
+            <span class="code l2">2.1</span><span class="wname l2">Pondasi</span>
+            <div style="display:flex;gap:4px;margin-left:auto;"><span class="wbadge auto">⟳ Auto</span></div>
+            <div class="wbs-actions"><button class="wa">+</button><button class="wa">✎</button><button class="wa del">⌫</button></div>
+          </div>
+          <div class="wbs-children">
+            <div class="wbs-row">
+              <span class="grip">⠿</span><span class="chevron">—</span>
+              <span class="code l3">2.1.1</span><span class="wname l3">Galian Tanah Pondasi</span>
+              <div style="margin-left:auto;"><span class="wbadge qcok">✓</span></div>
+              <div class="wbs-actions"><button class="wa">✎</button><button class="wa del">⌫</button></div>
+            </div>
+            <div class="wbs-row">
+              <span class="grip">⠿</span><span class="chevron">—</span>
+              <span class="code l3">2.1.2</span><span class="wname l3">Pengecoran Beton K-300</span>
+              <div style="margin-left:auto;"><span class="wbadge locked">🔒 Locked</span></div>
+              <div class="wbs-actions"><button class="wa">✎</button><button class="wa del">⌫</button></div>
+            </div>
+          </div>
+          <div class="wbs-row">
+            <span class="grip">⠿</span><span class="chevron">▶</span>
+            <span class="code l2">2.2</span><span class="wname l2">Struktur Atas</span>
+            <div style="display:flex;gap:4px;margin-left:auto;"><span class="wbadge auto">⟳ Auto</span><span class="wbadge budget">Rp 2,1 M</span></div>
+            <div class="wbs-actions"><button class="wa">+</button><button class="wa">✎</button><button class="wa del">⌫</button></div>
+          </div>
+        </div>
+
+        <div class="wbs-row">
+          <span class="grip">⠿</span><span class="chevron">▶</span>
+          <span class="code l1">3</span><span class="wname l1">MEP</span>
+          <div style="display:flex;gap:4px;margin-left:auto;"><span class="wbadge budget">Rp 716 jt</span><span class="wbadge qcpend">⏳</span></div>
+          <div class="wbs-actions"><button class="wa">+</button><button class="wa">✎</button><button class="wa del">⌫</button></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="card" style="position:sticky;top:80px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div class="lbl" style="margin-bottom:3px;">Item Detail</div>
+          <div class="dp-title">Pembersihan Lahan</div>
+        </div>
+        <span class="code l2" style="font-size:13px;padding:3px 8px;">1.2</span>
+      </div>
+
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;">
+        <span class="pill p-ok">COMPLETED</span>
+        <span class="pill p-live">● Auto Progress</span>
+        <span class="pill p-fin">Level 2</span>
+      </div>
+
+      <hr class="rule">
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:12px;">
+        <div>
+          <div class="lbl" style="margin-bottom:5px;">Progress Fisik</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:6px;background:var(--jade-bg);border-radius:99px;overflow:hidden;">
+              <div style="width:100%;height:100%;background:var(--jade);border-radius:99px;"></div>
+            </div>
+            <span style="font-family:'JetBrains Mono';font-weight:700;font-size:13px;color:var(--jade-l);">100%</span>
+          </div>
+        </div>
+        <div><div class="lbl" style="margin-bottom:4px;">Progress Source</div><span class="pill p-live">⟳ Timeline Auto-propagated</span></div>
+        <div><div class="lbl" style="margin-bottom:4px;">QC Status</div><span class="pill p-ok">✓ PASSED</span></div>
+        <div>
+          <div class="lbl" style="margin-bottom:4px;">Budget RAB Linked</div>
+          <span style="font-family:'JetBrains Mono';color:var(--text-idr);font-size:14px;font-weight:700;">Rp 185.000.000</span>
+        </div>
+        <div><div class="lbl" style="margin-bottom:4px;">Timeline Tasks</div><span style="color:var(--cobalt-l);font-weight:600;">2 tasks terhubung</span></div>
+        <div>
+          <div class="lbl" style="margin-bottom:4px;">Deskripsi</div>
+          <p style="color:var(--text-secondary);line-height:1.55;">Pembersihan lahan dan persiapan permukaan sebelum pengerjaan pondasi. Termasuk pemindahan material lama.</p>
+        </div>
+        <div><div class="lbl" style="margin-bottom:4px;">Physical Lock</div><span class="pill p-neu">Tidak Dikunci</span></div>
+      </div>
+      <hr class="rule">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" style="flex:1;justify-content:center;">✎ Edit</button>
+        <button class="btn btn-ghost" style="color:var(--coral-l);">⌫ Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §5 RAB TABLE
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 5 — Component · Project Costing → RAB</div>
+  <div class="s-head">Data Table — Density Default</div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="dt">
+      <thead>
+        <tr>
+          <th>Kode</th><th>Pekerjaan</th><th>WBS</th><th>Sat</th>
+          <th class="r">Volume</th><th class="r">Harga Sat.</th><th class="r">Total RAB</th>
+          <th>Breakdown</th><th>TKDN</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="code-chip">1.1</span></td>
+          <td style="font-weight:700;">Galian Tanah Pondasi</td>
+          <td><span class="code-chip">2.1.1</span></td>
+          <td class="mono">m³</td><td class="mono r">250,00</td>
+          <td class="idr">Rp 125.000</td><td class="idr">Rp 31.250.000</td>
+          <td><div class="cat-dots"><div class="dot m"></div><div class="dot l"></div><div class="dot e"></div></div></td>
+          <td><span class="pill p-ok" style="font-size:10px;">85%</span></td>
+          <td><span class="pill p-ok">✓ APPROVED</span></td>
+        </tr>
+        <tr>
+          <td><span class="code-chip">1.2</span></td>
+          <td style="font-weight:700;">Timbunan Batu Kali</td>
+          <td><span class="code-chip">2.1.1</span></td>
+          <td class="mono">m³</td><td class="mono r">120,00</td>
+          <td class="idr">Rp 450.000</td><td class="idr">Rp 54.000.000</td>
+          <td><div class="cat-dots"><div class="dot m"></div><div class="dot l"></div></div></td>
+          <td><span class="pill p-ok" style="font-size:10px;">92%</span></td>
+          <td><span class="pill p-warn">⏳ PENDING</span></td>
+        </tr>
+        <tr>
+          <td><span class="code-chip">1.3</span></td>
+          <td style="font-weight:700;">Pengecoran Beton K-300</td>
+          <td><span class="code-chip">2.1.2</span></td>
+          <td class="mono">m³</td><td class="mono r">85,50</td>
+          <td class="idr">Rp 1.250.000</td><td class="idr">Rp 106.875.000</td>
+          <td><div class="cat-dots"><div class="dot m"></div><div class="dot l"></div><div class="dot e"></div><div class="dot s"></div></div></td>
+          <td><span class="pill p-warn" style="font-size:10px;">67%</span></td>
+          <td><span class="pill p-neu">DRAFT</span></td>
+        </tr>
+        <tr>
+          <td><span class="code-chip">1.4</span></td>
+          <td style="font-weight:700;">Pemasangan Besi Tulangan Ø16</td>
+          <td><span class="code-chip">2.1.2</span></td>
+          <td class="mono">kg</td><td class="mono r">4.200,00</td>
+          <td class="idr">Rp 18.500</td><td class="idr">Rp 77.700.000</td>
+          <td><div class="cat-dots"><div class="dot m"></div><div class="dot l"></div></div></td>
+          <td><span class="pill p-ok" style="font-size:10px;">100%</span></td>
+          <td><span class="pill p-ok">✓ APPROVED</span></td>
+        </tr>
+        <tr>
+          <td><span class="code-chip">1.5</span></td>
+          <td style="font-weight:700;color:var(--coral-l);">⚠ Pemasangan Bekisting</td>
+          <td><span class="code-chip">2.2</span></td>
+          <td class="mono">m²</td><td class="mono r">320,00</td>
+          <td class="idr">Rp 85.000</td><td class="idr neg">Rp 27.200.000</td>
+          <td><div class="cat-dots"><div class="dot m"></div><div class="dot l"></div></div></td>
+          <td><span class="pill p-err" style="font-size:10px;">42%</span></td>
+          <td><span class="pill p-err">✕ REJECTED</span></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="6" style="color:var(--text-secondary);font-weight:700;">TOTAL RAB (5 item)</td>
+          <td class="idr" style="font-size:14px;font-weight:800;">Rp 297.025.000</td>
+          <td colspan="3"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §6 INTERACTION STATES
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 6 — Interaction Design</div>
+  <div class="s-head">States, Feedback & Behavior</div>
+  <div class="states-grid">
+
+    <div class="state-card">
+      <div class="state-lbl">Empty State</div>
+      <div class="empty">
+        <div class="empty-icon">🌿</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Belum ada item WBS</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Mulai dengan membuat struktur pekerjaan pertama.</div>
+        <button class="btn btn-primary">+ Buat WBS Pertama</button>
+      </div>
+    </div>
+
+    <div class="state-card">
+      <div class="state-lbl">Loading Skeleton</div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding-top:4px;">
+        <div class="sk-row">
+          <div class="sk" style="width:28px;height:28px;border-radius:7px;flex-shrink:0;"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px;">
+            <div class="sk" style="width:180px;height:12px;"></div>
+            <div class="sk" style="width:100px;height:10px;"></div>
+          </div>
+        </div>
+        <div class="sk-row" style="padding-left:20px;">
+          <div class="sk" style="width:24px;height:24px;border-radius:5px;flex-shrink:0;"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px;">
+            <div class="sk" style="width:140px;height:11px;"></div>
+            <div class="sk" style="width:80px;height:9px;"></div>
+          </div>
+        </div>
+        <div class="sk-row" style="padding-left:20px;">
+          <div class="sk" style="width:24px;height:24px;border-radius:5px;flex-shrink:0;"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px;">
+            <div class="sk" style="width:120px;height:11px;"></div>
+            <div class="sk" style="width:60px;height:9px;"></div>
+          </div>
+        </div>
+        <div class="sk-row">
+          <div class="sk" style="width:28px;height:28px;border-radius:7px;flex-shrink:0;"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:5px;">
+            <div class="sk" style="width:160px;height:12px;"></div>
+            <div class="sk" style="width:90px;height:10px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="state-card">
+      <div class="state-lbl">Error State</div>
+      <div class="err-box" style="margin-bottom:10px;">
+        <span style="font-size:16px;">⚠</span>
+        <div>
+          <div class="err-title">Gagal memuat data WBS</div>
+          <div class="err-sub">Koneksi database terputus. Coba lagi.</div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;color:var(--coral-l);">Coba Lagi</button>
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;">Refresh</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;padding:8px;background:var(--bg-hover);border-radius:7px;font-size:11px;color:var(--text-muted);">
+        <div class="spinner"></div> Sinkronisasi offline queue...
+      </div>
+    </div>
+
+    <div class="state-card">
+      <div class="state-lbl">Drag & Drop Reorder</div>
+      <div class="drag-list">
+        <div class="drag-item"><span class="drag-handle">⠿</span><span class="code-chip">1.1</span><span style="flex:1;">Mobilisasi</span></div>
+        <div class="drag-item dragging"><span class="drag-handle">⠿</span><span class="code-chip">1.2</span><span style="flex:1;">Pembersihan Lahan</span></div>
+        <div class="drag-item drop-zone"><span style="flex:1;font-size:11px;color:var(--cobalt-l);">Drop di sini →</span></div>
+        <div class="drag-item"><span class="drag-handle">⠿</span><span class="code-chip">1.3</span><span style="flex:1;">Pengadaan Material</span></div>
+      </div>
+    </div>
+
+    <div class="state-card">
+      <div class="state-lbl">Inline Edit (klik sel)</div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse;">
+        <tr style="border-bottom:1px solid var(--border-subtle);">
+          <td style="padding:4px 8px;color:var(--text-muted);">Volume</td>
+          <td><div class="ie-cell" contenteditable="false" onclick="this.contentEditable='true';this.classList.add('editing')" onblur="this.contentEditable='false';this.classList.remove('editing')">250,00</div></td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border-subtle);">
+          <td style="padding:4px 8px;color:var(--text-muted);">Harga Sat.</td>
+          <td><div class="ie-cell editing" contenteditable="true" style="color:var(--text-idr);">125.000</div></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 8px;color:var(--text-muted);">Nama</td>
+          <td><div class="ie-cell" contenteditable="false" onclick="this.contentEditable='true';this.classList.add('editing')" onblur="this.contentEditable='false';this.classList.remove('editing')">Galian Tanah Pondasi</div></td>
+        </tr>
+      </table>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="btn btn-primary" style="font-size:11px;padding:4px 10px;">✓ Simpan</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px;">✕ Batal</button>
+      </div>
+    </div>
+
+    <div class="state-card">
+      <div class="state-lbl">Delete Confirmation</div>
+      <div class="del-dialog">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <span style="font-size:18px;">🗑</span>
+          <div style="font-size:13px;font-weight:700;">Hapus WBS Item?</div>
+        </div>
+        <p style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;">Menghapus <span style="color:var(--cobalt-l);font-weight:700;">[2.1] Pondasi</span> dan semua child-nya (2 item).</p>
+        <div class="del-warn">⚠ 3 Timeline Tasks akan ter-unlink: Galian A · Cor Day-1 · Cor Day-2</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline" style="flex:1;justify-content:center;font-size:11px;">Batal</button>
+          <button class="btn" style="flex:1;justify-content:center;background:var(--coral);color:#fff;font-size:11px;">Hapus Semua</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §7 SHAPE
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 7 — Foundation</div>
+  <div class="s-head">Border Radius & Shadows</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+    <div>
+      <div class="lbl" style="margin-bottom:16px;">Radius Scale</div>
+      <div class="radius-grid">
+        <div class="r-box" style="border-radius:2px;width:50px;height:50px;">xs<br>2px</div>
+        <div class="r-box" style="border-radius:4px;width:56px;height:56px;">sm<br>4px</div>
+        <div class="r-box" style="border-radius:6px;width:62px;height:62px;">base<br>6px</div>
+        <div class="r-box" style="border-radius:8px;width:68px;height:68px;">md<br>8px</div>
+        <div class="r-box" style="border-radius:12px;width:76px;height:76px;">lg<br>12px</div>
+        <div class="r-box" style="border-radius:999px;width:80px;height:80px;">full</div>
+      </div>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom:16px;">Shadow + Glow System</div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;padding:12px 16px;box-shadow:var(--shadow-xs);">
+          <span style="font-size:11px;color:var(--text-muted);font-weight:700;">shadow-xs — Default cards</span>
+        </div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;padding:12px 16px;box-shadow:var(--shadow-md);">
+          <span style="font-size:11px;color:var(--text-muted);font-weight:700;">shadow-md — Modals · hover</span>
+        </div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;padding:12px 16px;box-shadow:var(--shadow-md),var(--glow-cobalt);">
+          <span style="font-size:11px;color:var(--cobalt-l);font-weight:700;">shadow-md + glow-cobalt — Action KPI</span>
+        </div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;padding:12px 16px;box-shadow:var(--shadow-md),var(--glow-gold);">
+          <span style="font-size:11px;color:var(--gold-l);font-weight:700;">shadow-md + glow-gold — Financial KPI</span>
+        </div>
+        <div style="background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:10px;padding:12px 16px;box-shadow:var(--shadow-md),var(--glow-jade);">
+          <span style="font-size:11px;color:var(--jade-l);font-weight:700;">shadow-md + glow-jade — Success KPI</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §8 DEVICE MAP
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 8 — Specification</div>
+  <div class="s-head">Device Priority per Modul</div>
+  <div class="mod-map">
+    <div class="mod-item"><span class="mod-name">Command Center</span><span class="mod-chip chip-desk">Desktop 1280px</span></div>
+    <div class="mod-item"><span class="mod-name">Project Costing</span><span class="mod-chip chip-desk">Desktop 1440px</span></div>
+    <div class="mod-item"><span class="mod-name">WBS</span><span class="mod-chip chip-desk">Desktop 1280px</span></div>
+    <div class="mod-item"><span class="mod-name">Schedule / Gantt</span><span class="mod-chip chip-desk">Desktop 1440px+</span></div>
+    <div class="mod-item"><span class="mod-name">Finance</span><span class="mod-chip chip-desk">Desktop 1280px</span></div>
+    <div class="mod-item"><span class="mod-name">Supply Chain</span><span class="mod-chip chip-desk">Desktop 1280px</span></div>
+    <div class="mod-item"><span class="mod-name">Change Mgmt</span><span class="mod-chip chip-desk">Desktop 1024px</span></div>
+    <div class="mod-item"><span class="mod-name">Portfolio</span><span class="mod-chip chip-desk">Desktop 1440px</span></div>
+    <div class="mod-item"><span class="mod-name">Field Tasks</span><span class="mod-chip chip-mobile">Mobile 375px</span></div>
+    <div class="mod-item"><span class="mod-name">Documents</span><span class="mod-chip chip-tablet">Tablet 768px</span></div>
+    <div class="mod-item"><span class="mod-name">QHSE</span><span class="mod-chip chip-tablet">Tablet 768px</span></div>
+    <div class="mod-item"><span class="mod-name">Handover</span><span class="mod-chip chip-tablet">Tablet 768px</span></div>
+    <div class="mod-item"><span class="mod-name">Settings</span><span class="mod-chip chip-tablet">Tablet 768px</span></div>
+    <div class="mod-item"><span class="mod-name">Subcontractor</span><span class="mod-chip chip-tablet">Tablet 768px</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════
+     §9 WCAG
+     ═══════════════════════════════ -->
+<div class="section">
+<div class="wrap">
+  <div class="s-eye">§ 9 — Accessibility</div>
+  <div class="s-head">WCAG 2.1 — Contrast Ratios</div>
+  <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;max-width:600px;">
+    Diukur pada masing-masing background mode. Light: bg <code style="font-family:'JetBrains Mono';font-size:11px;background:var(--bg-hover);padding:1px 5px;border-radius:3px;">#F2EFE9</code> · Dark: <code style="font-family:'JetBrains Mono';font-size:11px;background:var(--bg-hover);padding:1px 5px;border-radius:3px;">#060910</code>.
+  </p>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="wcag-t">
+      <thead><tr><th>Token</th><th>Light Hex</th><th>Dark Hex</th><th>Sample</th><th>Min Rasio</th><th>Level</th></tr></thead>
+      <tbody>
+        <tr>
+          <td style="font-family:'JetBrains Mono';font-size:11px;">--text-primary</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#1A1814</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#E2EAF5</td>
+          <td style="font-weight:700;">Teks Utama</td>
+          <td class="ratio-val" style="color:var(--jade-l);">15:1+</td>
+          <td><span class="badge-aaa">AAA</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'JetBrains Mono';font-size:11px;">--text-idr (financial)</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#92400E</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#FBBF24</td>
+          <td style="color:var(--text-idr);font-family:'JetBrains Mono';font-weight:700;">Rp 12.800.000.000</td>
+          <td class="ratio-val" style="color:var(--jade-l);">8.1:1</td>
+          <td><span class="badge-aaa">AAA ✓</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'JetBrains Mono';font-size:11px;">--s-ok-fg (jade)</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#14532D</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#4ADE80</td>
+          <td style="color:var(--s-ok-fg);font-weight:700;">COMPLETED ✓</td>
+          <td class="ratio-val" style="color:var(--jade-l);">7.2:1</td>
+          <td><span class="badge-aaa">AAA</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'JetBrains Mono';font-size:11px;">--s-err-fg (coral)</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#9F1239</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#FB7185</td>
+          <td style="color:var(--s-err-fg);font-weight:700;">OVERDUE ✕</td>
+          <td class="ratio-val" style="color:var(--jade-l);">6.4:1</td>
+          <td><span class="badge-aa">AA+</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'JetBrains Mono';font-size:11px;">--s-warn-fg (amber)</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#9A3412</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#FB923C</td>
+          <td style="color:var(--s-warn-fg);font-weight:700;">PENDING ⏳</td>
+          <td class="ratio-val" style="color:var(--jade-l);">5.9:1</td>
+          <td><span class="badge-aa">AA+</span></td>
+        </tr>
+        <tr>
+          <td style="font-family:'JetBrains Mono';font-size:11px;">--text-muted</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#96907F</td>
+          <td style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">#3D5068</td>
+          <td style="color:var(--text-muted);">Placeholder · disabled</td>
+          <td class="ratio-val" style="color:var(--amber-l);">3.8:1</td>
+          <td><span class="badge-lg">AA (large)</span></td>
+        </tr>
+        <tr style="background:var(--cobalt-bg);">
+          <td style="font-family:'JetBrains Mono';font-size:11px;">focus-ring</td>
+          <td colspan="2" style="font-family:'JetBrains Mono';font-size:11px;color:var(--text-muted);">cobalt — 4px ring, 2px offset</td>
+          <td><div style="width:60px;height:20px;background:var(--bg-elevated);border-radius:5px;outline:2px solid var(--cobalt);outline-offset:2px;"></div></td>
+          <td class="ratio-val" style="color:var(--jade-l);">3px+</td>
+          <td><span class="badge-aaa">2.5.8 ✓</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<div class="footer">
+  <p><strong>MLPHoma · MERIDIAN Design System</strong> · v1.0 · Juni 2026</p>
+  <p style="margin-top:4px;">Bricolage Grotesque · Nunito Sans · JetBrains Mono · Dark-first + Light adaptive · WCAG AA+</p>
+  <p style="margin-top:4px;">Toggle ☀️🌙 di kanan atas untuk berpindah mode</p>
+</div>
+
+</body>
+</html>

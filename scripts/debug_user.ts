@@ -1,9 +1,12 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const url = 'https://gtpcjjjzjjzpgpxwjzqf.supabase.co'
-// From .env.local
-const serviceKey = '***REMOVED-SECRET***'
+const url = process.env.VITE_SUPABASE_URL
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!url || !serviceKey) {
+    throw new Error('Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment variables')
+}
 
 const supabase = createClient(url, serviceKey, {
     auth: {
