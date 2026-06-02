@@ -61,6 +61,7 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
     const [verifyingLocation, setVerifyingLocation] = useState(false)
     const [userCoords, setUserCoords] = useState<{ lat: number, lon: number } | null>(null)
     const [photoMetadata, setPhotoMetadata] = useState<PhotoMetadata[]>([])
+    const [photoUploadProgress, setPhotoUploadProgress] = useState<{ current: number; total: number } | null>(null)
 
     const progressGain = progress - task.progress
 
@@ -104,15 +105,22 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
         if (files.length === 0) return
 
         setPhotoCount(prev => prev + files.length)
-        
-        toast.promise(Promise.all(files.map(f => exifService.extractMetadata(f))), {
-            loading: "Extracting metadata from evidence...",
-            success: (metas) => {
-                setPhotoMetadata(prev => [...prev, ...metas])
-                return `Extracted metadata for ${files.length} photos`
-            },
-            error: "Failed to extract metadata"
-        })
+        setPhotoUploadProgress({ current: 0, total: files.length })
+
+        try {
+            const metas: PhotoMetadata[] = []
+            for (let i = 0; i < files.length; i++) {
+                const meta = await exifService.extractMetadata(files[i])
+                metas.push(meta)
+                setPhotoUploadProgress(prev => prev ? { ...prev, current: prev.current + 1 } : null)
+            }
+            setPhotoMetadata(prev => [...prev, ...metas])
+            toast.success(`Extracted metadata for ${files.length} photos`)
+        } catch {
+            toast.error("Failed to extract metadata")
+        } finally {
+            setPhotoUploadProgress(null)
+        }
     }
 
     const handleSubmit = async () => {
@@ -229,6 +237,11 @@ function TaskCard({ task, projectId, isOverdue, existingEntry, onSubmitted }: Ta
                                 <span className="text-xs text-muted-foreground font-bold">{photoCount > 0 ? `${photoCount} Photos Loaded` : 'Tap to Upload'}</span>
                                 <input type="file" multiple accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                             </label>
+                            {photoUploadProgress && (
+                                <span className="text-xs text-slate-500 font-mono mt-1 block">
+                                    {photoUploadProgress.current}/{photoUploadProgress.total} foto diupload
+                                </span>
+                            )}
                         </div>
                         {/* Crew Count */}
                         <div>
@@ -335,7 +348,15 @@ export function DailyProgressBoard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const todayTasks = useMemo(() => {
         if (!activeProjectId) return []
-        return progressCaptureService.getTodayTasks(activeProjectId)
+        const tasks = progressCaptureService.getTodayTasks(activeProjectId)
+        const TODAY = new Date().toDateString()
+        function taskSortKey(task: TimelineTask): number {
+            if (task.status === 'in_progress') return 0
+            if (task.endDate && new Date(task.endDate).toDateString() === TODAY) return 1
+            if (task.status === 'not_started') return 2
+            return 3 // delayed, completed, etc.
+        }
+        return [...tasks].sort((a, b) => taskSortKey(a) - taskSortKey(b))
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeProjectId, refreshKey])
 

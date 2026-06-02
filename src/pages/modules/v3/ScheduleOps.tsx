@@ -17,6 +17,7 @@ import { CalendarClock, GanttChartSquare, ListTodo, TrendingUp, AlertTriangle, F
 import { useProjectStore } from '@/store/projectStore'
 import { useTimelineStore } from '@/store/timelineStore'
 import { useCurvaSStore } from '@/store/curvaSStore'
+import { useOfflineQueueStore } from '@/store/offlineQueueStore'
 import ModulePageState from '@/components/common/ModulePageState'
 import { EmptyState } from '@/components/common/EmptyState'
 import { lazyRetry } from '@/lib/lazyRetry'
@@ -108,6 +109,8 @@ export default function ScheduleOps() {
     const overdueCount = activeProjectId
         ? (getTasks(activeProjectId)?.filter(t => t.status !== 'completed' && t.endDate < new Date().toISOString().slice(0, 10)).length || 0)
         : 0
+
+    const offlineQueueCount = useOfflineQueueStore(s => s.queue?.length ?? 0)
 
     const [resourceOpen, setResourceOpen] = React.useState(false)
     const [searchParams, setSearchParams] = useSearchParams()
@@ -334,6 +337,13 @@ export default function ScheduleOps() {
 
                 {/* ─── Track Mode Tabs ────────────────────────────────────────── */}
                 <TabsContent value="progress" className="outline-none">
+                    {offlineQueueCount > 0 && (
+                        <AlertStrip
+                            severity="warning"
+                            message={`● Offline — ${offlineQueueCount} operasi antri`}
+                            className="mb-3"
+                        />
+                    )}
                     <Card className="border-none shadow-none bg-transparent">
                         <ErrorBoundary errorMessage="Daily Progress Board failed to render">
                             <Suspense fallback={<TabFallback minHeight={200} />}>

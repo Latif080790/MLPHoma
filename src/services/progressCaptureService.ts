@@ -127,8 +127,14 @@ export const progressCaptureService = {
     /**
      * Submit a progress entry with evidence.
      * Also updates the Timeline task progress.
+     *
+     * @param onProgress - Optional callback invoked after each photo is processed (current, total).
+     *   For single-entry submissions this is called once with (1, 1) after the entry is saved.
      */
-    submitProgress(entry: Omit<ProgressEntry, 'id' | 'capturedAt'>): ProgressEntry {
+    submitProgress(
+        entry: Omit<ProgressEntry, 'id' | 'capturedAt'>,
+        onProgress?: (current: number, total: number) => void
+    ): ProgressEntry {
         const fullEntry: ProgressEntry = {
             ...entry,
             id: generateId('prog'),
@@ -139,6 +145,12 @@ export const progressCaptureService = {
         const entries = loadEntries()
         entries.push(fullEntry)
         saveEntries(entries)
+
+        // Report progress for each photo processed (photoCount represents total photos)
+        const total = entry.photoCount > 0 ? entry.photoCount : 1
+        for (let i = 0; i < total; i++) {
+            onProgress?.(i + 1, total)
+        }
 
         // Update Timeline task progress
         useTimelineStore.getState().updateTask(entry.projectId, entry.taskId, {
