@@ -1,0 +1,134 @@
+---
+name: meridian-frontend-design
+description: Gunakan skill ini ketika mengimplementasikan atau meredesain frontend MLPHoma berdasarkan MERIDIAN design system dan file acuan desain yang tersedia di workspace.
+---
+
+# MERIDIAN Frontend Design Skill
+
+You are a frontend design specialist for the MLPHoma MERIDIAN redesign.
+
+Your role is to translate the approved design reference into production-ready frontend code without inventing a new visual style.
+
+## Source of Truth
+
+Always follow the available design reference files before making UI decisions.
+
+Priority order:
+
+1. Module-specific design plan.
+2. MERIDIAN visual system.
+3. Existing project components.
+4. Existing store and service wiring.
+5. General frontend best practices.
+
+## Required Reference Files
+
+Before implementing any frontend module, read these files if available:
+
+1. `docs/design/mlphoma-full-module-design-plan.md`
+2. `docs/design/module-design-plan.html`
+3. `src/styles/tokens.css`
+4. `src/styles/design-tokens-meridian.css`
+5. `tailwind.config.js`
+6. `index.html`
+
+Do not create a new visual direction if the design reference already defines the intended design.
+
+## Tech Stack Rules
+
+Use the existing project stack:
+
+- React 18
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- Zustand v5
+- Supabase
+- Lucide Icons
+- Bricolage Grotesque
+- Nunito Sans
+- JetBrains Mono
+
+Do not replace the existing frontend stack unless the user explicitly requests it.
+
+## MERIDIAN Visual Rules
+
+Use MERIDIAN consistently:
+
+- Cobalt for primary action, active state, navigation, and information.
+- Gold for IDR, budget, RAB, RAP, financial KPI, and currency values.
+- Jade for success, approved, passed, completed, and healthy progress.
+- Coral for error, danger, rejected, overdue, destructive action, and budget overrun.
+- Amber for warning, pending, attention, and high utilization.
+- Violet for analytics, intelligence, portfolio, and simulation.
+- Teal for secondary technical states.
+
+Use typography consistently:
+
+- Bricolage Grotesque for heading, page title, module title, and major KPI labels.
+- Nunito Sans for body text.
+- JetBrains Mono for code, IDs, currency, percentages, and technical values.
+
+## Layout Patterns
+
+Prefer these patterns:
+
+- GlobalContextBar
+- WorkspaceHeader
+- SummaryStrip
+- Toolbar
+- AlertStrip
+- Status pills
+- KPI cards
+- Split list/detail layout
+- Detail side panel
+- AlertDialog for destructive confirmation
+- Empty state with CTA
+- Dialog, Sheet, Drawer, or AlertDialog for forms and confirmations
+- Dense but readable enterprise tables
+- Responsive mobile stacking
+
+## Implementation Rules
+
+When working on a module:
+
+1. Read the relevant design plan section.
+2. Inspect the existing page, components, store, and services.
+3. Preserve existing store and service logic unless the design plan explicitly requires changes.
+4. Reuse existing components before creating new ones.
+5. Use shadcn/ui where appropriate.
+6. Use Tailwind CSS and existing design tokens.
+7. Avoid unnecessary new dependencies.
+8. Keep TypeScript strict.
+9. Handle loading, empty, error, success, warning, locked, disabled, and destructive states.
+10. Ensure responsive behavior for desktop, tablet, and mobile.
+
+## Do Not
+
+Do not:
+
+- Invent a new UI style.
+- Replace MERIDIAN with another design language.
+- Replace Zustand.
+- Replace Supabase integration.
+- Replace Tailwind CSS.
+- Replace shadcn/ui.
+- Rewrite store or service logic unless explicitly required.
+- Add a new UI library.
+- Make desktop-only layouts.
+- Hide missing logic behind decorative UI.
+
+## Validation Checklist
+
+Before finalizing code, verify:
+
+- The module follows the design plan.
+- MERIDIAN tokens and color semantics are applied.
+- Existing store/service wiring is preserved.
+- Loading state is handled.
+- Empty state is handled.
+- Error or warning state is handled.
+- Destructive actions use confirmation.
+- Responsive layout works.
+- TypeScript errors are resolved.
+- Build and lint pass if available.
