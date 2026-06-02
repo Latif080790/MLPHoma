@@ -1,5 +1,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { cn } from "@/lib/utils"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Folder, FileText, Upload, Download, Trash2, History, Lock, LockOpen, Archive, ArchiveRestore, Loader2, Eye, Link2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -76,6 +77,22 @@ export default function Documents() {
     const [newDocCategory, setNewDocCategory] = useState("Reports")
     const [newDocFile, setNewDocFile] = useState<File | null>(null)
     const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+    // Folder tree state
+    const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
+
+    // Bulk select state
+    const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set())
+
+    const toggleDoc = (id: string) => setSelectedDocIds(prev => {
+        const next = new Set(prev)
+        if (next.has(id)) {
+            next.delete(id)
+        } else {
+            next.add(id)
+        }
+        return next
+    })
 
     // Version History State
     const [versionDoc, setVersionDoc] = useState<ProjectDocument | null>(null)
@@ -247,6 +264,17 @@ export default function Documents() {
         }
     }
 
+    // Folder groups derived from document categories
+    const folderGroups = useMemo(() => {
+        const groups = new Map<string, ProjectDocument[]>()
+        for (const doc of documents) {
+            const folder = (doc as { folder?: string }).folder ?? doc.category ?? 'Umum'
+            if (!groups.has(folder)) groups.set(folder, [])
+            groups.get(folder)!.push(doc)
+        }
+        return groups
+    }, [documents])
+
     const filteredDocs = useMemo(() => {
         const q = search.trim().toLowerCase()
         const matches = documents.filter((doc) => {
@@ -261,7 +289,11 @@ export default function Documents() {
             const matchesFrom = !fromBoundary || createdDate >= fromBoundary
             const matchesTo = !toBoundary || createdDate <= toBoundary
 
-            return matchesSearch && matchesCategory && matchesUploader && matchesFrom && matchesTo
+            // Folder tree filter
+            const docFolder = (doc as { folder?: string }).folder ?? doc.category ?? 'Umum'
+            const matchesFolder = selectedFolder === null || docFolder === selectedFolder
+
+            return matchesSearch && matchesCategory && matchesUploader && matchesFrom && matchesTo && matchesFolder
         })
 
         return [...matches].sort((a, b) => {
@@ -270,7 +302,7 @@ export default function Documents() {
             if (sortBy === 'title-desc') return b.title.localeCompare(a.title)
             return a.title.localeCompare(b.title)
         })
-    }, [documents, search, selectedCategory, selectedUploader, dateFrom, dateTo, sortBy])
+    }, [documents, search, selectedCategory, selectedUploader, dateFrom, dateTo, sortBy, selectedFolder])
 
     const uploaderOptions = useMemo(() => {
         const values = Array.from(new Set(
@@ -434,8 +466,33 @@ export default function Documents() {
                 </Button>
             </div>
 
+            <div className="flex flex-row gap-4">
+                {/* Folder tree sidebar */}
+                <div className="flex flex-col gap-1 min-w-[160px] shrink-0">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide px-1 mb-1">Folder</p>
+                    <button
+                        onClick={() => setSelectedFolder(null)}
+                        className={cn('text-left text-xs px-3 py-1.5 rounded-md font-medium',
+                            selectedFolder === null ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                        )}
+                    >
+                        Semua ({documents.length})
+                    </button>
+                    {Array.from(folderGroups.entries()).map(([folder, docs]) => (
+                        <button key={folder} onClick={() => setSelectedFolder(folder)}
+                            className={cn('text-left text-xs px-3 py-1.5 rounded-md',
+                                selectedFolder === folder ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-100'
+                            )}
+                        >
+                            📁 {folder} ({docs.length})
+                        </button>
+                    ))}
+                </div>
+
+                {/* Document grid */}
+                <div className="flex-1 min-w-0">
             {loading && documents.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4" aria-live="polite" aria-busy="true">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" aria-live="polite" aria-busy="true">
                     {Array.from({ length: 8 }).map((_, idx) => (
                         <CardSkeleton key={`doc-reload-skeleton-${idx}`} />
                     ))}
@@ -456,27 +513,39 @@ export default function Documents() {
                             ref={docsVirtualizer.measureElement}
                             style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${vRow.start}px)` }}
                         >
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
                             {docRows[vRow.index].map(doc => {
                         const isArchived = doc.status === 'ARCHIVED'
                         const isSuperseded = doc.status === 'SUPERSEDED'
                         const isLocked = doc.is_locked
                         const governance = getDocumentGovernanceState(doc)
+                        const isSelected = selectedDocIds.has(doc.id)
 
                         return (
                             <Card
                                 key={doc.id}
                                 className={`hover:border-blue-500 transition-colors group ${isArchived ? 'opacity-60 border-border' :
-                                    isSuperseded ? 'opacity-50 border-yellow-300' : ''
+                                    isSuperseded ? 'opacity-50 border-yellow-300' :
+                                    isSelected ? 'border-blue-500 ring-1 ring-blue-500' : ''
                                     }`}
                             >
                                 <CardContent className="p-4 flex flex-col justify-between h-full min-h-[140px]">
                                     <div className="flex items-start justify-between">
-                                        <div className={`p-2 rounded ${isArchived ? 'bg-muted/30 text-muted-foreground' :
-                                            isSuperseded ? 'bg-yellow-50 text-yellow-600' :
-                                                'bg-blue-50 text-blue-600'
-                                            }`}>
-                                            <FileText size={20} />
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={isSelected}
+                                                onChange={() => toggleDoc(doc.id)}
+                                                aria-label={`Pilih ${doc.title}`}
+                                                className="h-3.5 w-3.5 rounded border-slate-300 accent-blue-600 cursor-pointer"
+                                                onClick={e => e.stopPropagation()}
+                                            />
+                                            <div className={`p-2 rounded ${isArchived ? 'bg-muted/30 text-muted-foreground' :
+                                                isSuperseded ? 'bg-yellow-50 text-yellow-600' :
+                                                    'bg-blue-50 text-blue-600'
+                                                }`}>
+                                                <FileText size={20} />
+                                            </div>
                                         </div>
                                         <div className="flex gap-1">
                                             <Button
@@ -629,6 +698,22 @@ export default function Documents() {
                         </div>
                     ))}
                     </div>                </div>
+            )}
+                </div>{/* end document grid */}
+            </div>{/* end flex row */}
+
+            {/* Bulk download action bar */}
+            {selectedDocIds.size > 0 && (
+                <div className="sticky bottom-4 flex items-center gap-3 rounded-xl border bg-white shadow-lg px-4 py-2.5 text-sm">
+                    <span className="font-semibold">{selectedDocIds.size} dokumen dipilih</span>
+                    <button
+                        className="ml-auto rounded-md bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700"
+                        onClick={() => toast.info(`Download ${selectedDocIds.size} dokumen (fitur ZIP akan tersedia)`)}
+                    >
+                        Download {selectedDocIds.size} Dokumen
+                    </button>
+                    <button className="text-xs text-slate-400" onClick={() => setSelectedDocIds(new Set())}>Batal</button>
+                </div>
             )}
 
             {/* Upload Dialog */}
