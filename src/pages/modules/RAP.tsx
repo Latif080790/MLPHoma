@@ -714,6 +714,26 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
             />
           </div>
 
+          {/* ── Margin Health Bar: RAP Kontribusi / RAB Selling ─── */}
+          {waterfall.rabSelling > 0 && (() => {
+            const rapPct = (waterfall.rapKontribusi / waterfall.rabSelling) * 100
+            return (
+              <div className="flex items-center gap-3 text-xs rounded-lg border border-slate-100 bg-slate-50/60 px-4 py-2.5">
+                <span className="w-28 shrink-0 font-semibold text-slate-500 uppercase tracking-wider">RAP / RAB</span>
+                <div className="flex-1 h-2.5 rounded-full bg-slate-200 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      rapPct <= 70 ? 'bg-emerald-500' : rapPct <= 90 ? 'bg-amber-400' : 'bg-rose-500'
+                    }`}
+                    style={{ width: `${Math.min(rapPct, 100)}%` }}
+                  />
+                </div>
+                <span className="w-14 text-right font-mono font-bold">{rapPct.toFixed(1)}%</span>
+                <span className="text-slate-400">plafon vs harga jual</span>
+              </div>
+            )
+          })()}
+
           {/* ── Profit Simulation bar ───────────────────────────── */}
           <div className="flex flex-wrap items-center gap-4 rounded-lg border border-emerald-100 bg-emerald-50/50 px-4 py-3 dark:border-emerald-900 dark:bg-emerald-950/30">
             <div className="flex items-center gap-1.5">
