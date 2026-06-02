@@ -37,6 +37,26 @@ export default function Settings() {
     const [loading, setLoading] = useState(false)
     const [srStatus, setSrStatus] = useState('')
     const [settingsTab, setSettingsTab] = useState('profil')
+
+    const NOTIFICATION_EVENTS = [
+        { key: 'approval_request',  label: 'Permintaan Persetujuan',   description: 'Saat ada approval masuk' },
+        { key: 'approval_overdue',  label: 'Approval Terlambat',       description: 'SLA melewati batas' },
+        { key: 'mrp_alert',         label: 'Peringatan MRP',           description: 'Stok material di bawah kebutuhan' },
+        { key: 'budget_overrun',    label: 'Pelampauan Budget',        description: 'RAB melebihi budget proyek' },
+        { key: 'schedule_delay',    label: 'Keterlambatan Jadwal',     description: 'Task melewati tanggal rencana' },
+    ] as const
+    type NotifKey = typeof NOTIFICATION_EVENTS[number]['key']
+    const [notifPrefs, setNotifPrefs] = useState<Record<NotifKey, boolean>>(
+        Object.fromEntries(NOTIFICATION_EVENTS.map(e => [e.key, true])) as Record<NotifKey, boolean>
+    )
+    const toggleNotif = (key: NotifKey) => setNotifPrefs(prev => ({ ...prev, [key]: !prev[key] }))
+    const resetNotifPrefs = () => {
+        if (confirm('Reset semua konfigurasi notifikasi ke default?')) {
+            setNotifPrefs(Object.fromEntries(NOTIFICATION_EVENTS.map(e => [e.key, true])) as Record<NotifKey, boolean>)
+            toast.success('Konfigurasi notifikasi direset ke default')
+        }
+    }
+
     const [activeTheme, setActiveTheme] = useState<'dark' | 'light' | 'system'>(() => {
         const saved = localStorage.getItem('theme')
         return (saved === 'light' || saved === 'system' || saved === 'dark') ? saved : 'dark'
