@@ -183,9 +183,10 @@ module.exports = {
         DEFAULT: '2px', // Add offset for clearer separation
       },
       fontFamily: {
-        display: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
-        sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['DM Mono', 'ui-monospace', 'monospace'],
+        // MERIDIAN type system
+        display: ['Bricolage Grotesque', 'DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Nunito Sans', 'DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['JetBrains Mono', 'DM Mono', 'ui-monospace', 'monospace'],
       },
       transitionTimingFunction: {
         standard: 'cubic-bezier(0.2, 0, 0, 1)',

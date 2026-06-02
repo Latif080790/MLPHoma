@@ -133,7 +133,7 @@
     0 8px 24px -4px rgb(29 95 204 / 0.18);
 
   /* --- Focus Ring --- */
-  --shadow-focus-ring: 0 0 0 2px hsl(var(--background)), 0 0 0 4px rgb(249 115 22 / 0.40);
+  --shadow-focus-ring: 0 0 0 2px hsl(var(--background)), 0 0 0 4px rgb(59 130 246 / 0.40);
 
   /* --- Border Width Scale --- */
   --border-width-none: 0px;
@@ -385,11 +385,11 @@
   --color-surface-elevated: 218 38% 25%;    /* #273856 — modal / drawer */
   --color-surface-inverse: var(--neutral-100);
 
-  /* --- Brand Primary Override — orange in dark mode --- */
-  --brand-primary-500: 25 95% 53%;   /* #F97316 */
-  --brand-primary-300: 27 96% 61%;   /* #FB923C */
-  --brand-primary-100: 27 100% 82%;
-  --brand-primary-050: 34 100% 91%;
+  /* --- Brand Primary Override — cobalt in dark mode (MERIDIAN V1.0) --- */
+  --brand-primary-500: 217 91% 60%;   /* #3B82F6 cobalt */
+  --brand-primary-300: 213 97% 72%;   /* #60A5FA cobalt-light */
+  --brand-primary-100: 214 95% 89%;
+  --brand-primary-050: 214 100% 95%;
 
   /* --- Text Tokens --- */
   --color-text-primary: var(--neutral-50);
@@ -397,8 +397,8 @@
   --color-text-tertiary: var(--neutral-500);
   --color-text-disabled: var(--neutral-600);
   --color-text-inverse: var(--neutral-900);
-  --color-text-link: var(--brand-orange-500);
-  --color-text-link-hover: var(--brand-orange-400);
+  --color-text-link: var(--brand-primary-300);
+  --color-text-link-hover: var(--brand-primary-500);
 
   /* --- Icon Tokens --- */
   --color-icon-primary: var(--neutral-100);
@@ -406,13 +406,13 @@
   --color-icon-tertiary: var(--neutral-500);
   --color-icon-disabled: var(--neutral-600);
   --color-icon-inverse: var(--neutral-900);
-  --color-icon-brand: var(--brand-orange-400);
+  --color-icon-brand: var(--brand-primary-300);
 
   /* --- Border Tokens (rgba-white equivalents on navy bg) --- */
   --color-border-default: 220 28% 18%;   /* ≈ rgba(255,255,255,0.08) */
   --color-border-subtle: 220 20% 14%;    /* ≈ rgba(255,255,255,0.04) */
   --color-border-strong: 220 35% 22%;    /* ≈ rgba(255,255,255,0.14) */
-  --color-border-focus: var(--brand-orange-500);
+  --color-border-focus: var(--brand-primary-500);
   --color-border-disabled: 220 20% 14%;
   --color-border-inverse: var(--neutral-200);
 

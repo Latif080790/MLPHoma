@@ -1,0 +1,53 @@
+/* =============================================================================
+   MERIDIAN — Opt-in utility layer
+   -----------------------------------------------------------------------------
+   Isolated, additive utilities that bring the MERIDIAN visual identity into the
+   running app WITHOUT redefining the existing shadcn semantic tokens.
+   Apply these classes deliberately; nothing here changes global element styles.
+
+   Imported after shadcn.css in src/main.tsx.
+   Dark mode is class-based (`.dark` on <html>), matching tailwind.config.
+   ============================================================================= */
+
+/* ── IDR / financial value — the MERIDIAN signature rule ──────────────────────
+   Every Rupiah value should carry warm gold + tabular monospace so financial
+   data is instantly scannable. Light mode uses a darker amber for AA contrast
+   on light surfaces; dark mode uses bright gold. */
+.idr-value {
+  font-family: 'JetBrains Mono', 'DM Mono', ui-monospace, monospace;
+  color: #92400E;                 /* dark amber — readable on light limestone */
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+}
+.dark .idr-value {
+  color: #FBBF24;                 /* warm gold — glows on obsidian surfaces */
+}
+
+/* ── Blueprint engineering grid texture ───────────────────────────────────────
+   Very faint dual grid (80px major / 16px minor) evoking construction drawings.
+   Apply to a page/section root. Light = warm sepia lines, dark = cobalt. */
+.bg-blueprint {
+  background-image:
+    linear-gradient(rgba(120, 100, 60, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 100, 60, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(120, 100, 60, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 100, 60, 0.025) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+}
+.dark .bg-blueprint {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.025) 1px, transparent 1px),
+    linear-gradient(rgba(59, 130, 246, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.012) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+}
+
+/* ── Display heading helper ───────────────────────────────────────────────────
+   Pairs the Bricolage Grotesque display face with the tight tracking MERIDIAN
+   uses for titles. `font-display` (tailwind) already maps to Bricolage; this
+   adds the letter-spacing without forcing it on every heading. */
+.meridian-heading {
+  font-family: 'Bricolage Grotesque', 'DM Sans', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}

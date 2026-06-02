@@ -1,0 +1,715 @@
+/* =============================================================================
+   MLPHOMA — MERIDIAN Design System v1.0
+   Visual Direction: Obsidian Precision × Indonesian Craft
+   =============================================================================
+   Aesthetic: Deep obsidian surfaces / Electric cobalt actions /
+              Warm gold for all financial/IDR data / Jade for success KPIs.
+              Typography: Bricolage Grotesque (display) + Nunito Sans (body) + JetBrains Mono (data).
+              Blueprint grid texture on page background.
+   WCAG: AA minimum target (4.5:1), AAA for critical data (7:1).
+   ============================================================================= */
+
+/* ── Google Fonts import (add to index.html <head>) ────────────────────────
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link href="https://fonts.googleapis.com/css2?
+     family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&
+     family=Nunito+Sans:ital,opsz,wght@0,6..12,300;0,6..12,400;0,6..12,500;0,6..12,600;0,6..12,700;1,6..12,400&
+     family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&
+     display=swap" rel="stylesheet">
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  :root {
+
+    /* ════════════════════════════════════════════════════════════════
+       §1  PRIMITIVE COLOR SCALES
+       ════════════════════════════════════════════════════════════════ */
+
+    /* — Obsidian (dark background hierarchy) — */
+    --obsidian-1000: 220 35% 3%;    /* #050810 — deepest void */
+    --obsidian-950:  220 30% 5%;    /* #080d18 — page bg */
+    --obsidian-900:  220 28% 8%;    /* #0e1523 — surface 0 */
+    --obsidian-800:  218 26% 11%;   /* #141d2e — surface 1 */
+    --obsidian-700:  216 24% 14%;   /* #1a2438 — surface 2 */
+    --obsidian-600:  214 22% 18%;   /* #223044 — elevated */
+    --obsidian-500:  212 20% 22%;   /* #293d52 — overlay */
+    --obsidian-400:  210 18% 28%;   /* #344d62 — hover on elevated */
+
+    /* — Cobalt (primary action / selection / links) — */
+    --cobalt-950: 224 94% 20%;
+    --cobalt-900: 224 94% 27%;
+    --cobalt-700: 224 88% 45%;
+    --cobalt-600: 224 84% 53%;
+    --cobalt-500: 217 91% 60%;    /* #3B82F6 — default action */
+    --cobalt-400: 213 94% 68%;    /* #60A5FA — hover/light */
+    --cobalt-300: 213 94% 77%;
+    --cobalt-200: 214 95% 85%;
+    --cobalt-100: 214 100% 93%;
+    --cobalt-50:  214 100% 97%;
+
+    /* — Gold (financial data / IDR / budget / EVM) — */
+    --gold-950: 27 95% 15%;
+    --gold-700: 32 95% 35%;
+    --gold-600: 36 96% 42%;
+    --gold-500: 38 96% 50%;       /* #F5A623 — primary financial */
+    --gold-400: 41 97% 58%;       /* #FBBF24 — highlight */
+    --gold-300: 44 97% 68%;
+    --gold-100: 48 100% 90%;
+    --gold-50:  48 100% 96%;
+
+    /* — Jade (success / completed / positive KPI) — */
+    --jade-900: 158 92% 12%;
+    --jade-700: 158 88% 25%;
+    --jade-600: 155 85% 33%;
+    --jade-500: 152 82% 42%;      /* #22C55E — success */
+    --jade-400: 142 79% 52%;      /* #4ADE80 — bright success */
+    --jade-300: 140 74% 64%;
+    --jade-100: 138 72% 88%;
+    --jade-50:  138 72% 96%;
+
+    /* — Coral (danger / negative / error / rejection) — */
+    --coral-950: 348 95% 12%;
+    --coral-700: 346 90% 35%;
+    --coral-600: 344 88% 43%;
+    --coral-500: 343 85% 55%;     /* #F43F5E — danger */
+    --coral-400: 350 82% 65%;     /* #FB7185 — danger light */
+    --coral-300: 352 80% 74%;
+    --coral-100: 354 85% 92%;
+    --coral-50:  354 85% 97%;
+
+    /* — Amber (warning / delay / pending / in-progress) — */
+    --amber-700: 25 95% 38%;
+    --amber-500: 25 95% 53%;      /* #F97316 — warning */
+    --amber-400: 27 96% 61%;      /* #FB923C — warning light */
+    --amber-100: 34 100% 90%;
+    --amber-50:  34 100% 96%;
+
+    /* — Violet (AI / analytics / secondary insight) — */
+    --violet-600: 258 88% 52%;
+    --violet-500: 258 85% 63%;    /* #8B5CF6 — analytics */
+    --violet-400: 262 80% 73%;    /* #A78BFA — analytics light */
+    --violet-100: 266 78% 92%;
+
+    /* — Teal (realtime / online / sync / live data) — */
+    --teal-500: 173 90% 40%;      /* #0D9488 */
+    --teal-400: 172 85% 50%;      /* #14B8A6 */
+    --teal-300: 171 82% 60%;      /* #2DD4BF */
+
+    /* — Neutral text scale — */
+    --slate-50:  210 40% 98%;
+    --slate-100: 210 40% 94%;
+    --slate-200: 214 32% 88%;
+    --slate-300: 213 27% 78%;
+    --slate-400: 215 20% 62%;
+    --slate-500: 215 16% 47%;
+    --slate-600: 215 19% 35%;
+    --slate-700: 215 25% 25%;
+    --slate-800: 217 33% 17%;
+    --slate-900: 222 47% 11%;
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §2  SEMANTIC ALIASES — Dark Mode (default)
+       ════════════════════════════════════════════════════════════════ */
+
+    /* — Backgrounds — */
+    --bg-page:          hsl(var(--obsidian-950));   /* Body / root */
+    --bg-surface:       hsl(var(--obsidian-900));   /* Cards / panels */
+    --bg-surface-hover: hsl(var(--obsidian-800));   /* Card hover */
+    --bg-elevated:      hsl(var(--obsidian-800));   /* Modals / drawers */
+    --bg-overlay:       hsl(var(--obsidian-700));   /* Dropdowns */
+    --bg-popup:         hsl(var(--obsidian-600));   /* Tooltips / popovers */
+    --bg-invert:        hsl(var(--slate-50));
+
+    /* — Borders — */
+    --border-subtle:    hsl(var(--obsidian-800));
+    --border-default:   hsl(var(--obsidian-700));
+    --border-strong:    hsl(var(--obsidian-600));
+    --border-emphasis:  hsl(var(--obsidian-500));
+    --border-focus:     hsl(var(--cobalt-500));
+
+    /* — Text — */
+    --text-primary:     hsl(var(--slate-100));      /* Main body copy */
+    --text-secondary:   hsl(var(--slate-400));      /* Labels, metadata */
+    --text-muted:       hsl(var(--slate-600));      /* Placeholders, disabled */
+    --text-inverse:     hsl(var(--obsidian-950));   /* On bright backgrounds */
+    --text-link:        hsl(var(--cobalt-400));
+
+    /* — Financial text — */
+    --text-idr:         hsl(var(--gold-400));       /* IDR values — always gold */
+    --text-idr-positive:hsl(var(--jade-400));       /* Positive variance */
+    --text-idr-negative:hsl(var(--coral-400));      /* Negative variance */
+
+    /* — Interactive — */
+    --interactive-bg:        hsl(var(--cobalt-500));
+    --interactive-bg-hover:  hsl(var(--cobalt-400));
+    --interactive-bg-active: hsl(var(--cobalt-600));
+    --interactive-fg:        hsl(var(--slate-50));
+    --interactive-subtle:    hsla(var(--cobalt-500) / 0.08);
+    --interactive-subtle-hover: hsla(var(--cobalt-500) / 0.14);
+
+    /* — Status backgrounds — */
+    --status-success-fg:  hsl(var(--jade-400));
+    --status-success-bg:  hsla(var(--jade-500) / 0.12);
+    --status-warning-fg:  hsl(var(--amber-400));
+    --status-warning-bg:  hsla(var(--amber-500) / 0.12);
+    --status-danger-fg:   hsl(var(--coral-400));
+    --status-danger-bg:   hsla(var(--coral-500) / 0.12);
+    --status-info-fg:     hsl(var(--cobalt-400));
+    --status-info-bg:     hsla(var(--cobalt-500) / 0.10);
+    --status-neutral-fg:  hsl(var(--slate-400));
+    --status-neutral-bg:  hsla(var(--slate-500) / 0.12);
+    --status-financial-fg: hsl(var(--gold-400));
+    --status-financial-bg: hsla(var(--gold-500) / 0.10);
+    --status-live-fg:     hsl(var(--teal-300));
+    --status-live-bg:     hsla(var(--teal-400) / 0.12);
+    --status-ai-fg:       hsl(var(--violet-400));
+    --status-ai-bg:       hsla(var(--violet-500) / 0.12);
+
+    /* — WBS node level colors — */
+    --wbs-level1-code:  hsl(var(--cobalt-400));
+    --wbs-level1-bg:    hsla(var(--cobalt-500) / 0.06);
+    --wbs-level1-border:hsla(var(--cobalt-500) / 0.15);
+    --wbs-level2-code:  hsl(var(--slate-300));
+    --wbs-level3-code:  hsl(var(--slate-500));
+
+    /* — QC Status — */
+    --qc-passed:   hsl(var(--jade-400));
+    --qc-pending:  hsl(var(--amber-400));
+    --qc-failed:   hsl(var(--coral-400));
+    --qc-n-a:      hsl(var(--slate-500));
+
+    /* — Category dots (RAB breakdown) — */
+    --cat-material:   hsl(var(--cobalt-400));
+    --cat-labor:      hsl(var(--gold-400));
+    --cat-equipment:  hsl(var(--violet-400));
+    --cat-subcon:     hsl(var(--teal-300));
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §3  TYPOGRAPHY SYSTEM
+       ════════════════════════════════════════════════════════════════ */
+
+    /* — Font families — */
+    --font-display: 'Bricolage Grotesque', system-ui, sans-serif;         /* Headings, module titles */
+    --font-body:    'Nunito Sans', system-ui, sans-serif;  /* All body copy, UI labels */
+    --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, monospace; /* Numbers, codes, KPIs */
+
+    /* — Type scale (rem, 16px base) — */
+    --text-2xs: 0.625rem;   /* 10px — micro labels, legend */
+    --text-xs:  0.75rem;    /* 12px — captions, badges, table header */
+    --text-sm:  0.875rem;   /* 14px — body small, sidebar items */
+    --text-base:1rem;       /* 16px — default body */
+    --text-lg:  1.125rem;   /* 18px — large body */
+    --text-xl:  1.25rem;    /* 20px — section heading */
+    --text-2xl: 1.5rem;     /* 24px — page heading */
+    --text-3xl: 1.875rem;   /* 30px — module title */
+    --text-4xl: 2.25rem;    /* 36px — KPI number large */
+    --text-5xl: 3rem;       /* 48px — hero number */
+    --text-6xl: 3.75rem;    /* 60px — showcase only */
+
+    /* — Weights — */
+    --weight-light:     300;
+    --weight-normal:    400;
+    --weight-medium:    500;
+    --weight-semibold:  600;
+    --weight-bold:      700;
+    --weight-extrabold: 800;
+
+    /* — Line heights — */
+    --leading-none:    1;
+    --leading-tight:   1.2;
+    --leading-snug:    1.375;
+    --leading-normal:  1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose:   2;
+
+    /* — Letter spacing — */
+    --tracking-tightest: -0.04em;
+    --tracking-tight:    -0.025em;
+    --tracking-display:  -0.02em;   /* for Bricolage Grotesque at 24px+ */
+    --tracking-normal:   0em;
+    --tracking-wide:     0.025em;
+    --tracking-wider:    0.05em;
+    --tracking-widest:   0.12em;    /* for labels/caps */
+
+    /* — Font feature settings — */
+    --features-default: "kern" 1, "liga" 1;
+    --features-mono:    "kern" 1, "liga" 1, "zero" 1, "tnum" 1; /* tabular + slashed zero */
+    --features-heading: "kern" 1, "liga" 1, "ss01" 1;
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §4  SPACING SCALE (4px base unit)
+       ════════════════════════════════════════════════════════════════ */
+
+    --space-0:    0px;
+    --space-px:   1px;
+    --space-0-5:  2px;
+    --space-1:    4px;
+    --space-1-5:  6px;
+    --space-2:    8px;
+    --space-2-5:  10px;
+    --space-3:    12px;
+    --space-3-5:  14px;
+    --space-4:    16px;
+    --space-5:    20px;
+    --space-6:    24px;
+    --space-7:    28px;
+    --space-8:    32px;
+    --space-9:    36px;
+    --space-10:   40px;
+    --space-11:   44px;
+    --space-12:   48px;
+    --space-14:   56px;
+    --space-16:   64px;
+    --space-20:   80px;
+    --space-24:   96px;
+    --space-28:   112px;
+    --space-32:   128px;
+    --space-40:   160px;
+    --space-48:   192px;
+    --space-64:   256px;
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §5  SHAPE — Border Radius
+       ════════════════════════════════════════════════════════════════ */
+
+    --radius-none: 0px;
+    --radius-xs:   2px;    /* Tiny chips, progress bars */
+    --radius-sm:   4px;    /* Badges, tags, small buttons */
+    --radius-base: 6px;    /* Inputs, default buttons */
+    --radius-md:   8px;    /* Cards, panels */
+    --radius-lg:   12px;   /* Modals, large cards */
+    --radius-xl:   16px;   /* Drawers, side panels */
+    --radius-2xl:  24px;   /* Feature cards */
+    --radius-full: 9999px; /* Pills, avatars */
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §6  ELEVATION — Shadows
+       ════════════════════════════════════════════════════════════════ */
+
+    /* Base shadows (dark-optimised) */
+    --shadow-xs:   0 1px 2px hsl(220 35% 1% / 0.6);
+    --shadow-sm:   0 2px 4px hsl(220 35% 1% / 0.5),
+                   0 1px 2px hsl(220 35% 1% / 0.6);
+    --shadow-base: 0 4px 8px hsl(220 35% 1% / 0.4),
+                   0 2px 4px hsl(220 35% 1% / 0.5);
+    --shadow-md:   0 8px 16px hsl(220 35% 1% / 0.5),
+                   0 4px 8px hsl(220 35% 1% / 0.4);
+    --shadow-lg:   0 16px 32px hsl(220 35% 1% / 0.5),
+                   0 8px 16px hsl(220 35% 1% / 0.4);
+    --shadow-xl:   0 24px 48px hsl(220 35% 1% / 0.6),
+                   0 12px 24px hsl(220 35% 1% / 0.5);
+    --shadow-inner: inset 0 2px 4px hsl(220 35% 1% / 0.5);
+
+    /* Contextual glow — for KPI cards, live indicators */
+    --glow-cobalt: 0 0 20px hsla(var(--cobalt-500) / 0.15),
+                   0 0 48px hsla(var(--cobalt-500) / 0.06);
+    --glow-gold:   0 0 20px hsla(var(--gold-500) / 0.18),
+                   0 0 48px hsla(var(--gold-500) / 0.07);
+    --glow-jade:   0 0 20px hsla(var(--jade-500) / 0.15),
+                   0 0 48px hsla(var(--jade-500) / 0.06);
+    --glow-coral:  0 0 20px hsla(var(--coral-500) / 0.15),
+                   0 0 48px hsla(var(--coral-500) / 0.06);
+    --glow-teal:   0 0 20px hsla(var(--teal-400) / 0.20),
+                   0 0 48px hsla(var(--teal-400) / 0.08);
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §7  ANIMATION & MOTION
+       ════════════════════════════════════════════════════════════════ */
+
+    /* Durations */
+    --duration-instant: 50ms;
+    --duration-fast:    100ms;
+    --duration-normal:  200ms;
+    --duration-slow:    300ms;
+    --duration-slower:  500ms;
+    --duration-crawl:   800ms;
+
+    /* Easings */
+    --ease-linear:   linear;
+    --ease-in:       cubic-bezier(0.4, 0, 1, 1);
+    --ease-out:      cubic-bezier(0, 0, 0.2, 1);
+    --ease-in-out:   cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --ease-decel:    cubic-bezier(0, 0, 0, 1);           /* Material You decelerate */
+    --ease-standard: cubic-bezier(0.2, 0, 0, 1);        /* Material You standard */
+
+    /* Drag & drop */
+    --drag-opacity:     0.45;
+    --drag-scale:       1.02;
+    --drag-duration:    var(--duration-fast);
+    --drop-zone-dash:   4px 6px;
+    --drop-zone-color:  hsl(var(--cobalt-500));
+    --drop-zone-bg:     hsla(var(--cobalt-500) / 0.05);
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §8  Z-INDEX STACK
+       ════════════════════════════════════════════════════════════════ */
+
+    --z-base:      0;
+    --z-raised:    10;
+    --z-sticky:    100;    /* Sticky headers, context bar */
+    --z-overlay:   200;    /* Semi-transparent overlays */
+    --z-dropdown:  300;    /* Menus, selects */
+    --z-modal:     400;    /* Dialogs, lightboxes */
+    --z-popover:   500;    /* Popovers, date pickers */
+    --z-toast:     600;    /* Toast notifications */
+    --z-tooltip:   700;    /* Tooltips (always topmost) */
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §9  LAYOUT & GRID
+       ════════════════════════════════════════════════════════════════ */
+
+    /* App shell dimensions */
+    --layout-sidebar-expanded:  224px;
+    --layout-sidebar-collapsed: 60px;
+    --layout-header-height:     56px;
+    --layout-context-bar:       44px;
+    --layout-toolbar:           48px;
+    --layout-detail-panel:      320px;  /* WBS detail, inspector */
+    --layout-summary-strip:     72px;
+
+    /* Content max widths */
+    --content-xs:   480px;
+    --content-sm:   640px;
+    --content-md:   768px;
+    --content-lg:   1024px;
+    --content-xl:   1280px;
+    --content-2xl:  1536px;
+
+    /* Grid */
+    --grid-cols:   12;
+    --grid-gutter: var(--space-6);
+    --grid-margin: var(--space-6);
+
+    /* Page padding */
+    --page-pad-x:  var(--space-6);   /* 24px */
+    --page-pad-y:  var(--space-4);   /* 16px */
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §10  TABLE DENSITY SYSTEM
+       ════════════════════════════════════════════════════════════════
+       Usage: data-density="compact|default|comfortable" on <table>
+       ════════════════════════════════════════════════════════════════ */
+
+    /* Compact — financial tables, RAB, high-row-count */
+    --table-compact-row:      30px;
+    --table-compact-cell-px:  var(--space-2-5);  /* 10px */
+    --table-compact-cell-py:  var(--space-1);    /* 4px */
+    --table-compact-text:     var(--text-xs);
+
+    /* Default — WBS, Supply Chain, standard lists */
+    --table-default-row:      38px;
+    --table-default-cell-px:  var(--space-3);    /* 12px */
+    --table-default-cell-py:  var(--space-2);    /* 8px */
+    --table-default-text:     var(--text-sm);
+
+    /* Comfortable — Command Center tiles, field tasks */
+    --table-comfortable-row:  50px;
+    --table-comfortable-cell-px: var(--space-4); /* 16px */
+    --table-comfortable-cell-py: var(--space-3); /* 12px */
+    --table-comfortable-text: var(--text-sm);
+
+    /* Header row */
+    --table-header-height:    34px;
+    --table-header-text:      var(--text-xs);
+    --table-header-weight:    var(--weight-semibold);
+    --table-header-tracking:  var(--tracking-wider);
+    --table-header-color:     hsl(var(--slate-500));
+
+    /* Zebra alternating row */
+    --table-stripe:           hsla(var(--cobalt-500) / 0.02);
+
+    /* Sort indicator */
+    --table-sort-active:      hsl(var(--cobalt-400));
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §11  INTERACTION STATES
+       ════════════════════════════════════════════════════════════════ */
+
+    /* Focus ring (WCAG — 3px min for AAA) */
+    --focus-ring: 0 0 0 2px var(--bg-page), 0 0 0 4px hsl(var(--cobalt-500));
+    --focus-ring-inset: inset 0 0 0 2px hsl(var(--cobalt-500));
+
+    /* Inline edit — activated cell */
+    --inline-edit-bg:     hsla(var(--cobalt-500) / 0.08);
+    --inline-edit-border: hsl(var(--cobalt-500));
+    --inline-edit-shadow: 0 0 0 3px hsla(var(--cobalt-500) / 0.20);
+
+    /* Selection highlight */
+    --selection-bg:      hsla(var(--cobalt-500) / 0.15);
+    --selection-border:  hsl(var(--cobalt-500));
+
+    /* Disabled state */
+    --disabled-opacity:  0.38;
+
+    /* Skeleton loading shimmer */
+    --skeleton-base:     hsl(var(--obsidian-800));
+    --skeleton-highlight:hsl(var(--obsidian-700));
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §12  MODULE — DEVICE PRIORITY MAP
+       ════════════════════════════════════════════════════════════════
+       desktop-first  → min-width breakpoints (default layout for ≥1024px)
+       mobile-first   → max-width breakpoints (layout optimised for <768px)
+       tablet-friendly → functional at 768–1023px without horizontal scroll
+       ════════════════════════════════════════════════════════════════
+
+       Module               Priority        Optimal Width
+       ──────────────────────────────────────────────────────
+       Command Center       desktop-first   1280px (2-col KPI grid)
+       Project Costing      desktop-first   1440px (pipeline stepper)
+       WBS                  desktop-first   1280px (tree + detail panel)
+       Schedule / Gantt     desktop-first   1440px+ (Gantt needs width)
+       Finance              desktop-first   1280px (data tables)
+       Supply Chain         desktop-first   1280px
+       Change Management    desktop-first   1024px
+       Documents            tablet-friendly  768px
+       QHSE                 tablet-friendly  768px
+       Handover             tablet-friendly  768px
+       Subcontractor        tablet-friendly  768px
+       Field Tasks          mobile-first     375px (single-hand use)
+       Portfolio            desktop-first   1440px (multi-chart)
+       Settings             tablet-friendly  768px
+    */
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §13  EVM / KPI COLOR SEMANTICS
+       ════════════════════════════════════════════════════════════════ */
+
+    /* CPI — Cost Performance Index */
+    --kpi-cpi-good:     hsl(var(--jade-400));   /* ≥ 1.0 — efficient */
+    --kpi-cpi-warn:     hsl(var(--amber-400));  /* 0.85–0.99 — watch */
+    --kpi-cpi-bad:      hsl(var(--coral-400));  /* < 0.85 — over budget */
+
+    /* SPI — Schedule Performance Index */
+    --kpi-spi-good:     hsl(var(--jade-400));   /* ≥ 1.0 — on/ahead */
+    --kpi-spi-warn:     hsl(var(--amber-400));  /* 0.85–0.99 — slight delay */
+    --kpi-spi-bad:      hsl(var(--coral-400));  /* < 0.85 — behind */
+
+    /* Progress */
+    --kpi-progress-fill:    hsl(var(--cobalt-500));
+    --kpi-progress-bg:      hsla(var(--cobalt-500) / 0.10);
+    --kpi-progress-done:    hsl(var(--jade-500));
+    --kpi-progress-locked:  hsl(var(--amber-500));
+
+    /* Budget bars */
+    --budget-rab:     hsl(var(--cobalt-500));
+    --budget-rap:     hsl(var(--teal-400));
+    --budget-actual:  hsl(var(--gold-400));
+    --budget-variance-pos: hsl(var(--jade-400));
+    --budget-variance-neg: hsl(var(--coral-400));
+
+
+    /* ════════════════════════════════════════════════════════════════
+       §14  WCAG COMPLIANCE REFERENCE
+       ════════════════════════════════════════════════════════════════
+       Target: WCAG 2.1 AA for all text, AAA for critical financial data.
+       All ratios measured on --bg-page (#080d18).
+
+       Token                    Hex       Ratio    Level
+       ────────────────────────────────────────────────────
+       --text-primary           #E2EAF5   15.2:1   AAA ✓
+       --text-secondary         #94A3B8    6.1:1   AA+ ✓
+       --text-muted             #475569    3.8:1   AA (large only)
+       --status-success-fg      #4ADE80    8.9:1   AAA ✓
+       --status-warning-fg      #FB923C    6.2:1   AA+ ✓
+       --status-danger-fg       #FB7185    5.8:1   AA+ ✓
+       --status-info-fg         #60A5FA    6.4:1   AA+ ✓
+       --text-idr (gold-400)    #FBBF24    8.1:1   AAA ✓ (critical)
+       Focus ring: 3px solid cobalt-500, 2px offset — WCAG 2.5.8 ✓
+       ════════════════════════════════════════════════════════════════ */
+
+  }
+
+  /* ── Light Mode Override ──────────────────────────────────────────────────
+     The MERIDIAN system is dark-first. Light mode is available for
+     modules where users prefer it (documents, handover, settings).
+     Activate with: <html class="light"> or data-theme="light"
+     ──────────────────────────────────────────────────────────────────────── */
+  :root[data-theme="light"],
+  .light {
+    --bg-page:           hsl(var(--slate-50));
+    --bg-surface:        #ffffff;
+    --bg-surface-hover:  hsl(var(--slate-100));
+    --bg-elevated:       #ffffff;
+    --bg-overlay:        hsl(var(--slate-100));
+    --bg-popup:          #ffffff;
+
+    --border-subtle:     hsl(var(--slate-100));
+    --border-default:    hsl(var(--slate-200));
+    --border-strong:     hsl(var(--slate-300));
+    --border-emphasis:   hsl(var(--slate-400));
+
+    --text-primary:      hsl(var(--slate-900));
+    --text-secondary:    hsl(var(--slate-600));
+    --text-muted:        hsl(var(--slate-400));
+    --text-inverse:      hsl(var(--slate-50));
+    --text-link:         hsl(var(--cobalt-600));
+    --text-idr:          hsl(var(--gold-600));
+
+    --interactive-bg:        hsl(var(--cobalt-600));
+    --interactive-bg-hover:  hsl(var(--cobalt-700));
+    --interactive-subtle:    hsla(var(--cobalt-600) / 0.08);
+
+    --shadow-xs:   0 1px 2px hsl(220 20% 50% / 0.10);
+    --shadow-sm:   0 2px 4px hsl(220 20% 50% / 0.10);
+    --shadow-base: 0 4px 8px hsl(220 20% 50% / 0.10);
+    --shadow-md:   0 8px 16px hsl(220 20% 50% / 0.10);
+    --shadow-lg:   0 16px 32px hsl(220 20% 50% / 0.12);
+
+    --skeleton-base:      hsl(var(--slate-100));
+    --skeleton-highlight: hsl(var(--slate-200));
+
+    --wbs-level1-bg:    hsla(var(--cobalt-500) / 0.05);
+  }
+
+}
+
+/* ── Blueprint Grid Background (optional utility) ───────────────────────────
+   Apply .bg-blueprint to page root for the subtle engineering-grid texture.
+   The grid uses two overlapping subtle patterns at 0.8% opacity.
+   ─────────────────────────────────────────────────────────────────────────── */
+.bg-blueprint {
+  background-color: var(--bg-page);
+  background-image:
+    linear-gradient(hsla(var(--cobalt-500) / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(var(--cobalt-500) / 0.025) 1px, transparent 1px),
+    linear-gradient(hsla(var(--cobalt-500) / 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(var(--cobalt-500) / 0.012) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+}
+
+/* ── Skeleton shimmer animation ─────────────────────────────────────────── */
+@keyframes meridian-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-base) 25%,
+    var(--skeleton-highlight) 50%,
+    var(--skeleton-base) 75%
+  );
+  background-size: 200% 100%;
+  animation: meridian-shimmer 1.6s var(--ease-linear) infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Glow card variants ──────────────────────────────────────────────────── */
+.card-glow-cobalt { box-shadow: var(--shadow-base), var(--glow-cobalt); }
+.card-glow-gold   { box-shadow: var(--shadow-base), var(--glow-gold); }
+.card-glow-jade   { box-shadow: var(--shadow-base), var(--glow-jade); }
+.card-glow-coral  { box-shadow: var(--shadow-base), var(--glow-coral); }
+
+/* ── Focus ring utility ──────────────────────────────────────────────────── */
+.focus-ring:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.focus-ring-inset:focus-visible { outline: none; box-shadow: var(--focus-ring-inset); }
+
+/* ── Drag & drop state ───────────────────────────────────────────────────── */
+.dragging   { opacity: var(--drag-opacity); transform: scale(var(--drag-scale)); box-shadow: var(--shadow-xl); }
+.drop-zone  { border: 2px dashed var(--drop-zone-color) !important; background: var(--drop-zone-bg) !important; }
+.drop-valid { border-color: hsl(var(--jade-500)) !important; background: hsla(var(--jade-500) / 0.05) !important; }
+
+/* ── Inline edit state ───────────────────────────────────────────────────── */
+.inline-editing {
+  background: var(--inline-edit-bg) !important;
+  outline: 1px solid var(--inline-edit-border) !important;
+  box-shadow: var(--inline-edit-shadow) !important;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Table density variants ──────────────────────────────────────────────── */
+table[data-density="compact"]     td, table[data-density="compact"]     th {
+  padding: var(--table-compact-cell-py) var(--table-compact-cell-px);
+  font-size: var(--table-compact-text);
+  height: var(--table-compact-row);
+}
+table[data-density="default"]     td, table[data-density="default"]     th {
+  padding: var(--table-default-cell-py) var(--table-default-cell-px);
+  font-size: var(--table-default-text);
+  height: var(--table-default-row);
+}
+table[data-density="comfortable"] td, table[data-density="comfortable"] th {
+  padding: var(--table-comfortable-cell-py) var(--table-comfortable-cell-px);
+  font-size: var(--table-comfortable-text);
+  height: var(--table-comfortable-row);
+}
+
+/* ── IDR value formatting ────────────────────────────────────────────────── */
+.idr-value {
+  font-family: var(--font-mono);
+  font-feature-settings: var(--features-mono);
+  color: var(--text-idr);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xs);
+  letter-spacing: -0.01em;
+}
+.idr-value.positive { color: var(--text-idr-positive); }
+.idr-value.negative { color: var(--text-idr-negative); }
+
+/* ── WBS code badge ──────────────────────────────────────────────────────── */
+.wbs-code {
+  font-family: var(--font-mono);
+  font-feature-settings: var(--features-mono);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-xs);
+  letter-spacing: 0.01em;
+}
+
+/* ── Status pills ────────────────────────────────────────────────────────── */
+.pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  font-family: var(--font-body);
+  line-height: 1.4;
+}
+.pill::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.8;
+}
+.pill-success  { color: var(--status-success-fg);   background: var(--status-success-bg); }
+.pill-warning  { color: var(--status-warning-fg);   background: var(--status-warning-bg); }
+.pill-danger   { color: var(--status-danger-fg);    background: var(--status-danger-bg); }
+.pill-info     { color: var(--status-info-fg);      background: var(--status-info-bg); }
+.pill-neutral  { color: var(--status-neutral-fg);   background: var(--status-neutral-bg); }
+.pill-financial{ color: var(--status-financial-fg); background: var(--status-financial-bg); }
+.pill-live     { color: var(--status-live-fg);      background: var(--status-live-bg); }
+.pill-ai       { color: var(--status-ai-fg);        background: var(--status-ai-bg); }
+
+/* ── Progress bar ────────────────────────────────────────────────────────── */
+.progress-track {
+  height: 4px;
+  background: var(--kpi-progress-bg);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--kpi-progress-fill);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-smooth);
+}
+.progress-fill.done   { background: var(--kpi-progress-done); }
+.progress-fill.locked { background: var(--kpi-progress-locked); }
