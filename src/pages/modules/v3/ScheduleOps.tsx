@@ -303,7 +303,7 @@ export default function ScheduleOps() {
                         {mode === 'plan' && taskCount === 0 ? (
                             <div className="flex flex-col items-center justify-center py-16 text-center">
                                 <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">Belum ada task</p>
-                                <p className="text-sm text-slate-400 mt-1">Impor dari WBS atau buat task secara manual.</p>
+                                <p className="text-sm text-slate-400 mt-1">Impor dari WBS atau buat manual.</p>
                             </div>
                         ) : (
                             <ErrorBoundary errorMessage="Timeline failed to render">
