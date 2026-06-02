@@ -41,13 +41,21 @@ export default function StrategySimulation() {
     const { handleAsync } = useErrorHandler()
     const activeProjectId = useProjectStore(s => s.activeProjectId) || 'global'
     const activeProjectName = useProjectStore(s => s.activeProjectId ? s.projects[s.activeProjectId]?.name || 'Portfolio' : 'Portfolio')
-    
+
     const [delay, setDelay] = useState(0)
     const [resourceShift, setResourceShift] = useState(0)
     const [result, setResult] = useState<SimulationResult | null>(null)
     const [simulating, setSimulating] = useState(false)
     const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
+
+    // Scenario B & C slots
+    const [scenarioBDelay, setScenarioBDelay] = useState(0)
+    const [scenarioBResourceShift, setScenarioBResourceShift] = useState(0)
+    const [scenarioBResult, setScenarioBResult] = useState<SimulationResult | null>(null)
+    const [scenarioCDelay, setScenarioCDelay] = useState(0)
+    const [scenarioCResourceShift, setScenarioCResourceShift] = useState(0)
+    const [scenarioCResult, setScenarioCResult] = useState<SimulationResult | null>(null)
     
     // Persistence state
     const [savedSims, setSavedSims] = useState<any[]>([])
@@ -204,6 +212,9 @@ export default function StrategySimulation() {
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateDelay(delay + 1)}>+</Button>
                             </div>
                             <p className="text-xs text-muted-foreground italic font-medium leading-tight">Simulates permit lags or material procurement bottlenecks.</p>
+                            {delay > 60 && (
+                                <p className="text-xs text-amber-600 mt-1">⚠ Penundaan melebihi 60 hari — pertimbangkan restrukturisasi proyek</p>
+                            )}
                         </div>
 
                         <div className="space-y-4 bg-muted/30/50 dark:bg-neutral-900/30 p-4 rounded-xl border border-border dark:border-neutral-800">
@@ -224,6 +235,9 @@ export default function StrategySimulation() {
                                 <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => updateResourceShift(resourceShift + 1)}>+</Button>
                             </div>
                             <p className="text-xs text-muted-foreground italic font-medium leading-tight">Simulates shifting labor to other emergency priority sites.</p>
+                            {resourceShift > 40 && (
+                                <p className="text-xs text-amber-600 mt-1">⚠ Pemotongan di atas 40% tidak realistis untuk sebagian besar proyek</p>
+                            )}
                         </div>
 
                         <div className="pt-2 flex gap-2">
@@ -384,6 +398,78 @@ export default function StrategySimulation() {
                     </Card>
                 </div>
             </div>
+
+            {/* SCENARIO COMPARISON — 3-slot grid */}
+            <Card className="border-border shadow-sm">
+                <CardHeader className="border-b pb-3">
+                    <CardTitle className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                        <Search size={13} />
+                        Perbandingan 3 Skenario
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Scenario A — mirrors main controls */}
+                        <div className="rounded-xl border border-border p-4 space-y-3 bg-indigo-50/30">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-black uppercase tracking-widest text-indigo-600">Skenario A</span>
+                                <Badge variant="outline" className="text-xs font-mono">{result ? result.impactSeverity : '—'}</Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-1">
+                                <div className="flex justify-between"><span>Delay:</span><span className="font-mono">{delay}d</span></div>
+                                <div className="flex justify-between"><span>Labor cut:</span><span className="font-mono">-{resourceShift}%</span></div>
+                                <div className="flex justify-between font-semibold mt-2"><span>Sim SPI:</span><span className="font-mono text-red-600">{result ? result.simulatedAvgSpi.toFixed(2) : '—'}</span></div>
+                            </div>
+                        </div>
+                        {/* Scenario B */}
+                        <div className="rounded-xl border border-border p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-black uppercase tracking-widest text-amber-600">Skenario B</span>
+                                <Badge variant="outline" className="text-xs font-mono">{scenarioBResult ? scenarioBResult.impactSeverity : '—'}</Badge>
+                            </div>
+                            <div className="text-xs space-y-1">
+                                <div className="flex justify-between items-center"><span className="text-muted-foreground">Delay (hari):</span>
+                                    <Input type="number" value={scenarioBDelay} onChange={e => setScenarioBDelay(Math.max(0, Math.min(90, Number(e.target.value || 0))))} className="h-6 w-16 text-center font-mono text-xs p-1" />
+                                </div>
+                                <div className="flex justify-between items-center"><span className="text-muted-foreground">Labor cut (%):</span>
+                                    <Input type="number" value={scenarioBResourceShift} onChange={e => setScenarioBResourceShift(Math.max(0, Math.min(50, Number(e.target.value || 0))))} className="h-6 w-16 text-center font-mono text-xs p-1" />
+                                </div>
+                            </div>
+                            <Button size="sm" variant="outline" className="w-full h-7 text-xs"
+                                onClick={async () => {
+                                    const res = await simulationService.simulatePortfolioImpact([{ projectId: activeProjectId, shiftDays: scenarioBDelay, resourceChange: -scenarioBResourceShift / 100 }])
+                                    setScenarioBResult(res)
+                                }}>
+                                <Play size={10} className="mr-1" /> Run B
+                            </Button>
+                            {scenarioBResult && <div className="text-xs font-semibold flex justify-between"><span>Sim SPI:</span><span className="font-mono text-red-600">{scenarioBResult.simulatedAvgSpi.toFixed(2)}</span></div>}
+                        </div>
+                        {/* Scenario C */}
+                        <div className="rounded-xl border border-border p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-black uppercase tracking-widest text-emerald-600">Skenario C</span>
+                                <Badge variant="outline" className="text-xs font-mono">{scenarioCResult ? scenarioCResult.impactSeverity : '—'}</Badge>
+                            </div>
+                            <div className="text-xs space-y-1">
+                                <div className="flex justify-between items-center"><span className="text-muted-foreground">Delay (hari):</span>
+                                    <Input type="number" value={scenarioCDelay} onChange={e => setScenarioCDelay(Math.max(0, Math.min(90, Number(e.target.value || 0))))} className="h-6 w-16 text-center font-mono text-xs p-1" />
+                                </div>
+                                <div className="flex justify-between items-center"><span className="text-muted-foreground">Labor cut (%):</span>
+                                    <Input type="number" value={scenarioCResourceShift} onChange={e => setScenarioCResourceShift(Math.max(0, Math.min(50, Number(e.target.value || 0))))} className="h-6 w-16 text-center font-mono text-xs p-1" />
+                                </div>
+                            </div>
+                            <Button size="sm" variant="outline" className="w-full h-7 text-xs"
+                                onClick={async () => {
+                                    const res = await simulationService.simulatePortfolioImpact([{ projectId: activeProjectId, shiftDays: scenarioCDelay, resourceChange: -scenarioCResourceShift / 100 }])
+                                    setScenarioCResult(res)
+                                }}>
+                                <Play size={10} className="mr-1" /> Run C
+                            </Button>
+                            {scenarioCResult && <div className="text-xs font-semibold flex justify-between"><span>Sim SPI:</span><span className="font-mono text-red-600">{scenarioCResult.simulatedAvgSpi.toFixed(2)}</span></div>}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             {/* SAVE DIALOG */}
             <Dialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen}>
