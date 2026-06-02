@@ -58,10 +58,9 @@ export function AgingReport({ aging }: AgingReportProps) {
   ]
 
   const agingBuckets = [
-    { label: '0-30 days', amount: aging.totalCurrent + aging.total30, barColor: 'bg-emerald-400' },
-    { label: '31-60 days', amount: aging.total60, barColor: 'bg-amber-400' },
-    { label: '61-90 days', amount: 0, barColor: 'bg-orange-400' },
-    { label: '90+ days', amount: aging.total90plus, barColor: 'bg-rose-500' },
+    { label: '0–30 hari', amount: aging.totalCurrent + aging.total30, barColor: 'bg-emerald-400' },
+    { label: '31–60 hari', amount: aging.total60, barColor: 'bg-amber-400' },
+    { label: '61+ hari', amount: aging.total90plus, barColor: 'bg-rose-500' },
   ]
 
   return (
