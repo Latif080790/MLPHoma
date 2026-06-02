@@ -104,7 +104,7 @@ export function RABVersionHistory({ projectId, open, onClose }: RABVersionHistor
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <DialogTitle className="flex items-center gap-2.5 text-xl font-bold text-foreground">
-                <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/10 text-primary shadow-md shadow-orange-200/20 shrink-0">
+                <div className="flex items-center justify-center h-9 w-9 rounded-xl bg-primary/10 text-primary shadow-md shadow-blue-200/20 shrink-0">
                   <History className="h-5 w-5" />
                 </div>
                 RAB Version History

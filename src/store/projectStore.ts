@@ -21,6 +21,24 @@ import { toast } from 'sonner'
 import { useAuthStore } from './authStore'
 import { auditService } from '@/services/auditService'
 
+function normalizeProjectDates<T extends Record<string, unknown>>(payload: T): T {
+  const next = { ...payload }
+  if (next.startDate === '') {
+    next.startDate = undefined
+  }
+  if (next.endDate === '') {
+    next.endDate = undefined
+  }
+  return next as T
+}
+
+function mapProjectValidationMessage(message: string): string {
+  if (message.includes('Invalid date format (YYYY-MM-DD)')) {
+    return 'Format tanggal tidak valid. Gunakan format YYYY-MM-DD atau kosongkan field tanggal.'
+  }
+  return message
+}
+
 /**
  * PaymentTerms
  * Lightweight representation of payment-related settings for a project.
@@ -149,10 +167,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
 
       // Validate input (skip id field)
       const { id: _id, ...projectData } = project
-      const validation = validate(projectInputSchema, projectData)
+      const normalizedProjectData = normalizeProjectDates(projectData)
+      const validation = validate(projectInputSchema, normalizedProjectData)
       if (!validation.success) {
         const errors = validation.errors || []
-        const errorMsg = errors[0]?.message || 'Validation failed'
+        const errorMsg = mapProjectValidationMessage(errors[0]?.message || 'Validation failed')
         toast.error('Failed to add project', {
           description: errorMsg
         })
@@ -179,10 +198,11 @@ export const useProjectStore = create<ProjectState>((set, get) => {
       if (!projectId) return
 
       // Validate updates
-      const validation = validate(projectUpdateSchema, patch)
+      const normalizedPatch = normalizeProjectDates(patch)
+      const validation = validate(projectUpdateSchema, normalizedPatch)
       if (!validation.success) {
         const errors = validation.errors || []
-        const errorMsg = errors[0]?.message || 'Validation failed'
+        const errorMsg = mapProjectValidationMessage(errors[0]?.message || 'Validation failed')
         toast.error('Failed to update project', {
           description: errorMsg
         })

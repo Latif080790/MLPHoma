@@ -27,6 +27,16 @@ type RapItemRow = {
     ahsp_items?: { name?: string } | Array<{ name?: string }>
 }
 
+type PurchaseOrderItemRow = {
+    description?: string
+    unit_price?: number
+}
+
+type RabItemRow = {
+    name?: string
+    unit_price?: number
+}
+
 export const anomalyService = {
     async detectAnomalies(projectId: string): Promise<Anomaly[]> {
         const supabase = assertSupabase()
@@ -111,22 +121,23 @@ export const anomalyService = {
         // Compare PO item unit prices vs RAB budget unit prices (>20% spike)
         const { data: poItems } = await supabase
             .from('purchase_order_items')
-            .select('item_name, unit_price, purchase_orders!inner(project_id)')
+            .select('description, unit_price, purchase_orders!inner(project_id)')
             .eq('purchase_orders.project_id', projectId)
 
         const { data: rabItems } = await supabase
             .from('rab_items')
-            .select('item_name, price')
+            .select('name, unit_price')
             .eq('project_id', projectId)
 
         if (poItems && rabItems) {
             const rabPriceMap: Record<string, number> = {}
-            rabItems.forEach((r: { item_name?: string; price?: number }) => {
-                if (r.item_name) rabPriceMap[r.item_name.toLowerCase()] = Number(r.price || 0)
+            rabItems.forEach((r: RabItemRow) => {
+                if (r.name) rabPriceMap[r.name.toLowerCase()] = Number(r.unit_price || 0)
             })
 
-            poItems.forEach((po: { item_name?: string; unit_price?: number }) => {
-                const key = (po.item_name || '').toLowerCase()
+            poItems.forEach((po: PurchaseOrderItemRow) => {
+                const itemName = po.description || ''
+                const key = itemName.toLowerCase()
                 const budgetPrice = rabPriceMap[key]
                 const poPrice = Number(po.unit_price || 0)
                 if (budgetPrice > 0 && poPrice > budgetPrice * 1.2) {
@@ -135,9 +146,9 @@ export const anomalyService = {
                         id: `price-spike-${key}`,
                         type: 'PRICE_SPIKE',
                         severity: 'WARNING',
-                        description: `${po.item_name}: PO price ${pct}% above RAB budget (Rp ${poPrice.toLocaleString('id-ID')} vs Rp ${budgetPrice.toLocaleString('id-ID')}).`,
+                        description: `${itemName}: PO price ${pct}% above RAB budget (Rp ${poPrice.toLocaleString('id-ID')} vs Rp ${budgetPrice.toLocaleString('id-ID')}).`,
                         suggestedAction: 'Negotiate with vendor or seek alternative supplier.',
-                        metadata: { item: po.item_name, poPrice, budgetPrice },
+                        metadata: { item: itemName, poPrice, budgetPrice },
                     })
                 }
             })
@@ -181,7 +192,7 @@ export const anomalyService = {
         if (startDate) {
             const { data: lateRabItems } = await supabase
                 .from('rab_items')
-                .select('id, item_name, created_at')
+                .select('id, name, created_at')
                 .eq('project_id', projectId)
                 .gt('created_at', startDate)
 

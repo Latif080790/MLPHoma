@@ -20,6 +20,7 @@ import { getProtectedRouteItems, type NavComponentKey } from './config/navRegist
 import { lazyRetry } from './lib/lazyRetry'
 import { initStoreSubscriptions } from './lib/storeSubscriptions'
 import { KeyboardShortcutsPanel } from './components/common/KeyboardShortcutsPanel'
+import { SyncStatusBanner } from './components/common/SyncStatusBanner'
 
 // Lazy-loaded page components with auto-retry for stale chunk recovery
 const ProjectManagement = lazyRetry(() => import('./pages/modules/ProjectManagement'))
@@ -166,6 +167,8 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <NetworkProvider>
+        {/* Failed sync recovery banner — muncul jika ada data gagal sync ke Supabase */}
+        <SyncStatusBanner />
         {/* Global toaster untuk notifikasi */}
         <AppToaster />
         {/* P1.2.2: Global Cmd+K command palette */}

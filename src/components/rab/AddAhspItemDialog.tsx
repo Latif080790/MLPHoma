@@ -54,7 +54,7 @@ export function AddAhspItemDialog({
       <DialogContent className="max-w-[90vw] lg:max-w-6xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-muted/30/50 border-none shadow-2xl">
         <DialogHeader className="p-6 pb-4 bg-card border-b shrink-0 flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-xl text-primary shadow-lg shadow-orange-200/20">
+            <div className="bg-primary/10 p-2 rounded-xl text-primary shadow-lg shadow-blue-200/20">
               <Calculator className="h-6 w-6" />
             </div>
             <DialogTitle className="text-xl font-black tracking-tight text-foreground m-0">Add Item from AHSP Catalog</DialogTitle>

@@ -57,6 +57,20 @@ class SyncQueueManager {
   private retryDelay: number = 1000 // Base delay in ms
   private maxQueueSize: number = 2000 // Significantly increased for IndexedDB
   private failedTaskCount: number = 0 // Cached synchronous failed count
+  private statusSubscribers: Set<() => void> = new Set()
+
+  /**
+   * Subscribe to status changes (failedCount, queueLength).
+   * Returns an unsubscribe function.
+   */
+  subscribe(fn: () => void): () => void {
+    this.statusSubscribers.add(fn)
+    return () => this.statusSubscribers.delete(fn)
+  }
+
+  private notifySubscribers() {
+    this.statusSubscribers.forEach(fn => fn())
+  }
 
   /**
    * Add task to sync queue
@@ -327,6 +341,7 @@ class SyncQueueManager {
       failed.push(task)
       await set('supabase-failed-queue', failed)
       this.failedTaskCount = failed.length
+      this.notifySubscribers()
     } catch (error) {
       console.error('Failed to save to failed queue:', error)
     }
@@ -346,6 +361,7 @@ class SyncQueueManager {
     try {
       await del('supabase-failed-queue')
       this.failedTaskCount = 0
+      this.notifySubscribers()
     } catch (err) {
       console.error('Failed to clear failed queue:', err)
     }

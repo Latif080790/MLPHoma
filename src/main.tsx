@@ -1,5 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import './shadcn.css'
+import './styles/meridian-utilities.css'
 import App from './App'
 
 if ('serviceWorker' in navigator) {

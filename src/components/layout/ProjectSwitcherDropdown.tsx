@@ -38,7 +38,6 @@ export function ProjectSwitcherDropdown() {
 
   const handleSelect = (projectId: string) => {
     setActiveProject(projectId)
-    navigate('/dashboard')
     setSearch('')
   }
 
