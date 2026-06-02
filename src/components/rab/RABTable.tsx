@@ -24,6 +24,7 @@ import { baselineService } from '@/services/baselineService'
 import { rabWbsLinkService } from '@/services/rabWbsLinkService'
 import { formatIDR } from '@/lib/utils'
 import { readMarginSettings, effectiveMarginPct } from '@/lib/marginSettings'
+import { sellingFromBase } from '@/lib/costingMargin'
 
 import { RABPriceDriftDashboard } from './RABPriceDriftDashboard'
 import { RABVersionHistory } from './RABVersionHistory'
@@ -86,6 +87,8 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     unit_price: true,
     margin_pct: true,
     total: true,
+    selling_unit_price: true,
+    selling_total: true,
   })
 
   const marginSettings = useMemo(() => readMarginSettings(project?.meta), [project?.meta])
@@ -93,6 +96,14 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const getEffectiveMargin = useCallback((itemId: string) => {
     return effectiveMarginPct(marginSettings, itemId)
   }, [marginSettings])
+
+  const getSellingUnitPrice = useCallback((itemId: string, unitCost: number) => {
+    return sellingFromBase(unitCost || 0, getEffectiveMargin(itemId))
+  }, [getEffectiveMargin])
+
+  const getSellingTotal = useCallback((itemId: string, volume: number, unitCost: number) => {
+    return getSellingUnitPrice(itemId, unitCost) * (volume || 0)
+  }, [getSellingUnitPrice])
 
   const handleMarginChange = useCallback((itemId: string, val: string) => {
     if (!project?.id) return
@@ -172,8 +183,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     { header: 'Nama Pekerjaan', accessor: r => r.name ?? r.item_name ?? '' },
     { header: 'Satuan', accessor: r => r.unit ?? '' },
     { header: 'Volume', accessor: r => r.volume ?? 0 },
-    { header: 'Harga Satuan', accessor: r => r.unit_price ?? 0 },
-    { header: 'Total', accessor: r => (r.volume ?? 0) * (r.unit_price ?? 0) },
+    { header: 'Unit Cost', accessor: r => r.unit_price ?? 0 },
+    { header: 'Margin %', accessor: r => getEffectiveMargin(r.id) },
+    { header: 'Harga Jual', accessor: r => getSellingUnitPrice(r.id, r.unit_price ?? 0) },
+    { header: 'Total Cost', accessor: r => (r.volume ?? 0) * (r.unit_price ?? 0) },
+    { header: 'Total Jual', accessor: r => getSellingTotal(r.id, r.volume ?? 0, r.unit_price ?? 0) },
     { header: 'Kategori', accessor: r => (r as any).category ?? '' },
     { header: 'Overhead', accessor: r => r.is_overhead ? 'Ya' : 'Tidak' },
   ]
@@ -189,24 +203,14 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         })
       }
 
-      // ── Hitung unit_price menggunakan formula margin embedded ────────────
-      // base_price = biaya pokok AHSP (harga cost dari catalog)
-      // unit_price = base_price / (1 - (OH% + Profit%))  ← margin formula
-      const metaRates = project?.meta?.rabRates as { overhead?: number; profit?: number } | undefined
-      const ohPct     = Number(metaRates?.overhead ?? 0)
-      const profitPct = Number(metaRates?.profit   ?? 0)
       const baseCost  = Number(ahsp.finalPrice || ahsp.total_price || 0)
-      const marginFraction = (ohPct + profitPct) / 100
-      const sellingPrice = marginFraction > 0 && marginFraction < 1
-        ? Math.round(baseCost / (1 - marginFraction))
-        : baseCost
 
       addItem(projectId, {
         item_code: ahsp.code,
         name: ahsp.name,
         unit: ahsp.unit,
         base_price: baseCost,
-        unit_price: sellingPrice,
+        unit_price: baseCost,
         cost_material: ahsp.price_material || 0,
         cost_labor: ahsp.price_labor || 0,
         cost_equipment: ahsp.price_equipment || 0,
@@ -222,7 +226,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     } catch (err) {
       toast.error('Gagal menambahkan item')
     }
-  }, [projectId, project, activeTab, componentsByAHSP, fetchComponents, addItem])
+  }, [projectId, activeTab, componentsByAHSP, fetchComponents, addItem])
 
   const handleDownloadTemplate = () => {
     const ws = xlsx.utils.json_to_sheet([{
@@ -292,14 +296,15 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   }
 
   // Cost calculations for Footer
-  let totalMaterial = 0, totalLabor = 0, totalEquip = 0, totalSubcon = 0, total = 0
+  let totalMaterial = 0, totalLabor = 0, totalEquip = 0, totalSubcon = 0, totalCost = 0, totalSelling = 0
   items.forEach(item => {
     const v = item.volume || 0
     totalMaterial += (item.cost_material || 0) * v
     totalLabor += (item.cost_labor || 0) * v
     totalEquip += (item.cost_equipment || 0) * v
     totalSubcon += (item.cost_subcon || 0) * v
-    total += (item.unit_price || 0) * v
+    totalCost += (item.unit_price || 0) * v
+    totalSelling += getSellingTotal(item.id, v, item.unit_price || 0)
   })
 
   const columns = useMemo(() => getRABColumns({
@@ -307,6 +312,8 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     onVolumeChange: (id, val) => updateItem(projectId, id, { volume: parseFloat(val) || 0 }),
     onPriceChange: (id, val) => updateItem(projectId, id, { unit_price: parseFloat(val) || 0 }),
     onMarginChange: handleMarginChange,
+    getSellingUnitPrice,
+    getSellingTotal,
     onRemoveRow: (id) => removeItem(projectId, id),
     onToggleExpand: (id) => {}, // Handled by DataTable internally
     paretoMap,
@@ -314,7 +321,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     validLinksByRabItem: linksByRabItem,
     marginMode: marginSettings.marginMode,
     getEffectiveMargin,
-  }), [projectId, paretoMap, projectLocked, linksByRabItem, updateItem, removeItem, handleMarginChange, marginSettings.marginMode, getEffectiveMargin])
+  }), [projectId, paretoMap, projectLocked, linksByRabItem, updateItem, removeItem, handleMarginChange, marginSettings.marginMode, getEffectiveMargin, getSellingUnitPrice, getSellingTotal])
 
   useUnsavedChanges(hasUnsavedChanges, 'RAB has unpublished drafts. Leave without saving?')
 
@@ -357,9 +364,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
           { id: 'name', label: 'Deskripsi Pekerjaan' },
           { id: 'volume', label: 'Volume' },
           { id: 'unit', label: 'Satuan' },
-          { id: 'unit_price', label: 'Harga Satuan' },
+          { id: 'unit_price', label: 'Unit Cost' },
           { id: 'margin_pct', label: 'Margin %' },
-          { id: 'total', label: 'Total Harga' },
+          { id: 'selling_unit_price', label: 'Harga Jual' },
+          { id: 'total', label: 'Total Cost' },
+          { id: 'selling_total', label: 'Total Jual' },
         ]}
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={(id, v) => setColumnVisibility(prev => ({ ...prev, [id]: v }))}
@@ -409,7 +418,10 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                     <td className="py-3" />
                     <td className="py-3" />
                     <td className="py-3 px-4 text-right font-mono text-sm font-black text-foreground bg-muted/50/50 border-l border-border">
-                      {formatIDR(total)}
+                      {formatIDR(totalCost)}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono text-sm font-black text-indigo-600 bg-muted/50/50 border-l border-border">
+                      {formatIDR(totalSelling)}
                     </td>
                     <td className="py-3" />
                   </tr>
@@ -438,7 +450,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                 <Calculator size={12} /> Grand Total Estimated
               </div>
               <div className="text-2xl lg:text-3xl font-black font-mono text-foreground mt-1 drop-shadow-sm tracking-tighter">
-                {formatIDR(total)}
+                {formatIDR(totalSelling)}
               </div>
             </div>
           </div>

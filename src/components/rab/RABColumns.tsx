@@ -6,12 +6,11 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
-  ChevronDown, ChevronRight, Info, Trash2, Link2,
-  MapPin, Settings2, Info as InfoIcon
+  ChevronDown, ChevronRight, Trash2, Link2,
+  Settings2, Info as InfoIcon
 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { CurrencyCell } from '../shared/CurrencyCell'
-import { StatusBadge } from '../shared/StatusBadge'
 
 /**
  * Editable number cell that uses local state while focused.
@@ -77,6 +76,8 @@ export const getRABColumns = (
     onVolumeChange,
     onPriceChange,
     onMarginChange,
+    getSellingUnitPrice,
+    getSellingTotal,
     onRemoveRow,
     onToggleExpand,
     paretoMap,
@@ -89,6 +90,8 @@ export const getRABColumns = (
     onVolumeChange: (id: string, value: string) => void
     onPriceChange: (id: string, value: string) => void
     onMarginChange: (id: string, value: string) => void
+    getSellingUnitPrice: (id: string, unitCost: number) => number
+    getSellingTotal: (id: string, volume: number, unitCost: number) => number
     onRemoveRow: (id: string) => void
     onToggleExpand: (id: string) => void
     paretoMap: Map<string, string>
@@ -236,7 +239,7 @@ export const getRABColumns = (
   },
   {
     accessorKey: 'unit_price',
-    header: () => <div className="text-right">Unit Price</div>,
+    header: () => <div className="text-right">Unit Cost</div>,
     enableSorting: true,
     sortingFn: 'basic',
     cell: ({ row }) => (
@@ -275,8 +278,23 @@ export const getRABColumns = (
     size: 100,
   },
   {
+    id: 'selling_unit_price',
+    header: () => <div className="text-right">Harga Jual</div>,
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const a = getSellingUnitPrice(rowA.original.id, rowA.original.unit_price || 0)
+      const b = getSellingUnitPrice(rowB.original.id, rowB.original.unit_price || 0)
+      return a - b
+    },
+    cell: ({ row }) => {
+      const selling = getSellingUnitPrice(row.original.id, row.original.unit_price || 0)
+      return <CurrencyCell value={selling} variant="default" className="text-xs font-semibold text-blue-600" />
+    },
+    size: 140,
+  },
+  {
     id: 'total',
-    header: () => <div className="text-right">Total Amount</div>,
+    header: () => <div className="text-right">Total Cost</div>,
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
       const a = (rowA.original.volume || 0) * (rowA.original.unit_price || 0)
@@ -288,6 +306,21 @@ export const getRABColumns = (
       return <CurrencyCell value={total} variant="default" className="text-xs font-bold" />
     },
     size: 144,
+  },
+  {
+    id: 'selling_total',
+    header: () => <div className="text-right">Total Jual</div>,
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const a = getSellingTotal(rowA.original.id, rowA.original.volume || 0, rowA.original.unit_price || 0)
+      const b = getSellingTotal(rowB.original.id, rowB.original.volume || 0, rowB.original.unit_price || 0)
+      return a - b
+    },
+    cell: ({ row }) => {
+      const sellingTotal = getSellingTotal(row.original.id, row.original.volume || 0, row.original.unit_price || 0)
+      return <CurrencyCell value={sellingTotal} variant="default" className="text-xs font-bold text-indigo-600" />
+    },
+    size: 152,
   },
   {
     id: 'actions',
