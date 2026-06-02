@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { BarChart3 } from 'lucide-react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import ModulePageState from '@/components/common/ModulePageState'
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
@@ -9,6 +10,12 @@ import { useProjectStore } from '@/store/projectStore'
 import type { ReportPreviewResult, ReportTemplate } from '@/types/report'
 import { reportBuilderService } from '@/services/reportBuilderService'
 import { ReportPreviewTable, ReportTemplateEditor, ReportTemplateList } from '@/components/reports'
+
+const REPORT_TEMPLATES = [
+  { id: 'weekly-progress',   title: 'Laporan Kemajuan Mingguan',  icon: '📅', description: 'Progress fisik + keuangan mingguan' },
+  { id: 'monthly-cost',      title: 'Laporan Biaya Bulanan',       icon: '💰', description: 'RAB vs actual cost per bulan' },
+  { id: 'executive-summary', title: 'Executive Summary',           icon: '📊', description: 'KPI ringkasan untuk manajemen' },
+] as const
 
 export default function BIReportBuilder() {
   const activeProjectId = useProjectStore((state) => state.activeProjectId)
@@ -21,6 +28,8 @@ export default function BIReportBuilder() {
   const [loadingTemplates, setLoadingTemplates] = useState(false)
   const [saving, setSaving] = useState(false)
   const [running, setRunning] = useState(false)
+  const [selectedTemplate2, setSelectedTemplate2] = useState<string | null>(null)
+  const [isPrintPreview, setIsPrintPreview] = useState(false)
 
   const activeProject = activeProjectId ? projects[activeProjectId] : null
 
@@ -188,6 +197,35 @@ export default function BIReportBuilder() {
       }
       summary={<SummaryStrip items={summaryItems} />}
     >
+      {/* Template Gallery */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Template Laporan</p>
+          <button onClick={() => setIsPrintPreview(v => !v)}
+            className="text-xs border rounded-md px-2.5 py-1 text-slate-600 hover:bg-slate-50">
+            {isPrintPreview ? 'Kembali ke Edit' : '🖨 Preview A4'}
+          </button>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {REPORT_TEMPLATES.map(t => (
+            <button key={t.id} onClick={() => setSelectedTemplate2(t.id)}
+              className={cn('text-left rounded-xl border p-4 transition-all hover:shadow-md',
+                selectedTemplate2 === t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white'
+              )}>
+              <div className="text-2xl mb-2">{t.icon}</div>
+              <div className="text-sm font-semibold">{t.title}</div>
+              <div className="text-xs text-slate-400 mt-1">{t.description}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {isPrintPreview && (
+        <div className="mx-auto border shadow-lg bg-white" style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}>
+          <div className="text-xs text-slate-400 italic">Preview A4 — konten laporan akan ditampilkan di sini.</div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4 p-padding-md lg:grid-cols-12">
         <div className="lg:col-span-3">
           <ReportTemplateList
