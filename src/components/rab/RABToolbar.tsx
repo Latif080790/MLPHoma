@@ -43,7 +43,7 @@ interface RABToolbarProps {
   onPublish: () => void
   onSwitchScenario: (version: string | null) => void
   onSaveScenario: () => void
-  scenarios: any[]
+  scenarios: Array<{ id: string; version: string | number }>
   availableColumns?: { id: string; label: string }[]
   columnVisibility?: VisibilityState
   onColumnVisibilityChange?: (columnId: string, isVisible: boolean) => void
@@ -149,9 +149,9 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
             {!scenarioVersion && <CheckCircle2 size={12} className="text-emerald-500" />}
           </DropdownMenuItem>
           {scenarios.map(s => (
-            <DropdownMenuItem key={s.id} onClick={() => onSwitchScenario(s.version)} className="flex items-center justify-between text-xs">
+            <DropdownMenuItem key={s.id} onClick={() => onSwitchScenario(String(s.version))} className="flex items-center justify-between text-xs">
               <span>Scenario v{s.version}</span>
-              {scenarioVersion === s.version && <CheckCircle2 size={12} className="text-emerald-500" />}
+              {scenarioVersion === String(s.version) && <CheckCircle2 size={12} className="text-emerald-500" />}
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />

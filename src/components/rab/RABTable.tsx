@@ -1,12 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { VisibilityState } from '@tanstack/react-table'
-import { Calculator, CheckCircle2, Save } from 'lucide-react'
+import { Calculator, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import * as xlsx from 'xlsx'
@@ -18,7 +13,6 @@ import { useTimelineStore } from '@/store/timelineStore'
 import { useProjectStore } from '@/store/projectStore'
 import { useWBSStore } from '@/store/wbsStore'
 import { useRabWbsLinkStore } from '@/store/rabWbsLinkStore'
-import { useRABVersionStore } from '@/store/rabVersionStore'
 import { generateScheduleFromRAB } from '@/lib/autoScheduler'
 import { baselineService } from '@/services/baselineService'
 import { rabWbsLinkService } from '@/services/rabWbsLinkService'
@@ -39,6 +33,8 @@ import { ExportMenu, type ExportColumn } from '@/components/shared/ExportMenu'
 
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges'
 
+type AhspImportItem = AHSPItem & { finalPrice?: number; total_price?: number }
+
 interface RABTableProps {
   projectId: string
   filterWbsId?: string
@@ -46,14 +42,14 @@ interface RABTableProps {
 
 export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   // Global Stores
-  const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot, unlockBaseline, scenarios, activeScenarioVersion, createScenario, setScenarioData, switchScenario } = useRabStore()
+  const { getItems, addItem, updateItem, removeItem, publishDrafts, getDraftCount, hasUnsaved, isLocked, takeSnapshot, unlockBaseline, scenarios, activeScenarioVersion, switchScenario } = useRabStore()
   const { fetchComponents, componentsByAHSP, ahspItems } = useAHSPStore()
-  const { getTasks, setTasks } = useTimelineStore()
+  const { setTasks } = useTimelineStore()
   const project = useProjectStore(s => s.projects[projectId])
   const updateProject = useProjectStore(s => s.updateProject)
   const { zones } = useAHSPStore()
-  const { importWBS, itemsByProject: wbsItemsByProject } = useWBSStore()
-  const { fetchLinks, addLink, linksByRabItem } = useRabWbsLinkStore()
+  const { importWBS } = useWBSStore()
+  const { fetchLinks, linksByRabItem } = useRabWbsLinkStore()
 
   // Local State
   const [activeTab, setActiveTab] = useState<'direct' | 'overhead'>('direct')
@@ -70,7 +66,6 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const [showLockConfirm, setShowLockConfirm] = useState(false)
   const [showUnlockConfirm, setShowUnlockConfirm] = useState(false)
   const [showDriftAnalysis, setShowDriftAnalysis] = useState(false)
-  const [showSaveScenario, setShowSaveScenario] = useState(false)
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const [allocationPanelItemId, setAllocationPanelItemId] = useState<string | null>(null)
   
@@ -184,11 +179,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     { header: 'Unit Cost', accessor: r => getSellingUnitPrice(r.id, r.unit_price ?? 0) },
     { header: 'Margin %', accessor: r => getEffectiveMargin(r.id) },
     { header: 'Total Cost', accessor: r => getSellingTotal(r.id, r.volume ?? 0, r.unit_price ?? 0) },
-    { header: 'Category', accessor: r => (r as any).category ?? '' },
+    { header: 'Category', accessor: r => (r as RABItem & { category?: string }).category ?? '' },
     { header: 'Overhead', accessor: r => r.is_overhead ? 'Yes' : 'No' },
   ]
 
-  const handleAddFromAhsp = useCallback(async (ahsp: any) => {
+  const handleAddFromAhsp = useCallback(async (ahsp: AhspImportItem) => {
     try {
       const components = componentsByAHSP[ahsp.id]
       if (!components) {
@@ -219,7 +214,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       toast.success('Item added to RAB', { description: ahsp.name })
       setIsAddDialogOpen(false)
       setAhspSearchQuery('')
-    } catch (err) {
+    } catch {
       toast.error('Failed to add item')
     }
   }, [projectId, activeTab, componentsByAHSP, fetchComponents, addItem])
@@ -240,7 +235,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   }
 
   const handleAutoSchedule = async () => {
-    const ahspMap = new Map<string, AHSPItem>(ahspItems.map((i: any) => [i.code || '', i]))
+    const ahspMap = new Map<string, AHSPItem>(ahspItems.map((i: AHSPItem) => [i.code || '', i]))
     const tasks = generateScheduleFromRAB(projectId, project?.startDate || new Date().toISOString(), items, ahspMap, componentsByAHSP)
 
     // Auto-link each task to its primary WBS node (highest allocationPct) via rabWbsLinkStore
@@ -310,7 +305,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     getSellingUnitPrice,
     getSellingTotal,
     onRemoveRow: (id) => removeItem(projectId, id),
-    onToggleExpand: (id) => {}, // Handled by DataTable internally
+    onToggleExpand: (_id) => {}, // Handled by DataTable internally
     paretoMap,
     projectLocked,
     validLinksByRabItem: linksByRabItem,
@@ -352,7 +347,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         onShowHistory={() => setShowVersionHistory(true)}
         onPublish={() => setShowPublishConfirm(true)}
         onSwitchScenario={(v) => { if (v) switchScenario(projectId, v) }}
-        onSaveScenario={() => setShowSaveScenario(true)}
+        onSaveScenario={() => toast.info('Save scenario dialog is not available in this view yet.')}
         availableColumns={[
           { id: 'pareto', label: 'Pareto Class' },
           { id: 'item_code', label: 'Item Code' },
@@ -381,7 +376,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
           onRowSelectionChange={setRowSelection}
           getRowId={(row) => row.id}
           getRowCanExpand={() => true}
-          rowClassName={(row: any) => {
+           rowClassName={(row) => {
              const cls = paretoMap.get(row.id)
              if (cls === 'A') return "border-l-[3px] border-l-red-500 bg-red-50/10"
              if (cls === 'B') return "border-l-[3px] border-l-yellow-400 bg-yellow-50/10"
@@ -397,7 +392,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
               <RABSubComponent
                 item={row.original}
                 analysis={analysis}
-                onMarkupChange={(id, src) => updateItem(projectId, id, { markup_source: src as any })}
+                onMarginSourceChange={(id, src) => updateItem(projectId, id, { markup_source: src })}
               />
             )
           }}
