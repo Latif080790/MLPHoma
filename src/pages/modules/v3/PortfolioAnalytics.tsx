@@ -7,6 +7,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -591,6 +592,12 @@ export default function PortfolioAnalytics() {
                 </div>
             )}
 
+            {/* Top Risks Aggregate Widget */}
+            <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-amber-700 mb-2">Risiko Tertinggi (Portofolio)</div>
+                <div className="text-xs text-slate-500 italic">Belum ada data risiko dari semua proyek</div>
+            </div>
+
             {/* Portfolio Heatmap (Phase 5 Governance) */}
             {!bootstrapping && (
                 <div className="mt-4">
@@ -661,11 +668,14 @@ export default function PortfolioAnalytics() {
                             </div>
 
                             {/* CPI gauge */}
-                            <div className="flex justify-center">
+                            <div className="flex flex-col items-center gap-0.5">
                                 {row.loading ? (
                                     <Skeleton className="w-14 h-8" />
                                 ) : (
-                                    <MiniGauge value={s?.cpi ?? null} size={52} />
+                                    <>
+                                        <MiniGauge value={s?.cpi ?? null} size={52} />
+                                        <span className="text-xs text-slate-400">per Rp 1M anggaran</span>
+                                    </>
                                 )}
                             </div>
 
@@ -683,12 +693,21 @@ export default function PortfolioAnalytics() {
                                 {row.loading ? (
                                     <Skeleton className="mx-auto h-5 w-10" />
                                 ) : s?.phi ? (
-                                    <div className="flex flex-col items-center">
-                                        <span className={`text-lg font-bold tabular-nums ${s.phi.score >= 85 ? 'text-emerald-500' : s.phi.score >= 70 ? 'text-amber-500' : 'text-red-500'}`}>
-                                            {s.phi.score}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">{s.phi.rating}</span>
-                                    </div>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className="flex flex-col items-center cursor-help">
+                                                    <span className={`text-lg font-bold tabular-nums underline decoration-dotted ${s.phi.score >= 85 ? 'text-emerald-500' : s.phi.score >= 70 ? 'text-amber-500' : 'text-red-500'}`}>
+                                                        {s.phi.score}
+                                                    </span>
+                                                    <span className="text-xs text-muted-foreground">{s.phi.rating}</span>
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="max-w-[240px] text-xs">
+                                                Portfolio Health Index = rata-rata tertimbang dari CPI, SPI, dan ketaatan jadwal. Skor 100 = sempurna.
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 ) : (
                                     <span className="text-muted-foreground text-xs">—</span>
                                 )}
