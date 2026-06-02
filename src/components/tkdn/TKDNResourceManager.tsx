@@ -294,6 +294,45 @@ export function TKDNResourceManager() {
                 </Card>
               </div>
 
+              {/* Regulatory compliance horizontal bar gauge */}
+              {(() => {
+                const regulatoryMin = 40
+                const actualTKDN = summary.tkdn_percentage
+                const isCompliant = actualTKDN >= regulatoryMin
+                return (
+                  <div className="rounded-lg border p-4">
+                    <div className="flex justify-between text-xs mb-2">
+                      <span className="font-semibold text-slate-600 dark:text-slate-300">TKDN Aktual vs Batas Regulasi</span>
+                      <span className={`font-bold font-mono ${isCompliant ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {actualTKDN.toFixed(1)}% / Min. {regulatoryMin}%
+                      </span>
+                    </div>
+                    <div className="h-3 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden relative">
+                      <div
+                        className={`h-full rounded-full transition-all ${isCompliant ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                        style={{ width: `${Math.min(actualTKDN, 100)}%` }}
+                      />
+                      {/* Target marker line */}
+                      <div
+                        className="absolute top-0 bottom-0 w-0.5 bg-slate-400"
+                        style={{ left: `${regulatoryMin}%` }}
+                        title={`Batas minimum ${regulatoryMin}%`}
+                      />
+                    </div>
+                    {!isCompliant && (
+                      <p className="text-xs text-rose-600 mt-1.5 font-medium">
+                        TKDN di bawah minimum regulasi {regulatoryMin}% — perlu penambahan komponen dalam negeri ({(regulatoryMin - actualTKDN).toFixed(1)}% kurang)
+                      </p>
+                    )}
+                    {isCompliant && (
+                      <p className="text-xs text-emerald-600 mt-1.5 font-medium">
+                        Memenuhi persyaratan regulasi minimum {regulatoryMin}%
+                      </p>
+                    )}
+                  </div>
+                )
+              })()}
+
               {/* Category breakdown */}
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {summary.by_category.map(cat => (
