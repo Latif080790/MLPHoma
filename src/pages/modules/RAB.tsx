@@ -142,7 +142,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
 
   const summary = useMemo(() => {
     const subtotal = items.reduce((sum, item) => sum + ((item.volume || 0) * (item.unit_price || 0)), 0)
-    // Margin-on-revenue: ex-PPN selling per item = base / (1 - margin%).
+    // Margin-on-revenue: ex-tax selling per item = base / (1 - margin%).
     const sellingExTax = items.reduce((sum, item) => {
       const base = (item.volume || 0) * (item.unit_price || 0)
       return sum + sellingFromBase(base, effectiveMarginPct(marginSettings, item.id))
@@ -220,7 +220,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
                       onClick={() => setMarginMeta({ marginMode: 'fixed' })}
                       className={`px-2 py-1 ${marginSettings.marginMode === 'fixed' ? 'bg-blue-600 text-white' : 'text-slate-500 bg-white'}`}
                     >
-                      Fix semua
+                      Fixed All
                     </button>
                     <button
                       type="button"
@@ -257,7 +257,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">RAB Rate Configuration</span>
-              <button type="button" onClick={() => setShowSettings(false)} className="text-xs text-slate-400 hover:text-slate-600">✕ Tutup</button>
+              <button type="button" onClick={() => setShowSettings(false)} className="text-xs text-slate-400 hover:text-slate-600">✕ Close</button>
             </div>
             <div className="flex flex-wrap gap-4">
               <label className="block min-w-[140px]">
@@ -269,7 +269,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
                 <input type="number" min="0" max="100" step="0.1" value={profitPct} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setProfitPct(v); persistRates(overheadPct, v, taxRate) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
               </label>
               <label className="block min-w-[140px]">
-                <span className="mb-1 block text-xs text-slate-500">PPN / Tax (%)</span>
+                <span className="mb-1 block text-xs text-slate-500">Tax (%)</span>
                 <input type="number" min="0" max="100" step="0.1" value={taxRate} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setTaxRate(v); persistRates(overheadPct, profitPct, v) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
               </label>
               <div className="flex items-end"><Button size="sm" className="h-8 text-xs" onClick={() => setShowSettings(false)}>Apply</Button></div>
@@ -287,15 +287,15 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
           {summary.budgetOverrun && (
             <div className="flex items-center gap-2.5 rounded-lg border border-rose-200 bg-rose-50/60 px-4 py-3 text-sm">
               <AlertTriangle size={15} className="shrink-0 text-rose-600" />
-              <span className="font-semibold text-rose-700">RAB Melebihi Budget Proyek</span>
-              <span className="text-rose-600">sebesar <strong>{formatIDR(summary.budgetOverrunAmount)}</strong> ({summary.budgetUtilization.toFixed(1)}% dari budget)</span>
+              <span className="font-semibold text-rose-700">RAB Exceeds Project Budget</span>
+              <span className="text-rose-600">by <strong>{formatIDR(summary.budgetOverrunAmount)}</strong> ({summary.budgetUtilization.toFixed(1)}% of budget)</span>
             </div>
           )}
           {!summary.budgetOverrun && summary.budgetUtilization > 90 && (
             <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50/60 px-4 py-3 text-sm">
               <TrendingUp size={15} className="shrink-0 text-amber-600" />
-              <span className="font-semibold text-amber-700">RAB mencapai {summary.budgetUtilization.toFixed(1)}% dari budget proyek</span>
-              <span className="text-amber-600">— mendekati batas anggaran.</span>
+              <span className="font-semibold text-amber-700">RAB reached {summary.budgetUtilization.toFixed(1)}% of project budget</span>
+              <span className="text-amber-600">- approaching budget threshold.</span>
             </div>
           )}
           <PriceDriftBanner projectId={currentProject.id} isLocked={isLocked} />
@@ -309,15 +309,15 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
               <CardContent><div className="text-2xl font-bold">{formatIDR(summary.subtotal)}</div></CardContent>
             </Card>
             <Card className="hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Harga Jual (Ex PPN)</CardTitle></CardHeader>
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Selling Price (Ex Tax)</CardTitle></CardHeader>
               <CardContent><div className="text-2xl font-bold text-blue-600">{formatIDR(summary.sellingExTax)}</div></CardContent>
             </Card>
             <Card className="hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Kontribusi</CardTitle></CardHeader>
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contribution</CardTitle></CardHeader>
               <CardContent><div className="text-2xl font-bold text-violet-600">{formatIDR(summary.kontribusiRp)}</div></CardContent>
             </Card>
             <Card className="bg-primary/5 border-primary/20 hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-primary">Total Jual (Incl PPN)</CardTitle></CardHeader>
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-primary">Total Selling (Incl Tax)</CardTitle></CardHeader>
               <CardContent><div className="text-2xl font-bold text-primary">{formatIDR(summary.total)}</div></CardContent>
             </Card>
           </div>
@@ -352,7 +352,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
           )}
           {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
             <span className="text-xs text-slate-400 font-mono">
-              OH {overheadPct}% · P {profitPct}% · PPN {taxRate}%
+              OH {overheadPct}% · P {profitPct}% · Tax {taxRate}%
             </span>
           )}
         </div>
@@ -364,7 +364,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
               onClick={() => setMarginMeta({ marginMode: 'fixed' })}
               className={`px-1.5 py-1 text-xs ${marginSettings.marginMode === 'fixed' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500'}`}
             >
-              Fix
+              Fixed
             </button>
             <button
               type="button"
@@ -420,7 +420,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
             {[
               { label: 'Overhead (%)', value: overheadPct, setter: (v: number) => { setOverheadPct(v); persistRates(v, profitPct, taxRate) } },
               { label: 'Profit (%)', value: profitPct, setter: (v: number) => { setProfitPct(v); persistRates(overheadPct, v, taxRate) } },
-              { label: 'PPN (%)', value: taxRate, setter: (v: number) => { setTaxRate(v); persistRates(overheadPct, profitPct, v) } },
+              { label: 'Tax (%)', value: taxRate, setter: (v: number) => { setTaxRate(v); persistRates(overheadPct, profitPct, v) } },
             ].map(({ label, value, setter }) => (
               <div key={label} className="flex flex-col gap-1">
                 <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
@@ -443,9 +443,9 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
         {([
           { label: 'Items', value: items.length.toString(), cls: 'text-slate-800' },
           { label: 'Total Cost', value: formatIDR(summary.subtotal), cls: 'text-slate-800' },
-          { label: 'Harga Jual', value: formatIDR(summary.sellingExTax), cls: 'text-blue-600' },
-          { label: 'Kontribusi', value: formatIDR(summary.kontribusiRp), cls: summary.kontribusiRp >= 0 ? 'text-violet-600' : 'text-rose-600' },
-          { label: 'Total Jual', value: formatIDR(summary.total), cls: 'text-amber-600' },
+          { label: 'Selling Price', value: formatIDR(summary.sellingExTax), cls: 'text-blue-600' },
+          { label: 'Contribution', value: formatIDR(summary.kontribusiRp), cls: summary.kontribusiRp >= 0 ? 'text-violet-600' : 'text-rose-600' },
+          { label: 'Total Selling', value: formatIDR(summary.total), cls: 'text-amber-600' },
         ] as const).map(({ label, value, cls }) => (
           <div key={label} className="bg-white px-3 py-2">
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 leading-none mb-0.5">{label}</div>
@@ -459,14 +459,14 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
       {summary.budgetOverrun && (
         <div className="flex items-center gap-2 border-b border-rose-200 bg-rose-50/80 px-4 py-2 text-xs text-rose-800 flex-shrink-0">
           <AlertTriangle size={12} className="shrink-0 text-rose-600" />
-          <span className="font-semibold">RAB melebihi budget proyek sebesar {formatIDR(summary.budgetOverrunAmount)}</span>
+          <span className="font-semibold">RAB exceeds project budget by {formatIDR(summary.budgetOverrunAmount)}</span>
           <span className="ml-1 text-rose-600">({summary.budgetUtilization.toFixed(1)}%)</span>
         </div>
       )}
       {!summary.budgetOverrun && summary.budgetUtilization > 90 && (
         <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50/80 px-4 py-2 text-xs text-amber-800 flex-shrink-0">
           <TrendingUp size={12} className="shrink-0 text-amber-600" />
-          <span className="font-semibold">RAB mencapai {summary.budgetUtilization.toFixed(1)}% dari budget proyek</span>
+          <span className="font-semibold">RAB reached {summary.budgetUtilization.toFixed(1)}% of project budget</span>
         </div>
       )}
 
@@ -482,8 +482,8 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
                   const noPriceCount = items.filter(i => !i.unit_price || i.unit_price === 0).length
                   return noPriceCount > 0 ? (
                     <div className="flex flex-wrap items-center gap-3 border-b border-amber-200 bg-amber-50/80 px-4 py-2 text-xs text-amber-800 flex-shrink-0">
-                      <span className="font-medium">⚠ {noPriceCount} item belum memiliki unit price.</span>
-                      <span className="ml-auto text-amber-600">Import dari AHSP untuk mengisi harga otomatis.</span>
+                      <span className="font-medium">⚠ {noPriceCount} items do not have unit cost yet.</span>
+                      <span className="ml-auto text-amber-600">Import from AHSP to fill pricing automatically.</span>
                     </div>
                   ) : null
                 })()}

@@ -108,12 +108,12 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 border-border flex-shrink-0">
               <ListFilter size={11} className="text-muted-foreground" />
-              Kolom
+              Columns
               <ChevronDown size={10} className="opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
-            <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground py-1">Visibilitas Kolom</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground py-1">Column Visibility</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {availableColumns.map(col => {
               const isVisible = columnVisibility[col.id] !== false
@@ -157,7 +157,7 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onSaveScenario} className="text-blue-600 font-semibold text-xs">
             <Plus size={12} className="mr-1.5" />
-            Simpan sebagai Scenario
+            Save as Scenario
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -183,14 +183,14 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
           <DropdownMenuSeparator />
           <DropdownMenuLabel className="text-xs uppercase tracking-wider text-muted-foreground py-1">Generate & Sync</DropdownMenuLabel>
           <DropdownMenuItem onClick={onGenerateWBS} className="text-xs gap-2">
-            <GitBranch size={12} className="text-violet-600" /> Generate WBS dari RAB
+            <GitBranch size={12} className="text-violet-600" /> Generate WBS from RAB
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onAutoSchedule} className="text-xs gap-2">
             <CalendarClock size={12} className="text-blue-600" /> Auto Schedule
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onShowHistory} className="text-xs gap-2">
-            <History size={12} className="text-muted-foreground" /> Riwayat Versi
+            <History size={12} className="text-muted-foreground" /> Version History
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onPriceDrift} className="text-xs gap-2">
             <Zap size={12} className="text-amber-600" /> Analyze Drift
@@ -221,12 +221,12 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 text-indigo-600 border-indigo-100 hover:bg-indigo-50 flex-shrink-0">
                   <Percent size={11} />
-                  Markup ({selectedCount})
+                  Margin ({selectedCount})
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-56 p-3">
-                <p className="text-xs font-semibold text-muted-foreground mb-1">Terapkan Markup Overhead</p>
-                <p className="text-xs text-muted-foreground mb-2">Kalikan unit price {selectedCount} item × (1 + %)</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Apply Margin Adjustment</p>
+                <p className="text-xs text-muted-foreground mb-2">Scale base unit cost of {selectedCount} items × (1 + %)</p>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Input type="number" min={-100} max={500} step={0.5} placeholder="15" value={overheadPct}
@@ -248,7 +248,7 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
           )}
           <Button variant="destructive" size="sm" onClick={onBulkDelete} className="h-7 px-2 text-xs gap-1 flex-shrink-0">
             <Trash2 size={11} />
-            Del ({selectedCount})
+            Delete ({selectedCount})
           </Button>
         </>
       )}
@@ -265,7 +265,7 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
         </Button>
       ) : (
         <Button onClick={onAddItem} size="sm"
-          className="h-7 px-3 text-xs gap-1.5 bg-primary hover:bg-primary/90 shadow shadow-orange-200/30 flex-shrink-0">
+          className="h-7 px-3 text-xs gap-1.5 bg-primary hover:bg-primary/90 shadow shadow-blue-200/30 flex-shrink-0">
           <Plus size={12} />
           Add Item
         </Button>

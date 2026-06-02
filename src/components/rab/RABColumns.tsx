@@ -197,7 +197,7 @@ export const getRABColumns = (
             {validLinksByRabItem[item.id]?.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {validLinksByRabItem[item.id].map((l: any) => (
-                  <Link key={l.id} to={`/schedule?taskId=${l.wbsItemId}`} title="Lihat di Timeline">
+                  <Link key={l.id} to={`/schedule?taskId=${l.wbsItemId}`} title="View in Timeline">
                     <Badge variant="secondary" className="px-1 py-0 h-4 text-xs bg-indigo-50 text-indigo-600 border-indigo-100 cursor-pointer hover:bg-indigo-100 hover:text-indigo-700 transition-colors">
                       <Link2 size={8} className="mr-0.5" /> Gantt
                     </Badge>
@@ -241,10 +241,14 @@ export const getRABColumns = (
     accessorKey: 'unit_price',
     header: () => <div className="text-right">Unit Cost</div>,
     enableSorting: true,
-    sortingFn: 'basic',
+    sortingFn: (rowA, rowB) => {
+      const a = getSellingUnitPrice(rowA.original.id, rowA.original.unit_price || 0)
+      const b = getSellingUnitPrice(rowB.original.id, rowB.original.unit_price || 0)
+      return a - b
+    },
     cell: ({ row }) => (
       <NumberInputCell
-        value={row.original.unit_price}
+        value={getSellingUnitPrice(row.original.id, row.original.unit_price || 0)}
         disabled={projectLocked || !!row.original.snapshot_price}
         onCommit={(val) => onPriceChange(row.original.id, val)}
       />
@@ -278,38 +282,8 @@ export const getRABColumns = (
     size: 100,
   },
   {
-    id: 'selling_unit_price',
-    header: () => <div className="text-right">Harga Jual</div>,
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const a = getSellingUnitPrice(rowA.original.id, rowA.original.unit_price || 0)
-      const b = getSellingUnitPrice(rowB.original.id, rowB.original.unit_price || 0)
-      return a - b
-    },
-    cell: ({ row }) => {
-      const selling = getSellingUnitPrice(row.original.id, row.original.unit_price || 0)
-      return <CurrencyCell value={selling} variant="default" className="text-xs font-semibold text-blue-600" />
-    },
-    size: 140,
-  },
-  {
     id: 'total',
     header: () => <div className="text-right">Total Cost</div>,
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const a = (rowA.original.volume || 0) * (rowA.original.unit_price || 0)
-      const b = (rowB.original.volume || 0) * (rowB.original.unit_price || 0)
-      return a - b
-    },
-    cell: ({ row }) => {
-      const total = (row.original.volume || 0) * (row.original.unit_price || 0)
-      return <CurrencyCell value={total} variant="default" className="text-xs font-bold" />
-    },
-    size: 144,
-  },
-  {
-    id: 'selling_total',
-    header: () => <div className="text-right">Total Jual</div>,
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
       const a = getSellingTotal(rowA.original.id, rowA.original.volume || 0, rowA.original.unit_price || 0)
@@ -317,14 +291,14 @@ export const getRABColumns = (
       return a - b
     },
     cell: ({ row }) => {
-      const sellingTotal = getSellingTotal(row.original.id, row.original.volume || 0, row.original.unit_price || 0)
-      return <CurrencyCell value={sellingTotal} variant="default" className="text-xs font-bold text-indigo-600" />
+      const total = getSellingTotal(row.original.id, row.original.volume || 0, row.original.unit_price || 0)
+      return <CurrencyCell value={total} variant="default" className="text-xs font-bold text-indigo-600" />
     },
-    size: 152,
+    size: 144,
   },
   {
     id: 'actions',
-    header: () => <div className="text-center">Aksi</div>,
+    header: () => <div className="text-center">Actions</div>,
     cell: ({ row }) => (
       <div className="flex justify-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity">
         <Button
@@ -340,7 +314,7 @@ export const getRABColumns = (
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0 text-muted-foreground hover:text-indigo-600 transition-colors"
-          title="Link ke WBS"
+          title="Link to WBS"
           onClick={() => onToggleExpand(row.original.id)}
         >
           <Link2 size={13} />
@@ -349,7 +323,7 @@ export const getRABColumns = (
           variant="ghost"
           size="sm"
           className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600 transition-colors"
-          title="Hapus"
+          title="Delete"
           onClick={() => onRemoveRow(row.original.id)}
         >
           <Trash2 size={13} />

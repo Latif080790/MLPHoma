@@ -24,7 +24,7 @@ import { baselineService } from '@/services/baselineService'
 import { rabWbsLinkService } from '@/services/rabWbsLinkService'
 import { formatIDR } from '@/lib/utils'
 import { readMarginSettings, effectiveMarginPct } from '@/lib/marginSettings'
-import { sellingFromBase } from '@/lib/costingMargin'
+import { baseFromSelling, sellingFromBase } from '@/lib/costingMargin'
 
 import { RABPriceDriftDashboard } from './RABPriceDriftDashboard'
 import { RABVersionHistory } from './RABVersionHistory'
@@ -87,8 +87,6 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     unit_price: true,
     margin_pct: true,
     total: true,
-    selling_unit_price: true,
-    selling_total: true,
   })
 
   const marginSettings = useMemo(() => readMarginSettings(project?.meta), [project?.meta])
@@ -175,21 +173,19 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       if (item) updateItem(projectId, id, { unit_price: Math.round((item.unit_price || 0) * factor) })
     })
     setRowSelection({})
-    toast.success(`Markup ${percent > 0 ? '+' : ''}${percent}% diterapkan ke ${ids.length} item`)
+    toast.success(`Margin ${percent > 0 ? '+' : ''}${percent}% applied to ${ids.length} items`)
   }
 
   const rabExportColumns: ExportColumn<RABItem>[] = [
-    { header: 'Kode Item', accessor: r => r.item_code ?? '' },
-    { header: 'Nama Pekerjaan', accessor: r => r.name ?? r.item_name ?? '' },
-    { header: 'Satuan', accessor: r => r.unit ?? '' },
+    { header: 'Item Code', accessor: r => r.item_code ?? '' },
+    { header: 'Work Item', accessor: r => r.name ?? r.item_name ?? '' },
+    { header: 'Unit', accessor: r => r.unit ?? '' },
     { header: 'Volume', accessor: r => r.volume ?? 0 },
-    { header: 'Unit Cost', accessor: r => r.unit_price ?? 0 },
+    { header: 'Unit Cost', accessor: r => getSellingUnitPrice(r.id, r.unit_price ?? 0) },
     { header: 'Margin %', accessor: r => getEffectiveMargin(r.id) },
-    { header: 'Harga Jual', accessor: r => getSellingUnitPrice(r.id, r.unit_price ?? 0) },
-    { header: 'Total Cost', accessor: r => (r.volume ?? 0) * (r.unit_price ?? 0) },
-    { header: 'Total Jual', accessor: r => getSellingTotal(r.id, r.volume ?? 0, r.unit_price ?? 0) },
-    { header: 'Kategori', accessor: r => (r as any).category ?? '' },
-    { header: 'Overhead', accessor: r => r.is_overhead ? 'Ya' : 'Tidak' },
+    { header: 'Total Cost', accessor: r => getSellingTotal(r.id, r.volume ?? 0, r.unit_price ?? 0) },
+    { header: 'Category', accessor: r => (r as any).category ?? '' },
+    { header: 'Overhead', accessor: r => r.is_overhead ? 'Yes' : 'No' },
   ]
 
   const handleAddFromAhsp = useCallback(async (ahsp: any) => {
@@ -220,11 +216,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         is_overhead: activeTab === 'overhead',
         source_ahsp_id: ahsp.id,
       })
-      toast.success('Item ditambahkan ke RAB', { description: ahsp.name })
+      toast.success('Item added to RAB', { description: ahsp.name })
       setIsAddDialogOpen(false)
       setAhspSearchQuery('')
     } catch (err) {
-      toast.error('Gagal menambahkan item')
+      toast.error('Failed to add item')
     }
   }, [projectId, activeTab, componentsByAHSP, fetchComponents, addItem])
 
@@ -261,8 +257,8 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     setConfirmScheduleOpen(false)
     const wbsLinkedCount = linkedTasks.filter(t => t.wbsId).length
     toast.success(
-      `Generated ${linkedTasks.length} tasks dari RAB`,
-      { description: wbsLinkedCount > 0 ? `${wbsLinkedCount} task ter-link ke WBS` : undefined }
+      `Generated ${linkedTasks.length} tasks from RAB`,
+      { description: wbsLinkedCount > 0 ? `${wbsLinkedCount} tasks linked to WBS` : undefined }
     )
 
     // Tag auto-generated RAB-WBS links as 'auto' mapping status (non-blocking)
@@ -296,21 +292,20 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   }
 
   // Cost calculations for Footer
-  let totalMaterial = 0, totalLabor = 0, totalEquip = 0, totalSubcon = 0, totalCost = 0, totalSelling = 0
+  let totalSelling = 0
   items.forEach(item => {
     const v = item.volume || 0
-    totalMaterial += (item.cost_material || 0) * v
-    totalLabor += (item.cost_labor || 0) * v
-    totalEquip += (item.cost_equipment || 0) * v
-    totalSubcon += (item.cost_subcon || 0) * v
-    totalCost += (item.unit_price || 0) * v
     totalSelling += getSellingTotal(item.id, v, item.unit_price || 0)
   })
 
   const columns = useMemo(() => getRABColumns({
     onSelectRow: (id, checked) => setRowSelection(prev => ({ ...prev, [id]: checked })),
     onVolumeChange: (id, val) => updateItem(projectId, id, { volume: parseFloat(val) || 0 }),
-    onPriceChange: (id, val) => updateItem(projectId, id, { unit_price: parseFloat(val) || 0 }),
+    onPriceChange: (id, val) => {
+      const sellingInput = parseFloat(val) || 0
+      const marginPct = getEffectiveMargin(id)
+      updateItem(projectId, id, { unit_price: baseFromSelling(sellingInput, marginPct) })
+    },
     onMarginChange: handleMarginChange,
     getSellingUnitPrice,
     getSellingTotal,
@@ -359,16 +354,14 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         onSwitchScenario={(v) => { if (v) switchScenario(projectId, v) }}
         onSaveScenario={() => setShowSaveScenario(true)}
         availableColumns={[
-          { id: 'pareto', label: 'Kelas Pareto' },
-          { id: 'item_code', label: 'Kode Item' },
-          { id: 'name', label: 'Deskripsi Pekerjaan' },
+          { id: 'pareto', label: 'Pareto Class' },
+          { id: 'item_code', label: 'Item Code' },
+          { id: 'name', label: 'Description & Specification' },
           { id: 'volume', label: 'Volume' },
-          { id: 'unit', label: 'Satuan' },
+          { id: 'unit', label: 'Unit' },
           { id: 'unit_price', label: 'Unit Cost' },
           { id: 'margin_pct', label: 'Margin %' },
-          { id: 'selling_unit_price', label: 'Harga Jual' },
           { id: 'total', label: 'Total Cost' },
-          { id: 'selling_total', label: 'Total Jual' },
         ]}
         columnVisibility={columnVisibility}
         onColumnVisibilityChange={(id, v) => setColumnVisibility(prev => ({ ...prev, [id]: v }))}
@@ -412,14 +405,8 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
              items.length > 0 ? (
                <tfoot className="sticky bottom-0 bg-muted/30/95 backdrop-blur z-20 border-t-2 border-border">
                   <tr className="hover:bg-transparent">
-                    <td colSpan={5} className="py-3 px-4 text-right font-black text-xs text-muted-foreground uppercase tracking-wider">Sub-Totals</td>
+                    <td colSpan={8} className="py-3 px-4 text-right font-black text-xs text-muted-foreground uppercase tracking-wider">Sub-Totals</td>
                     <td className="py-3" />
-                    <td className="py-3" />
-                    <td className="py-3" />
-                    <td className="py-3" />
-                    <td className="py-3 px-4 text-right font-mono text-sm font-black text-foreground bg-muted/50/50 border-l border-border">
-                      {formatIDR(totalCost)}
-                    </td>
                     <td className="py-3 px-4 text-right font-mono text-sm font-black text-indigo-600 bg-muted/50/50 border-l border-border">
                       {formatIDR(totalSelling)}
                     </td>
@@ -547,7 +534,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                   // non-blocking — lock still applies in-app
                 }
                 setShowLockConfirm(false)
-                toast.success('Baseline dikunci & disimpan ke database')
+                toast.success('Baseline locked and saved to database')
               }}
               className="bg-amber-600 hover:bg-amber-700"
             >
