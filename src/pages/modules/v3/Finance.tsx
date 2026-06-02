@@ -51,6 +51,7 @@ import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
 import ModuleListToolbar from "@/components/common/ModuleListToolbar"
 import { ExportMenu, type ExportColumn } from "@/components/shared/ExportMenu"
+import { cn } from "@/lib/utils"
 
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
@@ -86,6 +87,9 @@ const AR_SORT_OPTIONS = [
     { value: 'amount-high', label: 'Amount High-Low' },
     { value: 'amount-low', label: 'Amount Low-High' },
 ]
+
+const isOverdue = (item: { due_date?: string | null; status?: string }) =>
+    !!(item.due_date && new Date(item.due_date) < new Date() && item.status !== 'PAID')
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
@@ -784,7 +788,7 @@ export default function Finance() {
                                             const upstreamCount = inv.po_id ? 1 : 0
 
                                             return (
-                                                <TableRow key={inv.id} data-index={vRow.index} ref={virtualInvoiceRows.measureElement} className={`group hover:bg-accent/40 border-b border-border transition-colors ${inv.status === 'OVERDUE' ? 'bg-red-50/50 dark:bg-red-950/10' : ''} ${selectedInvoiceIds.has(inv.id) ? 'bg-orange-50/60 dark:bg-orange-900/10' : ''}`}>
+                                                <TableRow key={inv.id} data-index={vRow.index} ref={virtualInvoiceRows.measureElement} className={cn('group hover:bg-accent/40 border-b border-border transition-colors', isOverdue(inv) && 'bg-rose-50 dark:bg-rose-950/20', selectedInvoiceIds.has(inv.id) && 'bg-orange-50/60 dark:bg-orange-900/10')}>
                                                     {/* v4 Sprint 2: checkbox */}
                                                     <TableCell className="p-3 w-10" onClick={e => e.stopPropagation()}>
                                                         <Checkbox

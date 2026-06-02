@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { AgingBucket } from "@/store/financeStore"
 import { Invoice } from "@/types/finance"
 import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface AgingReportProps {
   aging: AgingBucket
@@ -56,6 +57,13 @@ export function AgingReport({ aging }: AgingReportProps) {
     { label: '90+ Days', amount: aging.total90plus, color: 'text-red-600', bg: 'bg-red-100' }
   ]
 
+  const agingBuckets = [
+    { label: '0-30 days', amount: aging.totalCurrent + aging.total30, barColor: 'bg-emerald-400' },
+    { label: '31-60 days', amount: aging.total60, barColor: 'bg-amber-400' },
+    { label: '61-90 days', amount: 0, barColor: 'bg-orange-400' },
+    { label: '90+ days', amount: aging.total90plus, barColor: 'bg-rose-500' },
+  ]
+
   return (
     <Card>
       <CardHeader>
@@ -89,6 +97,28 @@ export function AgingReport({ aging }: AgingReportProps) {
               <div className="text-lg font-bold mt-1">Rp {b.amount.toLocaleString()}</div>
             </div>
           ))}
+        </div>
+
+        {/* Aging Distribution bar chart */}
+        <div className="mt-4 space-y-2">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Aging Distribution</div>
+          {agingBuckets.map(bucket => {
+            const pct = total > 0 ? (bucket.amount / total) * 100 : 0
+            return (
+              <div key={bucket.label} className="flex items-center gap-3">
+                <div className="w-20 text-xs text-slate-500 shrink-0">{bucket.label}</div>
+                <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className={cn('h-full rounded-full transition-all', bucket.barColor)}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <div className="w-24 text-right text-xs font-mono text-slate-600">
+                  Rp {bucket.amount.toLocaleString()}
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         {/* Detail lists */}

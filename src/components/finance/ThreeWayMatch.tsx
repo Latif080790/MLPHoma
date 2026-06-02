@@ -125,13 +125,19 @@ export function ThreeWayMatch({ projectId, invoices }: ThreeWayMatchProps) {
   const matched = records.filter(r => r.match_status === 'MATCHED').length
   const mismatched = records.filter(r => r.match_status === 'MISMATCH').length
   const partial = records.filter(r => r.match_status === 'PARTIAL').length
+  const totalInvoices = records.length
+  const matchedInvoices = matched
+  const matchPct = totalInvoices > 0
+    ? Math.round((matchedInvoices / totalInvoices) * 100)
+    : 0
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>3-Way Matching (PO ↔ GRN ↔ Invoice)</span>
-          <div className="flex gap-2 text-xs">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-xs font-mono text-slate-500">Match: <strong>{matchPct}%</strong></span>
             <Badge variant="default" className="font-normal">{matched} Matched</Badge>
             <Badge variant="secondary" className="font-normal">{partial} Partial</Badge>
             {mismatched > 0 && <Badge variant="destructive" className="font-normal">{mismatched} Mismatch</Badge>}

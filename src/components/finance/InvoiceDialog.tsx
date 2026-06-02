@@ -96,49 +96,52 @@ export function InvoiceDialog({ open, onOpenChange, projectId, invoiceToEdit }: 
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
+          <p className="text-sm font-bold text-slate-700">Vendor & Invoice Details</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-1.5">
-              <Label>Vendor Name *</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Vendor Name *</Label>
               <Input {...form.register("vendor_name")} placeholder="PT Supplier ABC" />
               {form.formState.errors.vendor_name && <p className="text-red-500 text-xs">{form.formState.errors.vendor_name.message}</p>}
             </div>
             <div className="grid gap-1.5">
-              <Label>Invoice Number *</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Invoice Number *</Label>
               <Input {...form.register("invoice_number")} placeholder="INV-2025-001" />
               {form.formState.errors.invoice_number && <p className="text-red-500 text-xs">{form.formState.errors.invoice_number.message}</p>}
             </div>
           </div>
 
           <div className="grid gap-1.5">
-            <Label>Description</Label>
+            <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Description</Label>
             <Textarea {...form.register("description")} placeholder="Material batu split 1-2 cm" rows={2} />
           </div>
 
+          <p className="text-sm font-bold text-slate-700">Amount</p>
           <div className="grid grid-cols-3 gap-4">
             <div className="grid gap-1.5">
-              <Label>Amount (Rp) *</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Amount (Rp) *</Label>
               <Input type="number" step="1" {...form.register("amount")} />
             </div>
             <div className="grid gap-1.5">
-              <Label>Tax / PPN (Rp)</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Tax / PPN (Rp)</Label>
               <Input type="number" step="1" {...form.register("tax_amount")} />
             </div>
             <div className="grid gap-1.5">
-              <Label>Total</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total</Label>
               <div className="h-10 flex items-center px-3 bg-muted rounded-md text-sm font-semibold">
                 Rp {(watchAmount + watchTax).toLocaleString()}
               </div>
             </div>
           </div>
 
+          <p className="text-sm font-bold text-slate-700">Schedule & Reference</p>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-1.5">
-              <Label>Due Date *</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Due Date *</Label>
               <Input type="date" {...form.register("due_date")} />
               {form.formState.errors.due_date && <p className="text-red-500 text-xs">{form.formState.errors.due_date.message}</p>}
             </div>
             <div className="grid gap-1.5">
-              <Label>PO Reference</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">PO Reference</Label>
               <Input {...form.register("po_id")} placeholder="PO ID (optional)" />
             </div>
           </div>
