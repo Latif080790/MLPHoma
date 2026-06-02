@@ -86,6 +86,10 @@ export interface AHSPCatalogProps {
   defaultCategory?: string
   /** Compact view mode */
   compact?: boolean
+  /** Toggle derived bid price display (read-only) */
+  showBidPrice?: boolean
+  /** Default project margin percentage for derived bid price */
+  bidMarginPct?: number
 }
 
 /**
@@ -95,6 +99,8 @@ export function AHSPCatalog({
   showInactive = false,
   defaultCategory,
   compact = false,
+  showBidPrice = false,
+  bidMarginPct = 0,
 }: AHSPCatalogProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>(defaultCategory || 'all')
@@ -661,7 +667,9 @@ export function AHSPCatalog({
                 onHistoryClick: handleHistoryClick,
                 onDeleteItem: handleDeleteItem,
                 hasZoneOverride: selectedZone !== 'default',
-                ahspUsageMap
+                ahspUsageMap,
+                showBidPrice,
+                bidMarginPct,
               })}
               data={groupedDisplayRows.map(r => r.type === 'section' ? r : r.item)}
               virtualized={true}
@@ -725,7 +733,7 @@ export function AHSPCatalog({
 
                 <Button
                   size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-9 px-4 font-bold text-xs shadow-lg shadow-orange-900/20"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-9 px-4 font-bold text-xs shadow-lg shadow-blue-900/20"
                   onClick={() => {
                     handleExport(displayItems.filter(i => selectedIds.has(i.id)))
                     toast.success('Mengekspor item terpilih...')

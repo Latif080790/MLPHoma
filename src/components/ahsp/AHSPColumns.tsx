@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Edit2, History, Trash2 } from 'lucide-react'
 import { formatIDR } from '@/lib/utils'
 import type { AHSPItem } from '@/types/ahsp'
+import { sellingFromBase } from '@/lib/costingMargin'
 
 interface AHSPItemWithPrices extends AHSPItem {
   price_material?: number
@@ -42,13 +43,17 @@ export const getAHSPColumns = (
     onHistoryClick,
     onDeleteItem,
     hasZoneOverride,
-    ahspUsageMap
+    ahspUsageMap,
+    showBidPrice,
+    bidMarginPct,
   }: {
     onEditItem: (item: AHSPItemWithPrices) => void
     onHistoryClick: (item: AHSPItemWithPrices) => void
     onDeleteItem: (item: AHSPItemWithPrices) => void
     hasZoneOverride: boolean
     ahspUsageMap: Map<string, number>
+    showBidPrice: boolean
+    bidMarginPct: number
   }
 ): ColumnDef<AHSPItemWithPrices>[] => [
   {
@@ -196,14 +201,18 @@ export const getAHSPColumns = (
        const breakSum = (matPrice + labPrice + eqpPrice + subPrice)
        const isUnallocated = breakSum === 0 && (item.finalPrice || 0) > 0
        const totalPrice = isUnallocated ? item.finalPrice || 0 : breakSum
+       const displayPrice = showBidPrice ? sellingFromBase(totalPrice, bidMarginPct) : totalPrice
        
        return (
          <div className="text-right font-mono text-[13px] font-black text-foreground">
             {isUnallocated ? (
               <span className="text-amber-600" title="Komponen belum disetup.">
-                {formatIDR(totalPrice)} (!)
+                {formatIDR(displayPrice)} (!)
               </span>
-            ) : formatIDR(totalPrice)}
+            ) : formatIDR(displayPrice)}
+            {showBidPrice && (
+              <div className="text-xs font-semibold text-violet-600">+{bidMarginPct}% margin</div>
+            )}
          </div>
        )
     },
