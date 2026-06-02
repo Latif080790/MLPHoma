@@ -18,6 +18,7 @@ import { useProjectStore } from '@/store/projectStore'
 import { useTimelineStore } from '@/store/timelineStore'
 import { useCurvaSStore } from '@/store/curvaSStore'
 import ModulePageState from '@/components/common/ModulePageState'
+import { EmptyState } from '@/components/common/EmptyState'
 import { lazyRetry } from '@/lib/lazyRetry'
 import CurvaSChart from '@/components/charts/CurvaSChart'
 
@@ -253,18 +254,16 @@ export default function ScheduleOps() {
 
             {/* CPM Status Banners — shown only in Plan mode */}
             {mode === 'plan' && isCPMCalculating && (
-                <div className="mb-3">
-                    <AlertStrip severity="info" message="⚡ Menghitung jalur kritis... (background worker)" />
-                </div>
+                <AlertStrip severity="info" message="⚡ Menghitung jalur kritis... (background worker)" className="mb-3" />
             )}
             {mode === 'plan' && !isCPMCalculating && cpmDuration > 0 && !cpmBannerDismissed && (
-                <div className="mb-3">
-                    <AlertStrip
-                        severity="success"
-                        message="✓ Critical path diperbarui"
-                        action={{ label: 'Tutup', onClick: () => setCpmBannerDismissed(true) }}
-                    />
-                </div>
+                <AlertStrip
+                    severity="success"
+                    message="✓ Critical path diperbarui"
+                    dismissible
+                    onDismiss={() => setCpmBannerDismissed(true)}
+                    className="mb-3"
+                />
             )}
 
             {/* Sub-tabs within the mode — B.4: Radix TabsList/TabsTrigger for keyboard nav */}
@@ -301,10 +300,10 @@ export default function ScheduleOps() {
                 <TabsContent value="timeline" className="outline-none">
                     <div className="rounded-[var(--radius-lg)] border border-border bg-card shadow-[var(--shadow-sm)] overflow-hidden p-0 min-h-[calc(100vh-280px)]">
                         {mode === 'plan' && taskCount === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-16 text-center">
-                                <p className="text-lg font-semibold text-slate-700 dark:text-slate-200">Belum ada task</p>
-                                <p className="text-sm text-slate-400 mt-1">Impor dari WBS atau buat manual.</p>
-                            </div>
+                            <EmptyState
+                                title="Belum ada task"
+                                description="Impor dari WBS atau buat manual."
+                            />
                         ) : (
                             <ErrorBoundary errorMessage="Timeline failed to render">
                                 <Suspense fallback={<TabFallback minHeight={500} />}>
