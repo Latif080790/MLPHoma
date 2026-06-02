@@ -46,6 +46,9 @@ describe('costDashboardService', () => {
           data: [{ total_budget: 1200, actual_cost: 300, committed_cost: 500 }], error: null
         }))
         .mockReturnValueOnce(makeChain({
+          data: { meta: null }, error: null
+        }))
+        .mockReturnValueOnce(makeChain({
           data: { pv: 1000, ev: 900, ac: 300, cpi: 3.0, spi: 0.9 }, error: null
         }))
 
@@ -68,6 +71,7 @@ describe('costDashboardService', () => {
           ], error: null,
         }))
         .mockReturnValueOnce(makeChain({ data: [], error: null }))
+        .mockReturnValueOnce(makeChain({ data: { meta: null }, error: null }))
         .mockReturnValueOnce(makeChain({ data: null, error: null }))
 
       const snap = await costDashboardService.getDashboardSnapshot('proj-overhead')
@@ -85,6 +89,7 @@ describe('costDashboardService', () => {
         .mockReturnValueOnce(makeChain({
           data: [{ total_budget: 1000, actual_cost: 250, committed_cost: 100 }], error: null
         }))
+        .mockReturnValueOnce(makeChain({ data: { meta: null }, error: null }))
         .mockReturnValueOnce(makeChain({ data: null, error: null }))
 
       const snap = await costDashboardService.getDashboardSnapshot('proj-2')

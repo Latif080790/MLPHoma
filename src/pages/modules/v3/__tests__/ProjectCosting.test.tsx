@@ -191,8 +191,13 @@ describe('ProjectCosting - Sprint 0 Epic S0.1 Regression Tests', () => {
   describe('Hook Order Compliance', () => {
     it('should keep rendering stable across empty-to-active project transition', () => {
       const mockUseProjectStore = useProjectStore as any;
+      const setProjectStoreState = (state: any) => {
+        mockUseProjectStore.mockImplementation((selector?: (s: any) => any) =>
+          selector ? selector(state) : state
+        );
+      };
 
-      mockUseProjectStore.mockReturnValue({
+      setProjectStoreState({
         activeProjectId: null,
         activeProject: null,
         projects: {},
@@ -206,7 +211,7 @@ describe('ProjectCosting - Sprint 0 Epic S0.1 Regression Tests', () => {
 
       expect(screen.queryByText(/select.*project/i) || screen.queryByText(/no.*data/i)).toBeTruthy();
 
-      mockUseProjectStore.mockReturnValue({
+      setProjectStoreState({
         activeProjectId: 'P-001',
         activeProject: {
           id: 'P-001',

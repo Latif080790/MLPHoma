@@ -62,11 +62,11 @@ beforeEach(() => {
 describe('anomaly detector — PRICE_SPIKE', () => {
   it('fires when PO unit_price > RAB price × 1.2', async () => {
     tableResponses['purchase_order_items'] = {
-      data: [{ item_name: 'Semen Portland', unit_price: 150_000 }],
+      data: [{ description: 'Semen Portland', unit_price: 150_000 }],
       error: null,
     }
     tableResponses['rab_items'] = {
-      data: [{ item_name: 'Semen Portland', price: 100_000 }],
+      data: [{ name: 'Semen Portland', unit_price: 100_000 }],
       error: null,
     }
 
@@ -82,11 +82,11 @@ describe('anomaly detector — PRICE_SPIKE', () => {
 
   it('does NOT fire when PO price is within 20% of RAB', async () => {
     tableResponses['purchase_order_items'] = {
-      data: [{ item_name: 'Pasir', unit_price: 110_000 }],
+      data: [{ description: 'Pasir', unit_price: 110_000 }],
       error: null,
     }
     tableResponses['rab_items'] = {
-      data: [{ item_name: 'Pasir', price: 100_000 }],
+      data: [{ name: 'Pasir', unit_price: 100_000 }],
       error: null,
     }
 
@@ -96,7 +96,7 @@ describe('anomaly detector — PRICE_SPIKE', () => {
 
   it('does NOT fire when item not found in RAB', async () => {
     tableResponses['purchase_order_items'] = {
-      data: [{ item_name: 'Bahan Unknown', unit_price: 999_999 }],
+      data: [{ description: 'Bahan Unknown', unit_price: 999_999 }],
       error: null,
     }
     tableResponses['rab_items'] = { data: [], error: null }
@@ -107,11 +107,11 @@ describe('anomaly detector — PRICE_SPIKE', () => {
 
   it('is case-insensitive for item name matching', async () => {
     tableResponses['purchase_order_items'] = {
-      data: [{ item_name: 'BAJA TULANGAN', unit_price: 200_000 }],
+      data: [{ description: 'BAJA TULANGAN', unit_price: 200_000 }],
       error: null,
     }
     tableResponses['rab_items'] = {
-      data: [{ item_name: 'baja tulangan', price: 100_000 }],
+      data: [{ name: 'baja tulangan', unit_price: 100_000 }],
       error: null,
     }
 
@@ -196,8 +196,8 @@ describe('anomaly detector — SCOPE_CREEP', () => {
       data: [
         // Used for both lateRabItems (gt start_date) and allRabItems
         // The service queries rab_items twice; both get the same mock
-        { id: 'r1', item_name: 'Late Item 1', created_at: '2025-06-01' },
-        { id: 'r2', item_name: 'Late Item 2', created_at: '2025-07-01' },
+        { id: 'r1', name: 'Late Item 1', created_at: '2025-06-01' },
+        { id: 'r2', name: 'Late Item 2', created_at: '2025-07-01' },
       ],
       error: null,
     }
@@ -215,7 +215,7 @@ describe('anomaly detector — SCOPE_CREEP', () => {
 
   it('does NOT fire when approved change order exists', async () => {
     tableResponses['rab_items'] = {
-      data: [{ id: 'r1', item_name: 'Late Item', created_at: '2025-06-01' }],
+      data: [{ id: 'r1', name: 'Late Item', created_at: '2025-06-01' }],
       error: null,
     }
     tableResponses['change_orders'] = {
