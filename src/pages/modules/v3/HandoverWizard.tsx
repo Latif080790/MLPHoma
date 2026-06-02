@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Check, Download, AlertTriangle, FileText, ArrowRight, Loader2 } from "lucide-react"
+import { Input } from "@/components/ui/input"
 import { useProjectStore } from '@/store/projectStore'
 import { PermissionGuard } from '@/components/common/PermissionGuard'
 import { toast } from 'sonner'
@@ -44,6 +45,7 @@ export default function HandoverWizard() {
     const [summary, setSummary] = useState<HandoverSummary | null>(null)
     const [outstanding, setOutstanding] = useState<OutstandingIssue[]>([])
     const [confirmArchiveOpen, setConfirmArchiveOpen] = useState(false)
+    const [archiveCodeInput, setArchiveCodeInput] = useState('')
     const [pageError, setPageError] = useState<string | null>(null)
     const [srStatus, setSrStatus] = useState('')
     const [readiness, setReadiness] = useState<HandoverReadiness | null>(null)
@@ -272,6 +274,41 @@ export default function HandoverWizard() {
                         </div>
                     ) : (
                         <>
+                            {/* Prerequisites summary per step */}
+                            {readiness && (() => {
+                                // Map step to relevant prereq reasons
+                                const stepPrereqMap: Record<number, { label: string; met: boolean }[]> = {
+                                    1: [
+                                        { label: `Physical progress ${readiness.metrics.progress.toFixed(0)}%`, met: readiness.metrics.progress >= 100 },
+                                    ],
+                                    2: [
+                                        { label: 'Asset inventory reviewed', met: step > 2 },
+                                    ],
+                                    3: [
+                                        { label: `Pending VOs: ${readiness.metrics.pendingCcos}`, met: readiness.metrics.pendingCcos === 0 },
+                                        { label: `Outstanding balance: Rp ${readiness.metrics.outstandingBalance.toLocaleString()}`, met: readiness.metrics.outstandingBalance === 0 },
+                                    ],
+                                    4: [
+                                        { label: 'All prerequisites met', met: readiness.isReady },
+                                    ],
+                                }
+                                const prereqs = stepPrereqMap[step] ?? []
+                                const metCount = prereqs.filter(p => p.met).length
+                                const totalPrereqs = prereqs.length
+                                const unmet = prereqs.filter(p => !p.met).map(p => p.label)
+                                if (totalPrereqs === 0) return null
+                                return (
+                                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-3 p-2 rounded bg-slate-50">
+                                        <span className="text-emerald-600 font-semibold">✓ {metCount}/{totalPrereqs} terpenuhi</span>
+                                        {unmet.length > 0 && (
+                                            <span className="text-amber-600 font-semibold">
+                                                ⚠ {unmet.length} belum: {unmet[0]}{unmet.length > 1 ? ` +${unmet.length - 1} lagi` : ''}
+                                            </span>
+                                        )}
+                                    </div>
+                                )
+                            })()}
+
                             {step === 1 && summary && (
                                 <div className="grid gap-6 md:grid-cols-3">
                                     <div className="p-4 border rounded-lg bg-green-50 border-green-200">
@@ -438,17 +475,35 @@ export default function HandoverWizard() {
 
             {/* Hidden Report Template removed as we generate PDF programmatically now */}
 
-            <AlertDialog open={confirmArchiveOpen} onOpenChange={setConfirmArchiveOpen}>
+            <AlertDialog open={confirmArchiveOpen} onOpenChange={(open) => {
+                setConfirmArchiveOpen(open)
+                if (!open) setArchiveCodeInput('')
+            }}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Archive this project?</AlertDialogTitle>
+                        <AlertDialogTitle>Arsipkan Proyek?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will hide the project from the main dashboard and mark it as archived.
+                            Tindakan ini tidak dapat dibatalkan. Ketik kode proyek{' '}
+                            <strong>{project?.code ?? project?.name ?? 'PROYEK'}</strong> untuk konfirmasi:
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <Input
+                        className="w-full rounded-md border px-3 py-1.5 text-sm font-mono mt-2"
+                        value={archiveCodeInput}
+                        onChange={e => setArchiveCodeInput(e.target.value)}
+                        placeholder={project?.code ?? project?.name ?? 'PROYEK'}
+                    />
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleArchiveProject}>Archive</AlertDialogAction>
+                        <AlertDialogCancel onClick={() => { setConfirmArchiveOpen(false); setArchiveCodeInput('') }}>
+                            Batal
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            disabled={archiveCodeInput !== (project?.code ?? project?.name ?? 'PROYEK')}
+                            onClick={() => { void handleArchiveProject(); setArchiveCodeInput('') }}
+                            className="bg-rose-600 hover:bg-rose-700 disabled:opacity-40"
+                        >
+                            Arsipkan Proyek
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
