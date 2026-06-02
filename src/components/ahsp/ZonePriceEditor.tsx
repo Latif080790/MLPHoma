@@ -77,6 +77,12 @@ export function ZonePriceEditor({ item, zoneId, currentPrice, open, onClose }: Z
         formData.price_subcon
     ) * (1 + (formData.overheadPercentage + formData.profitPercentage) / 100)
 
+    // Delta vs base item price
+    const basePrice = item?.finalPrice ?? item?.basePrice ?? 0
+    const deltaAbs = finalPrice - basePrice
+    const deltaPct = basePrice > 0 ? (deltaAbs / basePrice) * 100 : 0
+    const deltaPositive = deltaPct > 0
+
     if (!item) return null
 
     return (
@@ -156,10 +162,28 @@ export function ZonePriceEditor({ item, zoneId, currentPrice, open, onClose }: Z
                         </div>
                     </div>
 
-                    {/* Summary */}
+                    {/* Summary with delta badge */}
                     <div className="flex justify-between items-center p-3 bg-muted rounded-md">
-                        <span className="font-semibold text-sm">Harga Akhir Zona:</span>
-                        <span className="font-bold text-lg">{formatIDR(finalPrice)}</span>
+                        <div className="flex flex-col gap-0.5">
+                            <span className="font-semibold text-sm">Harga Akhir Zona:</span>
+                            {basePrice > 0 && (
+                                <span className="text-xs text-muted-foreground">
+                                    Base: {formatIDR(basePrice)}
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                            <span className="font-bold text-lg">{formatIDR(finalPrice)}</span>
+                            {basePrice > 0 && Math.abs(deltaPct) >= 0.01 && (
+                                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-bold font-mono ${
+                                    deltaPositive
+                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                        : 'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
+                                }`}>
+                                    {deltaPositive ? '+' : ''}{deltaPct.toFixed(1)}%
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 

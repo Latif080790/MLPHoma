@@ -1197,7 +1197,7 @@ export function AHSPItemEditor({
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               )}
-              <Button type="submit" size="lg" className="h-11 sm:h-10 w-full sm:w-auto px-8 sm:px-10 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-xl shadow-orange-200/40 transition-all hover:-translate-y-1 active:scale-95" disabled={isSubmitting}>
+              <Button type="submit" size="lg" className="h-11 sm:h-10 w-full sm:w-auto px-8 sm:px-10 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-xl shadow-blue-200/40 transition-all hover:-translate-y-1 active:scale-95" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <span className="flex items-center gap-3">
                     <Database className="animate-spin h-5 w-5" />

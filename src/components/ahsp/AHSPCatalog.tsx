@@ -433,7 +433,21 @@ export function AHSPCatalog({
           toast.warning('Some items were skipped due to missing required fields')
         }
 
-        const itemsToImport = validItems.map(item => {
+        // Dedup check: skip items whose code already exists in the catalog
+        const duplicates = validItems.filter(imp =>
+          ahspItems.some(ex => ex.code === imp.code)
+        )
+        if (duplicates.length > 0) {
+          const codes = duplicates.map((d: { code?: string }) => d.code).slice(0, 3).join(', ')
+          toast.warning(
+            `${duplicates.length} kode AHSP duplikat ditemukan: ${codes}${duplicates.length > 3 ? '...' : ''}. Item tersebut dilewati.`
+          )
+        }
+        const uniqueItems = validItems.filter(imp =>
+          !ahspItems.some(ex => ex.code === imp.code)
+        )
+
+        const itemsToImport = uniqueItems.map(item => {
           const basePrice = item.basePrice || 0
           const overhead = item.overheadPercentage || 0
           const profit = item.profitPercentage || 0

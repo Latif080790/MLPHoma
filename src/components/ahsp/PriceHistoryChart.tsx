@@ -10,6 +10,8 @@ import type { PriceHistory } from '@/types/ahsp'
 interface PriceHistoryChartProps {
   data: PriceHistory[]
   height?: number
+  /** Dates when prices were imported into RAB — shown as indigo marker lines */
+  rabUsageDates?: Array<{ date: string; label: string }>
 }
 
 /**
@@ -17,7 +19,7 @@ interface PriceHistoryChartProps {
  * Renders a simple visual representation of price history.
  * Replace with Recharts or similar library for production use.
  */
-export function PriceHistoryChart({ data, height = 200 }: PriceHistoryChartProps) {
+export function PriceHistoryChart({ data, height = 200, rabUsageDates }: PriceHistoryChartProps) {
   if (!data || data.length === 0) {
     return (
       <div
@@ -49,6 +51,19 @@ export function PriceHistoryChart({ data, height = 200 }: PriceHistoryChartProps
       <div className="text-xs text-center text-muted-foreground">
         {data.length} price change{data.length !== 1 ? 's' : ''} recorded
       </div>
+      {rabUsageDates && rabUsageDates.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {rabUsageDates.map(d => (
+            <span
+              key={d.date}
+              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200"
+              title={`Digunakan di RAB: ${d.date}`}
+            >
+              📎 {d.label}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
