@@ -299,21 +299,25 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
             </div>
           )}
           <PriceDriftBanner projectId={currentProject.id} isLocked={isLocked} />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <Card className="hover-interactive">
               <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Items</CardTitle></CardHeader>
               <CardContent><div className="text-2xl font-bold">{items.length}</div></CardContent>
             </Card>
             <Card className="hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Subtotal</CardTitle></CardHeader>
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Cost</CardTitle></CardHeader>
               <CardContent><div className="text-2xl font-bold">{formatIDR(summary.subtotal)}</div></CardContent>
             </Card>
             <Card className="hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">OH + Profit + Tax</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold">{formatIDR(summary.overhead + summary.profit + summary.tax)}</div></CardContent>
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Harga Jual (Ex PPN)</CardTitle></CardHeader>
+              <CardContent><div className="text-2xl font-bold text-blue-600">{formatIDR(summary.sellingExTax)}</div></CardContent>
+            </Card>
+            <Card className="hover-interactive">
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Kontribusi</CardTitle></CardHeader>
+              <CardContent><div className="text-2xl font-bold text-violet-600">{formatIDR(summary.kontribusiRp)}</div></CardContent>
             </Card>
             <Card className="bg-primary/5 border-primary/20 hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-primary">Final Total</CardTitle></CardHeader>
+              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-primary">Total Jual (Incl PPN)</CardTitle></CardHeader>
               <CardContent><div className="text-2xl font-bold text-primary">{formatIDR(summary.total)}</div></CardContent>
             </Card>
           </div>
@@ -435,12 +439,13 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
       )}
 
       {/* ── KPI strip ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 divide-x divide-slate-200 border-b border-slate-200 flex-shrink-0">
+      <div className="grid grid-cols-5 divide-x divide-slate-200 border-b border-slate-200 flex-shrink-0">
         {([
           { label: 'Items', value: items.length.toString(), cls: 'text-slate-800' },
-          { label: 'Subtotal', value: formatIDR(summary.subtotal), cls: 'text-slate-800' },
-          { label: 'OH + Profit + PPN', value: formatIDR(summary.overhead + summary.profit + summary.tax), cls: summary.subtotal > 0 ? 'text-slate-700' : 'text-slate-400' },
-          { label: 'Final Total', value: formatIDR(summary.total), cls: 'text-blue-600' },
+          { label: 'Total Cost', value: formatIDR(summary.subtotal), cls: 'text-slate-800' },
+          { label: 'Harga Jual', value: formatIDR(summary.sellingExTax), cls: 'text-blue-600' },
+          { label: 'Kontribusi', value: formatIDR(summary.kontribusiRp), cls: summary.kontribusiRp >= 0 ? 'text-violet-600' : 'text-rose-600' },
+          { label: 'Total Jual', value: formatIDR(summary.total), cls: 'text-amber-600' },
         ] as const).map(({ label, value, cls }) => (
           <div key={label} className="bg-white px-3 py-2">
             <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 leading-none mb-0.5">{label}</div>
