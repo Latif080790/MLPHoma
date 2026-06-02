@@ -5,7 +5,7 @@
  */
 
 import React, { useMemo, useCallback, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Card, CardContent } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { AlertTriangle, Calculator, CloudUpload, Lock, MapPin, Settings2, TrendingUp } from 'lucide-react'
@@ -17,6 +17,7 @@ import { useAuthStore } from '@/store/authStore'
 import { RABTable } from '@/components/rab/RABTable'
 import { formatIDR } from '@/lib/utils'
 import { ModuleHeader } from '@/components/modules/ModuleHeader'
+import { SummaryStrip, AlertStrip } from '@/components/patterns'
 import { CardSkeleton } from '@/components/common/LoadingSkeleton'
 import type { RABItem } from '@/types/rab'
 import { PriceDriftBanner } from '@/components/rab/PriceDriftBanner'
@@ -278,49 +279,31 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
         )}
         <div className="space-y-4">
           {isLocked && (
-            <div className="flex items-center gap-2.5 rounded-lg border border-red-200 bg-red-50/60 px-4 py-3 text-sm">
-              <Lock size={15} className="shrink-0 text-red-600" />
-              <span className="font-semibold text-red-700">Baseline RAB Terkunci</span>
-              <span className="text-red-600">— RAB bersifat read-only.</span>
-            </div>
+            <AlertStrip severity="danger" message="Baseline RAB Terkunci — RAB bersifat read-only." />
           )}
           {summary.budgetOverrun && (
-            <div className="flex items-center gap-2.5 rounded-lg border border-rose-200 bg-rose-50/60 px-4 py-3 text-sm">
-              <AlertTriangle size={15} className="shrink-0 text-rose-600" />
-              <span className="font-semibold text-rose-700">RAB Exceeds Project Budget</span>
-              <span className="text-rose-600">by <strong>{formatIDR(summary.budgetOverrunAmount)}</strong> ({summary.budgetUtilization.toFixed(1)}% of budget)</span>
-            </div>
+            <AlertStrip
+              severity="danger"
+              message={`RAB melebihi budget proyek sebesar ${formatIDR(summary.budgetOverrunAmount)} (${summary.budgetUtilization.toFixed(1)}% dari budget)`}
+            />
           )}
           {!summary.budgetOverrun && summary.budgetUtilization > 90 && (
-            <div className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-amber-50/60 px-4 py-3 text-sm">
-              <TrendingUp size={15} className="shrink-0 text-amber-600" />
-              <span className="font-semibold text-amber-700">RAB reached {summary.budgetUtilization.toFixed(1)}% of project budget</span>
-              <span className="text-amber-600">- approaching budget threshold.</span>
-            </div>
+            <AlertStrip
+              severity="warning"
+              message={`RAB mencapai ${summary.budgetUtilization.toFixed(1)}% dari budget proyek — mendekati batas anggaran`}
+            />
           )}
           <PriceDriftBanner projectId={currentProject.id} isLocked={isLocked} />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <Card className="hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Items</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold">{items.length}</div></CardContent>
-            </Card>
-            <Card className="hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Cost</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold">{formatIDR(summary.subtotal)}</div></CardContent>
-            </Card>
-            <Card className="hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Selling Price (Ex Tax)</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold text-blue-600">{formatIDR(summary.sellingExTax)}</div></CardContent>
-            </Card>
-            <Card className="hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Contribution</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold text-violet-600">{formatIDR(summary.kontribusiRp)}</div></CardContent>
-            </Card>
-            <Card className="bg-primary/5 border-primary/20 hover-interactive">
-              <CardHeader className="pb-1 pt-4"><CardTitle className="text-xs font-semibold uppercase tracking-wide text-primary">Total Selling (Incl Tax)</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold text-primary">{formatIDR(summary.total)}</div></CardContent>
-            </Card>
-          </div>
+          <SummaryStrip
+            variant="compact-cards"
+            items={[
+              { label: 'Total Item', value: items.length, status: 'neutral' },
+              { label: 'Biaya Dasar', value: formatIDR(summary.subtotal), status: 'neutral' },
+              { label: 'Harga Jual (Ex PPN)', value: formatIDR(summary.sellingExTax), status: 'info' },
+              { label: 'Kontribusi Kantor', value: formatIDR(summary.kontribusiRp), status: summary.kontribusiRp > 0 ? 'success' : 'neutral' },
+              { label: 'Total + PPN', value: formatIDR(summary.total), status: summary.budgetOverrun ? 'danger' : summary.budgetUtilization > 90 ? 'warning' : 'success' },
+            ]}
+          />
           <Card className="panel-compact">
             <CardContent className="p-0 overflow-x-auto">
               {loading.ahspItems ? <CardSkeleton /> : <RABTable projectId={currentProject.id} />}
