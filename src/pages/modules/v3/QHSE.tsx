@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { ShieldCheck, AlertTriangle, ClipboardCheck, BarChart2, Plus } from 'lucide-react'
+import { ShieldCheck, AlertTriangle, ClipboardCheck, BarChart2, Plus, FileKey } from 'lucide-react'
 import { useProjectStore } from '@/store/projectStore'
 import { qhseService } from '@/services/qhseService'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/select'
 import ModulePageState from '@/components/common/ModulePageState'
 import { PageShell } from '@/components/layouts'
-import { GlobalContextBar, WorkspaceHeader, SummaryStrip } from '@/components/patterns'
+import { GlobalContextBar, WorkspaceHeader, SummaryStrip, AlertStrip } from '@/components/patterns'
 import type {
     SafetyIncident,
     HSEInspection,
@@ -32,8 +32,9 @@ import type {
     IncidentSeverity,
     InspectionType,
     HazardType,
+    WorkPermit,
 } from '@/types/qhse'
-import { format } from 'date-fns'
+import { format, differenceInDays, parseISO } from 'date-fns'
 
 const INCIDENT_TYPE_LABEL: Record<string, string> = {
     NEAR_MISS: 'Near Miss',
@@ -50,6 +51,14 @@ const SEVERITY_COLORS: Record<string, string> = {
     MEDIUM: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
     HIGH: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
     CRITICAL: 'bg-red-500/10 text-red-400 border border-red-500/20',
+}
+
+// Enhanced severity badge config with animated dot for critical
+const SEVERITY_BADGE_CONFIG: Record<string, { cls: string; dot: string }> = {
+    CRITICAL: { cls: 'bg-rose-100 text-rose-700 border-rose-200', dot: 'animate-pulse bg-rose-500' },
+    HIGH: { cls: 'bg-amber-100 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
+    MEDIUM: { cls: 'bg-blue-100 text-blue-700 border-blue-200', dot: 'bg-blue-400' },
+    LOW: { cls: 'bg-slate-100 text-slate-600 border-slate-200', dot: 'bg-slate-400' },
 }
 
 const INCIDENT_TYPE_COLORS: Record<string, string> = {
@@ -690,6 +699,7 @@ export default function QHSE() {
     const [incidents, setIncidents] = useState<SafetyIncident[]>([])
     const [inspections, setInspections] = useState<HSEInspection[]>([])
     const [ibpr, setIbpr] = useState<IBPREntry[]>([])
+    const [permits, setPermits] = useState<WorkPermit[]>([])
     const [summary, setSummary] = useState<QHSESummary | null>(null)
     const [activeTab, setActiveTab] = useState('dashboard')
     const [srStatus, setSrStatus] = useState('')
@@ -717,6 +727,13 @@ export default function QHSE() {
         }
     }
 
+    // Compute expiring permits (within 3 days, not already expired)
+    const expiringPermits = useMemo(() => permits.filter(p => {
+        if (!p.expiry_date || p.status === 'EXPIRED') return false
+        const daysLeft = differenceInDays(parseISO(p.expiry_date), new Date())
+        return daysLeft >= 0 && daysLeft <= 3
+    }), [permits])
+
     useEffect(() => {
         let cancelled = false
         const run = async () => {
@@ -731,6 +748,7 @@ export default function QHSE() {
                 ])
                 if (cancelled) return
                 setIncidents(inc); setInspections(ins); setIbpr(ib); setSummary(sum)
+                setPermits([]) // Work permits: no backend table yet; populated via future service method
                 setSrStatus(`QHSE data loaded: ${inc.length} incidents, ${ins.length} inspections.`)
             } catch {
                 if (cancelled) return
@@ -874,6 +892,7 @@ export default function QHSE() {
                     <TabsTrigger value="incidents"><AlertTriangle className="h-3.5 w-3.5 mr-1.5" />Incidents</TabsTrigger>
                     <TabsTrigger value="inspections"><ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />Inspections</TabsTrigger>
                     <TabsTrigger value="ibpr"><ShieldCheck className="h-3.5 w-3.5 mr-1.5" />IBPR</TabsTrigger>
+                    <TabsTrigger value="permits"><FileKey className="h-3.5 w-3.5 mr-1.5" />Izin Kerja</TabsTrigger>
                 </TabsList>
 
                 {/* Dashboard */}
@@ -886,9 +905,15 @@ export default function QHSE() {
                             <CardContent className="p-0">
                                 {incidents.slice(0, 5).map(inc => (
                                     <div key={inc.id} className="flex items-start gap-3 px-4 py-3 border-b last:border-b-0">
-                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs ${SEVERITY_COLORS[inc.severity]}`}>
-                                            {inc.severity}
-                                        </span>
+                                        {(() => {
+                                            const cfg = SEVERITY_BADGE_CONFIG[inc.severity] ?? SEVERITY_BADGE_CONFIG.LOW
+                                            return (
+                                                <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-xs font-semibold shrink-0 ${cfg.cls}`}>
+                                                    <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                                                    {inc.severity}
+                                                </span>
+                                            )
+                                        })()}
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-medium truncate">{inc.title}</p>
                                             <p className="text-xs text-muted-foreground">{INCIDENT_TYPE_LABEL[inc.type]} · {format(new Date(inc.incident_date), 'dd/MM/yyyy')}</p>
@@ -974,9 +999,15 @@ export default function QHSE() {
                                                 </TableCell>
                                                 <TableCell className="text-xs">{INCIDENT_TYPE_LABEL[inc.type]}</TableCell>
                                                 <TableCell>
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${SEVERITY_COLORS[inc.severity]}`}>
-                                                        {inc.severity}
-                                                    </span>
+                                                    {(() => {
+                                                        const cfg = SEVERITY_BADGE_CONFIG[inc.severity] ?? SEVERITY_BADGE_CONFIG.LOW
+                                                        return (
+                                                            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold ${cfg.cls}`}>
+                                                                <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+                                                                {inc.severity}
+                                                            </span>
+                                                        )
+                                                    })()}
                                                 </TableCell>
                                                 <TableCell className="text-xs">{format(new Date(inc.incident_date), 'dd/MM/yyyy')}</TableCell>
                                                 <TableCell>
@@ -1016,12 +1047,17 @@ export default function QHSE() {
                                             <TableHead>Title</TableHead>
                                             <TableHead>Type</TableHead>
                                             <TableHead>Scheduled</TableHead>
+                                            <TableHead>Checklist</TableHead>
                                             <TableHead>Score</TableHead>
                                             <TableHead>Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {inspections.map(ins => (
+                                        {inspections.map(ins => {
+                                            const totalItems = ins.checklist?.length ?? 0
+                                            const completedItems = ins.checklist?.filter(i => i.status === 'OK').length ?? 0
+                                            const checkPct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+                                            return (
                                             <TableRow key={ins.id} style={ins.score != null && ((ins.score / (ins.max_score || 100)) * 100) < 80 ? { backgroundColor: 'rgba(245,158,11,.08)' } : undefined}>
                                                 <TableCell className="font-mono text-xs">{ins.inspection_number}</TableCell>
                                                 <TableCell className="font-medium text-sm">{ins.title}</TableCell>
@@ -1030,6 +1066,18 @@ export default function QHSE() {
                                                     <span className={new Date(ins.scheduled_date) < new Date() && ins.status !== 'COMPLETED' ? 'text-red-600 font-medium' : ''}>
                                                         {format(new Date(ins.scheduled_date), 'dd/MM/yyyy')}
                                                     </span>
+                                                </TableCell>
+                                                <TableCell className="text-xs min-w-[120px]">
+                                                    {totalItems > 0 ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex-1 h-1.5 rounded-full bg-slate-100">
+                                                                <div className="h-full rounded-full bg-emerald-500" style={{ width: `${checkPct}%` }} />
+                                                            </div>
+                                                            <span className="font-mono text-slate-500 shrink-0">{completedItems}/{totalItems}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-muted-foreground">—</span>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell className="text-xs">
                                                     {ins.score != null
@@ -1045,7 +1093,8 @@ export default function QHSE() {
                                                     </Badge>
                                                 </TableCell>
                                             </TableRow>
-                                        ))}
+                                            )
+                                        })}
                                     </TableBody>
                                 </Table>
                             )}
@@ -1104,6 +1153,78 @@ export default function QHSE() {
                                                 </TableCell>
                                             </TableRow>
                                         ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                {/* Work Permits */}
+                <TabsContent value="permits">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-sm">Izin Kerja / Work Permits ({permits.length})</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {/* Expiry warning banner */}
+                            {expiringPermits.length > 0 && (
+                                <AlertStrip
+                                    severity="warning"
+                                    message={`${expiringPermits.length} izin kerja berakhir dalam 3 hari — segera perbarui`}
+                                    className="mb-3"
+                                />
+                            )}
+                            {permits.length === 0 ? (
+                                <div className="text-center py-12 text-muted-foreground">
+                                    <FileKey className="mx-auto h-10 w-10 mb-3 opacity-30" />
+                                    <p className="text-sm">Belum ada izin kerja terdaftar.</p>
+                                    <p className="text-xs mt-1">Izin kerja (Hot Work, Confined Space, dll.) akan ditampilkan di sini.</p>
+                                </div>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>No. Izin</TableHead>
+                                            <TableHead>Judul</TableHead>
+                                            <TableHead>Tipe</TableHead>
+                                            <TableHead>Ditugaskan</TableHead>
+                                            <TableHead>Berlaku</TableHead>
+                                            <TableHead>Berakhir</TableHead>
+                                            <TableHead>Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {permits.map(p => {
+                                            const daysLeft = p.expiry_date && p.status !== 'EXPIRED'
+                                                ? differenceInDays(parseISO(p.expiry_date), new Date())
+                                                : null
+                                            const isNearExpiry = daysLeft !== null && daysLeft >= 0 && daysLeft <= 3
+                                            return (
+                                                <TableRow key={p.id} className={isNearExpiry ? 'bg-amber-50/60' : undefined}>
+                                                    <TableCell className="font-mono text-xs">{p.permit_number}</TableCell>
+                                                    <TableCell className="font-medium text-sm">{p.title}</TableCell>
+                                                    <TableCell className="text-xs">{p.type.replace(/_/g, ' ')}</TableCell>
+                                                    <TableCell className="text-xs">{p.issued_to}</TableCell>
+                                                    <TableCell className="text-xs">{format(new Date(p.issue_date), 'dd/MM/yyyy')}</TableCell>
+                                                    <TableCell className="text-xs">
+                                                        <span className={isNearExpiry ? 'text-amber-600 font-semibold' : ''}>
+                                                            {format(new Date(p.expiry_date), 'dd/MM/yyyy')}
+                                                            {isNearExpiry && daysLeft !== null && (
+                                                                <span className="ml-1 text-amber-500">({daysLeft}h lagi)</span>
+                                                            )}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge
+                                                            variant={p.status === 'ACTIVE' ? 'default' : p.status === 'EXPIRED' ? 'destructive' : 'secondary'}
+                                                            className="text-xs"
+                                                        >
+                                                            {p.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
                                     </TableBody>
                                 </Table>
                             )}

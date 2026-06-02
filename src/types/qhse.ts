@@ -85,6 +85,29 @@ export interface QHSESummary {
 }
 
 // ------------------------------------------------------------------
+// Work Permits
+// ------------------------------------------------------------------
+
+export type WorkPermitStatus = 'ACTIVE' | 'EXPIRED' | 'PENDING' | 'REVOKED'
+export type WorkPermitType = 'HOT_WORK' | 'CONFINED_SPACE' | 'HEIGHT_WORK' | 'ELECTRICAL' | 'EXCAVATION' | 'GENERAL'
+
+export interface WorkPermit {
+    id: string
+    project_id: string
+    permit_number: string
+    title: string
+    type: WorkPermitType
+    status: WorkPermitStatus
+    issued_to: string
+    issue_date: string
+    expiry_date: string
+    area?: string
+    description?: string
+    created_at: string
+    updated_at: string
+}
+
+// ------------------------------------------------------------------
 // Corrective Actions
 // ------------------------------------------------------------------
 
