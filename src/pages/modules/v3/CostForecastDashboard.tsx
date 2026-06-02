@@ -100,7 +100,13 @@ function KpiCard({ label, value, sub, icon, accent = 'default', isAlert }: KpiCa
     )
 }
 
+const PERIODS = ['Minggu', 'Bulan', 'Kuartal', 'Full Proyek'] as const
+type Period = typeof PERIODS[number]
+
 export default function CostForecastDashboard() {
+    const [selectedPeriod, setSelectedPeriod] = React.useState<Period>('Bulan')
+    const [forecastScenario, setForecastScenario] = React.useState<'optimistis' | 'realistis' | 'pesimistis'>('realistis')
+
     const activeProjectId = useProjectStore(s => s.activeProjectId)
     const activeProjectName = useProjectStore(s => activeProjectId ? s.projects[activeProjectId]?.name || 'Project' : 'Project')
     const { history, projections, loading, fetchHistory, generateSnapshot } = useForecastStore(
@@ -171,13 +177,16 @@ export default function CostForecastDashboard() {
         >
             {/* EAC Projection cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <KpiCard
-                    label="EAC Standard"
-                    value={projections?.eacStandard?.toLocaleString('id-ID')}
-                    sub="Berbasis CPI saat ini"
-                    icon={<TrendingUp />}
-                    accent="default"
-                />
+                <div className="relative">
+                    <KpiCard
+                        label="EAC Standard"
+                        value={projections?.eacStandard?.toLocaleString('id-ID')}
+                        sub="Berbasis CPI saat ini"
+                        icon={<TrendingUp />}
+                        accent="default"
+                    />
+                    <span className="absolute bottom-2 right-3 text-xs text-slate-400 font-mono">±10% band</span>
+                </div>
                 <KpiCard
                     label="EAC Konservatif"
                     value={projections?.eacConservative?.toLocaleString('id-ID')}
@@ -214,28 +223,56 @@ export default function CostForecastDashboard() {
 
                 {/* PV / EV / AC Area Chart */}
                 <div className="lg:col-span-8 rounded-xl border border-border bg-card p-5">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                            EVM Performance History
-                        </h3>
-                        <div className="flex items-center gap-3">
-                            {[
-                                { color: C_PV, label: 'PV', dashed: true },
-                                { color: C_EV, label: 'EV', dashed: false },
-                                { color: C_AC, label: 'AC', dashed: false },
-                            ].map(({ color, label, dashed }) => (
-                                <span key={label} className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
-                                    <span
-                                        className="inline-block h-px w-5"
-                                        style={{
-                                            background: color,
-                                            borderTop: dashed ? `2px dashed ${color}` : undefined,
-                                            height: dashed ? 0 : 2,
-                                        }}
-                                    />
-                                    {label}
-                                </span>
-                            ))}
+                    <div className="flex flex-col gap-3 mb-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                                EVM Performance History
+                            </h3>
+                            <div className="flex items-center gap-3">
+                                {[
+                                    { color: C_PV, label: 'PV', dashed: true },
+                                    { color: C_EV, label: 'EV', dashed: false },
+                                    { color: C_AC, label: 'AC', dashed: false },
+                                ].map(({ color, label, dashed }) => (
+                                    <span key={label} className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+                                        <span
+                                            className="inline-block h-px w-5"
+                                            style={{
+                                                background: color,
+                                                borderTop: dashed ? `2px dashed ${color}` : undefined,
+                                                height: dashed ? 0 : 2,
+                                            }}
+                                        />
+                                        {label}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4 flex-wrap">
+                            {/* Period selector */}
+                            <div className="flex rounded-md border border-slate-200 overflow-hidden text-xs">
+                                {PERIODS.map(p => (
+                                    <button key={p} type="button"
+                                        onClick={() => setSelectedPeriod(p)}
+                                        className={`px-2.5 py-1 ${selectedPeriod === p ? 'bg-blue-600 text-white' : 'text-slate-500 bg-white hover:bg-slate-50'}`}
+                                    >{p}</button>
+                                ))}
+                            </div>
+                            {/* Scenario toggle */}
+                            <div className="flex items-center gap-1.5 text-xs">
+                                <span className="text-slate-400 font-semibold uppercase tracking-wider">Skenario:</span>
+                                {(['optimistis', 'realistis', 'pesimistis'] as const).map(s => (
+                                    <button key={s} type="button" onClick={() => setForecastScenario(s)}
+                                        className={`capitalize px-2 py-0.5 rounded-full font-semibold border transition-all ${
+                                            forecastScenario === s
+                                                ? s === 'optimistis' ? 'bg-emerald-600 text-white border-emerald-600'
+                                                : s === 'pesimistis' ? 'bg-rose-600 text-white border-rose-600'
+                                                : 'bg-blue-600 text-white border-blue-600'
+                                                : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400'
+                                        }`}
+                                    >{s}</button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                     <div className="h-[320px] w-full">
