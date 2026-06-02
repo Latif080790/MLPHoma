@@ -51,6 +51,7 @@ import type { ResourceNeedWithTrace } from '@/services/resourcePlanService'
 import type { ResourceType, AHSPItem } from '@/types/ahsp'
 import type { RapItem } from '@/services/rapService'
 import { ExportMenu } from '@/components/shared/ExportMenu'
+import { SummaryStrip } from '@/components/patterns'
 
 // Stable fallback â€” never recreated, prevents Zustand infinite re-render
 const EMPTY_RAP: RapItem[] = []
@@ -156,6 +157,10 @@ export default function ResourcePlan({ embedded = false, onSwitchToRap }: { embe
     new Set(['material', 'labor', 'equipment', 'subcontractor']),
   )
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+
+  // Resource type filter for the simple pill row
+  const RESOURCE_TYPE_PILLS = ['Semua', 'Labor', 'Material', 'Equipment', 'Subcontractor'] as const
+  const [resourceTypeFilter, setResourceTypeFilter] = React.useState<string>('Semua')
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
   const [timePeriod, setTimePeriod] = useState<'day' | 'week' | 'month'>('week')
 
@@ -385,6 +390,31 @@ export default function ResourcePlan({ embedded = false, onSwitchToRap }: { embe
           </div>
         }
       />      )}
+      {/* â”€â”€ SummaryStrip â”€â”€ */}
+      <SummaryStrip variant="compact-cards" items={[
+        { label: 'Total Sumber Daya', value: resourceNeeds.length, status: 'neutral' },
+        { label: 'Biaya Dasar', value: formatIDR(stats.totalCost), status: 'neutral' },
+        { label: 'Cost Basis', value: costBasis === 'rap' ? 'RAP Plafon' : 'RAPP', status: 'info' },
+      ]} />
+
+      {/* â”€â”€ Resource type filter pills â”€â”€ */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {RESOURCE_TYPE_PILLS.map(pill => (
+          <button
+            key={pill}
+            type="button"
+            onClick={() => setResourceTypeFilter(pill)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
+              resourceTypeFilter === pill
+                ? 'bg-indigo-600 text-white border-indigo-600'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700'
+            }`}
+          >
+            {pill}
+          </button>
+        ))}
+      </div>
+
       {/* â”€â”€ Warning: unlinked RAP items â”€â”€ */}
       {unlinkedCount > 0 && (
         <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs dark:border-amber-800 dark:bg-amber-900/20">
@@ -671,6 +701,7 @@ export default function ResourcePlan({ embedded = false, onSwitchToRap }: { embe
                     <TableHead className="h-8 text-right text-xs font-bold uppercase tracking-wider">Vol Total</TableHead>
                     <TableHead className="h-8 text-right text-xs font-bold uppercase tracking-wider">Harga Satuan</TableHead>
                     <TableHead className="h-8 text-right text-xs font-bold uppercase tracking-wider">Total Biaya</TableHead>
+                    <TableHead className="h-8 text-right text-xs font-bold uppercase tracking-wider">Alokasi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -689,6 +720,7 @@ export default function ResourcePlan({ embedded = false, onSwitchToRap }: { embe
                           <TableCell className="py-1.5 text-right text-xs font-bold font-mono text-slate-700 dark:text-slate-200">
                             {formatIDR(subtotal)}
                           </TableCell>
+                          <TableCell />
                         </TableRow>
 
                         {/* Resource rows (Level 1) */}
@@ -727,6 +759,21 @@ export default function ResourcePlan({ embedded = false, onSwitchToRap }: { embe
                                 </TableCell>
                                 <TableCell className="py-1.5 text-right font-mono text-xs font-semibold text-slate-800 dark:text-slate-100">
                                   {formatIDR(r.totalCost)}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-right">
+                                  {(() => {
+                                    const utilizationPct = stats.totalCost > 0 ? Math.round((r.totalCost / stats.totalCost) * 100) : 0
+                                    const heatCls = utilizationPct >= 85
+                                      ? 'bg-rose-100 text-rose-700'
+                                      : utilizationPct >= 60
+                                      ? 'bg-amber-100 text-amber-700'
+                                      : 'bg-slate-50 text-slate-500'
+                                    return (
+                                      <span className={`inline-block rounded px-1.5 py-0.5 font-mono text-xs font-semibold ${heatCls}`}>
+                                        {utilizationPct}%
+                                      </span>
+                                    )
+                                  })()}
                                 </TableCell>
                               </TableRow>
 
@@ -784,6 +831,7 @@ export default function ResourcePlan({ embedded = false, onSwitchToRap }: { embe
                     <TableCell className="py-2 text-right font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
                       {formatIDR(stats.totalCost)}
                     </TableCell>
+                    <TableCell />
                   </TableRow>
                 </TableBody>
               </Table>
