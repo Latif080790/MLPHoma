@@ -76,20 +76,26 @@ export const getRABColumns = (
     onSelectRow,
     onVolumeChange,
     onPriceChange,
+    onMarginChange,
     onRemoveRow,
     onToggleExpand,
     paretoMap,
     projectLocked,
     validLinksByRabItem,
+    marginMode,
+    getEffectiveMargin,
   }: {
     onSelectRow: (id: string, checked: boolean) => void
     onVolumeChange: (id: string, value: string) => void
     onPriceChange: (id: string, value: string) => void
+    onMarginChange: (id: string, value: string) => void
     onRemoveRow: (id: string) => void
     onToggleExpand: (id: string) => void
     paretoMap: Map<string, string>
     projectLocked: boolean
     validLinksByRabItem: Record<string, any[]>
+    marginMode: 'fixed' | 'per_item'
+    getEffectiveMargin: (id: string) => number
   }
 ): ColumnDef<any>[] => [
   {
@@ -241,6 +247,32 @@ export const getRABColumns = (
       />
     ),
     size: 140,
+  },
+  {
+    id: 'margin_pct',
+    header: () => <div className="text-right">Margin %</div>,
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => getEffectiveMargin(rowA.original.id) - getEffectiveMargin(rowB.original.id),
+    cell: ({ row }) => {
+      const marginValue = getEffectiveMargin(row.original.id)
+      if (marginMode === 'per_item') {
+        return (
+          <NumberInputCell
+            value={marginValue}
+            disabled={projectLocked}
+            onCommit={(val) => onMarginChange(row.original.id, val)}
+          />
+        )
+      }
+      return (
+        <div className="text-right">
+          <Badge variant="outline" className="h-5 px-2 text-xs font-mono text-slate-600">
+            {marginValue.toFixed(1)}%
+          </Badge>
+        </div>
+      )
+    },
+    size: 100,
   },
   {
     id: 'total',

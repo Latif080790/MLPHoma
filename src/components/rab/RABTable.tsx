@@ -23,6 +23,7 @@ import { generateScheduleFromRAB } from '@/lib/autoScheduler'
 import { baselineService } from '@/services/baselineService'
 import { rabWbsLinkService } from '@/services/rabWbsLinkService'
 import { formatIDR } from '@/lib/utils'
+import { readMarginSettings, effectiveMarginPct } from '@/lib/marginSettings'
 
 import { RABPriceDriftDashboard } from './RABPriceDriftDashboard'
 import { RABVersionHistory } from './RABVersionHistory'
@@ -48,6 +49,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
   const { fetchComponents, componentsByAHSP, ahspItems } = useAHSPStore()
   const { getTasks, setTasks } = useTimelineStore()
   const project = useProjectStore(s => s.projects[projectId])
+  const updateProject = useProjectStore(s => s.updateProject)
   const { zones } = useAHSPStore()
   const { importWBS, itemsByProject: wbsItemsByProject } = useWBSStore()
   const { fetchLinks, addLink, linksByRabItem } = useRabWbsLinkStore()
@@ -82,8 +84,34 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     volume: true,
     unit: true,
     unit_price: true,
+    margin_pct: true,
     total: true,
   })
+
+  const marginSettings = useMemo(() => readMarginSettings(project?.meta), [project?.meta])
+
+  const getEffectiveMargin = useCallback((itemId: string) => {
+    return effectiveMarginPct(marginSettings, itemId)
+  }, [marginSettings])
+
+  const handleMarginChange = useCallback((itemId: string, val: string) => {
+    if (!project?.id) return
+    const parsed = Number.parseFloat(val)
+    if (!Number.isFinite(parsed)) return
+    const clamped = Math.max(0, Math.min(99.99, parsed))
+    const base = readMarginSettings(project.meta)
+    updateProject(project.id, {
+      meta: {
+        ...project.meta,
+        ...base,
+        marginMode: 'per_item',
+        itemMargins: {
+          ...base.itemMargins,
+          [itemId]: clamped,
+        },
+      },
+    })
+  }, [project, updateProject])
 
   // Fetch effects
   useEffect(() => { if (projectId) fetchLinks(projectId) }, [projectId, fetchLinks])
@@ -278,12 +306,15 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     onSelectRow: (id, checked) => setRowSelection(prev => ({ ...prev, [id]: checked })),
     onVolumeChange: (id, val) => updateItem(projectId, id, { volume: parseFloat(val) || 0 }),
     onPriceChange: (id, val) => updateItem(projectId, id, { unit_price: parseFloat(val) || 0 }),
+    onMarginChange: handleMarginChange,
     onRemoveRow: (id) => removeItem(projectId, id),
     onToggleExpand: (id) => {}, // Handled by DataTable internally
     paretoMap,
     projectLocked,
-    validLinksByRabItem: linksByRabItem
-  }), [projectId, paretoMap, projectLocked, linksByRabItem, updateItem, removeItem, setRowSelection])
+    validLinksByRabItem: linksByRabItem,
+    marginMode: marginSettings.marginMode,
+    getEffectiveMargin,
+  }), [projectId, paretoMap, projectLocked, linksByRabItem, updateItem, removeItem, handleMarginChange, marginSettings.marginMode, getEffectiveMargin])
 
   useUnsavedChanges(hasUnsavedChanges, 'RAB has unpublished drafts. Leave without saving?')
 
@@ -327,6 +358,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
           { id: 'volume', label: 'Volume' },
           { id: 'unit', label: 'Satuan' },
           { id: 'unit_price', label: 'Harga Satuan' },
+          { id: 'margin_pct', label: 'Margin %' },
           { id: 'total', label: 'Total Harga' },
         ]}
         columnVisibility={columnVisibility}
@@ -372,6 +404,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
                <tfoot className="sticky bottom-0 bg-muted/30/95 backdrop-blur z-20 border-t-2 border-border">
                   <tr className="hover:bg-transparent">
                     <td colSpan={5} className="py-3 px-4 text-right font-black text-xs text-muted-foreground uppercase tracking-wider">Sub-Totals</td>
+                    <td className="py-3" />
                     <td className="py-3" />
                     <td className="py-3" />
                     <td className="py-3" />
