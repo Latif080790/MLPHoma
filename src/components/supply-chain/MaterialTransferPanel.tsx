@@ -6,7 +6,7 @@
  * Epic S1.2: Material Transfer Workflow
  */
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Fragment } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -40,10 +40,14 @@ import {
     Package,
     Loader2,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useSupplyChainStore } from '@/store/supplyChainStore'
 import { useProjectStore } from '@/store/projectStore'
 import { useAuthStore } from '@/store/authStore'
 import type { TransferStatus, CreateTransferInput } from '@/types/material-transfer'
+
+// Task 2.3: Status flow progression — matches TransferStatus values
+const STATUS_FLOW: TransferStatus[] = ['PENDING', 'APPROVED', 'EXECUTED']
 
 const STATUS_CONFIG: Record<TransferStatus, { label: string; icon: React.ReactNode; className: string }> = {
     PENDING: { label: 'Pending', icon: <Clock className="h-3 w-3" />, className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
@@ -157,6 +161,33 @@ export function MaterialTransferPanel() {
                 </div>
             </CardHeader>
 
+            {/* Task 2.3: Status flow progression indicator — shows pipeline as a panel legend */}
+            <div className="px-4 pb-3">
+                <div className="flex items-center gap-1 text-xs mb-1">
+                    {STATUS_FLOW.map((s, i) => {
+                        const countAtStatus = materialTransfers.filter(t => t.status === s).length
+                        const isActive = filter === s
+                        return (
+                            <Fragment key={s}>
+                                <span className={cn(
+                                    'px-2 py-0.5 rounded-full font-semibold',
+                                    isActive
+                                        ? 'bg-blue-600 text-white'
+                                        : countAtStatus > 0
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : 'bg-slate-100 text-slate-400'
+                                )}>
+                                    {s}{countAtStatus > 0 ? ` (${countAtStatus})` : ''}
+                                </span>
+                                {i < STATUS_FLOW.length - 1 && (
+                                    <span className="text-slate-300">→</span>
+                                )}
+                            </Fragment>
+                        )
+                    })}
+                </div>
+            </div>
+
             <CardContent className="pt-0">
                 {loading.transfer ? (
                     <div className="flex items-center justify-center py-8 text-muted-foreground">
@@ -193,6 +224,34 @@ export function MaterialTransferPanel() {
                                                         <AlertTriangle className="h-3 w-3" /> Emergency
                                                     </div>
                                                 )}
+                                                {/* Task 2.3: Per-row status flow position */}
+                                                {(() => {
+                                                    const currentIdx = STATUS_FLOW.indexOf(t.status === 'REJECTED' ? 'APPROVED' : t.status)
+                                                    const isRejected = t.status === 'REJECTED'
+                                                    return (
+                                                        <div className="flex items-center gap-1 text-xs mt-1">
+                                                            {STATUS_FLOW.map((s, i) => (
+                                                                <Fragment key={s}>
+                                                                    <span className={cn(
+                                                                        'px-1.5 py-0 rounded-full font-semibold text-xs',
+                                                                        isRejected && s === 'APPROVED'
+                                                                            ? 'bg-red-100 text-red-600'
+                                                                            : i < currentIdx
+                                                                                ? 'bg-emerald-100 text-emerald-700'
+                                                                                : i === currentIdx
+                                                                                    ? 'bg-blue-600 text-white'
+                                                                                    : 'bg-slate-100 text-slate-400'
+                                                                    )}>
+                                                                        {isRejected && s === 'APPROVED' ? 'REJECTED' : s}
+                                                                    </span>
+                                                                    {i < STATUS_FLOW.length - 1 && (
+                                                                        <span className="text-slate-300 text-xs">→</span>
+                                                                    )}
+                                                                </Fragment>
+                                                            ))}
+                                                        </div>
+                                                    )
+                                                })()}
                                             </td>
                                             <td className="px-3 py-2.5 text-muted-foreground">
                                                 <span className="text-foreground">{t.sourceWbsName || t.sourceWbsId}</span>

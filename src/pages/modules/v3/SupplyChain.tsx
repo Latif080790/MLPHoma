@@ -10,9 +10,25 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { cn } from "@/lib/utils"
 import { useProjectStore } from "@/store/projectStore"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import { useAuthStore } from "@/store/authStore"
+import { useRabStore } from "@/store/rabStore"
+import { useTimelineStore } from "@/store/timelineStore"
+import { useShallow } from "zustand/react/shallow"
+import { analyzeMaterialShortages, type MaterialAlert } from "@/services/mrpAlertService"
+import type { TimelineTask as MRPTimelineTask } from "@/types/timeline"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
 import { format } from "date-fns"
 import { EmptyState } from "@/components/common/EmptyState"
@@ -163,6 +179,17 @@ export default function SupplyChain() {
     const [selectedPoIds, setSelectedPoIds] = useState<Set<string>>(new Set())
     const [selectedMrIds, setSelectedMrIds] = useState<Set<string>>(new Set())
 
+    // Task 2.3B: Bulk confirm dialog state
+    const [bulkPendingAction, setBulkPendingAction] = useState<{ type: 'approve' | 'reject'; ids: string[] } | null>(null)
+
+    // Task 2.3A: MRP alert data for inline stock-vs-need gap strip
+    const rabItems = useRabStore(useShallow(s => activeProjectId ? s.getItems(activeProjectId) : []))
+    const timelineTasks = useTimelineStore(useShallow(s => activeProjectId ? s.getTasks(activeProjectId) : []))
+    const mrpSummary = useMemo(() => {
+        if (!activeProjectId) return { alerts: [] as MaterialAlert[], criticalCount: 0, warningCount: 0, infoCount: 0, totalShortfall: 0 }
+        return analyzeMaterialShortages(rabItems, timelineTasks as unknown as MRPTimelineTask[], inventoryStock, purchaseOrders, activeProjectId)
+    }, [activeProjectId, rabItems, timelineTasks, inventoryStock, purchaseOrders])
+
     const filteredMaterialRequests = useMemo(() => {
         const q = searchTerm.trim().toLowerCase()
         return [...materialRequests]
@@ -259,16 +286,23 @@ export default function SupplyChain() {
         if (isAllPoSelected) setSelectedPoIds(new Set())
         else setSelectedPoIds(new Set(selectablePos.map(po => po.id)))
     }
-    const handleBulkPoApprove = async () => {
+    const executeBulkPoAction = async (action: { type: 'approve' | 'reject'; ids: string[] }) => {
         const { user } = useAuthStore.getState()
-        const targets = filteredPurchaseOrders.filter(po => selectedPoIds.has(po.id))
-        for (const po of targets) await updatePoStatus(po.id, 'APPROVED', user?.id)
+        const targets = filteredPurchaseOrders.filter(po => action.ids.includes(po.id))
+        for (const po of targets) {
+            if (action.type === 'approve') {
+                await updatePoStatus(po.id, 'APPROVED', user?.id)
+            } else {
+                await updatePoStatus(po.id, 'REJECTED')
+            }
+        }
         setSelectedPoIds(new Set())
     }
-    const handleBulkPoReject = async () => {
-        const targets = filteredPurchaseOrders.filter(po => selectedPoIds.has(po.id))
-        for (const po of targets) await updatePoStatus(po.id, 'REJECTED')
-        setSelectedPoIds(new Set())
+    const handleBulkPoApprove = () => {
+        setBulkPendingAction({ type: 'approve', ids: Array.from(selectedPoIds) })
+    }
+    const handleBulkPoReject = () => {
+        setBulkPendingAction({ type: 'reject', ids: Array.from(selectedPoIds) })
     }
 
     // v4 Sprint 2: MR bulk action helpers
@@ -558,9 +592,62 @@ export default function SupplyChain() {
                 onImport={handlePoImport}
             />
 
+            {/* Task 2.3B: Bulk confirm AlertDialog */}
+            <AlertDialog open={!!bulkPendingAction} onOpenChange={(o) => { if (!o) setBulkPendingAction(null) }}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Konfirmasi Bulk {bulkPendingAction?.type === 'approve' ? 'Approve' : 'Reject'}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Anda akan {bulkPendingAction?.type === 'approve' ? 'menyetujui' : 'menolak'}{' '}
+                            {bulkPendingAction?.ids.length} item. Lanjutkan?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setBulkPendingAction(null)}>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (bulkPendingAction) {
+                                    void executeBulkPoAction(bulkPendingAction)
+                                }
+                                setBulkPendingAction(null)
+                            }}
+                        >
+                            {bulkPendingAction?.type === 'approve' ? 'Approve' : 'Reject'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             {/* MRP Alert Panel — surface material shortage alerts at top of Supply Chain */}
             <div className="mb-4">
                 <MRPAlertPanel compact />
+                {/* Task 2.3A: Stock vs Need gap strip — inline below MRPAlertPanel */}
+                {mrpSummary.alerts.length > 0 && (
+                    <div className="mt-2 space-y-1.5 px-1">
+                        {mrpSummary.alerts.slice(0, 5).map(alert => {
+                            const gap = alert.totalNeeded - alert.currentStock
+                            return (
+                                <div key={alert.id} className="flex items-center gap-3 text-xs">
+                                    <span className="text-slate-500 truncate max-w-[140px] font-medium">{alert.resourceName}</span>
+                                    <span className="text-slate-500">
+                                        Dibutuhkan: <strong className="font-mono">{alert.totalNeeded} {alert.unit}</strong>
+                                    </span>
+                                    <span className="text-slate-500">
+                                        Stok: <strong className="font-mono">{alert.currentStock} {alert.unit}</strong>
+                                    </span>
+                                    <span className={cn(
+                                        "px-2 py-0.5 rounded-full font-semibold font-mono",
+                                        gap > 0 ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"
+                                    )}>
+                                        Gap: {gap > 0 ? '+' : ''}{gap} {alert.unit}
+                                    </span>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -806,7 +893,29 @@ export default function SupplyChain() {
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="font-mono text-xs font-medium text-blue-600 dark:text-blue-400 py-2 border-r border-transparent">
-                                                        {po.poNumber}
+                                                        <div>{po.poNumber}</div>
+                                                        {/* Task 2.3C: Procurement trace chain display */}
+                                                        <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-400">
+                                                            <span className="bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-mono">
+                                                                PO-{po.poNumber ?? po.id?.slice(0, 8)}
+                                                            </span>
+                                                            <span>→</span>
+                                                            {(po.status === 'PARTIALLY_RECEIVED' || po.status === 'COMPLETED') ? (
+                                                                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-mono">
+                                                                    GRN-{po.poNumber.slice(-4)}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-slate-300 italic font-sans font-normal">GRN pending</span>
+                                                            )}
+                                                            <span>→</span>
+                                                            {po.status === 'COMPLETED' ? (
+                                                                <span className="bg-violet-50 text-violet-700 border border-violet-200 px-1.5 py-0.5 rounded font-mono">
+                                                                    INV-{po.poNumber.slice(-4)}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-slate-300 italic font-sans font-normal">Invoice pending</span>
+                                                            )}
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell className="py-2 text-sm text-muted-foreground">
                                                         {po.vendorName || '-'}
