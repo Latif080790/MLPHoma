@@ -107,4 +107,33 @@ describe('costingMargin', () => {
       expect(bonus(1_000_000, 1_200_000)).toBe(-200_000)
     })
   })
+
+  describe('waterfall reconciliation (spec §10)', () => {
+    // The RAB → RAP → RAPP waterfall must close: the office contribution, the team
+    // bonus, and the PM execution plan together account for the entire selling price.
+    //   kontribusi(rabSelling, rapKontribusi) + bonus(rapKontribusi, rapp) + rapp === rabSelling
+    const reconciles = (rabSelling: number, rapKontribusi: number, rapp: number) =>
+      kontribusi(rabSelling, rapKontribusi) + bonus(rapKontribusi, rapp) + rapp
+
+    it('closes for the CMPLNG VILLAGE fixture (margin 35%, RAPP under plafon)', () => {
+      const rabSelling = sellingFromBase(4_966_572_640, 35)
+      const rapKontribusi = 4_966_572_640
+      const rapp = 4_500_000_000
+      expect(reconciles(rabSelling, rapKontribusi, rapp)).toBeCloseTo(rabSelling, 6)
+    })
+
+    it('closes even when RAPP overruns the plafon (negative bonus)', () => {
+      const rabSelling = sellingFromBase(1_000_000, 20)
+      const rapKontribusi = 1_000_000
+      const rapp = 1_200_000
+      expect(reconciles(rabSelling, rapKontribusi, rapp)).toBeCloseTo(rabSelling, 6)
+    })
+
+    it('closes at zero margin (selling = base = plafon, kontribusi 0)', () => {
+      const rabSelling = sellingFromBase(2_000_000, 0)
+      const rapKontribusi = 2_000_000
+      const rapp = 1_800_000
+      expect(reconciles(rabSelling, rapKontribusi, rapp)).toBeCloseTo(rabSelling, 6)
+    })
+  })
 })

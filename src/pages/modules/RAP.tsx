@@ -142,15 +142,21 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
   // Project waterfall totals.
   const waterfall = useMemo(() => {
     const pItems = items.filter((i) => i.project_id === projectId)
-    let rabSelling = 0
-    let rapKontribusi = 0
+    // RAB selling & RAP kontribusi are per-RAB-item figures, so sum them over the
+    // set of UNIQUE linked rab_item_ids — multiple RAP items may reference the same
+    // RAB item and must not double-count the contract value. RAPP (total_budget) is a
+    // per-RAP-item figure and is summed across every RAP item.
+    const linkedRabIds = new Set<string>()
     let rapp = 0
     for (const it of pItems) {
-      if (it.rab_item_id) {
-        rabSelling += rabSellingById.get(it.rab_item_id) ?? 0
-        rapKontribusi += rapKontribusiById.get(it.rab_item_id) ?? 0
-      }
+      if (it.rab_item_id) linkedRabIds.add(it.rab_item_id)
       rapp += it.total_budget || 0
+    }
+    let rabSelling = 0
+    let rapKontribusi = 0
+    for (const rabId of linkedRabIds) {
+      rabSelling += rabSellingById.get(rabId) ?? 0
+      rapKontribusi += rapKontribusiById.get(rabId) ?? 0
     }
     const kontribusiRp = kontribusi(rabSelling, rapKontribusi)
     const bonusRp = bonus(rapKontribusi, rapp)
