@@ -32,7 +32,7 @@ interface RABToolbarProps {
   scenarioVersion?: string | null
   onAddItem: () => void
   onBulkDelete: () => void
-  onBulkOverhead?: (percent: number) => void
+  onBulkScaleCost?: (percent: number) => void
   onGenerateWBS: () => void
   onDownloadTemplate: () => void
   onImportExcel: () => void
@@ -52,13 +52,13 @@ interface RABToolbarProps {
 export const RABToolbar: React.FC<RABToolbarProps> = ({
   searchQuery, onSearchChange, activeTab, onTabChange,
   isLocked, draftCount, selectedCount, scenarioVersion,
-  onAddItem, onBulkDelete, onBulkOverhead,
+  onAddItem, onBulkDelete, onBulkScaleCost,
   onGenerateWBS, onAutoSchedule, onShowHistory,
   onDownloadTemplate, onImportExcel, onPriceDrift, onToggleLock,
   onPublish, onSwitchScenario, onSaveScenario, scenarios,
   availableColumns = [], columnVisibility = {}, onColumnVisibilityChange,
 }) => {
-  const [overheadPct, setOverheadPct] = useState('')
+  const [scalePct, setScalePct] = useState('')
   const [bulkPopoverOpen, setBulkPopoverOpen] = useState(false)
 
   return (
@@ -216,28 +216,28 @@ export const RABToolbar: React.FC<RABToolbarProps> = ({
       {/* Bulk actions when items selected */}
       {selectedCount > 0 && (
         <>
-          {onBulkOverhead && (
+          {onBulkScaleCost && (
             <Popover open={bulkPopoverOpen} onOpenChange={setBulkPopoverOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="h-7 px-2 text-xs gap-1 text-indigo-600 border-indigo-100 hover:bg-indigo-50 flex-shrink-0">
                   <Percent size={11} />
-                  Margin ({selectedCount})
+                  Sesuaikan Biaya ({selectedCount})
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-56 p-3">
-                <p className="text-xs font-semibold text-muted-foreground mb-1">Apply Margin Adjustment</p>
-                <p className="text-xs text-muted-foreground mb-2">Scale base unit cost of {selectedCount} items × (1 + %)</p>
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Sesuaikan Biaya Dasar</p>
+                <p className="text-xs text-muted-foreground mb-2">Skala biaya satuan {selectedCount} item × (1 + %). Tidak mengubah margin.</p>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <Input type="number" min={-100} max={500} step={0.5} placeholder="15" value={overheadPct}
-                      onChange={e => setOverheadPct(e.target.value)} className="h-7 text-xs pr-6" />
+                    <Input type="number" min={-100} max={500} step={0.5} placeholder="15" value={scalePct}
+                      onChange={e => setScalePct(e.target.value)} className="h-7 text-xs pr-6" />
                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">%</span>
                   </div>
                   <Button size="sm" className="h-7 text-xs" onClick={() => {
-                    const pct = parseFloat(overheadPct)
+                    const pct = parseFloat(scalePct)
                     if (isNaN(pct)) return
-                    onBulkOverhead(pct)
-                    setOverheadPct('')
+                    onBulkScaleCost(pct)
+                    setScalePct('')
                     setBulkPopoverOpen(false)
                   }}>
                     Apply

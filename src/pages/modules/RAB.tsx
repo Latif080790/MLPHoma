@@ -86,7 +86,7 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
   // Configurable rates — read from projectStore.meta.rabRates (reactive),
   // fallback to legacy localStorage key for backward compat.
   const storageKey = `rab:rates:${currentProject?.id ?? '_'}`
-  const metaRates = currentProject?.meta?.rabRates as { overhead?: number; profit?: number; tax?: number } | undefined
+  const metaRates = currentProject?.meta?.rabRates as { tax?: number } | undefined
   const marginSettings = useMemo(() => readMarginSettings(currentProject?.meta), [currentProject?.meta])
   const setMarginMeta = useCallback((patch: Partial<ReturnType<typeof readMarginSettings>>) => {
     if (!currentProject?.id) return
@@ -94,25 +94,21 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
     updateProject(currentProject.id, { meta: { ...currentProject.meta, ...next } })
   }, [currentProject, updateProject])
 
-  const [overheadPct, setOverheadPct] = React.useState<number>(() => {
-    if (metaRates?.overhead != null) return Number(metaRates.overhead)
-    try { return Number(JSON.parse(localStorage.getItem(storageKey) ?? '{}').overhead ?? 0) } catch { return 0 }
-  })
-  const [profitPct, setProfitPct] = React.useState<number>(() => {
-    if (metaRates?.profit != null) return Number(metaRates.profit)
-    try { return Number(JSON.parse(localStorage.getItem(storageKey) ?? '{}').profit ?? 0) } catch { return 0 }
-  })
+  // Overhead/Profit are no longer applied to RAB totals — margin-on-revenue
+  // (project.meta margin settings) replaced the old markup-on-cost path. Only the
+  // tax (PPN) rate remains a live RAB rate. See costingMargin.ts / marginSettings.ts.
   const [taxRate, setTaxRate] = React.useState<number>(() => {
     if (metaRates?.tax != null) return Number(metaRates.tax)
     try { return Number(JSON.parse(localStorage.getItem(storageKey) ?? '{}').tax ?? 11) } catch { return 11 }
   })
 
-  const persistRates = useCallback((oh: number, pr: number, tx: number) => {
-    // Write to both localStorage (legacy) AND projectStore.meta.rabRates (reactive)
-    localStorage.setItem(storageKey, JSON.stringify({ overhead: oh, profit: pr, tax: tx }))
+  const persistTaxRate = useCallback((tx: number) => {
+    // Write to both localStorage (legacy) AND projectStore.meta.rabRates (reactive).
+    // overhead/profit kept at 0 for backward-compatible shape; they no longer affect totals.
+    localStorage.setItem(storageKey, JSON.stringify({ overhead: 0, profit: 0, tax: tx }))
     if (currentProject?.id) {
       updateProject(currentProject.id, {
-        meta: { ...currentProject.meta, rabRates: { overhead: oh, profit: pr, tax: tx } },
+        meta: { ...currentProject.meta, rabRates: { overhead: 0, profit: 0, tax: tx } },
       })
     }
   }, [storageKey, currentProject, updateProject])
@@ -260,20 +256,15 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">RAB Rate Configuration</span>
               <button type="button" onClick={() => setShowSettings(false)} className="text-xs text-slate-400 hover:text-slate-600">✕ Close</button>
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap items-end gap-4">
               <label className="block min-w-[140px]">
-                <span className="mb-1 block text-xs text-slate-500">Overhead (%)</span>
-                <input type="number" min="0" max="100" step="0.1" value={overheadPct} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setOverheadPct(v); persistRates(v, profitPct, taxRate) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
+                <span className="mb-1 block text-xs text-slate-500">PPN / Tax (%)</span>
+                <input type="number" min="0" max="100" step="0.1" value={taxRate} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setTaxRate(v); persistTaxRate(v) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
               </label>
-              <label className="block min-w-[140px]">
-                <span className="mb-1 block text-xs text-slate-500">Profit (%)</span>
-                <input type="number" min="0" max="100" step="0.1" value={profitPct} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setProfitPct(v); persistRates(overheadPct, v, taxRate) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
-              </label>
-              <label className="block min-w-[140px]">
-                <span className="mb-1 block text-xs text-slate-500">Tax (%)</span>
-                <input type="number" min="0" max="100" step="0.1" value={taxRate} onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setTaxRate(v); persistRates(overheadPct, profitPct, v) }} className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm focus:border-blue-400 focus:outline-none" />
-              </label>
-              <div className="flex items-end"><Button size="sm" className="h-8 text-xs" onClick={() => setShowSettings(false)}>Apply</Button></div>
+              <p className="text-xs text-slate-400 max-w-[280px] leading-snug">
+                Overhead &amp; profit kini diatur lewat <strong>Margin</strong> (margin-on-revenue), bukan markup terpisah.
+              </p>
+              <Button size="sm" className="h-8 text-xs" onClick={() => setShowSettings(false)}>Apply</Button>
             </div>
           </div>
         )}
@@ -333,9 +324,9 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
               <Lock size={10} /> Locked
             </span>
           )}
-          {(overheadPct > 0 || profitPct > 0 || taxRate !== 11) && (
+          {taxRate !== 11 && (
             <span className="text-xs text-slate-400 font-mono">
-              OH {overheadPct}% · P {profitPct}% · Tax {taxRate}%
+              PPN {taxRate}%
             </span>
           )}
         </div>
@@ -399,24 +390,19 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Rate Configuration</span>
             <button type="button" onClick={() => setShowSettings(false)} className="text-xs text-slate-400 hover:text-slate-600">✕</button>
           </div>
-          <div className="flex flex-wrap gap-3">
-            {[
-              { label: 'Overhead (%)', value: overheadPct, setter: (v: number) => { setOverheadPct(v); persistRates(v, profitPct, taxRate) } },
-              { label: 'Profit (%)', value: profitPct, setter: (v: number) => { setProfitPct(v); persistRates(overheadPct, v, taxRate) } },
-              { label: 'Tax (%)', value: taxRate, setter: (v: number) => { setTaxRate(v); persistRates(overheadPct, profitPct, v) } },
-            ].map(({ label, value, setter }) => (
-              <div key={label} className="flex flex-col gap-1">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</span>
-                <Input
-                  type="number" min="0" max="100" step="0.1" value={value}
-                  onChange={e => setter(Math.max(0, Math.min(100, Number(e.target.value))))}
-                  className="h-8 w-24 text-sm font-mono"
-                />
-              </div>
-            ))}
-            <div className="flex items-end">
-              <Button size="sm" className="h-7 text-xs" onClick={() => setShowSettings(false)}>Apply</Button>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">PPN / Tax (%)</span>
+              <Input
+                type="number" min="0" max="100" step="0.1" value={taxRate}
+                onChange={e => { const v = Math.max(0, Math.min(100, Number(e.target.value))); setTaxRate(v); persistTaxRate(v) }}
+                className="h-8 w-24 text-sm font-mono"
+              />
             </div>
+            <p className="text-xs text-slate-400 max-w-[240px] leading-snug">
+              Overhead &amp; profit kini diatur lewat Margin, bukan markup terpisah.
+            </p>
+            <Button size="sm" className="h-7 text-xs" onClick={() => setShowSettings(false)}>Apply</Button>
           </div>
         </div>
       )}

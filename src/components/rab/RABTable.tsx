@@ -159,7 +159,9 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
     toast.success(`${ids.length} items deleted`)
   }
 
-  const handleBulkOverhead = (percent: number) => {
+  // Scale the BASE unit cost of selected items by (1 + pct%). This adjusts cost
+  // (e.g. price escalation), NOT margin — margin is set separately via the margin column.
+  const handleBulkScaleCost = (percent: number) => {
     const ids = Object.entries(rowSelection).filter(([_, checked]) => checked).map(([id]) => id)
     if (!ids.length) return
     const factor = 1 + percent / 100
@@ -168,7 +170,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
       if (item) updateItem(projectId, id, { unit_price: Math.round((item.unit_price || 0) * factor) })
     })
     setRowSelection({})
-    toast.success(`Margin ${percent > 0 ? '+' : ''}${percent}% applied to ${ids.length} items`)
+    toast.success(`Biaya dasar disesuaikan ${percent > 0 ? '+' : ''}${percent}% untuk ${ids.length} item`)
   }
 
   const rabExportColumns: ExportColumn<RABItem>[] = [
@@ -337,7 +339,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         scenarios={scenarios(projectId)}
         onAddItem={() => setIsAddDialogOpen(true)}
         onBulkDelete={() => setConfirmBulkDelete(true)}
-        onBulkOverhead={handleBulkOverhead}
+        onBulkScaleCost={handleBulkScaleCost}
         onGenerateWBS={() => setConfirmWBSOpen(true)}
         onDownloadTemplate={handleDownloadTemplate}
         onImportExcel={() => setShowBoqImport(true)}
