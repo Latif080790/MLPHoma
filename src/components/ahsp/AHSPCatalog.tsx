@@ -530,9 +530,9 @@ export function AHSPCatalog({
 
       {/* Filter + Action Toolbar */}
       <div className="sticky top-0 z-10 bg-card border border-border rounded-lg overflow-hidden">
-        <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+        <div className="flex items-center gap-2 px-3 py-2">
           {/* Search */}
-          <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <div className="relative flex-1 min-w-[160px] max-w-[280px] shrink">
             <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               type="text"
@@ -587,8 +587,8 @@ export function AHSPCatalog({
             <ZoneManager />
           </div>
 
-          {/* Separator */}
-          <div className="h-4 w-px bg-muted mx-0.5 shrink-0" />
+          {/* Separator — pushes the action group to the far right (single-row toolbar) */}
+          <div className="h-4 w-px bg-muted ml-auto mx-0.5 shrink-0" />
 
           {/* Actions */}
           <div className="flex items-center gap-1 shrink-0">
