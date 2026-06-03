@@ -176,6 +176,10 @@ export interface AHSPActions {
   deleteComponent: (id: string) => void
   reorderComponents: (ahspId: string, componentIds: string[]) => void
   moveComponents: (fromAhspId: string, toAhspId: string) => void
+  /** Persist draft ('temp') components under a real AHSP id after the parent item is saved (avoids FK violation). */
+  commitDraftComponents: (toAhspId: string) => void
+  /** Drop any unsaved draft ('temp') components (e.g. on wizard cancel/reopen). */
+  clearDraftComponents: () => void
 
   // Zone actions
   addZone: (zone: Omit<Zone, 'id' | 'createdAt' | 'updatedAt'>) => void

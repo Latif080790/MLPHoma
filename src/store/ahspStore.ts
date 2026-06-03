@@ -390,8 +390,13 @@ export const useAHSPStore = create<AHSPStore>()(
             }
           })
 
-          syncAHSPComponent(newComp)
-          get().calculateAHSPPrice(ahspId)
+          // 'temp' is the wizard draft bucket for a not-yet-saved AHSP item — do NOT
+          // sync yet (no parent ahsp_items row exists → FK violation). Drafts are
+          // persisted via commitDraftComponents() once the item is saved.
+          if (ahspId !== 'temp') {
+            syncAHSPComponent(newComp)
+            get().calculateAHSPPrice(ahspId)
+          }
         },
 
         updateComponent: (id, updates) => {
@@ -508,6 +513,31 @@ export const useAHSPStore = create<AHSPStore>()(
             return {
               componentsByAHSP: newComponentsByAHSP
             }
+          })
+        },
+
+        commitDraftComponents: (toAhspId) => {
+          const draft = get().componentsByAHSP['temp'] || []
+          if (draft.length === 0) return
+          const migrated = draft.map(c => ({ ...c, ahspId: toAhspId }))
+          set((state) => {
+            const next = { ...state.componentsByAHSP }
+            delete next['temp']
+            next[toAhspId] = [...(next[toAhspId] || []), ...migrated]
+            return { componentsByAHSP: next }
+          })
+          // Parent ahsp_item was already enqueued by addAHSPItem, so these component
+          // upserts run after it (queue is FIFO) and satisfy the ahsp_id FK.
+          migrated.forEach(c => syncAHSPComponent(c))
+          get().calculateAHSPPrice(toAhspId)
+        },
+
+        clearDraftComponents: () => {
+          set((state) => {
+            if (!state.componentsByAHSP['temp']) return state
+            const next = { ...state.componentsByAHSP }
+            delete next['temp']
+            return { componentsByAHSP: next }
           })
         },
 

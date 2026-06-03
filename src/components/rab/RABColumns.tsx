@@ -65,8 +65,60 @@ function NumberInputCell({
 }
 
 /**
+ * Editable currency cell. Shows thousand-separated value (id-ID) when idle, and a
+ * plain editable number while focused. Commits a dot-decimal numeric string on
+ * blur/Enter so the existing parseFloat-based handlers work unchanged.
+ */
+function CurrencyInputCell({
+  value: externalValue,
+  disabled,
+  onCommit,
+}: {
+  value: number | undefined
+  disabled?: boolean
+  onCommit: (val: string) => void
+}) {
+  const fmt = (v: number | undefined) =>
+    v != null && v !== 0 ? v.toLocaleString('id-ID', { maximumFractionDigits: 2 }) : ''
+  const raw = (v: number | undefined) => (v != null && v !== 0 ? String(v) : '')
+  const [local, setLocal] = useState(() => fmt(externalValue))
+  const focused = useRef(false)
+
+  useEffect(() => {
+    if (!focused.current) setLocal(fmt(externalValue))
+  }, [externalValue])
+
+  const commit = () => {
+    // Strip id-ID thousand dots, convert decimal comma to dot, drop anything else.
+    const parsed = local.replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.]/g, '')
+    onCommit(parsed)
+  }
+
+  return (
+    <Input
+      type="text"
+      inputMode="decimal"
+      value={local}
+      disabled={disabled}
+      className="h-7 text-right text-xs bg-muted/30 border-transparent focus:bg-card focus:border-blue-300 transition-all font-mono disabled:opacity-50"
+      onChange={(e) => setLocal(e.target.value)}
+      onFocus={() => { focused.current = true; setLocal(raw(externalValue)) }}
+      onBlur={() => {
+        focused.current = false
+        commit()
+        const n = parseFloat(local.replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.]/g, ''))
+        setLocal(fmt(Number.isFinite(n) ? n : 0))
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') { commit(); e.currentTarget.blur() }
+      }}
+    />
+  )
+}
+
+/**
  * RABColumns
- * 
+ *
  * Column definitions for the New RAB Table.
  * Encapsulates cell rendering logic, including inline editing and visual badges.
  */
@@ -247,7 +299,7 @@ export const getRABColumns = (
       return a - b
     },
     cell: ({ row }) => (
-      <NumberInputCell
+      <CurrencyInputCell
         value={getSellingUnitPrice(row.original.id, row.original.unit_price || 0)}
         disabled={projectLocked || !!row.original.snapshot_price}
         onCommit={(val) => onPriceChange(row.original.id, val)}

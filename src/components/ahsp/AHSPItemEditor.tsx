@@ -124,6 +124,8 @@ export function AHSPItemEditor({
     deleteComponent,
     addResource,
     fetchComponents,
+    commitDraftComponents,
+    clearDraftComponents,
   } = useAHSPStore()
 
   // Get SNI AHSP items from database (not presets)
@@ -136,6 +138,12 @@ export function AHSPItemEditor({
     () => componentsByAHSP[currentAHSPId] || [],
     [componentsByAHSP, currentAHSPId]
   )
+
+  // For a NEW item, clear any leftover draft components from a previous cancelled
+  // session so the 'temp' bucket starts empty.
+  useEffect(() => {
+    if (open && !item) clearDraftComponents()
+  }, [open, item, clearDraftComponents])
 
   // Filtered resources for the library search
   const filteredResources = React.useMemo(() => {
@@ -290,6 +298,12 @@ export function AHSPItemEditor({
       // Save manual components (both for new and existing items)
       const ahspId = savedId || item?.id
       if (ahspId) {
+        // For a NEW item the parent ahsp_item is now enqueued (via onSave), so migrate
+        // the draft 'temp' components onto the real id and sync them after the parent.
+        if (!item) {
+          commitDraftComponents(ahspId)
+        }
+
         // Add manual components as resources first, then as components
         for (const manualComp of manualComponents.filter(c => !c.editing)) {
           // Create temporary resource for manual component
@@ -304,8 +318,9 @@ export function AHSPItemEditor({
             isActive: true,
           })
 
-          // Find the resource we just added by code
-          const tempResource = resources.find(r => r.code === tempResourceCode)
+          // Read fresh store state — `resources` from the render closure is stale
+          // immediately after addResource(), so resources.find() would miss the new row.
+          const tempResource = useAHSPStore.getState().resources.find(r => r.code === tempResourceCode)
 
           // Add as component to AHSP
           if (tempResource) {
