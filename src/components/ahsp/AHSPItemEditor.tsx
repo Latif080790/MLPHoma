@@ -946,10 +946,15 @@ export function AHSPItemEditor({
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-muted-foreground text-sm">{component.resource?.name}</span>
-                                    <span className="text-xs font-mono text-muted-foreground lowercase tracking-widest">{component.resourceId}</span>
-                                  </div>
+                                  {(() => {
+                                    const res = component.resource ?? resources.find(r => r.id === component.resourceId)
+                                    return (
+                                      <div className="flex flex-col">
+                                        <span className="font-bold text-foreground text-sm">{res?.name || 'Komponen tanpa nama'}</span>
+                                        <span className="text-xs font-mono text-muted-foreground tracking-wide">{res?.code || '—'}</span>
+                                      </div>
+                                    )
+                                  })()}
                                 </TableCell>
                                 <TableCell className="text-center font-semibold text-xs text-muted-foreground uppercase">
                                   {component.unit}
