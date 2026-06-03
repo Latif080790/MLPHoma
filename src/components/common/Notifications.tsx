@@ -16,7 +16,8 @@ export default function AppToaster() {
     <Toaster
       richColors
       closeButton
-      position="top-right"
+      // Bottom-right so transient toasts never collide with the fixed top SyncStatusBanner.
+      position="bottom-right"
       duration={4000}
       expand={false}
       offset={16}

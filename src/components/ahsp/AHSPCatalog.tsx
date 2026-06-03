@@ -663,7 +663,7 @@ export function AHSPCatalog({
       <div className="hidden rounded-lg border border-border overflow-hidden shadow-sm bg-card md:block">
         <div
           ref={parentRef}
-          className="max-h-[600px] overflow-auto relative"
+          className="relative"
         >
           {loading.ahspItems ? (
             <div className="flex items-center justify-center py-8">
