@@ -16,7 +16,7 @@ import {
   calculateAHSPPriceInWorker,
   ahspDataService
 } from '../services/ahspService'
-import { syncAHSPItem, syncAHSPItemUpdate, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncAHSPItemUpdate, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -255,8 +255,9 @@ export const useAHSPStore = create<AHSPStore>()(
             resources: [...state.resources, ...newResources],
           }))
 
-          // Persist to Supabase
-          // syncResources(newResources)
+          // Persist to Supabase so imported resources survive reload and satisfy the
+          // ahsp_components.resource_id FK when referenced later.
+          syncResources(newResources)
         },
 
         exportResources: () => {

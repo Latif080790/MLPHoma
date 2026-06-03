@@ -306,9 +306,11 @@ export function AHSPItemEditor({
 
         // Add manual components as resources first, then as components
         for (const manualComp of manualComponents.filter(c => !c.editing)) {
-          // Create temporary resource for manual component
+          // Create resource for the manual component. addResource is async (persists
+          // via the data service) and returns the new id — await it and use that id
+          // directly. Reading from store state right after would be stale/empty.
           const tempResourceCode = `MANUAL-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-          addResource({
+          const newResourceId = await addResource({
             code: tempResourceCode,
             name: manualComp.resourceName,
             type: manualComp.type,
@@ -318,15 +320,11 @@ export function AHSPItemEditor({
             isActive: true,
           })
 
-          // Read fresh store state — `resources` from the render closure is stale
-          // immediately after addResource(), so resources.find() would miss the new row.
-          const tempResource = useAHSPStore.getState().resources.find(r => r.code === tempResourceCode)
-
-          // Add as component to AHSP
-          if (tempResource) {
+          // Add as component to AHSP (only if the resource was created successfully)
+          if (newResourceId) {
             addComponent(ahspId, {
               type: manualComp.type,
-              resourceId: tempResource.id,
+              resourceId: newResourceId,
               coefficient: manualComp.coefficient,
               unit: manualComp.unit,
               unitPrice: manualComp.unitPrice,
