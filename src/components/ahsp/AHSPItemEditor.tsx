@@ -514,48 +514,45 @@ export function AHSPItemEditor({
   }, [resources])
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] p-0 gap-0 border-l border-[hsl(216_24%_14%)] flex flex-col h-screen max-h-screen overflow-hidden bg-[hsl(220_30%_5%)] shadow-2xl">
-        {/* Blueprint grid texture */}
-        <div className="pointer-events-none absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: 'linear-gradient(hsl(217_91%_60%) 1px,transparent 1px),linear-gradient(90deg,hsl(217_91%_60%) 1px,transparent 1px)', backgroundSize: '32px 32px' }} />
-        <SheetHeader className="px-8 py-5 border-b border-[hsl(216_24%_14%)] shrink-0 bg-[hsl(220_28%_8%)] z-20 relative">
+      <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] p-0 gap-0 border-l border-border flex flex-col h-screen max-h-screen overflow-hidden bg-background shadow-2xl">
+        <SheetHeader className="px-8 py-5 border-b border-border shrink-0 bg-card z-20 relative shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="bg-[hsl(217_91%_60%)]/10 p-2.5 rounded-xl ring-1 ring-[hsl(217_91%_60%)]/20">
-              <Edit2 className="h-5 w-5 text-[hsl(213_94%_68%)]" />
+            <div className="bg-blue-500/10 p-2.5 rounded-xl ring-1 ring-blue-500/20">
+              <Edit2 className="h-5 w-5 text-blue-500" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-3">
-                <SheetTitle className="font-display text-xl font-bold text-white tracking-tight">
+                <SheetTitle className="font-display text-xl font-bold text-foreground tracking-tight">
                   {item ? 'Ubah Analisa AHSP' : 'Buat AHSP Baru'}
                 </SheetTitle>
                 {mode && !item && (
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider border ${
                     mode === 'sni'
-                      ? 'bg-[hsl(217_91%_60%)]/10 text-[hsl(213_94%_68%)] border-[hsl(217_91%_60%)]/20'
+                      ? 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400'
                       : mode === 'historical'
-                      ? 'bg-[hsl(152_82%_42%)]/10 text-[hsl(142_79%_52%)] border-[hsl(152_82%_42%)]/20'
-                      : 'bg-[hsl(38_96%_50%)]/10 text-[hsl(41_97%_58%)] border-[hsl(38_96%_50%)]/20'
+                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400'
+                      : 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400'
                   }`}>
                     MODE {mode.toUpperCase()}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[hsl(213_94%_68%)]/60 font-medium mt-0.5 tracking-wide">Atur detail item dan komponen biaya</p>
+              <p className="text-xs text-muted-foreground font-medium mt-0.5">Atur detail item dan komponen biaya</p>
             </div>
           </div>
-          {/* Step indicator — MERIDIAN stepper */}
+          {/* Step indicator — cobalt active, muted idle */}
           <div className="flex items-center gap-0 mt-5">
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
               className={`flex items-center gap-2 px-5 py-2 rounded-l-lg border text-xs font-bold transition-all ${
                 currentStep === 1
-                  ? 'bg-[hsl(217_91%_60%)] border-[hsl(217_91%_60%)] text-white shadow-lg shadow-[hsl(217_91%_60%)]/20'
-                  : 'bg-[hsl(218_26%_11%)] border-[hsl(216_24%_14%)] text-[hsl(213_94%_68%)]/50 hover:text-[hsl(213_94%_68%)] hover:border-[hsl(217_91%_60%)]/40'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-blue-400/40'
               }`}
             >
               <span className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                currentStep === 1 ? 'bg-white/20 text-white' : 'bg-[hsl(216_24%_14%)] text-[hsl(213_94%_68%)]/50'
+                currentStep === 1 ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
               }`}>1</span>
               Info Dasar
             </button>
@@ -564,12 +561,12 @@ export function AHSPItemEditor({
               onClick={() => setCurrentStep(2)}
               className={`flex items-center gap-2 px-5 py-2 rounded-r-lg border-t border-b border-r text-xs font-bold transition-all ${
                 currentStep === 2
-                  ? 'bg-[hsl(217_91%_60%)] border-[hsl(217_91%_60%)] text-white shadow-lg shadow-[hsl(217_91%_60%)]/20'
-                  : 'bg-[hsl(218_26%_11%)] border-[hsl(216_24%_14%)] text-[hsl(213_94%_68%)]/50 hover:text-[hsl(213_94%_68%)] hover:border-[hsl(217_91%_60%)]/40'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-blue-400/40'
               }`}
             >
               <span className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                currentStep === 2 ? 'bg-white/20 text-white' : 'bg-[hsl(216_24%_14%)] text-[hsl(213_94%_68%)]/50'
+                currentStep === 2 ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
               }`}>2</span>
               Komponen
               {components.length + manualComponents.filter(c => !c.editing).length > 0 && (
@@ -586,37 +583,37 @@ export function AHSPItemEditor({
           <div className="flex-1 overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-0">
             {/* Section 1: Master Data — shown on Step 1 */}
             {currentStep === 1 && (
-            <div className="border-b border-[hsl(216_24%_14%)] bg-[hsl(218_26%_11%)] p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 lg:col-[1]">
-              <div className="flex items-center gap-3 pb-4 border-b border-[hsl(216_24%_14%)]">
-                <div className="bg-[hsl(217_91%_60%)]/10 p-2 rounded-xl ring-1 ring-[hsl(217_91%_60%)]/20">
-                  <Database className="h-5 w-5 text-[hsl(213_94%_68%)]" />
+            <div className="border-b border-border bg-background p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 lg:col-[1]">
+              <div className="flex items-center gap-3 pb-4 border-b border-border">
+                <div className="bg-blue-500/10 p-2 rounded-xl ring-1 ring-blue-500/20">
+                  <Database className="h-5 w-5 text-blue-500" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-base text-white uppercase tracking-wide">Master Data</h3>
-                  <p className="text-xs text-[hsl(213_94%_68%)]/50 font-medium">Identifikasi umum dan kategorisasi</p>
+                  <h3 className="font-display font-bold text-base text-foreground uppercase tracking-wide">Master Data</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Identifikasi umum dan kategorisasi</p>
                 </div>
               </div>
               <div className="grid gap-8">
                 {/* Identification Grid */}
-                <div className="bg-[hsl(216_24%_14%)] p-4 sm:p-6 rounded-xl border border-[hsl(214_22%_18%)] space-y-6">
+                <div className="bg-muted/30 p-4 sm:p-6 rounded-xl border border-border space-y-6">
                   <div className="flex items-center gap-2 font-bold text-sm mb-4">
-                    <div className="h-4 w-1 bg-[hsl(217_91%_60%)] rounded-full" />
-                    <span className="text-[hsl(213_94%_68%)]">Identifikasi Umum</span>
+                    <div className="h-4 w-1 bg-blue-500 rounded-full" />
+                    <span className="text-foreground">Identifikasi Umum</span>
                   </div>
 
                   {/* SNI AHSP Selector */}
                   {mode === 'sni' && !item && (
-                    <div className="bg-[hsl(218_26%_11%)] p-5 rounded-xl border border-[hsl(217_91%_60%)]/30 space-y-4 mb-6">
+                    <div className="bg-card p-5 rounded-xl border border-blue-500/30 space-y-4 mb-6">
                       <div className="flex items-center gap-3">
-                        <div className="bg-[hsl(217_91%_60%)]/10 p-2 rounded-xl ring-1 ring-[hsl(217_91%_60%)]/20">
-                          <Database className="h-5 w-5 text-[hsl(213_94%_68%)]" />
+                        <div className="bg-blue-500/10 p-2 rounded-xl ring-1 ring-blue-500/20">
+                          <Database className="h-5 w-5 text-blue-500" />
                         </div>
                         <div>
-                          <h3 className="text-white font-bold text-sm">Pilih dari AHSP SNI yang Ada</h3>
-                          <p className="text-[hsl(213_94%_68%)]/50 text-xs">Template dari database proyek Anda</p>
+                          <h3 className="text-foreground font-bold text-sm">Pilih dari AHSP SNI yang Ada</h3>
+                          <p className="text-muted-foreground text-xs">Template dari database proyek Anda</p>
                         </div>
                       </div>
-                      <p className="text-xs text-[hsl(213_94%_68%)]/40 leading-relaxed">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
                         Pilih AHSP SNI yang sudah ada untuk menyalin semua component & coefficient-nya
                       </p>
                       <Select 
@@ -829,24 +826,24 @@ export function AHSPItemEditor({
 
             {/* Section 2: Component Analysis — shown on Step 2 */}
             {currentStep === 2 && (
-            <div className="min-h-[600px] border-b border-[hsl(216_24%_14%)] bg-[hsl(218_26%_11%)] lg:col-[1]">
-              <div className="px-4 sm:px-6 lg:px-8 py-5 bg-[hsl(220_28%_8%)] border-b border-[hsl(216_24%_14%)] flex items-center gap-3">
-                <div className="bg-[hsl(38_96%_50%)]/10 p-2 rounded-xl ring-1 ring-[hsl(38_96%_50%)]/20">
-                  <Calculator className="h-5 w-5 text-[hsl(41_97%_58%)]" />
+            <div className="min-h-[600px] border-b border-border bg-background lg:col-[1]">
+              <div className="px-4 sm:px-6 lg:px-8 py-5 bg-card border-b border-border flex items-center gap-3">
+                <div className="bg-amber-500/10 p-2 rounded-xl ring-1 ring-amber-500/20">
+                  <Calculator className="h-5 w-5 text-amber-500" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-base text-white uppercase tracking-wide">Analisa Komponen</h3>
-                  <p className="text-xs text-[hsl(213_94%_68%)]/40 font-medium">Struktur rincian biaya pekerjaan</p>
+                  <h3 className="font-display font-bold text-base text-foreground uppercase tracking-wide">Analisa Komponen</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Struktur rincian biaya pekerjaan</p>
                 </div>
               </div>
               <div className="flex flex-col">
-                <div className="px-4 sm:px-6 lg:px-8 py-3 border-b border-[hsl(216_24%_14%)] bg-[hsl(218_26%_11%)] flex items-center justify-end shrink-0">
+                <div className="px-4 sm:px-6 lg:px-8 py-3 border-b border-border bg-background flex items-center justify-end shrink-0">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={handleAddManualComponent}
-                    className="h-8 px-3 rounded-lg border-[hsl(217_91%_60%)]/30 text-[hsl(213_94%_68%)] hover:bg-[hsl(217_91%_60%)]/10 hover:border-[hsl(217_91%_60%)]/50 font-bold text-xs bg-transparent"
+                    className="h-8 px-3 rounded-lg border-border text-blue-600 hover:bg-blue-500/10 hover:border-blue-400/50 font-bold text-xs dark:text-blue-400"
                   >
                     <Plus className="h-3.5 w-3.5 mr-1.5" />
                     Komponen Kustom
@@ -854,17 +851,17 @@ export function AHSPItemEditor({
                 </div>
 
                 <div className="p-4 md:p-6 min-h-[400px]">
-                  <div className="rounded-xl border border-[hsl(216_24%_14%)] bg-[hsl(220_28%_8%)] overflow-hidden">
+                  <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
                     <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                       <Table className="w-full min-w-[680px]">
-                        <TableHeader className="bg-[hsl(216_24%_14%)] sticky top-0 z-10 border-b border-[hsl(214_22%_18%)]">
+                        <TableHeader className="bg-muted/50 sticky top-0 z-10 border-b border-border">
                           <TableRow className="hover:bg-transparent border-0">
-                            <TableHead className="w-24 text-xs font-bold uppercase tracking-widest text-[hsl(213_94%_68%)]/50 py-3 pl-6">Type</TableHead>
-                            <TableHead className="min-w-[180px] text-xs font-bold uppercase tracking-widest text-[hsl(213_94%_68%)]/50 py-3">Deskripsi Resource</TableHead>
-                            <TableHead className="w-16 text-center text-xs font-bold uppercase tracking-widest text-[hsl(213_94%_68%)]/50 py-3">Unit</TableHead>
-                            <TableHead className="w-28 text-right text-xs font-bold uppercase tracking-widest text-[hsl(213_94%_68%)]/50 py-3">Rate</TableHead>
-                            <TableHead className="w-24 text-center text-xs font-bold uppercase tracking-widest text-[hsl(213_94%_68%)]/70 py-3 bg-[hsl(217_91%_60%)]/8 italic">Koef</TableHead>
-                            <TableHead className="w-32 text-right text-xs font-bold uppercase tracking-widest text-[hsl(41_97%_58%)] py-3 pr-6">Subtotal</TableHead>
+                            <TableHead className="w-24 text-xs font-bold uppercase tracking-widest text-muted-foreground py-3 pl-6">Type</TableHead>
+                            <TableHead className="min-w-[180px] text-xs font-bold uppercase tracking-widest text-muted-foreground py-3">Deskripsi Resource</TableHead>
+                            <TableHead className="w-16 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground py-3">Unit</TableHead>
+                            <TableHead className="w-28 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground py-3">Rate</TableHead>
+                            <TableHead className="w-24 text-center text-xs font-bold uppercase tracking-widest text-blue-600 py-3 bg-blue-500/5 italic dark:text-blue-400">Koef</TableHead>
+                            <TableHead className="w-32 text-right text-xs font-bold uppercase tracking-widest text-amber-600 py-3 pr-6 dark:text-amber-400">Subtotal</TableHead>
                             <TableHead className="w-12"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -1072,100 +1069,95 @@ export function AHSPItemEditor({
             )}
 
             {/* Section 3: Cost Distribution Summary — always visible right sidebar */}
-            <div className="bg-[hsl(220_28%_8%)] p-4 sm:p-5 space-y-5 lg:col-[2] lg:row-[1/span_2] lg:border-l lg:border-[hsl(216_24%_14%)] lg:sticky lg:top-0 lg:h-fit lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
-              <div className="flex items-center gap-3 pb-4 border-b border-[hsl(216_24%_14%)]">
-                <div className="bg-[hsl(152_82%_42%)]/10 p-2 rounded-xl ring-1 ring-[hsl(152_82%_42%)]/20">
-                  <Check className="h-5 w-5 text-[hsl(142_79%_52%)]" />
+            <div className="bg-card p-4 sm:p-5 space-y-5 lg:col-[2] lg:row-[1/span_2] lg:border-l lg:border-border lg:sticky lg:top-0 lg:h-fit lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
+              <div className="flex items-center gap-3 pb-4 border-b border-border">
+                <div className="bg-emerald-500/10 p-2 rounded-xl ring-1 ring-emerald-500/20">
+                  <Check className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-base text-white uppercase tracking-wide">Distribusi Biaya</h3>
-                  <p className="text-xs text-[hsl(213_94%_68%)]/40 font-medium">Ringkasan komposisi dan harga</p>
+                  <h3 className="font-display font-bold text-base text-foreground uppercase tracking-wide">Distribusi Biaya</h3>
+                  <p className="text-xs text-muted-foreground font-medium">Ringkasan komposisi dan harga</p>
                 </div>
               </div>
               <div className="grid gap-6">
-                {/* Kalkulasi Akhir — gold hero */}
-                <div className="flex flex-col items-center justify-center py-6 px-5 rounded-xl bg-[hsl(220_28%_8%)] relative overflow-hidden border border-[hsl(216_24%_14%)]">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-[hsl(217_91%_60%)]/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-[hsl(38_96%_50%)]/8 rounded-full blur-[60px] translate-y-1/3 pointer-events-none" />
+                {/* Kalkulasi Akhir — accent hero */}
+                <div className="flex flex-col items-center justify-center py-5 px-5 rounded-xl bg-muted/40 border border-border relative overflow-hidden">
                   <div className="relative z-10 flex flex-col items-center text-center">
-                    <span className="text-xs uppercase font-bold tracking-[0.25em] text-[hsl(213_94%_68%)]/50 mb-3">Kalkulasi Akhir AHSP</span>
-                    <div className="text-2xl lg:text-3xl font-bold font-mono tracking-tight tabular-nums text-[hsl(41_97%_58%)] mb-2 break-all">
+                    <span className="text-xs uppercase font-bold tracking-[0.2em] text-muted-foreground mb-3">Kalkulasi Akhir AHSP</span>
+                    <div className="text-2xl lg:text-3xl font-bold font-mono tracking-tight tabular-nums text-amber-500 dark:text-amber-400 mb-2 break-all">
                       {formatIDR(totals.final)}
                     </div>
-                    <div className="flex items-center gap-2 text-[hsl(213_94%_68%)]/40 font-semibold uppercase tracking-[0.15em] text-xs">
-                      Harga Satuan per <span className="text-[hsl(213_94%_68%)]/70 bg-[hsl(216_24%_14%)] px-2 py-0.5 rounded font-mono">{formData.unit}</span>
+                    <div className="flex items-center gap-2 text-muted-foreground font-semibold uppercase tracking-[0.1em] text-xs">
+                      Harga Satuan per <span className="bg-muted px-2 py-0.5 rounded font-mono text-foreground">{formData.unit}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Rincian Biaya Dasar */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-0.5 bg-[hsl(217_91%_60%)] rounded-full" />
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-[hsl(213_94%_68%)]">Rincian Biaya Dasar</h3>
+                    <div className="h-3 w-0.5 bg-blue-500 rounded-full" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-foreground">Rincian Biaya Dasar</h3>
                   </div>
-                  <div className="space-y-3 bg-[hsl(216_24%_14%)] p-5 rounded-xl border border-[hsl(214_22%_18%)]">
-                    {/* Material — cobalt */}
+                  <div className="space-y-3 bg-muted/30 p-4 rounded-xl border border-border">
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-end">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[hsl(213_94%_68%)]/50">Biaya Material</span>
-                        <span className="font-mono text-xs font-bold text-[hsl(213_94%_68%)]/70">{formatIDR(totals.material)}</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Biaya Material</span>
+                        <span className="font-mono text-xs font-bold text-foreground">{formatIDR(totals.material)}</span>
                       </div>
-                      <div className="h-2 w-full bg-[hsl(218_26%_11%)] rounded-full overflow-hidden">
-                        <div className="h-full bg-[hsl(217_91%_60%)] rounded-full transition-all duration-700" style={{ width: `${(totals.material / (totals.base || 1)) * 100}%` }} />
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full transition-all duration-700" style={{ width: `${(totals.material / (totals.base || 1)) * 100}%` }} />
                       </div>
                     </div>
-                    {/* Labor — amber */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-end">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[hsl(213_94%_68%)]/50">Biaya Tenaga Kerja</span>
-                        <span className="font-mono text-xs font-bold text-[hsl(213_94%_68%)]/70">{formatIDR(totals.labor)}</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Biaya Tenaga Kerja</span>
+                        <span className="font-mono text-xs font-bold text-foreground">{formatIDR(totals.labor)}</span>
                       </div>
-                      <div className="h-2 w-full bg-[hsl(218_26%_11%)] rounded-full overflow-hidden">
-                        <div className="h-full bg-[hsl(38_96%_50%)] rounded-full transition-all duration-700" style={{ width: `${(totals.labor / (totals.base || 1)) * 100}%` }} />
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-amber-500 rounded-full transition-all duration-700" style={{ width: `${(totals.labor / (totals.base || 1)) * 100}%` }} />
                       </div>
                     </div>
-                    {/* Equipment — jade */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-end">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-[hsl(213_94%_68%)]/50">Alat / Peralatan</span>
-                        <span className="font-mono text-xs font-bold text-[hsl(213_94%_68%)]/70">{formatIDR(totals.equipment + totals.subcontractor)}</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Alat / Peralatan</span>
+                        <span className="font-mono text-xs font-bold text-foreground">{formatIDR(totals.equipment + totals.subcontractor)}</span>
                       </div>
-                      <div className="h-2 w-full bg-[hsl(218_26%_11%)] rounded-full overflow-hidden">
-                        <div className="h-full bg-[hsl(152_82%_42%)] rounded-full transition-all duration-700" style={{ width: `${((totals.equipment + totals.subcontractor) / (totals.base || 1)) * 100}%` }} />
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-700" style={{ width: `${((totals.equipment + totals.subcontractor) / (totals.base || 1)) * 100}%` }} />
                       </div>
                     </div>
-                    <div className="pt-3 mt-1 border-t border-[hsl(214_22%_18%)] flex justify-between items-center">
-                      <span className="text-xs font-bold text-white uppercase tracking-wider">Subtotal Biaya Dasar</span>
-                      <span className="text-base font-bold font-mono text-[hsl(41_97%_58%)]">{formatIDR(totals.base)}</span>
+                    <div className="pt-3 mt-1 border-t border-border flex justify-between items-center">
+                      <span className="text-xs font-bold text-foreground uppercase tracking-wider">Subtotal Biaya Dasar</span>
+                      <span className="text-base font-bold font-mono text-blue-600 dark:text-blue-400">{formatIDR(totals.base)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Overhead & Keuntungan */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-3 w-0.5 bg-[hsl(152_82%_42%)] rounded-full" />
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-[hsl(213_94%_68%)]">Overhead &amp; Keuntungan</h3>
+                    <div className="h-3 w-0.5 bg-emerald-500 rounded-full" />
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-foreground">Overhead &amp; Keuntungan</h3>
                   </div>
-                  <div className="bg-[hsl(216_24%_14%)] p-4 rounded-xl border border-[hsl(214_22%_18%)] space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-[hsl(218_26%_11%)] rounded-lg border border-[hsl(214_22%_18%)]">
+                  <div className="bg-muted/30 p-4 rounded-xl border border-border space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-[hsl(213_94%_68%)]/50">Overhead</span>
-                        <span className="text-xs text-[hsl(213_94%_68%)]/30 ml-2">{formData.overheadPercentage}%</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Overhead</span>
+                        <span className="text-xs text-muted-foreground/60 ml-2">{formData.overheadPercentage}%</span>
                       </div>
-                      <span className="font-mono font-bold text-[hsl(152_82%_42%)] text-sm">+{formatIDR(totals.base * (formData.overheadPercentage / 100))}</span>
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">+{formatIDR(totals.base * (formData.overheadPercentage / 100))}</span>
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-[hsl(218_26%_11%)] rounded-lg border border-[hsl(214_22%_18%)]">
+                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
                       <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-[hsl(213_94%_68%)]/50">Keuntungan</span>
-                        <span className="text-xs text-[hsl(213_94%_68%)]/30 ml-2">{formData.profitPercentage}%</span>
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Keuntungan</span>
+                        <span className="text-xs text-muted-foreground/60 ml-2">{formData.profitPercentage}%</span>
                       </div>
-                      <span className="font-mono font-bold text-[hsl(152_82%_42%)] text-sm">+{formatIDR(totals.base * (formData.profitPercentage / 100))}</span>
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">+{formatIDR(totals.base * (formData.profitPercentage / 100))}</span>
                     </div>
-                    <div className="p-3 bg-[hsl(152_82%_42%)]/10 rounded-lg border border-[hsl(152_82%_42%)]/20 flex justify-between items-center">
-                      <span className="text-xs font-bold uppercase tracking-wider text-[hsl(142_79%_52%)]">Total Penyesuaian</span>
-                      <span className="text-base font-bold font-mono text-[hsl(142_79%_52%)]">{formatIDR(totals.final - totals.base)}</span>
+                    <div className="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20 flex justify-between items-center">
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Total Penyesuaian</span>
+                      <span className="text-base font-bold font-mono text-emerald-700 dark:text-emerald-400">{formatIDR(totals.final - totals.base)}</span>
                     </div>
                   </div>
                 </div>
@@ -1173,14 +1165,14 @@ export function AHSPItemEditor({
             </div>
           </div>
 
-          <div className="shrink-0 px-4 sm:px-8 py-4 sm:py-5 border-t border-[hsl(216_24%_14%)] bg-[hsl(220_28%_8%)] flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between z-30">
+          <div className="shrink-0 px-4 sm:px-8 py-4 sm:py-5 border-t border-border bg-card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between z-30 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
             <div className="flex gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="h-10 w-full sm:w-auto px-5 font-bold text-[hsl(213_94%_68%)]/50 hover:text-[hsl(213_94%_68%)] hover:bg-[hsl(216_24%_14%)] rounded-lg"
+                className="h-10 w-full sm:w-auto px-5 font-bold text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg"
               >
                 Batalkan
               </Button>
@@ -1190,7 +1182,7 @@ export function AHSPItemEditor({
                   variant="outline"
                   onClick={() => setCurrentStep(1)}
                   disabled={isSubmitting}
-                  className="h-10 px-4 font-bold rounded-lg border-[hsl(216_24%_14%)] text-[hsl(213_94%_68%)] hover:bg-[hsl(216_24%_14%)] bg-transparent"
+                  className="h-10 px-4 font-bold rounded-lg border-border text-foreground hover:bg-muted/50"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Info Dasar
@@ -1207,13 +1199,13 @@ export function AHSPItemEditor({
                   variant="outline"
                   onClick={() => setCurrentStep(2)}
                   disabled={isSubmitting}
-                  className="h-10 w-full sm:w-auto px-5 font-bold rounded-lg border-[hsl(217_91%_60%)]/30 text-[hsl(213_94%_68%)] hover:bg-[hsl(217_91%_60%)]/10 bg-transparent"
+                  className="h-10 w-full sm:w-auto px-5 font-bold rounded-lg border-blue-500/30 text-blue-600 hover:bg-blue-500/10 dark:text-blue-400"
                 >
                   Komponen
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               )}
-              <Button type="submit" size="lg" className="h-10 w-full sm:w-auto px-8 sm:px-10 rounded-lg bg-[hsl(217_91%_60%)] hover:bg-[hsl(224_84%_53%)] text-white font-bold shadow-lg shadow-[hsl(217_91%_60%)]/25 transition-all active:scale-95" disabled={isSubmitting}>
+              <Button type="submit" size="lg" className="h-10 w-full sm:w-auto px-8 sm:px-10 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md shadow-blue-600/20 transition-all active:scale-95" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <span className="flex items-center gap-3">
                     <Database className="animate-spin h-5 w-5" />
