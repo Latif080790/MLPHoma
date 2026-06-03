@@ -496,24 +496,25 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
         className="flex flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
         style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
       >
-        {/* ── Top action bar (Profit health + budget utilization + search) ── */}
-        <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-4 flex-shrink-0">
+        {/* ── Row 1: Profit health + budget util (left) | Target Efisiensi (right) ── */}
+        <div className="px-4 py-1.5 bg-white border-b border-slate-200 flex items-center gap-4 flex-shrink-0">
+          {/* Left: Profit Margin widget */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {projectId && <ProfitHealthWidget projectId={projectId} compact />}
           </div>
-          {/* Budget utilization inline — fills the space beside the health widget */}
+          {/* Center: Budget utilization bar */}
           {totals.totalBudget > 0 && (() => {
             const burnPct = Math.min((totals.totalCommitted + totals.totalActual) / totals.totalBudget, 1) * 100
             const isOverrun = totals.totalRemaining < 0
             return (
-              <div className="flex-1 min-w-[160px] max-w-md">
-                <div className="flex items-center justify-between mb-1">
+              <div className="flex-1 min-w-[140px] max-w-xs">
+                <div className="flex items-center justify-between mb-0.5">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Budget Utilization</span>
                   <span className={`text-xs font-bold font-mono ${isOverrun ? 'text-rose-600' : burnPct > 90 ? 'text-amber-600' : 'text-emerald-600'}`}>
                     {burnPct.toFixed(1)}% terpakai
                   </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${isOverrun ? 'bg-rose-500' : burnPct > 90 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                     style={{ width: `${Math.min(burnPct, 100)}%` }}
@@ -522,63 +523,10 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
               </div>
             )
           })()}
+          {/* Right: Target Efisiensi input + Apply */}
           <div className="ml-auto flex items-center gap-2 flex-shrink-0">
-            <div className="relative max-w-[180px]">
-              <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Cari item..."
-                className="w-full pl-6 pr-3 py-1 text-xs border border-slate-200 rounded bg-slate-50 focus:outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-300"
-              />
-            </div>
-            <button
-              onClick={openImportConfirm}
-              disabled={isLoading || isRabLoading}
-              className="flex items-center gap-1.5 text-xs text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 transition-all disabled:opacity-50"
-            >
-              {isRabLoading ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
-              {isRabLoading ? 'Memuat...' : items.length > 0 ? 'Re-sync RAB' : 'Import RAB'}
-            </button>
-          </div>
-        </div>
-
-        {/* ── 5-column KPI strip ─────────────────────────────── */}
-        <div className="grid grid-cols-7 gap-px bg-slate-200 border-b border-slate-200 flex-shrink-0">
-          {([
-            { label: 'TOTAL BUDGET', value: formatIDR(totals.totalBudget), cls: 'text-slate-900' },
-            { label: 'COMMITTED', value: formatIDR(totals.totalCommitted), cls: 'text-blue-600' },
-            { label: 'ACTUAL COST', value: formatIDR(totals.totalActual), cls: 'text-amber-600' },
-            { label: 'REMAINING', value: formatIDR(totals.totalRemaining), cls: totals.totalRemaining < 0 ? 'text-red-600' : 'text-emerald-600' },
-            {
-              label: 'SISA BUDGET',
-              value: totals.totalBudget === 0 ? '—' : `${totals.efficiency}%`,
-              cls: totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600',
-            },
-            {
-              label: 'KONTRIBUSI KANTOR',
-              value: waterfall.rabSelling === 0 ? '—' : formatIDR(waterfall.kontribusiRp),
-              cls: waterfall.kontribusiRp >= 0 ? 'text-violet-600' : 'text-rose-600',
-            },
-            {
-              label: 'EFISIENSI PROYEK',
-              value: waterfall.rapKontribusi === 0 ? '—' : formatIDR(waterfall.bonusRp),
-              cls: waterfall.bonusRp >= 0 ? 'text-emerald-600' : 'text-rose-600',
-            },
-          ] as const).map(({ label, value, cls }) => (
-            <div key={label} className="bg-white px-3 py-2.5">
-              <div className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</div>
-              <div className={`font-bold text-base font-mono mt-0.5 ${cls}`}>{value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Efisiensi simulation slim bar ───────────────────── */}
-        <div className="px-4 py-2 bg-emerald-50/50 border-b border-emerald-100 flex items-center gap-3 flex-shrink-0">
-          <TrendingUp size={12} className="text-emerald-600 flex-shrink-0" />
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Target Efisiensi</span>
-          <div className="flex items-center gap-2">
+            <TrendingUp size={12} className="text-emerald-600 flex-shrink-0" />
+            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider whitespace-nowrap">Target Efisiensi</span>
             <div className="relative">
               <Input
                 type="number"
@@ -597,10 +545,61 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
               <ShieldCheck size={11} className="mr-1" />
               Apply
             </Button>
+            {draftCount > 0 && (
+              <span className="text-xs text-amber-600">{draftCount} draft</span>
+            )}
           </div>
-          {draftCount > 0 && (
-            <span className="text-xs text-amber-600 ml-2">{draftCount} RAB draft belum publish</span>
-          )}
+        </div>
+
+        {/* ── Row 2: KPI strip (7 cells) + search + Re-sync at far right ── */}
+        <div className="flex items-stretch border-b border-slate-200 bg-slate-200 gap-px flex-shrink-0">
+          {([
+            { label: 'TOTAL BUDGET',     value: formatIDR(totals.totalBudget),       cls: 'text-slate-900' },
+            { label: 'COMMITTED',        value: formatIDR(totals.totalCommitted),    cls: 'text-blue-600' },
+            { label: 'ACTUAL COST',      value: formatIDR(totals.totalActual),       cls: 'text-amber-600' },
+            { label: 'REMAINING',        value: formatIDR(totals.totalRemaining),    cls: totals.totalRemaining < 0 ? 'text-red-600' : 'text-emerald-600' },
+            {
+              label: 'SISA BUDGET',
+              value: totals.totalBudget === 0 ? '—' : `${totals.efficiency}%`,
+              cls: totals.efficiency >= 90 ? 'text-emerald-600' : totals.efficiency >= 75 ? 'text-amber-600' : 'text-red-600',
+            },
+            {
+              label: 'KONTRIBUSI KANTOR',
+              value: waterfall.rabSelling === 0 ? '—' : formatIDR(waterfall.kontribusiRp),
+              cls: waterfall.kontribusiRp >= 0 ? 'text-violet-600' : 'text-rose-600',
+            },
+            {
+              label: 'EFISIENSI PROYEK',
+              value: waterfall.rapKontribusi === 0 ? '—' : formatIDR(waterfall.bonusRp),
+              cls: waterfall.bonusRp >= 0 ? 'text-emerald-600' : 'text-rose-600',
+            },
+          ] as const).map(({ label, value, cls }) => (
+            <div key={label} className="flex-1 bg-white px-3 py-2.5 min-w-0">
+              <div className="text-xs font-bold uppercase tracking-widest text-slate-400 truncate">{label}</div>
+              <div className={`font-bold text-sm font-mono mt-0.5 truncate ${cls}`}>{value}</div>
+            </div>
+          ))}
+          {/* Far right: search + Re-sync RAB */}
+          <div className="bg-white flex items-center gap-1.5 px-3 flex-shrink-0">
+            <div className="relative">
+              <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Cari item..."
+                className="w-32 pl-6 pr-2 py-1 text-xs border border-slate-200 rounded bg-slate-50 focus:outline-none focus:border-blue-400 focus:bg-white transition-colors placeholder:text-slate-300"
+              />
+            </div>
+            <button
+              onClick={openImportConfirm}
+              disabled={isLoading || isRabLoading}
+              className="flex items-center gap-1.5 text-xs text-slate-600 px-2 py-1 rounded border border-slate-200 hover:border-slate-300 transition-all disabled:opacity-50 whitespace-nowrap"
+            >
+              {isRabLoading ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
+              {isRabLoading ? 'Memuat...' : items.length > 0 ? 'Re-sync RAB' : 'Import RAB'}
+            </button>
+          </div>
         </div>
 
         {/* ── Main: table + EVM guard ─────────────────────────── */}
