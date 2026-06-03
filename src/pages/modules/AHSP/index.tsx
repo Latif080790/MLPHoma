@@ -124,11 +124,11 @@ function AHSPContent() {
                         Settings
                     </TabsTrigger>
                     {/* Refresh sits flush to the right end of the tab bar */}
-                    <div className="ml-auto flex items-center pr-2">
+                    <div className="ml-auto flex items-center gap-1.5 pr-2">
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-7 mr-1 px-2 text-xs"
+                            className="h-7 px-2 text-xs"
                             onClick={() => setShowBidPrice(v => !v)}
                         >
                             {showBidPrice ? 'Lihat Biaya Dasar' : 'Lihat Harga Penawaran'}
@@ -137,9 +137,9 @@ function AHSPContent() {
                             onClick={loadData}
                             title="Sinkronisasi ulang data AHSP"
                             aria-label="Sinkronisasi ulang data AHSP"
-                            className="flex items-center justify-center h-6 w-6 rounded text-slate-300 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                            className="flex items-center justify-center h-7 w-7 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                         >
-                            <RefreshCw size={11} />
+                            <RefreshCw size={12} />
                         </button>
                     </div>
                 </TabsList>

@@ -533,13 +533,13 @@ export function AHSPCatalog({
         <div className="flex items-center gap-2 px-3 py-2">
           {/* Search */}
           <div className="relative flex-1 min-w-0 max-w-xs">
-            <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-foreground pointer-events-none" />
+            <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari item AHSP..."
-              className="w-full h-7 pl-7 pr-6 text-xs border border-border rounded bg-muted/30 focus:outline-none focus:border-orange-400 focus:bg-card transition-colors placeholder:text-foreground"
+              className="w-full h-7 pl-7 pr-6 text-xs border border-border rounded bg-muted/30 focus:outline-none focus:border-orange-400 focus:bg-card transition-colors placeholder:text-muted-foreground"
             />
             {searchQuery && (
               <button
