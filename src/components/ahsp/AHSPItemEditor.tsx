@@ -852,16 +852,16 @@ export function AHSPItemEditor({
                 <div className="p-4 md:p-8 min-h-[400px]">
                   <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
                     <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-                      <Table className="min-w-[1200px]">
+                      <Table className="w-full min-w-[680px]">
                         <TableHeader className="bg-muted/30/80 backdrop-blur-sm sticky top-0 z-10 border-b">
                           <TableRow className="hover:bg-transparent">
-                            <TableHead className="w-32 text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4 pl-6">Type</TableHead>
-                            <TableHead className="min-w-[400px] text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Resource Description</TableHead>
-                            <TableHead className="w-24 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Unit</TableHead>
-                            <TableHead className="w-40 text-right text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Rate</TableHead>
-                            <TableHead className="w-36 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4 bg-blue-50/50 italic">Coeff</TableHead>
-                            <TableHead className="w-40 text-right text-xs font-semibold uppercase tracking-widest text-foreground py-4 pr-6">Subtotal</TableHead>
-                            <TableHead className="w-20"></TableHead>
+                            <TableHead className="w-24 text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4 pl-6">Type</TableHead>
+                            <TableHead className="min-w-[180px] text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Resource Description</TableHead>
+                            <TableHead className="w-16 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Unit</TableHead>
+                            <TableHead className="w-28 text-right text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4">Rate</TableHead>
+                            <TableHead className="w-24 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground py-4 bg-blue-50/50 italic">Coeff</TableHead>
+                            <TableHead className="w-32 text-right text-xs font-semibold uppercase tracking-widest text-foreground py-4 pr-6">Subtotal</TableHead>
+                            <TableHead className="w-12"></TableHead>
                           </TableRow>
                         </TableHeader>
                       <TableBody>
