@@ -406,11 +406,22 @@ export function getCategoryById(id: string): WorkCategory | undefined {
   return WORK_CATEGORIES.find(c => c.id === id)
 }
 
+/** Compare two dotted codes (e.g. "2.10" vs "2.2") numerically, segment by segment. */
+function compareCode(a: string, b: string): number {
+  const as = a.split('.').map(Number)
+  const bs = b.split('.').map(Number)
+  for (let i = 0; i < Math.max(as.length, bs.length); i++) {
+    const d = (as[i] ?? 0) - (bs[i] ?? 0)
+    if (d !== 0) return d
+  }
+  return 0
+}
+
 /**
- * Get subcategories by parent ID
+ * Get subcategories by parent ID, ordered by construction hierarchy (code).
  */
 export function getSubcategories(parentId: string): WorkCategory[] {
-  return WORK_CATEGORIES.filter(c => c.parent === parentId)
+  return WORK_CATEGORIES.filter(c => c.parent === parentId).sort((a, b) => compareCode(a.code, b.code))
 }
 
 /**
@@ -440,7 +451,7 @@ export function getCategoryBreadcrumb(categoryId: string): string {
  * Get all level 1 categories (main categories)
  */
 export function getMainCategories(): WorkCategory[] {
-  return WORK_CATEGORIES.filter(c => c.level === 1)
+  return WORK_CATEGORIES.filter(c => c.level === 1).sort((a, b) => compareCode(a.code, b.code))
 }
 
 /**
