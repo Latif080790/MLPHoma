@@ -530,9 +530,9 @@ export function AHSPCatalog({
 
       {/* Filter + Action Toolbar */}
       <div className="sticky top-0 z-10 bg-card border border-border rounded-lg overflow-hidden">
-        <div className="flex items-center gap-2 px-3 py-2">
+        <div className="flex flex-wrap items-center gap-2 px-3 py-2">
           {/* Search */}
-          <div className="relative flex-1 min-w-0 max-w-xs">
+          <div className="relative flex-1 min-w-[200px] max-w-xs">
             <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               type="text"
@@ -687,7 +687,9 @@ export function AHSPCatalog({
               })}
               data={groupedDisplayRows.map(r => r.type === 'section' ? r : r.item)}
               virtualized={true}
-              maxHeight="calc(100vh - 280px)"
+              // Embedded (compact) view has extra chrome above (pipeline tabs + budget
+              // strip), so reserve more height there to keep the last rows reachable.
+              maxHeight={compact ? 'calc(100vh - 420px)' : 'calc(100vh - 280px)'}
               enableRowSelection={true}
               rowSelection={Object.fromEntries(Array.from(selectedIds).map(id => [id, true]))}
               onRowSelectionChange={(updater) => {

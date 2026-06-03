@@ -128,9 +128,11 @@ export function AHSPItemEditor({
     clearDraftComponents,
   } = useAHSPStore()
 
-  // Get SNI AHSP items from database (not presets)
+  // AHSP items usable as SNI templates. Seeded SNI master data has no creation log,
+  // so creationMode is undefined for it — treat anything not explicitly 'custom' as a
+  // usable template (covers the 2475 seeded SNI items + items flagged 'sni').
   const sniAHSPItems = React.useMemo(() => {
-    return ahspItems.filter(item => item.creationMode === 'sni' && item.isActive)
+    return ahspItems.filter(item => item.isActive && item.creationMode !== 'custom')
   }, [ahspItems])
 
   const currentAHSPId = item?.id || 'temp'
