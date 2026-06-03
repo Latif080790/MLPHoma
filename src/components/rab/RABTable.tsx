@@ -100,6 +100,11 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
 
   const handleMarginChange = useCallback((itemId: string, val: string) => {
     if (!project?.id) return
+    // Locked baseline freezes the approved contribution — block per-item margin edits too.
+    if (isLocked(project.id)) {
+      toast.error('Baseline RAB terkunci — margin tidak dapat diubah.')
+      return
+    }
     const parsed = Number.parseFloat(val)
     if (!Number.isFinite(parsed)) return
     const clamped = Math.max(0, Math.min(99.99, parsed))
@@ -115,7 +120,7 @@ export function RABTable({ projectId, filterWbsId }: RABTableProps) {
         },
       },
     })
-  }, [project, updateProject])
+  }, [project, updateProject, isLocked])
 
   // Fetch effects
   useEffect(() => { if (projectId) fetchLinks(projectId) }, [projectId, fetchLinks])

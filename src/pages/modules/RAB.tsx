@@ -90,9 +90,15 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
   const marginSettings = useMemo(() => readMarginSettings(currentProject?.meta), [currentProject?.meta])
   const setMarginMeta = useCallback((patch: Partial<ReturnType<typeof readMarginSettings>>) => {
     if (!currentProject?.id) return
+    // Locked baseline freezes the approved contribution — margin (mode/%/per-item)
+    // must not change while locked, otherwise selling price & kontribusi would drift.
+    if (isLocked) {
+      toast.error('Baseline RAB terkunci — margin tidak dapat diubah. Buka kunci untuk mengubah.')
+      return
+    }
     const next = { ...readMarginSettings(currentProject.meta), ...patch }
     updateProject(currentProject.id, { meta: { ...currentProject.meta, ...next } })
-  }, [currentProject, updateProject])
+  }, [currentProject, updateProject, isLocked])
 
   // Overhead/Profit are no longer applied to RAB totals — margin-on-revenue
   // (project.meta margin settings) replaced the old markup-on-cost path. Only the
@@ -214,15 +220,17 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
                   <div className="flex rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden text-xs">
                     <button
                       type="button"
+                      disabled={isLocked}
                       onClick={() => setMarginMeta({ marginMode: 'fixed' })}
-                      className={`px-2 py-1 ${marginSettings.marginMode === 'fixed' ? 'bg-blue-600 text-white' : 'text-slate-500 bg-white'}`}
+                      className={`px-2 py-1 disabled:opacity-40 disabled:cursor-not-allowed ${marginSettings.marginMode === 'fixed' ? 'bg-blue-600 text-white' : 'text-slate-500 bg-white'}`}
                     >
                       Fixed All
                     </button>
                     <button
                       type="button"
+                      disabled={isLocked}
                       onClick={() => setMarginMeta({ marginMode: 'per_item' })}
-                      className={`px-2 py-1 ${marginSettings.marginMode === 'per_item' ? 'bg-blue-600 text-white' : 'text-slate-500 bg-white'}`}
+                      className={`px-2 py-1 disabled:opacity-40 disabled:cursor-not-allowed ${marginSettings.marginMode === 'per_item' ? 'bg-blue-600 text-white' : 'text-slate-500 bg-white'}`}
                     >
                       Per item
                     </button>
@@ -234,9 +242,10 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
                         min="0"
                         max="99.99"
                         step="0.1"
+                        disabled={isLocked}
                         value={marginSettings.defaultMarginPct}
                         onChange={(e) => setMarginMeta({ defaultMarginPct: Math.max(0, Math.min(99.99, Number(e.target.value) || 0)) })}
-                        className="h-8 w-20 pr-5 text-xs font-mono"
+                        className="h-8 w-20 pr-5 text-xs font-mono disabled:opacity-50"
                       />
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
                     </div>
@@ -335,15 +344,17 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
           <div className="flex rounded border border-slate-200 overflow-hidden">
             <button
               type="button"
+              disabled={isLocked}
               onClick={() => setMarginMeta({ marginMode: 'fixed' })}
-              className={`px-1.5 py-1 text-xs ${marginSettings.marginMode === 'fixed' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500'}`}
+              className={`px-1.5 py-1 text-xs disabled:opacity-40 disabled:cursor-not-allowed ${marginSettings.marginMode === 'fixed' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500'}`}
             >
               Fixed
             </button>
             <button
               type="button"
+              disabled={isLocked}
               onClick={() => setMarginMeta({ marginMode: 'per_item' })}
-              className={`px-1.5 py-1 text-xs ${marginSettings.marginMode === 'per_item' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500'}`}
+              className={`px-1.5 py-1 text-xs disabled:opacity-40 disabled:cursor-not-allowed ${marginSettings.marginMode === 'per_item' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500'}`}
             >
               Item
             </button>
@@ -355,9 +366,10 @@ export default function RAB({ embedded = false }: { embedded?: boolean }) {
                 min="0"
                 max="99.99"
                 step="0.1"
+                disabled={isLocked}
                 value={marginSettings.defaultMarginPct}
                 onChange={(e) => setMarginMeta({ defaultMarginPct: Math.max(0, Math.min(99.99, Number(e.target.value) || 0)) })}
-                className="h-7 w-16 pr-4 text-xs font-mono"
+                className="h-7 w-16 pr-4 text-xs font-mono disabled:opacity-50"
               />
               <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-xs text-slate-400">%</span>
             </div>

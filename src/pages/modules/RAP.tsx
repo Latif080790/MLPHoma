@@ -250,7 +250,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
       await rapProfitService.setTargetProfitPct(projectId, targetProfit)
       await rapProfitService.recalculateWithProfitFirst(projectId)
       await fetchItems(projectId)
-      toast.success(`RAP recalculated with ${targetProfit}% Profit Target`)
+      toast.success(`RAP dihitung ulang dengan Target Efisiensi ${targetProfit}%`)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       toast.error('Failed to apply profit simulation: ' + message)
@@ -316,7 +316,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
               <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Committed</TableHead>
               <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Actual Cost</TableHead>
               <TableHead className="h-8 w-[120px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Remaining</TableHead>
-              <TableHead className="h-8 w-[130px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300" title="Plafon RAP − RAPP = bonus tim bila PM menekan biaya">Bonus (RAP−RAPP)</TableHead>
+              <TableHead className="h-8 w-[130px] bg-transparent text-right text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300" title="Plafon RAP − RAPP = efisiensi bila PM menekan biaya pelaksanaan">Efisiensi (RAP−RAPP)</TableHead>
               <TableHead className="h-8 w-[100px] bg-transparent text-center text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -476,7 +476,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
                 <TableCell className="text-right font-bold font-mono text-xs text-blue-600 py-2">{Math.round(totals.totalCommitted).toLocaleString('id-ID')}</TableCell>
                 <TableCell className="text-right font-bold font-mono text-xs text-amber-600 py-2">{Math.round(totals.totalActual).toLocaleString('id-ID')}</TableCell>
                 <TableCell className={`text-right font-bold font-mono text-xs py-2 ${totals.totalRemaining < 0 ? 'text-red-600' : 'text-emerald-600'}`}>{Math.round(totals.totalRemaining).toLocaleString('id-ID')}</TableCell>
-                <TableCell className={`text-right font-bold font-mono text-xs py-2 ${waterfall.bonusRp >= 0 ? 'text-emerald-600' : 'text-rose-600'}`} title={`Bonus ${Math.round(waterfall.bonusRp).toLocaleString('id-ID')}`}>
+                <TableCell className={`text-right font-bold font-mono text-xs py-2 ${waterfall.bonusRp >= 0 ? 'text-emerald-600' : 'text-rose-600'}`} title={`Efisiensi ${Math.round(waterfall.bonusRp).toLocaleString('id-ID')}`}>
                   {waterfall.rapKontribusi === 0 ? '—' : `${waterfall.bonusRp >= 0 ? '+' : ''}${waterfall.bonusPct.toFixed(1)}%`}
                 </TableCell>
                 <TableCell className="py-2" />
@@ -496,12 +496,33 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
         className="flex flex-col overflow-hidden rounded-xl border border-slate-200 shadow-sm"
         style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
       >
-        {/* ── Top action bar ─────────────────────────────────── */}
-        <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-3 flex-shrink-0">
-          <div className="flex items-center gap-2">
+        {/* ── Top action bar (Profit health + budget utilization + search) ── */}
+        <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {projectId && <ProfitHealthWidget projectId={projectId} compact />}
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          {/* Budget utilization inline — fills the space beside the health widget */}
+          {totals.totalBudget > 0 && (() => {
+            const burnPct = Math.min((totals.totalCommitted + totals.totalActual) / totals.totalBudget, 1) * 100
+            const isOverrun = totals.totalRemaining < 0
+            return (
+              <div className="flex-1 min-w-[160px] max-w-md">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Budget Utilization</span>
+                  <span className={`text-xs font-bold font-mono ${isOverrun ? 'text-rose-600' : burnPct > 90 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                    {burnPct.toFixed(1)}% terpakai
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${isOverrun ? 'bg-rose-500' : burnPct > 90 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                    style={{ width: `${Math.min(burnPct, 100)}%` }}
+                  />
+                </div>
+              </div>
+            )
+          })()}
+          <div className="ml-auto flex items-center gap-2 flex-shrink-0">
             <div className="relative max-w-[180px]">
               <Search size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none" />
               <input
@@ -541,7 +562,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
               cls: waterfall.kontribusiRp >= 0 ? 'text-violet-600' : 'text-rose-600',
             },
             {
-              label: 'BONUS PROJECT',
+              label: 'EFISIENSI PROYEK',
               value: waterfall.rapKontribusi === 0 ? '—' : formatIDR(waterfall.bonusRp),
               cls: waterfall.bonusRp >= 0 ? 'text-emerald-600' : 'text-rose-600',
             },
@@ -553,33 +574,10 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
           ))}
         </div>
 
-        {/* ── Margin Health Bar ──────────────────────────────── */}
-        {totals.totalBudget > 0 && (() => {
-          const burnRatio = Math.min((totals.totalCommitted + totals.totalActual) / totals.totalBudget, 1)
-          const burnPct = burnRatio * 100
-          const isOverrun = totals.totalRemaining < 0
-          return (
-            <div className="px-4 py-2 border-b border-slate-200 bg-slate-50/50 flex-shrink-0">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Budget Utilization</span>
-                <span className={`text-xs font-bold font-mono ${isOverrun ? 'text-rose-600' : burnPct > 90 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                  {burnPct.toFixed(1)}% terpakai
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${isOverrun ? 'bg-rose-500' : burnPct > 90 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                  style={{ width: `${Math.min(burnPct, 100)}%` }}
-                />
-              </div>
-            </div>
-          )
-        })()}
-
-        {/* ── Profit simulation slim bar ──────────────────────── */}
+        {/* ── Efisiensi simulation slim bar ───────────────────── */}
         <div className="px-4 py-2 bg-emerald-50/50 border-b border-emerald-100 flex items-center gap-3 flex-shrink-0">
           <TrendingUp size={12} className="text-emerald-600 flex-shrink-0" />
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Profit Target</span>
+          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Target Efisiensi</span>
           <div className="flex items-center gap-2">
             <div className="relative">
               <Input
@@ -713,7 +711,7 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
               sub={waterfall.rabSelling === 0 ? 'Belum link RAB' : `${waterfall.kontribusiPct.toFixed(1)}% dari harga jual`}
             />
             <KPICard
-              label="Bonus Project"
+              label="Efisiensi Proyek"
               value={waterfall.rapKontribusi === 0 ? '—' : `Rp ${Math.round(waterfall.bonusRp).toLocaleString('id-ID')}`}
               colorClass={waterfall.rapKontribusi === 0 ? 'text-slate-400' : waterfall.bonusRp >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}
               sub={waterfall.rapKontribusi === 0 ? 'Belum ada plafon' : `${waterfall.bonusPct.toFixed(1)}% dari plafon`}
@@ -740,11 +738,11 @@ export default function RAP({ embedded = false }: { embedded?: boolean }): JSX.E
             )
           })()}
 
-          {/* ── Profit Simulation bar ───────────────────────────── */}
+          {/* ── Efisiensi simulation bar ────────────────────────── */}
           <div className="flex flex-wrap items-center gap-4 rounded-lg border border-emerald-100 bg-emerald-50/50 px-4 py-3 dark:border-emerald-900 dark:bg-emerald-950/30">
             <div className="flex items-center gap-1.5">
               <TrendingUp size={13} className="text-emerald-600" />
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Profit Simulation</span>
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Target Efisiensi</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
