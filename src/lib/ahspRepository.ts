@@ -67,10 +67,19 @@ function mapAhspItemRow(item: AhspItemRow): AHSPItem {
 }
 
 function mapComponentRow(comp: AhspComponentRow & { resource: ResourceRow | null }): AHSPComponent {
+    // Normalize the stored type (DB may hold 'MATERIAL'/'LABOR'/'EQUIPMENT'/'SUBCON')
+    // to the lowercase ResourceType the app + validation schemas expect. Without this,
+    // copying these components (e.g. SNI template → new AHSP) fails enum validation.
+    const dbType = (comp.type || '').toUpperCase()
+    const normalizedType: ResourceType =
+        dbType === 'LABOR' ? 'labor' :
+            dbType === 'EQUIPMENT' ? 'equipment' :
+                dbType === 'SUBCON' || dbType === 'SUBCONTRACTOR' ? 'subcontractor' :
+                    'material'
     return {
         id: comp.id,
         ahspId: comp.ahsp_id,
-        type: comp.type as ResourceType,
+        type: normalizedType,
         resourceId: comp.resource_id,
         coefficient: comp.coefficient,
         unit: comp.unit as ResourceUnit,
