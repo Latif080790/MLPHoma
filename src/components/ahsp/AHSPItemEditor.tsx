@@ -13,6 +13,9 @@ import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
 import { Badge } from '../ui/badge'
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command'
+import { ChevronsUpDown } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -100,6 +103,7 @@ export function AHSPItemEditor({
   const [pendingDeleteComponentId, setPendingDeleteComponentId] = useState<string | null>(null)
   const [resourceSearch, setResourceSearch] = useState('')
   const [selectedSNIPreset, setSelectedSNIPreset] = useState<string | null>(null)
+  const [sniPickerOpen, setSniPickerOpen] = useState(false)
   const [_showSNIHelp, setShowSNIHelp] = useState(false)
   const [currentStep, setCurrentStep] = useState<1 | 2>(1)
 
@@ -469,10 +473,11 @@ export function AHSPItemEditor({
 
       // Fetch components from the selected SNI item
       await fetchComponents(sniItem.id)
-      
-      // Get the fetched components
-      const sniComponents = componentsByAHSP[sniItem.id] || []
-      
+
+      // Read FRESH store state — the `componentsByAHSP` render closure is stale right
+      // after the await, so reading it would copy 0 components.
+      const sniComponents = useAHSPStore.getState().componentsByAHSP[sniItem.id] || []
+
       // Copy components to new AHSP
       sniComponents.forEach(comp => {
         addComponent(currentAHSPId, {
@@ -629,51 +634,71 @@ export function AHSPItemEditor({
                       <p className="text-xs text-muted-foreground leading-relaxed">
                         Pilih AHSP SNI yang sudah ada untuk menyalin semua component & coefficient-nya
                       </p>
-                      <Select 
-                        value={selectedSNIPreset || undefined}
-                        onValueChange={async (itemId) => {
-                          setSelectedSNIPreset(itemId)
-                          const sniItem = sniAHSPItems.find(i => i.id === itemId)
-                          if (sniItem) await handleApplySNIItem(sniItem)
-                        }}
-                      >
-                        <SelectTrigger className="h-10 rounded-lg border-2 border-border bg-background hover:bg-accent/40 font-bold shadow-sm transition-all">
-                          <SelectValue placeholder="🔍 Pilih AHSP SNI dari database..." />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-lg border-2 border-border shadow-2xl max-h-96">
-                          {sniAHSPItems.length === 0 ? (
-                            <div className="p-4 text-center text-muted-foreground text-sm">
-                              <Database className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                              <p>Belum ada AHSP SNI di database</p>
-                              <p className="text-xs mt-1">Gunakan mode Custom untuk membuat yang pertama</p>
-                            </div>
-                          ) : (
-                            sniAHSPItems.map(item => (
-                              <SelectItem key={item.id} value={item.id} className="py-4 font-semibold hover:bg-accent/40">
-                                <div className="flex flex-col">
-                                  <span className="font-bold text-foreground">{item.code} - {item.name}</span>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
-                                      {item.category}
-                                    </Badge>
-                                    <span className="text-xs text-muted-foreground">
-                                      {item.unit} • {formatIDR(item.finalPrice)}
-                                    </span>
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
+                      {(() => {
+                        const picked = sniAHSPItems.find(i => i.id === selectedSNIPreset)
+                        return (
+                          <Popover open={sniPickerOpen} onOpenChange={setSniPickerOpen}>
+                            <PopoverTrigger asChild>
+                              <button
+                                type="button"
+                                role="combobox"
+                                aria-expanded={sniPickerOpen}
+                                className="flex w-full items-center gap-2 h-10 rounded-lg border border-border bg-background px-3 text-left hover:border-blue-400/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/10"
+                              >
+                                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                <span className={`flex-1 truncate text-sm ${picked ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                                  {picked ? `${picked.code} — ${picked.name}` : 'Cari & pilih AHSP SNI dari database...'}
+                                </span>
+                                <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="p-0 w-[--radix-popover-trigger-width] min-w-[320px]" align="start">
+                              <Command
+                                filter={(value, search) => {
+                                  // value carries "code name category" lowercased for matching
+                                  return value.includes(search.toLowerCase()) ? 1 : 0
+                                }}
+                              >
+                                <CommandInput placeholder="Ketik kode / nama / kategori..." className="text-sm" />
+                                <CommandList className="max-h-72">
+                                  <CommandEmpty>
+                                    {sniAHSPItems.length === 0
+                                      ? 'Belum ada AHSP SNI di database.'
+                                      : 'Tidak ada AHSP yang cocok.'}
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {sniAHSPItems.map(it => (
+                                      <CommandItem
+                                        key={it.id}
+                                        value={`${it.code} ${it.name} ${it.category}`.toLowerCase()}
+                                        onSelect={async () => {
+                                          setSelectedSNIPreset(it.id)
+                                          setSniPickerOpen(false)
+                                          await handleApplySNIItem(it)
+                                        }}
+                                        className="flex flex-col items-start gap-1 py-2.5"
+                                      >
+                                        <span className="font-semibold text-foreground text-sm leading-tight">{it.code} — {it.name}</span>
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400">
+                                            {it.category}
+                                          </Badge>
+                                          <span className="text-xs text-muted-foreground font-mono">{it.unit} • {formatIDR(it.finalPrice)}</span>
+                                        </div>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        )
+                      })()}
                       {selectedSNIPreset && (
-                        <div className="p-4 bg-card rounded-lg border-2 border-green-200 shadow-sm">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Check className="h-4 w-4 text-green-600" />
-                            <p className="text-xs text-green-700 font-semibold">Components Ter-load:</p>
-                          </div>
-                          <p className="text-sm text-muted-foreground font-bold">
-                            {componentsByAHSP[selectedSNIPreset]?.length || 0} komponen berhasil disalin
+                        <div className="flex items-center gap-2 p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+                          <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                            {components.length} komponen tersalin — buka tab <strong>Komponen</strong> untuk meninjau.
                           </p>
                         </div>
                       )}
