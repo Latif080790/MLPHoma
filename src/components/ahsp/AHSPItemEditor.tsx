@@ -164,6 +164,25 @@ export function AHSPItemEditor({
     return `${prefixCode}.${maxN + 1}`
   }, [ahspItems])
 
+  // Guarantee a code not already used by another AHSP item (ahsp_items.code is UNIQUE).
+  // Increments a trailing number, otherwise appends .2/.3… until free. Skips the
+  // currently-edited item so re-saving an existing code is allowed.
+  const makeUniqueCode = React.useCallback((desired: string) => {
+    const taken = new Set(
+      ahspItems.filter(i => i.id !== item?.id).map(i => i.code).filter(Boolean) as string[]
+    )
+    if (!desired || !taken.has(desired)) return desired
+    const m = desired.match(/^(.*?)(\d+)$/)
+    if (m) {
+      let n = parseInt(m[2], 10) + 1
+      while (taken.has(`${m[1]}${n}`)) n++
+      return `${m[1]}${n}`
+    }
+    let n = 2
+    while (taken.has(`${desired}.${n}`)) n++
+    return `${desired}.${n}`
+  }, [ahspItems, item?.id])
+
   // Filtered resources for the library search
   const filteredResources = React.useMemo(() => {
     return resources.filter(res => {
@@ -307,9 +326,18 @@ export function AHSPItemEditor({
     setIsSubmitting(true)
 
     try {
+      // Final safety: guarantee the code is unique before insert (ahsp_items.code is
+      // UNIQUE). Covers manual entry, auto-numbering gaps, and SNI-template copies.
+      const uniqueCode = makeUniqueCode(formData.code)
+      if (uniqueCode !== formData.code) {
+        handleChange('code', uniqueCode)
+        toast.info(`Kode AHSP disesuaikan menjadi ${uniqueCode} (kode sebelumnya sudah dipakai)`)
+      }
+
       // Save AHSP item first
       const savedId = await onSave({
         ...formData,
+        code: uniqueCode,
         basePrice: totals.base,
         finalPrice: totals.final,
       })
@@ -459,10 +487,11 @@ export function AHSPItemEditor({
    */
   const handleApplySNIItem = async (sniItem: AHSPItem) => {
     try {
-      // Auto-fill master data from selected SNI item
+      // Auto-fill master data from selected SNI item. The code must be NEW & unique —
+      // copying the template's code verbatim would violate ahsp_items.code UNIQUE.
       setFormData(prev => ({
         ...prev,
-        code: sniItem.code,
+        code: makeUniqueCode(sniItem.code),
         name: sniItem.name,
         category: sniItem.category,
         unit: sniItem.unit,
