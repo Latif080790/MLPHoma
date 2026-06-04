@@ -103,6 +103,12 @@ export function AHSPCatalog({
   bidMarginPct = 0,
 }: AHSPCatalogProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  // Debounced copy used for the (2475-item) filter so typing stays responsive.
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(searchQuery), 200)
+    return () => clearTimeout(t)
+  }, [searchQuery])
   const [selectedCategory, setSelectedCategory] = useState<string>(defaultCategory || 'all')
   const [selectedZone, setSelectedZone] = useState<string>('default')
 
@@ -191,7 +197,7 @@ export function AHSPCatalog({
 
   // Filter and search items
   const filteredItems = useMemo(() => {
-    const query = searchQuery.toLowerCase()
+    const query = debouncedQuery.toLowerCase()
     const isAllCategory = selectedCategory === 'all'
 
     return ahspItems.filter(item => {
@@ -211,7 +217,7 @@ export function AHSPCatalog({
 
       return true
     })
-  }, [ahspItems, showInactive, selectedCategory, searchQuery])
+  }, [ahspItems, showInactive, selectedCategory, debouncedQuery])
 
   // Apply Zone Overrides
   const displayItems = useMemo(() => {
@@ -256,10 +262,19 @@ export function AHSPCatalog({
     const rows: Array<{ type: 'section'; label: string } | { type: 'item'; item: AHSPItem; rowNumber: number }> = []
     let globalRowIndex = 1
 
+    // Spreadsheet-style section labels (A..Z, AA, AB, …) so they never repeat — the
+    // catalog has 37 categories, so a plain A–Z (mod 26) would duplicate letters.
+    const colLabel = (n: number) => {
+      let s = ''
+      let x = n + 1
+      while (x > 0) { x--; s = String.fromCharCode(65 + (x % 26)) + s; x = Math.floor(x / 26) }
+      return s
+    }
+
     for (let i = 0; i < categoriesSorted.length; i++) {
       const category = categoriesSorted[i]
       const items = groups[category]
-      const prefix = String.fromCharCode(65 + (i % 26))
+      const prefix = colLabel(i)
 
       rows.push({ type: 'section', label: `${prefix}. ${category.toUpperCase()}` })
 

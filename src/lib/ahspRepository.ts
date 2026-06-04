@@ -228,7 +228,10 @@ export const ahspRepository = {
 
         try {
             const client = assertSupabase()
-            const LOG_BATCH_SIZE = 500
+            // Keep the .in(...) id list short: prefixed text ids (~40 chars each) make
+            // a GET URL that can exceed server limits (→ 400) at 500/batch. 150 keeps
+            // the URL well under typical limits.
+            const LOG_BATCH_SIZE = 150
 
             for (let i = 0; i < ahspIds.length; i += LOG_BATCH_SIZE) {
                 const ids = ahspIds.slice(i, i + LOG_BATCH_SIZE)
