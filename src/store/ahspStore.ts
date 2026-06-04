@@ -16,7 +16,7 @@ import {
   calculateAHSPPriceInWorker,
   ahspDataService
 } from '../services/ahspService'
-import { syncAHSPItem, syncAHSPItemUpdate, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources, syncAHSPItems } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -605,8 +605,15 @@ export const useAHSPStore = create<AHSPStore>()(
             })
           }))
 
-          // Use UPDATE (not upsert) to avoid RLS INSERT policy blocking existing catalog items
-          get().ahspItems.forEach(item => syncAHSPItemUpdate(item))
+          // Batch the writes: one upsert task per ~500 items instead of one task per
+          // item. Recalculating 2475 items used to enqueue 2475 sequential UPDATE
+          // requests (100ms apart ≈ 4+ minutes + sync-error spam). RLS allows write
+          // (ahsp_items policy USING true), so a chunked upsert is safe.
+          const allItems = get().ahspItems
+          const CHUNK = 500
+          for (let i = 0; i < allItems.length; i += CHUNK) {
+            syncAHSPItems(allItems.slice(i, i + CHUNK))
+          }
         },
 
         bulkUpdatePrices: (type, percentage) => {
