@@ -147,6 +147,19 @@ export function AHSPItemEditor({
     if (open && !item) clearDraftComponents()
   }, [open, item, clearDraftComponents])
 
+  // Auto-generate the next AHSP code for a given category/sub code prefix, e.g.
+  // prefix "1.1" → scans existing items "1.1.N" and returns "1.1.<max+1>".
+  const nextAhspCode = React.useCallback((prefixCode: string) => {
+    const prefix = `${prefixCode}.`
+    const maxN = ahspItems.reduce((max, it) => {
+      if (!it.code?.startsWith(prefix)) return max
+      const tail = it.code.slice(prefix.length).split('.')[0]
+      const n = parseInt(tail, 10)
+      return Number.isFinite(n) && n > max ? n : max
+    }, 0)
+    return `${prefixCode}.${maxN + 1}`
+  }, [ahspItems])
+
   // Filtered resources for the library search
   const filteredResources = React.useMemo(() => {
     return resources.filter(res => {
@@ -514,7 +527,7 @@ export function AHSPItemEditor({
   }, [resources])
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] p-0 gap-0 border-l border-border flex flex-col h-screen max-h-screen overflow-hidden bg-background shadow-2xl">
+      <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] p-0 gap-0 border-l border-border flex flex-col top-14 h-[calc(100vh-3.5rem)] max-h-[calc(100vh-3.5rem)] overflow-hidden bg-background shadow-2xl">
         <SheetHeader className="px-8 py-5 border-b border-border shrink-0 bg-card z-20 relative shadow-sm">
           <div className="flex items-center gap-4">
             <div className="bg-blue-500/10 p-2.5 rounded-xl ring-1 ring-blue-500/20">
@@ -583,8 +596,8 @@ export function AHSPItemEditor({
           <div className="flex-1 overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-0">
             {/* Section 1: Master Data — shown on Step 1 */}
             {currentStep === 1 && (
-            <div className="border-b border-border bg-background p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 lg:col-[1]">
-              <div className="flex items-center gap-3 pb-4 border-b border-border">
+            <div className="border-b border-border bg-background p-4 sm:p-5 space-y-5 lg:col-[1]">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
                 <div className="bg-blue-500/10 p-2 rounded-xl ring-1 ring-blue-500/20">
                   <Database className="h-5 w-5 text-blue-500" />
                 </div>
@@ -593,10 +606,10 @@ export function AHSPItemEditor({
                   <p className="text-xs text-muted-foreground font-medium">Identifikasi umum dan kategorisasi</p>
                 </div>
               </div>
-              <div className="grid gap-8">
+              <div className="grid gap-5">
                 {/* Identification Grid */}
-                <div className="bg-muted/30 p-4 sm:p-6 rounded-xl border border-border space-y-6">
-                  <div className="flex items-center gap-2 font-bold text-sm mb-4">
+                <div className="bg-muted/30 p-4 rounded-xl border border-border space-y-4">
+                  <div className="flex items-center gap-2 font-bold text-sm mb-1">
                     <div className="h-4 w-1 bg-blue-500 rounded-full" />
                     <span className="text-foreground">Identifikasi Umum</span>
                   </div>
@@ -666,43 +679,46 @@ export function AHSPItemEditor({
                       )}
                     </div>
                   )}
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">AHSP Code</Label>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1 flex items-center gap-1.5">
+                        AHSP Code
+                        <span className="text-blue-500 dark:text-blue-400 normal-case tracking-normal font-medium">· otomatis</span>
+                      </Label>
                       <Input
                         id="code"
                         value={formData.code}
                         onChange={(e) => handleChange('code', e.target.value)}
-                        placeholder="e.g., A.2.2.1"
-                        className={`h-10 text-lg font-mono font-bold rounded-lg border-border transition-all focus:ring-2 focus:ring-primary/10 ${errors.code ? 'border-red-500 bg-red-50' : 'bg-background'}`}
+                        placeholder="dari kategori / sub-kategori"
+                        className={`h-9 text-sm font-mono font-bold rounded-lg border-border transition-all focus:ring-2 focus:ring-primary/10 ${errors.code ? 'border-red-500 bg-red-50' : 'bg-background'}`}
                         disabled={isSubmitting}
                       />
                       {errors.code && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.code}</p>}
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <Label htmlFor="unit" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Satuan</Label>
                       <Select value={formData.unit} onValueChange={(value: string) => handleChange('unit', value)}>
-                        <SelectTrigger className="h-10 rounded-lg border-border bg-background font-bold transition-all focus:ring-2 focus:ring-primary/10">
+                        <SelectTrigger className="h-9 rounded-lg border-border bg-background text-sm font-semibold transition-all focus:ring-2 focus:ring-primary/10">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-border shadow-xl">
-                          <SelectItem value="m3" className="font-bold py-3">m³ (Kubik)</SelectItem>
-                          <SelectItem value="m2" className="font-bold py-3">m² (Luas)</SelectItem>
-                          <SelectItem value="m" className="font-bold py-3">m (Meter Lari)</SelectItem>
-                          <SelectItem value="kg" className="font-bold py-3">kg (Berat)</SelectItem>
-                          <SelectItem value="ltr" className="font-bold py-3">liter</SelectItem>
-                          <SelectItem value="bh" className="font-bold py-3">buah (Item)</SelectItem>
-                          <SelectItem value="oh" className="font-bold py-3">OH (Labor)</SelectItem>
-                          <SelectItem value="jam" className="font-bold py-3">jam (Tool)</SelectItem>
-                          <SelectItem value="unit" className="font-bold py-3">unit</SelectItem>
+                          <SelectItem value="m3" className="font-semibold py-2">m³ (Kubik)</SelectItem>
+                          <SelectItem value="m2" className="font-semibold py-2">m² (Luas)</SelectItem>
+                          <SelectItem value="m" className="font-semibold py-2">m (Meter Lari)</SelectItem>
+                          <SelectItem value="kg" className="font-semibold py-2">kg (Berat)</SelectItem>
+                          <SelectItem value="ltr" className="font-semibold py-2">liter</SelectItem>
+                          <SelectItem value="bh" className="font-semibold py-2">buah (Item)</SelectItem>
+                          <SelectItem value="oh" className="font-semibold py-2">OH (Labor)</SelectItem>
+                          <SelectItem value="jam" className="font-semibold py-2">jam (Tool)</SelectItem>
+                          <SelectItem value="unit" className="font-semibold py-2">unit</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1.5">
                       <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Klasifikasi / Kategori</Label>
                       <Select
                         value={selectedCategory}
@@ -710,15 +726,22 @@ export function AHSPItemEditor({
                           setSelectedCategory(value)
                           setSelectedSubcategory('')
                           const category = mainCategories.find(c => c.id === value)
-                          if (category) handleChange('category', category.name)
+                          if (category) {
+                            handleChange('category', category.name)
+                            // If this category has no sub-classifications, auto-number from the
+                            // category code now; otherwise wait for the sub-classification pick.
+                            if (getSubcategories(value).length === 0) {
+                              handleChange('code', nextAhspCode(category.code))
+                            }
+                          }
                         }}
                       >
-                        <SelectTrigger className={`h-10 rounded-lg border-border bg-background font-bold transition-all focus:ring-2 focus:ring-primary/10 ${errors.category ? 'border-red-500 shadow-sm' : ''}`}>
+                        <SelectTrigger className={`h-9 rounded-lg border-border bg-background text-sm font-semibold transition-all focus:ring-2 focus:ring-primary/10 ${errors.category ? 'border-red-500 shadow-sm' : ''}`}>
                           <SelectValue placeholder="Pilih kategori pekerjaan..." />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-border shadow-xl max-h-80">
                           {mainCategories.map(cat => (
-                            <SelectItem key={cat.id} value={cat.id} className="py-3 font-semibold">
+                            <SelectItem key={cat.id} value={cat.id} className="py-2 font-semibold">
                               {cat.code} - {cat.name}
                             </SelectItem>
                           ))}
@@ -728,8 +751,8 @@ export function AHSPItemEditor({
                     </div>
 
                     {selectedCategory && getSubcategories(selectedCategory).length > 0 && (
-                      <div className="space-y-2 animate-in fade-in slide-in-from-left-2 duration-300">
-                        <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Sub-Classification</Label>
+                      <div className="space-y-1.5 animate-in fade-in slide-in-from-left-2 duration-300">
+                        <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Sub-Klasifikasi</Label>
                         <Select
                           value={selectedSubcategory}
                           onValueChange={(value) => {
@@ -738,15 +761,17 @@ export function AHSPItemEditor({
                             if (subcat) {
                               const path = getCategoryPath(value)
                               handleChange('category', path.map(p => p.name).join(' > '))
+                              // Auto-number the AHSP code from the sub-classification code.
+                              handleChange('code', nextAhspCode(subcat.code))
                             }
                           }}
                         >
-                          <SelectTrigger className="h-10 rounded-lg border-border bg-background font-bold transition-all focus:ring-2 focus:ring-primary/10">
+                          <SelectTrigger className="h-9 rounded-lg border-border bg-background text-sm font-semibold transition-all focus:ring-2 focus:ring-primary/10">
                             <SelectValue placeholder="Pilih sub-klasifikasi..." />
                           </SelectTrigger>
                           <SelectContent className="rounded-xl border-border shadow-xl max-h-80">
                             {getSubcategories(selectedCategory).map(subcat => (
-                              <SelectItem key={subcat.id} value={subcat.id} className="py-3 font-semibold">
+                              <SelectItem key={subcat.id} value={subcat.id} className="py-2 font-semibold">
                                 {subcat.code} - {subcat.name}
                               </SelectItem>
                             ))}
@@ -757,29 +782,29 @@ export function AHSPItemEditor({
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="space-y-2">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
                     <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Judul Item / Uraian Pekerjaan</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleChange('name', e.target.value)}
                       placeholder="e.g., Pemasangan 1m2 Dinding Bata Merah 1:4"
-                      className={`h-10 text-xl font-semibold rounded-lg border-border transition-all focus:ring-2 focus:ring-primary/10 ${errors.name ? 'border-red-500 bg-red-50 text-red-900' : 'bg-background text-foreground'}`}
+                      className={`h-9 text-base font-semibold rounded-lg border-border transition-all focus:ring-2 focus:ring-primary/10 ${errors.name ? 'border-red-500 bg-red-50 text-red-900' : 'bg-background text-foreground'}`}
                       disabled={isSubmitting}
                     />
                     {errors.name && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.name}</p>}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Spesifikasi Teknis Detail</Label>
                     <Textarea
                       id="description"
                       value={formData.description}
                       onChange={(e) => handleChange('description', e.target.value)}
-                      placeholder="Detail methods, materials requirements, and technical standards..."
-                      rows={5}
-                      className="resize-none rounded-xl border-border bg-background p-4 text-muted-foreground leading-relaxed transition-all focus:ring-2 focus:ring-primary/10"
+                      placeholder="Detail metode, kebutuhan material, dan standar teknis..."
+                      rows={3}
+                      className="resize-none rounded-lg border-border bg-background p-3 text-sm text-foreground leading-relaxed transition-all focus:ring-2 focus:ring-primary/10"
                       disabled={isSubmitting}
                     />
                   </div>
