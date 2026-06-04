@@ -302,6 +302,7 @@ export function AHSPItemEditor({
     if (!formData.code) newErrors.code = 'Code is required'
     if (!formData.name) newErrors.name = 'Name is required'
     if (!formData.category) newErrors.category = 'Category is required'
+    if (!formData.unit || !String(formData.unit).trim()) newErrors.unit = 'Satuan wajib dipilih'
 
     // Component validation
     const totalComponents = components.length + manualComponents.filter(c => !c.editing).length
@@ -342,8 +343,14 @@ export function AHSPItemEditor({
         finalPrice: totals.final,
       })
 
-      // Save manual components (both for new and existing items)
+      // onSave returns '' when addAHSPItem validation fails. Don't falsely claim
+      // success (and don't try to attach components to a non-existent parent).
       const ahspId = savedId || item?.id
+      if (!ahspId) {
+        setErrors({ submit: 'Gagal menyimpan AHSP — periksa kembali isian (kode, satuan, kategori).' })
+        setIsSubmitting(false)
+        return
+      }
       if (ahspId) {
         // For a NEW item the parent ahsp_item is now enqueued (via onSave), so migrate
         // the draft 'temp' components onto the real id and sync them after the parent.
@@ -494,7 +501,7 @@ export function AHSPItemEditor({
         code: makeUniqueCode(sniItem.code),
         name: sniItem.name,
         category: sniItem.category,
-        unit: sniItem.unit,
+        unit: (sniItem.unit && String(sniItem.unit).trim()) ? sniItem.unit : 'unit',
         description: sniItem.description || '',
         overheadPercentage: sniItem.overheadPercentage || 0,
         profitPercentage: sniItem.profitPercentage || 0,
@@ -752,22 +759,31 @@ export function AHSPItemEditor({
 
                     <div className="space-y-1.5">
                       <Label htmlFor="unit" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Satuan</Label>
-                      <Select value={formData.unit} onValueChange={(value: string) => handleChange('unit', value)}>
-                        <SelectTrigger className="h-9 rounded-lg border-border bg-background text-sm font-semibold transition-all focus:ring-2 focus:ring-primary/10">
-                          <SelectValue />
+                      <Select value={formData.unit || undefined} onValueChange={(value: string) => handleChange('unit', value)}>
+                        <SelectTrigger className={`h-9 rounded-lg border-border bg-background text-sm font-semibold transition-all focus:ring-2 focus:ring-primary/10 ${errors.unit ? 'border-red-500' : ''}`}>
+                          <SelectValue placeholder="Pilih satuan..." />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-border shadow-xl">
                           <SelectItem value="m3" className="font-semibold py-2">m³ (Kubik)</SelectItem>
                           <SelectItem value="m2" className="font-semibold py-2">m² (Luas)</SelectItem>
                           <SelectItem value="m" className="font-semibold py-2">m (Meter Lari)</SelectItem>
+                          <SelectItem value="m'" className="font-semibold py-2">{"m' (Meter Panjang)"}</SelectItem>
                           <SelectItem value="kg" className="font-semibold py-2">kg (Berat)</SelectItem>
                           <SelectItem value="ltr" className="font-semibold py-2">liter</SelectItem>
                           <SelectItem value="bh" className="font-semibold py-2">buah (Item)</SelectItem>
                           <SelectItem value="oh" className="font-semibold py-2">OH (Labor)</SelectItem>
                           <SelectItem value="jam" className="font-semibold py-2">jam (Tool)</SelectItem>
+                          <SelectItem value="hr" className="font-semibold py-2">hari (hr)</SelectItem>
+                          <SelectItem value="hari" className="font-semibold py-2">hari</SelectItem>
+                          <SelectItem value="ha" className="font-semibold py-2">ha (Hektar)</SelectItem>
+                          <SelectItem value="set" className="font-semibold py-2">set</SelectItem>
+                          <SelectItem value="ls" className="font-semibold py-2">ls (Lumpsum)</SelectItem>
+                          <SelectItem value="btg" className="font-semibold py-2">btg (Batang)</SelectItem>
+                          <SelectItem value="lembar" className="font-semibold py-2">lembar</SelectItem>
                           <SelectItem value="unit" className="font-semibold py-2">unit</SelectItem>
                         </SelectContent>
                       </Select>
+                      {errors.unit && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.unit}</p>}
                     </div>
                   </div>
 
