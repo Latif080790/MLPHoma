@@ -31,6 +31,11 @@ export function SyncStatusBanner() {
     }
   }
 
+  async function handleDiscard() {
+    await syncQueue.clearFailedQueue()
+    setDismissed(true)
+  }
+
   return (
     <div
       role="alert"
@@ -77,6 +82,21 @@ export function SyncStatusBanner() {
       >
         <RefreshCw size={11} className={retrying ? 'animate-spin' : ''} />
         {retrying ? 'Retrying…' : 'Retry'}
+      </button>
+
+      {/* Discard — drop permanently-failing tasks (e.g. invalid/duplicate data) */}
+      <button
+        onClick={handleDiscard}
+        disabled={retrying}
+        className="flex-shrink-0 inline-flex items-center gap-1
+                   px-3 py-1 rounded text-xs font-semibold
+                   bg-rose-900/40 hover:bg-rose-900/70
+                   text-rose-200 border border-rose-700/40
+                   transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        aria-label="Buang perubahan yang gagal sync"
+        title="Buang perubahan yang gagal (tidak bisa disimpan ke server)"
+      >
+        Buang
       </button>
 
       {/* Dismiss */}
