@@ -442,15 +442,20 @@ export const useAHSPStore = create<AHSPStore>()(
 
           // Recalculate immediately after state update, no setTimeout needed
           if (affectedAhspId && affectedAhspId !== 'temp') {
+            const updatedComp = get().componentsByAHSP[affectedAhspId]?.find(c => c.id === id)
+            if (updatedComp) syncAHSPComponent(updatedComp)
             get().calculateAHSPPrice(affectedAhspId)
           }
         },
 
         deleteComponent: (id) => {
           // Track parent AHSP id BEFORE the state mutation removes the component
-          const parentAhspId = Object.keys(get().componentsByAHSP).find(
-            (ahspId) => get().componentsByAHSP[ahspId].some((c) => c.id === id)
+          const byAhsp = get().componentsByAHSP
+          const parentAhspId = Object.keys(byAhsp).find(
+            (ahspId) => byAhsp[ahspId].some((c) => c.id === id)
           )
+
+          if (!parentAhspId) return  // nothing to delete — invalid or already-deleted id
 
           set((state) => {
             const newComponentsByAHSP = { ...state.componentsByAHSP }
