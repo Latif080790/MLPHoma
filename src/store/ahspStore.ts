@@ -495,7 +495,7 @@ export const useAHSPStore = create<AHSPStore>()(
           })
 
           // Persist new order to Supabase
-          syncComponentOrder(ahspId, componentIds)
+          syncComponentOrder(componentIds)
         },
 
         moveComponents: (fromAhspId, toAhspId) => {
