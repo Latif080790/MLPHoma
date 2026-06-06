@@ -8,6 +8,7 @@
  */
 
 import { assertSupabase, fetchResources as sbFetchResources, fetchAhspItems as sbFetchAhspItems, bulkImportAHSPDirect } from './supabaseClient'
+import { normalizeResourceType } from './resourceTypeUtils'
 import type { AhspItemRow, ResourceRow, AhspComponentRow } from './supabaseClient'
 import { syncAHSPItem, syncResource, syncResources, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents } from './supabaseSyncService'
 import { db } from './db' // Import browser-safe IndexedDB instance
@@ -16,7 +17,6 @@ import type {
     Resource,
     AHSPItem,
     AHSPComponent,
-    ResourceType,
     ResourceUnit,
     PriceHistory,
     Zone,
@@ -26,18 +26,11 @@ import type {
 // ─── Row-to-Model Mappers ───
 
 function mapResourceRow(r: ResourceRow): Resource {
-    const dbType = (r.type || '').toUpperCase()
-    const type: ResourceType =
-        dbType === 'LABOR' ? 'labor' :
-            dbType === 'EQUIPMENT' ? 'equipment' :
-                dbType === 'SUBCON' || dbType === 'SUBCONTRACTOR' ? 'subcontractor' :
-                    'material'
-
     return {
         id: r.id,
         code: r.code,
         name: r.name,
-        type,
+        type: normalizeResourceType(r.type),
         unit: r.unit as ResourceUnit,
         unitPrice: r.unit_price,
         isActive: r.is_active ?? true,
@@ -70,12 +63,7 @@ function mapComponentRow(comp: AhspComponentRow & { resource: ResourceRow | null
     // Normalize the stored type (DB may hold 'MATERIAL'/'LABOR'/'EQUIPMENT'/'SUBCON')
     // to the lowercase ResourceType the app + validation schemas expect. Without this,
     // copying these components (e.g. SNI template → new AHSP) fails enum validation.
-    const dbType = (comp.type || '').toUpperCase()
-    const normalizedType: ResourceType =
-        dbType === 'LABOR' ? 'labor' :
-            dbType === 'EQUIPMENT' ? 'equipment' :
-                dbType === 'SUBCON' || dbType === 'SUBCONTRACTOR' ? 'subcontractor' :
-                    'material'
+    const normalizedType = normalizeResourceType(comp.type)
     return {
         id: comp.id,
         ahspId: comp.ahsp_id,

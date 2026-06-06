@@ -16,6 +16,7 @@ import type {
 } from '../types/ahsp'
 import type { AhspItemRow, ResourceRow, AhspComponentRow } from '../lib/supabaseClient'
 import { generateId } from '../lib/idGenerator'
+import { normalizeImportType, toDbResourceType } from '../lib/resourceTypeUtils'
 import { ahspRepository } from '../lib/ahspRepository'
 import { assertSupabase } from '../lib/supabaseClient'
 
@@ -133,16 +134,7 @@ export function prepareImportData(
 
         if (item.components && Array.isArray(item.components)) {
             item.components.forEach((comp) => {
-                const typeRaw = (comp.category || comp.type || 'material').toLowerCase()
-                let type: ResourceType = 'material'
-
-                if (typeRaw.includes('labor') || typeRaw.includes('tenaga') || typeRaw.includes('mandor') || typeRaw.includes('tukang')) {
-                    type = 'labor'
-                } else if (typeRaw.includes('equipment') || typeRaw.includes('alat') || typeRaw.includes('machine') || typeRaw.includes('sewa')) {
-                    type = 'equipment'
-                } else if (typeRaw.includes('subcon') || typeRaw.includes('kontraktor') || typeRaw.includes('pihak ketiga')) {
-                    type = 'subcontractor'
-                }
+                const type = normalizeImportType(comp.category || comp.type || 'material')
 
                 const resCode = comp.code || generateId('res-code').substring(0, 8)
                 let resourceId = resourceMap.get(resCode)
@@ -300,7 +292,7 @@ export function toSupabaseRows(
         id: res.id,
         code: res.code,
         name: res.name,
-        type: res.type.toUpperCase(),
+        type: toDbResourceType(res.type),
         unit: res.unit,
         unit_price: res.unitPrice,
         is_active: true,
@@ -312,7 +304,7 @@ export function toSupabaseRows(
         id: comp.id,
         ahsp_id: comp.ahspId,
         resource_id: comp.resourceId,
-        type: comp.type.toUpperCase(),
+        type: toDbResourceType(comp.type),
         coefficient: comp.coefficient,
         unit: comp.unit,
         unit_price: comp.unitPrice,

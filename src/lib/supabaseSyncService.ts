@@ -12,6 +12,7 @@
  */
 
 import { supabase } from './supabaseClient'
+import { toDbResourceType } from './resourceTypeUtils'
 import { toast } from 'sonner'
 import { get, set, del } from 'idb-keyval'
 
@@ -545,11 +546,7 @@ export function syncResource(resource: any): string {
       id: resource.id,
       code: resource.code,
       name: resource.name,
-      type: (() => {
-        const t = (resource.type || 'MATERIAL').toUpperCase()
-        if (t === 'SUBCONTRACTOR' || t === 'SUBCON') return 'SUBCON'
-        return t
-      })(),
+      type: toDbResourceType(resource.type || 'material'),
       unit: resource.unit,
       unit_price: resource.unitPrice,
       supplier: resource.supplier,
@@ -575,11 +572,7 @@ export function syncResources(resources: any[]): string {
       id: resource.id,
       code: resource.code,
       name: resource.name,
-      type: (() => {
-        const t = (resource.type || 'MATERIAL').toUpperCase()
-        if (t === 'SUBCONTRACTOR' || t === 'SUBCON') return 'SUBCON'
-        return t
-      })(),
+      type: toDbResourceType(resource.type || 'material'),
       unit: resource.unit,
       unit_price: resource.unitPrice,
       supplier: resource.supplier,
@@ -603,7 +596,7 @@ export function syncAHSPComponent(component: any): string {
       id: component.id,
       ahsp_id: component.ahspId,
       resource_id: component.resourceId,
-      type: component.type,
+      type: toDbResourceType(component.type),
       coefficient: component.coefficient,
       unit: component.unit,
       unit_price: component.unitPrice,
@@ -628,7 +621,7 @@ export function syncAHSPComponents(components: any[]): string {
       id: component.id,
       ahsp_id: component.ahspId,
       resource_id: component.resourceId,
-      type: component.type,
+      type: toDbResourceType(component.type),
       coefficient: component.coefficient,
       unit: component.unit,
       unit_price: component.unitPrice,
@@ -687,7 +680,7 @@ export async function syncAHSPItemsWithComponents(items: any[], components: any[
         id: component.id,
         ahsp_id: component.ahspId,
         resource_id: component.resourceId,
-        type: component.type,
+        type: toDbResourceType(component.type),
         coefficient: component.coefficient,
         unit: component.unit,
         unit_price: component.unitPrice,
