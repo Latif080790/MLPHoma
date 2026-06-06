@@ -277,9 +277,29 @@ export const ahspRepository = {
 
     async fetchComponents(ahspId?: string): Promise<{ data: Record<string, AHSPComponent[]>; error: string | null }> {
         try {
+            // STEP 1: Try Dexie cache first for instant load
+            const localComponents = ahspId
+                ? await db.components.where('ahspId').equals(ahspId).toArray()
+                : await db.components.toArray()
+
+            if (localComponents.length > 0) {
+                const componentsByAHSP: Record<string, AHSPComponent[]> = {}
+                localComponents.forEach(comp => {
+                    if (!componentsByAHSP[comp.ahspId]) componentsByAHSP[comp.ahspId] = []
+                    componentsByAHSP[comp.ahspId].push(comp)
+                })
+                // Sort by sortOrder within each group
+                Object.keys(componentsByAHSP).forEach(id => {
+                    componentsByAHSP[id].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || 0)
+                })
+                // Background sync to keep cache fresh (non-blocking)
+                this.syncComponentsBackground(ahspId).catch(() => { /* non-fatal */ })
+                return { data: componentsByAHSP, error: null }
+            }
+
+            // STEP 2: Fallback to Supabase if cache is empty
             const client = assertSupabase()
             const componentsByAHSP: Record<string, AHSPComponent[]> = {}
-
             let offset = 0
             const batchSize = 1000
             let hasMore = true
@@ -292,9 +312,7 @@ export const ahspRepository = {
                     .order('sort_order', { ascending: true })
                     .order('created_at', { ascending: true })
 
-                if (ahspId) {
-                    query = query.eq('ahsp_id', ahspId)
-                }
+                if (ahspId) query = query.eq('ahsp_id', ahspId)
 
                 const { data, error } = await query
                 if (error) throw error
@@ -304,9 +322,7 @@ export const ahspRepository = {
 
                 rows.forEach(row => {
                     const component = mapComponentRow(row)
-                    if (!componentsByAHSP[row.ahsp_id]) {
-                        componentsByAHSP[row.ahsp_id] = []
-                    }
+                    if (!componentsByAHSP[row.ahsp_id]) componentsByAHSP[row.ahsp_id] = []
                     componentsByAHSP[row.ahsp_id].push(component)
                 })
 
@@ -314,9 +330,45 @@ export const ahspRepository = {
                 if (rows.length < batchSize) hasMore = false
             }
 
+            // STEP 3: Cache results in Dexie for future loads
+            const allComponents = Object.values(componentsByAHSP).flat()
+            if (allComponents.length > 0) {
+                await db.components.bulkPut(allComponents)
+            }
+
             return { data: componentsByAHSP, error: null }
         } catch (err: unknown) {
             return { data: {}, error: (err as Error).message || 'Failed to fetch components' }
+        }
+    },
+
+    async syncComponentsBackground(ahspId?: string) {
+        try {
+            const client = assertSupabase()
+            let offset = 0
+            const batchSize = 1000
+            let hasMore = true
+
+            while (hasMore) {
+                let query = client
+                    .from('ahsp_components')
+                    .select(`*, resource:resources(*)`)
+                    .range(offset, offset + batchSize - 1)
+                    .order('sort_order', { ascending: true })
+                    .order('created_at', { ascending: true })
+
+                if (ahspId) query = query.eq('ahsp_id', ahspId)
+
+                const { data, error } = await query
+                if (error || !data) break
+
+                const mapped = (data as (AhspComponentRow & { resource: ResourceRow | null })[]).map(mapComponentRow)
+                await db.components.bulkPut(mapped)
+                offset += batchSize
+                if (data.length < batchSize) hasMore = false
+            }
+        } catch {
+            // Background sync — non-fatal
         }
     },
 
@@ -327,6 +379,25 @@ export const ahspRepository = {
     async fetchComponentsBatch(ahspIds: string[]): Promise<{ data: Record<string, AHSPComponent[]>; error: string | null }> {
         if (!ahspIds.length) return { data: {}, error: null }
         try {
+            // STEP 1: Try Dexie cache
+            const cachedComponents = await db.components
+                .where('ahspId')
+                .anyOf(ahspIds)
+                .toArray()
+
+            if (cachedComponents.length > 0) {
+                const componentsByAHSP: Record<string, AHSPComponent[]> = {}
+                cachedComponents.forEach(comp => {
+                    if (!componentsByAHSP[comp.ahspId]) componentsByAHSP[comp.ahspId] = []
+                    componentsByAHSP[comp.ahspId].push(comp)
+                })
+                Object.keys(componentsByAHSP).forEach(id => {
+                    componentsByAHSP[id].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+                })
+                return { data: componentsByAHSP, error: null }
+            }
+
+            // STEP 2: Fallback to Supabase
             const client = assertSupabase()
             const componentsByAHSP: Record<string, AHSPComponent[]> = {}
 
@@ -343,11 +414,15 @@ export const ahspRepository = {
             const rows = (data as (AhspComponentRow & { resource: ResourceRow | null })[]) || []
             rows.forEach(row => {
                 const component = mapComponentRow(row)
-                if (!componentsByAHSP[row.ahsp_id]) {
-                    componentsByAHSP[row.ahsp_id] = []
-                }
+                if (!componentsByAHSP[row.ahsp_id]) componentsByAHSP[row.ahsp_id] = []
                 componentsByAHSP[row.ahsp_id].push(component)
             })
+
+            // STEP 3: Cache in Dexie
+            const allComps = Object.values(componentsByAHSP).flat()
+            if (allComps.length > 0) {
+                await db.components.bulkPut(allComps)
+            }
 
             return { data: componentsByAHSP, error: null }
         } catch (err: unknown) {
@@ -356,10 +431,12 @@ export const ahspRepository = {
     },
 
     syncComponent(component: AHSPComponent) {
+        db.components.put(component).catch(() => { /* cache write — non-fatal */ })
         syncAHSPComponent(component)
     },
 
     deleteComponent(id: string) {
+        db.components.delete(id).catch(() => { /* cache delete — non-fatal */ })
         syncDelete('ahsp_components', id)
     },
 
