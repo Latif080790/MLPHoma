@@ -56,6 +56,8 @@ export interface AHSPComponent {
   unitPrice: number
   /** Subtotal (coefficient × unitPrice) */
   subtotal: number
+  /** Persistent display order (used for drag-drop reordering) */
+  sortOrder?: number
   /** Notes for this component */
   notes?: string
   /** Creation timestamp */
@@ -75,6 +77,8 @@ export interface AHSPItem {
   /** Unit of measurement */
   unit: ResourceUnit
   category: string
+  /** Optional sub-classification below category */
+  subcategory?: string
   /** Base price calculated from components */
   basePrice: number
   /** Overhead percentage */

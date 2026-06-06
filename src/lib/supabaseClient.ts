@@ -28,6 +28,7 @@ export interface AhspItemRow {
   description?: string
   unit: string
   category: string
+  subcategory?: string
   base_price?: number
   final_price?: number
   price_material?: number
