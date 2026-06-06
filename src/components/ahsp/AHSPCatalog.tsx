@@ -44,6 +44,7 @@ import type { AHSPItem } from '../../types/ahsp'
 import { toast } from 'sonner'
 import { DataTable } from '../shared/DataTable'
 import { getAHSPColumns } from './AHSPColumns'
+import { SyncStatusBadge } from './SyncStatusBadge'
 
 /**
  * Mini horizontal stacked bar showing cost composition (material/labor/equipment/subcon)
@@ -604,6 +605,9 @@ export function AHSPCatalog({
 
           {/* Separator — pushes the action group to the far right (single-row toolbar) */}
           <div className="h-4 w-px bg-muted ml-auto mx-0.5 shrink-0" />
+
+          {/* Sync Status */}
+          <SyncStatusBadge />
 
           {/* Actions */}
           <div className="flex items-center gap-1 shrink-0">
