@@ -1171,6 +1171,21 @@ export function syncTKDNItem(item: any): string {
   })
 }
 
+/**
+ * Sync component sort_order after drag-drop reorder.
+ * Batch update: one syncQueue entry per component with its new position.
+ */
+export function syncComponentOrder(ahspId: string, componentIds: string[]): void {
+  componentIds.forEach((id, index) => {
+    syncQueue.enqueue({
+      operation: 'update',
+      table: 'ahsp_components',
+      data: { id, sort_order: index },
+      maxRetries: 2,
+    })
+  })
+}
+
 /* eslint-enable @typescript-eslint/no-explicit-any */
 /**
  * ===========================

@@ -289,6 +289,7 @@ export const ahspRepository = {
                     .from('ahsp_components')
                     .select(`*, resource:resources(*)`)
                     .range(offset, offset + batchSize - 1)
+                    .order('sort_order', { ascending: true })
                     .order('created_at', { ascending: true })
 
                 if (ahspId) {
@@ -334,6 +335,7 @@ export const ahspRepository = {
                 .from('ahsp_components')
                 .select(`*, resource:resources(*)`)
                 .in('ahsp_id', ahspIds)
+                .order('sort_order', { ascending: true })
                 .order('created_at', { ascending: true })
 
             if (error) throw error

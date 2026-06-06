@@ -16,7 +16,7 @@ import {
   calculateAHSPPriceInWorker,
   ahspDataService
 } from '../services/ahspService'
-import { syncAHSPItem, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources, syncAHSPItems } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources, syncAHSPItems, syncComponentOrder } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -480,7 +480,10 @@ export const useAHSPStore = create<AHSPStore>()(
           set((state) => {
             const components = state.componentsByAHSP[ahspId] || []
             const reorderedComponents = componentIds
-              .map(id => components.find(c => c.id === id))
+              .map((id, index) => {
+                const comp = components.find((c) => c.id === id)
+                return comp ? { ...comp, sortOrder: index } : null
+              })
               .filter(Boolean) as AHSPComponent[]
 
             return {
@@ -490,6 +493,9 @@ export const useAHSPStore = create<AHSPStore>()(
               },
             }
           })
+
+          // Persist new order to Supabase
+          syncComponentOrder(ahspId, componentIds)
         },
 
         moveComponents: (fromAhspId, toAhspId) => {
