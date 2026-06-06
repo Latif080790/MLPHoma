@@ -75,6 +75,7 @@ export interface AhspComponentRow {
   unit: string
   unit_price: number
   subtotal: number
+  sort_order?: number
   created_at?: string
   updated_at?: string
 }

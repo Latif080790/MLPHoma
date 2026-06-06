@@ -604,6 +604,7 @@ export function syncAHSPComponent(component: any): string {
       unit: component.unit,
       unit_price: component.unitPrice,
       subtotal: component.subtotal,
+      sort_order: component.sortOrder ?? 0,
       created_at: component.createdAt,
       updated_at: new Date().toISOString(),
     },
@@ -629,6 +630,7 @@ export function syncAHSPComponents(components: any[]): string {
       unit: component.unit,
       unit_price: component.unitPrice,
       subtotal: component.subtotal,
+      sort_order: component.sortOrder ?? 0,
       created_at: component.createdAt || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })),
@@ -689,6 +691,7 @@ export async function syncAHSPItemsWithComponents(items: any[], components: any[
         unit: component.unit,
         unit_price: component.unitPrice,
         subtotal: component.subtotal,
+        sort_order: component.sortOrder ?? 0,
         created_at: component.createdAt || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }))

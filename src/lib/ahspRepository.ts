@@ -53,7 +53,7 @@ function mapAhspItemRow(item: AhspItemRow): AHSPItem {
         price_subcon: item.price_subcon || 0,
         overheadPercentage: item.overhead_percentage || 0,
         profitPercentage: item.profit_percentage || 0,
-        subcategory: (item as any).subcategory || '',
+        subcategory: item.subcategory || '',
         currentVersion: (item as unknown as { current_version?: number }).current_version ?? 1,
         createdAt: item.created_at,
         updatedAt: item.updated_at
@@ -74,7 +74,7 @@ function mapComponentRow(comp: AhspComponentRow & { resource: ResourceRow | null
         unit: comp.unit as ResourceUnit,
         unitPrice: comp.unit_price,
         subtotal: comp.subtotal,
-        sortOrder: (comp as any).sort_order ?? 0,
+        sortOrder: comp.sort_order ?? 0,
         resource: comp.resource ? mapResourceRow(comp.resource) : undefined,
         createdAt: comp.created_at || new Date().toISOString(),
         updatedAt: comp.updated_at || new Date().toISOString(),
