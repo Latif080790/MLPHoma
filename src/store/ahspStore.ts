@@ -401,21 +401,22 @@ export const useAHSPStore = create<AHSPStore>()(
         },
 
         updateComponent: (id, updates) => {
+          let affectedAhspId: string | undefined
+
           set((state) => {
             const newComponentsByAHSP = { ...state.componentsByAHSP }
 
-            // Find and update component
-            Object.keys(newComponentsByAHSP).forEach(ahspId => {
+            Object.keys(newComponentsByAHSP).forEach((ahspId) => {
               const components = newComponentsByAHSP[ahspId]
-              const componentIndex = components.findIndex(c => c.id === id)
+              const componentIndex = components.findIndex((c) => c.id === id)
 
               if (componentIndex !== -1) {
+                affectedAhspId = ahspId
                 const component = components[componentIndex]
                 const updatedComponent = { ...component, ...updates }
 
-                // Update unit price if resource changed
                 if (updates.resourceId) {
-                  const resource = state.resources.find(r => r.id === updates.resourceId)
+                  const resource = state.resources.find((r) => r.id === updates.resourceId)
                   if (resource) {
                     updatedComponent.resource = resource
                     updatedComponent.unit = resource.unit
@@ -423,9 +424,8 @@ export const useAHSPStore = create<AHSPStore>()(
                   }
                 }
 
-                // Recalculate subtotal
-                updatedComponent.coefficient = updatedComponent.coefficient ?? component.coefficient // Ensure coefficient is not undefined
-                updatedComponent.unitPrice = updatedComponent.unitPrice ?? component.unitPrice // Ensure unitPrice is not undefined
+                updatedComponent.coefficient = updatedComponent.coefficient ?? component.coefficient
+                updatedComponent.unitPrice = updatedComponent.unitPrice ?? component.unitPrice
                 updatedComponent.subtotal = updatedComponent.coefficient * updatedComponent.unitPrice
                 updatedComponent.updatedAt = new Date().toISOString()
 
@@ -437,49 +437,38 @@ export const useAHSPStore = create<AHSPStore>()(
               }
             })
 
-            return {
-              componentsByAHSP: newComponentsByAHSP,
-            }
+            return { componentsByAHSP: newComponentsByAHSP }
           })
 
-          // Recalculate AHSP price if component was updated
-          setTimeout(() => {
-            const state = get()
-            Object.keys(state.componentsByAHSP).forEach(ahspId => {
-              if (state.componentsByAHSP[ahspId].some(c => c.id === id)) {
-                get().calculateAHSPPrice(ahspId)
-              }
-            })
-          }, 0)
+          // Recalculate immediately after state update, no setTimeout needed
+          if (affectedAhspId && affectedAhspId !== 'temp') {
+            get().calculateAHSPPrice(affectedAhspId)
+          }
         },
 
         deleteComponent: (id) => {
+          // Track parent AHSP id BEFORE the state mutation removes the component
+          const parentAhspId = Object.keys(get().componentsByAHSP).find(
+            (ahspId) => get().componentsByAHSP[ahspId].some((c) => c.id === id)
+          )
+
           set((state) => {
             const newComponentsByAHSP = { ...state.componentsByAHSP }
-
-            Object.keys(newComponentsByAHSP).forEach(ahspId => {
-              const components = newComponentsByAHSP[ahspId]
-              const filteredComponents = components.filter(c => c.id !== id)
-
-              if (filteredComponents.length !== components.length) {
-                newComponentsByAHSP[ahspId] = filteredComponents
+            Object.keys(newComponentsByAHSP).forEach((ahspId) => {
+              const filtered = newComponentsByAHSP[ahspId].filter((c) => c.id !== id)
+              if (filtered.length !== newComponentsByAHSP[ahspId].length) {
+                newComponentsByAHSP[ahspId] = filtered
               }
             })
-
-            return {
-              componentsByAHSP: newComponentsByAHSP,
-            }
+            return { componentsByAHSP: newComponentsByAHSP }
           })
 
-          // Recalculate AHSP price if component was deleted
-          setTimeout(() => {
-            const state = get()
-            Object.keys(state.componentsByAHSP).forEach(ahspId => {
-              if (state.componentsByAHSP[ahspId].some(c => c.id === id)) {
-                get().calculateAHSPPrice(ahspId)
-              }
-            })
-          }, 0)
+          syncDelete('ahsp_components', id)
+
+          // Now recalculate using the tracked parent id
+          if (parentAhspId && parentAhspId !== 'temp') {
+            get().calculateAHSPPrice(parentAhspId)
+          }
         },
 
         reorderComponents: (ahspId, componentIds) => {
