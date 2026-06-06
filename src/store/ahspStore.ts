@@ -352,7 +352,7 @@ export const useAHSPStore = create<AHSPStore>()(
               toast.error(`Gagal import ke Supabase: ${error instanceof Error ? error.message : 'Unknown error'}`)
             }
           } else {
-            // SMALL IMPORT
+            // SMALL IMPORT: update state immediately (optimistic), sync to Supabase in background
             set((state) => ({
               resources: allNewResources.length > 0 ? [...state.resources, ...allNewResources] : state.resources,
               ahspItems: [...state.ahspItems, ...newItems],
@@ -360,9 +360,9 @@ export const useAHSPStore = create<AHSPStore>()(
             }))
 
             if (allNewResources.length > 0) {
-              // syncResources(allNewResources)
+              syncResources(allNewResources)
             }
-            // syncResources(newItems)
+
             syncAHSPItemsWithComponents(newItems, allNewComponents).catch(() => {
               // background sync — failure is non-fatal
             })
