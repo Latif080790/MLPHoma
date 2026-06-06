@@ -443,7 +443,7 @@ export const useAHSPStore = create<AHSPStore>()(
           // Recalculate immediately after state update, no setTimeout needed
           if (affectedAhspId && affectedAhspId !== 'temp') {
             const updatedComp = get().componentsByAHSP[affectedAhspId]?.find(c => c.id === id)
-            if (updatedComp) syncAHSPComponent(updatedComp)
+            if (updatedComp) ahspRepository.syncComponent(updatedComp)  // updates Dexie cache + syncs to Supabase
             get().calculateAHSPPrice(affectedAhspId)
           }
         },

@@ -391,6 +391,35 @@ export const ahspRepository = {
                     if (!componentsByAHSP[comp.ahspId]) componentsByAHSP[comp.ahspId] = []
                     componentsByAHSP[comp.ahspId].push(comp)
                 })
+
+                // Check if any requested ahspIds are missing from cache
+                const missingIds = ahspIds.filter(id => !componentsByAHSP[id])
+
+                if (missingIds.length > 0) {
+                    // Fetch missing IDs from Supabase
+                    const client = assertSupabase()
+                    const { data, error } = await client
+                        .from('ahsp_components')
+                        .select(`*, resource:resources(*)`)
+                        .in('ahsp_id', missingIds)
+                        .order('sort_order', { ascending: true })
+                        .order('created_at', { ascending: true })
+
+                    if (!error && data) {
+                        const rows = (data as (AhspComponentRow & { resource: ResourceRow | null })[])
+                        rows.forEach(row => {
+                            const component = mapComponentRow(row)
+                            if (!componentsByAHSP[row.ahsp_id]) componentsByAHSP[row.ahsp_id] = []
+                            componentsByAHSP[row.ahsp_id].push(component)
+                        })
+                        // Cache the newly fetched components
+                        const newComps = rows.map(mapComponentRow)
+                        if (newComps.length > 0) {
+                            await db.components.bulkPut(newComps)
+                        }
+                    }
+                }
+
                 Object.keys(componentsByAHSP).forEach(id => {
                     componentsByAHSP[id].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
                 })
