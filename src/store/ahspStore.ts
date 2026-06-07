@@ -6,6 +6,7 @@
 import { create } from 'zustand'
 import { devtools, persist, subscribeWithSelector } from 'zustand/middleware'
 import { ahspRepository } from '../lib/ahspRepository'
+import { db } from '../lib/db'
 import {
   calculateSingleAHSPPrice,
   recalculateAllInWorker,
@@ -468,7 +469,7 @@ export const useAHSPStore = create<AHSPStore>()(
             return { componentsByAHSP: newComponentsByAHSP }
           })
 
-          syncDelete('ahsp_components', id)
+          ahspRepository.deleteComponent(id)
 
           // Now recalculate using the tracked parent id
           if (parentAhspId && parentAhspId !== 'temp') {
@@ -493,6 +494,12 @@ export const useAHSPStore = create<AHSPStore>()(
               },
             }
           })
+
+          // Write-through to Dexie so fetchComponents Dexie-first read returns correct order
+          const reordered = get().componentsByAHSP[ahspId]
+          if (reordered?.length) {
+            db.components.bulkPut(reordered).catch(() => { /* non-fatal */ })
+          }
 
           // Persist new order to Supabase
           syncComponentOrder(componentIds)

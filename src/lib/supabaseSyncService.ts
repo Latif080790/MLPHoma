@@ -94,6 +94,7 @@ class SyncQueueManager {
 
     this.queue.push(fullTask)
     this.saveQueue()
+    this.notifySubscribers()
 
     // Start processing if not already running
     if (!this.processing) {
@@ -126,6 +127,7 @@ class SyncQueueManager {
           // Remove successful task
           this.queue.shift()
           this.saveQueue()
+          this.notifySubscribers()
         } else {
           // Handle failed task
           await this.handleFailedTask(task, result.error)
