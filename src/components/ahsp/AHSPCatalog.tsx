@@ -5,14 +5,7 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { Search, Filter, Plus, Edit2, Trash2, Calculator, Download, Upload, History, X, RotateCcw, MoreHorizontal, MapPin } from 'lucide-react'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
-import { Badge } from '../ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-import { Checkbox } from '../ui/checkbox'
+import { Trash2, RotateCcw } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,62 +16,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '../ui/alert-dialog'
-import { TooltipProvider } from '../ui/tooltip'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu'
 import { useAHSPStore, getAHSPSummary } from '../../store/ahspStore'
 import { useRabStore } from '@/store/rabStore'
 import { AHSPItemEditor } from './AHSPItemEditor'
-import { ZoneManager } from './ZoneManager'
 import { ZonePriceEditor } from './ZonePriceEditor'
 import { PriceHistoryDialog } from './PriceHistoryDialog'
 import { AHSPCreationModeDialog, type AHSPCreationMode } from './AHSPCreationModeDialog'
 import { ahspDataService } from '../../services/ahspService'
-import { formatIDR } from '../../lib/utils'
 import { exportAHSPToXLSX } from '../../lib/ahspExport'
 import type { AHSPItem } from '../../types/ahsp'
 import { toast } from 'sonner'
-import { DataTable } from '../shared/DataTable'
-import { getAHSPColumns } from './AHSPColumns'
-import { SyncStatusBadge } from './SyncStatusBadge'
-
-/**
- * Mini horizontal stacked bar showing cost composition (material/labor/equipment/subcon)
- */
-function CostMixBar({ mat, lab, eqp, sub }: { mat: number; lab: number; eqp: number; sub: number }) {
-  const total = mat + lab + eqp + sub
-  if (total === 0) return null
-  const matPct = (mat / total) * 100
-  const labPct = (lab / total) * 100
-  const eqpPct = (eqp / total) * 100
-  const subPct = (sub / total) * 100
-  const tip = `Material ${Math.round(matPct)}% · Labor ${Math.round(labPct)}% · Equip ${Math.round(eqpPct)}% · Subcon ${Math.round(subPct)}%`
-  return (
-    <div
-      className="flex h-1.5 w-full max-w-[160px] rounded-full overflow-hidden mt-1 opacity-70"
-      title={tip}
-    >
-      {matPct > 0 && <div className="bg-primary h-full" style={{ width: `${matPct}%` }} />}
-      {labPct > 0 && <div className="bg-orange-400 h-full" style={{ width: `${labPct}%` }} />}
-      {eqpPct > 0 && <div className="bg-indigo-400 h-full" style={{ width: `${eqpPct}%` }} />}
-      {subPct > 0 && <div className="bg-purple-400 h-full" style={{ width: `${subPct}%` }} />}
-    </div>
-  )
-}
-
-/** Extended AHSPItem with zone price breakdown fields */
-interface AHSPItemWithPrices extends AHSPItem {
-  price_material?: number
-  price_labor?: number
-  price_equipment?: number
-  price_subcon?: number
-  originalFinalPrice?: number
-}
+import { AHSPCatalogSummaryCards } from './AHSPCatalogSummaryCards'
+import { AHSPCatalogFilters } from './AHSPCatalogFilters'
+import { AHSPCatalogTable } from './AHSPCatalogTable'
 
 /** Props for AHSPCatalog component */
 export interface AHSPCatalogProps {
@@ -496,200 +446,42 @@ export function AHSPCatalog({
     <div className="space-y-4 density-compact">
       {/* Summary Cards */}
       {!compact && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total AHSP Items</CardTitle>
-              <Calculator className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalAHSPItems}</div>
-              <p className="text-xs text-muted-foreground">
-                {ahspItems.filter(item => item.isActive).length} active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Resources</CardTitle>
-              <Filter className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary.totalResources}</div>
-              <p className="text-xs text-muted-foreground">Across all types</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Harga Rata-rata</CardTitle>
-              <Calculator className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatIDR(summary.averagePrice)}</div>
-              <p className="text-xs text-muted-foreground">Per item AHSP</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Kategori</CardTitle>
-              <Filter className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{categories.length}</div>
-              <p className="text-xs text-muted-foreground">Jumlah kategori berbeda</p>
-            </CardContent>
-          </Card>
-        </div>
+        <AHSPCatalogSummaryCards
+          totalAHSPItems={summary.totalAHSPItems}
+          activeAHSPItems={ahspItems.filter(item => item.isActive).length}
+          totalResources={summary.totalResources}
+          averagePrice={summary.averagePrice}
+          categoryCount={categories.length}
+        />
       )}
 
       {/* Filter + Action Toolbar */}
-      <div className="sticky top-0 z-10 bg-card border border-border rounded-lg overflow-hidden">
-        <div className="flex items-center gap-2 px-3 py-2">
-          {/* Search */}
-          <div className="relative flex-1 min-w-[160px] max-w-[280px] shrink">
-            <Search size={10} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari item AHSP..."
-              className="w-full h-7 pl-7 pr-6 text-xs border border-border rounded bg-muted/30 focus:outline-none focus:border-orange-400 focus:bg-card transition-colors placeholder:text-muted-foreground"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground hover:text-muted-foreground"
-              >
-                <X size={9} />
-              </button>
-            )}
-          </div>
-
-          {/* Category */}
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="h-7 w-[152px] text-xs border-border bg-muted/30 focus:ring-0 focus:border-orange-400 rounded">
-              <SelectValue placeholder="Kategori" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Kategori</SelectItem>
-              {categories.map(category => (
-                <SelectItem key={category} value={category}>{category}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Zone */}
-          <div className="flex items-center gap-1">
-            <Select value={selectedZone} onValueChange={setSelectedZone}>
-              <SelectTrigger className={`h-7 w-[148px] text-xs focus:ring-0 rounded ${
-                selectedZone !== 'default'
-                  ? 'border-orange-300 bg-orange-50 text-orange-700 focus:border-orange-400'
-                  : 'border-border bg-muted/30 focus:border-orange-400'
-              }`}>
-                <div className="flex items-center gap-1 min-w-0">
-                  <MapPin size={9} className={selectedZone !== 'default' ? 'text-orange-500 shrink-0' : 'text-foreground shrink-0'} />
-                  <SelectValue placeholder="Zona" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">Default (Master)</SelectItem>
-                {zones.map(z => (
-                  <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <ZoneManager />
-          </div>
-
-          {/* Separator — pushes the action group to the far right (single-row toolbar) */}
-          <div className="h-4 w-px bg-muted ml-auto mx-0.5 shrink-0" />
-
-          {/* Sync Status */}
-          <TooltipProvider>
-            <SyncStatusBadge />
-          </TooltipProvider>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={() => handleExport()}
-              title="Ekspor katalog AHSP"
-              className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all"
-            >
-              <Download size={11} />
-              <span>Ekspor</span>
-            </button>
-
-            <button
-              onClick={() => {
-                try {
-                  exportAHSPToXLSX(filteredItems, resources, componentsByAHSP)
-                } catch (err) {
-                  toast.error('Export Gagal', { description: (err as Error).message })
-                }
-              }}
-              disabled={loading.ahspItems || ahspItems.length === 0}
-              title="Ekspor katalog AHSP ke Excel"
-              className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download size={11} />
-              <span>Ekspor XLSX</span>
-            </button>
-
-            <label className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all cursor-pointer">
-              <Upload size={11} />
-              <span>Impor</span>
-              <input type="file" accept=".json" onChange={handleImport} className="hidden" />
-            </label>
-
-            <button
-              onClick={handleAddItem}
-              className="flex items-center gap-1 text-xs bg-orange-500 text-white font-semibold h-7 px-3 rounded hover:bg-orange-600 transition-all"
-            >
-              <Plus size={11} />
-              <span>Tambah Item</span>
-            </button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center justify-center text-muted-foreground h-7 w-7 rounded border border-border hover:border-border hover:bg-muted/30 hover:text-muted-foreground transition-all">
-                  <MoreHorizontal size={12} />
-                  <span className="sr-only">More actions</span>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuItem
-                  onClick={() => handleExport(selectedIds.size > 0 ? displayItems.filter((i: AHSPItem) => selectedIds.has(i.id)) : undefined)}
-                  disabled={ahspItems.length === 0}
-                >
-                  <Download className="mr-2 h-3.5 w-3.5" />
-                  Ekspor Terpilih
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-red-600 focus:bg-red-50 focus:text-red-700 dark:focus:bg-red-900/20"
-                  onClick={() => setShowResetConfirm(true)}
-                  disabled={ahspItems.length === 0 && resources.length === 0}
-                >
-                  <RotateCcw className="mr-2 h-3.5 w-3.5" />
-                  Reset Sistem
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        {/* Zone active banner */}
-        {selectedZone !== 'default' && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border-t border-orange-100 text-xs text-orange-700">
-            <MapPin size={10} className="text-orange-500 shrink-0" />
-            <span>Zona: <strong>{zones.find(z => z.id === selectedZone)?.name}</strong> — harga zona menimpa harga master.</span>
-          </div>
-        )}
-      </div>
+      <AHSPCatalogFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        categories={categories}
+        selectedZone={selectedZone}
+        onZoneChange={setSelectedZone}
+        zones={zones}
+        onExport={() => handleExport()}
+        onExportXLSX={() => {
+          try {
+            exportAHSPToXLSX(filteredItems, resources, componentsByAHSP)
+          } catch (err) {
+            toast.error('Export Gagal', { description: (err as Error).message })
+          }
+        }}
+        exportXLSXDisabled={loading.ahspItems || ahspItems.length === 0}
+        onImport={handleImport}
+        onAddItem={handleAddItem}
+        onExportSelected={() => handleExport(selectedIds.size > 0 ? displayItems.filter((i: AHSPItem) => selectedIds.has(i.id)) : undefined)}
+        exportSelectedDisabled={ahspItems.length === 0}
+        onResetClick={() => setShowResetConfirm(true)}
+        resetDisabled={ahspItems.length === 0 && resources.length === 0}
+        activeZoneName={zones.find(z => z.id === selectedZone)?.name}
+      />
 
       {errors.ahspItems && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
@@ -698,144 +490,26 @@ export function AHSPCatalog({
       )}
 
       {/* Main Table Content */}
-      <div className="hidden rounded-lg border border-border overflow-hidden shadow-sm bg-card md:block">
-        <div
-          ref={parentRef}
-          className="relative"
-        >
-          {loading.ahspItems ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : displayItems.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-sm">Belum ada item AHSP.</p>
-              <Button variant="link" onClick={handleAddItem} className="mt-2 text-blue-600">Buat item baru</Button>
-            </div>
-          ) : (
-            <DataTable
-              columns={getAHSPColumns({
-                onEditItem: handleEditItem,
-                onHistoryClick: handleHistoryClick,
-                onDeleteItem: handleDeleteItem,
-                hasZoneOverride: selectedZone !== 'default',
-                ahspUsageMap,
-                showBidPrice,
-                bidMarginPct,
-              })}
-              data={groupedDisplayRows.map(r => r.type === 'section' ? r : r.item)}
-              virtualized={true}
-              // Embedded (compact) view has extra chrome above (pipeline tabs + budget
-              // strip), so reserve more height there to keep the last rows reachable.
-              maxHeight={compact ? 'calc(100vh - 420px)' : 'calc(100vh - 280px)'}
-              enableRowSelection={true}
-              rowSelection={Object.fromEntries(Array.from(selectedIds).map(id => [id, true]))}
-              onRowSelectionChange={(updater) => {
-                const newSelection = typeof updater === 'function' ? updater(Object.fromEntries(Array.from(selectedIds).map(id => [id, true]))) : updater;
-                const newIds = new Set<string>();
-                for (const key in newSelection) {
-                   if (newSelection[key]) newIds.add(key);
-                }
-                setSelectedIds(newIds);
-              }}
-              getRowId={(row: any) => row.id || `section-${row.label}`}
-              isCustomRow={(row: any) => row.type === 'section'}
-              renderCustomRow={(row: any) => (
-                <TableRow
-                  key={`section-${row.label}`}
-                  className="bg-muted/30 hover:bg-accent/40"
-                >
-                  <TableCell colSpan={10} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    {row.label}
-                  </TableCell>
-                </TableRow>
-              )}
-            />
-          )}
-        </div>
-
-        {/* Bulk Action Bar */}
-        {selectedIds.size > 0 && (
-          <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="bg-background text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 border border-border ring-4 ring-slate-900/10 backdrop-blur-md">
-              <div className="flex items-center gap-3 pr-6 border-r border-border">
-                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                <span className="text-sm font-bold tracking-tight">
-                  <span className="text-primary pr-1">{selectedIds.size}</span> Item Dipilih
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-foreground hover:text-white hover:bg-muted gap-2 h-9 px-4 font-semibold text-xs"
-                  onClick={() => setSelectedIds(new Set())}
-                >
-                  <X className="h-3.5 w-3.5" />
-                  Bersihkan
-                </Button>
-
-                <Button
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white gap-2 h-9 px-4 font-bold text-xs shadow-lg shadow-red-900/20"
-                  onClick={handleBulkDelete}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Hapus Terpilih
-                </Button>
-
-                <Button
-                  size="sm"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2 h-9 px-4 font-bold text-xs shadow-lg shadow-blue-900/20"
-                  onClick={() => {
-                    handleExport(displayItems.filter(i => selectedIds.has(i.id)))
-                    toast.success('Mengekspor item terpilih...')
-                  }}
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  Ekspor
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!loading.ahspItems && displayItems.length > 0 && (
-          <div className="border-t border-border bg-white/80 backdrop-blur-sm px-6 py-4 sticky bottom-0 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-6 items-center">
-              <div className="md:col-span-1">
-                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Material</div>
-                <div className="font-mono text-xs font-bold text-primary">{formatIDR(totals.materialTotal)}</div>
-              </div>
-              <div className="md:col-span-1">
-                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Labor</div>
-                <div className="font-mono text-xs font-bold text-orange-700">{formatIDR(totals.laborTotal)}</div>
-              </div>
-              <div className="md:col-span-1">
-                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Equipment</div>
-                <div className="font-mono text-xs font-bold text-indigo-700">{formatIDR(totals.equipmentTotal)}</div>
-              </div>
-              <div className="md:col-span-1">
-                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Subcon</div>
-                <div className="font-mono text-xs font-bold text-purple-700">{formatIDR(totals.subconTotal)}</div>
-              </div>
-              {totals.unallocatedTotal > 0 && (
-                <div className="md:col-span-1">
-                  <div className="text-xs uppercase font-bold tracking-widest text-red-400 mb-1">Belum Teralokasi</div>
-                  <div className="font-mono text-xs font-bold text-red-600">{formatIDR(totals.unallocatedTotal)}</div>
-                </div>
-              )}
-              <div className={totals.unallocatedTotal > 0 ? "md:col-span-1 text-right" : "md:col-span-2 text-right"}>
-                <div className="text-xs uppercase font-bold tracking-widest text-muted-foreground mb-1">Grand Total Katalog</div>
-                <div className="font-mono text-lg font-black text-foreground tabular-nums">
-                  {formatIDR(totals.grandTotal)}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      <AHSPCatalogTable
+        loading={loading.ahspItems}
+        displayItems={displayItems}
+        groupedDisplayRows={groupedDisplayRows}
+        parentRef={parentRef}
+        hasZoneOverride={selectedZone !== 'default'}
+        ahspUsageMap={ahspUsageMap}
+        showBidPrice={showBidPrice}
+        bidMarginPct={bidMarginPct}
+        compact={compact}
+        selectedIds={selectedIds}
+        onSelectedIdsChange={setSelectedIds}
+        totals={totals}
+        onEditItem={handleEditItem}
+        onHistoryClick={handleHistoryClick}
+        onDeleteItem={handleDeleteItem}
+        onAddItem={handleAddItem}
+        onBulkDelete={handleBulkDelete}
+        onExport={handleExport}
+      />
 
       <AHSPCreationModeDialog
         open={showModeDialog}
