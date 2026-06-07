@@ -2,6 +2,13 @@
 import * as XLSX from 'xlsx'
 import type { AHSPItem, Resource, AHSPComponent } from '../types/ahsp'
 
+// Prevent formula injection (CWE-1236): prefix strings starting with formula triggers
+function safe(v: unknown): string {
+  if (v == null) return ''
+  const s = String(v)
+  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s
+}
+
 export function exportAHSPToXLSX(
   items: AHSPItem[],
   resources: Resource[],
@@ -12,11 +19,11 @@ export function exportAHSPToXLSX(
   // Sheet 1: Katalog AHSP
   const ws1 = XLSX.utils.json_to_sheet(
     items.map(item => ({
-      'Kode': item.code,
-      'Nama Pekerjaan': item.name,
-      'Satuan': item.unit,
-      'Kategori': item.category,
-      'Sub-Kategori': item.subcategory || '',
+      'Kode': safe(item.code),
+      'Nama Pekerjaan': safe(item.name),
+      'Satuan': safe(item.unit),
+      'Kategori': safe(item.category),
+      'Sub-Kategori': safe(item.subcategory),
       'Harga Material (Rp)': item.price_material ?? 0,
       'Harga Tenaga (Rp)': item.price_labor ?? 0,
       'Harga Alat (Rp)': item.price_equipment ?? 0,
@@ -33,12 +40,12 @@ export function exportAHSPToXLSX(
   // Sheet 2: Resources
   const ws2 = XLSX.utils.json_to_sheet(
     resources.map(r => ({
-      'Kode': r.code,
-      'Nama': r.name,
-      'Tipe': r.type,
-      'Satuan': r.unit,
+      'Kode': safe(r.code),
+      'Nama': safe(r.name),
+      'Tipe': safe(r.type),
+      'Satuan': safe(r.unit),
       'Harga Satuan (Rp)': r.unitPrice,
-      'Supplier': r.supplier || '',
+      'Supplier': safe(r.supplier),
       'Status': r.isActive ? 'Aktif' : 'Nonaktif',
     }))
   )
@@ -61,12 +68,12 @@ export function exportAHSPToXLSX(
     const comps = componentsByAHSP[item.id] ?? []
     comps.forEach(comp => {
       componentRows.push({
-        'Kode AHSP': item.code,
-        'Nama AHSP': item.name,
-        'Tipe Komponen': comp.type,
-        'Nama Resource': comp.resource?.name ?? '(resource not loaded)',
+        'Kode AHSP': safe(item.code),
+        'Nama AHSP': safe(item.name),
+        'Tipe Komponen': safe(comp.type),
+        'Nama Resource': safe(comp.resource?.name ?? '(resource not loaded)'),
         'Koefisien': comp.coefficient,
-        'Satuan': comp.unit,
+        'Satuan': safe(comp.unit),
         'Harga Satuan (Rp)': comp.unitPrice,
         'Sub-Total (Rp)': comp.subtotal,
       })
