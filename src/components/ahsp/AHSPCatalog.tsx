@@ -624,12 +624,19 @@ export function AHSPCatalog({
             </button>
 
             <button
-              onClick={() => exportAHSPToXLSX(ahspItems, resources, componentsByAHSP)}
+              onClick={() => {
+                try {
+                  exportAHSPToXLSX(filteredItems, resources, componentsByAHSP)
+                } catch (err) {
+                  toast.error('Export Gagal', { description: (err as Error).message })
+                }
+              }}
+              disabled={loading.ahspItems || ahspItems.length === 0}
               title="Ekspor katalog AHSP ke Excel"
-              className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all"
+              className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download size={11} />
-              <span>Export XLSX</span>
+              <span>Ekspor XLSX</span>
             </button>
 
             <label className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all cursor-pointer">

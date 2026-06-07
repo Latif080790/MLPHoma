@@ -45,7 +45,18 @@ export function exportAHSPToXLSX(
   XLSX.utils.book_append_sheet(wb, ws2, 'Resources')
 
   // Sheet 3: Komponen
-  const componentRows: object[] = []
+  type ComponentRow = {
+    'Kode AHSP': string
+    'Nama AHSP': string
+    'Tipe Komponen': string
+    'Nama Resource': string
+    'Koefisien': number
+    'Satuan': string
+    'Harga Satuan (Rp)': number
+    'Sub-Total (Rp)': number
+  }
+
+  const componentRows: ComponentRow[] = []
   items.forEach(item => {
     const comps = componentsByAHSP[item.id] ?? []
     comps.forEach(comp => {
@@ -53,7 +64,7 @@ export function exportAHSPToXLSX(
         'Kode AHSP': item.code,
         'Nama AHSP': item.name,
         'Tipe Komponen': comp.type,
-        'Nama Resource': comp.resource?.name ?? comp.resourceId,
+        'Nama Resource': comp.resource?.name ?? '(resource not loaded)',
         'Koefisien': comp.coefficient,
         'Satuan': comp.unit,
         'Harga Satuan (Rp)': comp.unitPrice,
@@ -64,5 +75,9 @@ export function exportAHSPToXLSX(
   const ws3 = XLSX.utils.json_to_sheet(componentRows.length ? componentRows : [{}])
   XLSX.utils.book_append_sheet(wb, ws3, 'Komponen')
 
-  XLSX.writeFile(wb, `AHSP_${new Date().toISOString().split('T')[0]}.xlsx`)
+  try {
+    XLSX.writeFile(wb, `AHSP_${new Date().toISOString().split('T')[0]}.xlsx`)
+  } catch (err) {
+    throw new Error(`Gagal mengekspor Excel: ${(err as Error).message ?? String(err)}`)
+  }
 }
