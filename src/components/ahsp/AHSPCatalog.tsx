@@ -607,7 +607,9 @@ export function AHSPCatalog({
           <div className="h-4 w-px bg-muted ml-auto mx-0.5 shrink-0" />
 
           {/* Sync Status */}
-          <SyncStatusBadge />
+          <TooltipProvider>
+            <SyncStatusBadge />
+          </TooltipProvider>
 
           {/* Actions */}
           <div className="flex items-center gap-1 shrink-0">
