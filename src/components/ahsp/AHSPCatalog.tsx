@@ -276,26 +276,6 @@ export function AHSPCatalog({
     return { materialTotal, laborTotal, equipmentTotal, subconTotal, unallocatedTotal, grandTotal }
   }, [displayItems])
 
-  // Handle Select All
-  const handleToggleAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedIds(new Set(displayItems.map(item => item.id)))
-    } else {
-      setSelectedIds(new Set())
-    }
-  }
-
-  // Handle Select One
-  const handleToggleOne = (id: string, checked: boolean) => {
-    const newSelected = new Set(selectedIds)
-    if (checked) {
-      newSelected.add(id)
-    } else {
-      newSelected.delete(id)
-    }
-    setSelectedIds(newSelected)
-  }
-
   // Handle Bulk Delete  — uses AlertDialog instead of browser confirm()
   const handleBulkDelete = () => {
     if (selectedIds.size === 0) return

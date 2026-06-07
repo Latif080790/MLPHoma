@@ -217,7 +217,7 @@ export function AHSPCatalogFilters({
       {selectedZone !== 'default' && (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border-t border-orange-100 text-xs text-orange-700">
           <MapPin size={10} className="text-orange-500 shrink-0" />
-          <span>Zona: <strong>{activeZoneName}</strong> — harga zona menimpa harga master.</span>
+          <span>Zona: <strong>{activeZoneName ?? selectedZone}</strong> — harga zona menimpa harga master.</span>
         </div>
       )}
     </div>
