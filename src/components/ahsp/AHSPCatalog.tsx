@@ -40,6 +40,7 @@ import { PriceHistoryDialog } from './PriceHistoryDialog'
 import { AHSPCreationModeDialog, type AHSPCreationMode } from './AHSPCreationModeDialog'
 import { ahspDataService } from '../../services/ahspService'
 import { formatIDR } from '../../lib/utils'
+import { exportAHSPToXLSX } from '../../lib/ahspExport'
 import type { AHSPItem } from '../../types/ahsp'
 import { toast } from 'sonner'
 import { DataTable } from '../shared/DataTable'
@@ -620,6 +621,15 @@ export function AHSPCatalog({
             >
               <Download size={11} />
               <span>Ekspor</span>
+            </button>
+
+            <button
+              onClick={() => exportAHSPToXLSX(ahspItems, resources, componentsByAHSP)}
+              title="Ekspor katalog AHSP ke Excel"
+              className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all"
+            >
+              <Download size={11} />
+              <span>Export XLSX</span>
             </button>
 
             <label className="flex items-center gap-1 text-xs text-muted-foreground h-7 px-2.5 rounded border border-border hover:border-border hover:bg-muted/30 transition-all cursor-pointer">
