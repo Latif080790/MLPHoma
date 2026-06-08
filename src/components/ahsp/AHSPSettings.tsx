@@ -132,6 +132,11 @@ export function AHSPSettings() {
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={() => {
+              updateSettings({
+                defaultOverhead: formData.overhead,
+                defaultProfit: formData.profit,
+                taxRate: formData.tax,
+              })
               useAHSPStore.getState().applySettingsToAll()
               toast.success('Pengaturan diterapkan ke semua item AHSP')
               setConfirmApplyAllOpen(false)

@@ -133,7 +133,7 @@ export function DKHManager() {
         if (valid.length !== data.length) toast.warning('Beberapa item dilewati karena field wajib tidak lengkap')
         importResources(valid)
         toast.success(`Berhasil mengimpor ${valid.length} resource`)
-      } catch { toast.error('Gagal mengimpor file. Periksa format file JSON.') }
+      } catch (err) { console.error('[DKHManager] JSON import error:', err); toast.error('Gagal mengimpor file. Periksa format file JSON.') }
     }
     reader.readAsText(file)
     event.target.value = ''
@@ -148,7 +148,7 @@ export function DKHManager() {
       if (parsed.length === 0) { toast.error('Tidak ada resource valid dalam file'); return }
       setPendingImportResources(parsed)
       setConfirmImportOpen(true)
-    } catch { toast.error('Gagal memproses file DKH. Periksa format file.') }
+    } catch (err) { console.error('[DKHManager] DKH import error:', err); toast.error('Gagal memproses file DKH. Periksa format file.') }
     event.target.value = ''
   }
 
