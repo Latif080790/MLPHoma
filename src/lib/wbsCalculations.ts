@@ -2,26 +2,32 @@
 import type { WBSItem, WBSFlatRow, KPIFilter } from '../types/wbs'
 import type { RABItem } from '../types/rab'
 
+function safeNum(v: unknown): number {
+  const n = Number(v)
+  return isFinite(n) && n >= 0 ? n : 0
+}
+
 function rabTotal(r: RABItem): number {
-  return (
-    r.finalTotal ??
-    r.final_total ??
-    r.finalPrice ??
-    (r.volume ?? 0) * ((r as unknown as { unit_price?: number }).unit_price ?? (r as unknown as { unitPrice?: number }).unitPrice ?? 0)
-  )
+  if (r.finalTotal != null && isFinite(Number(r.finalTotal))) return Number(r.finalTotal)
+  if ((r as any).final_total != null && isFinite(Number((r as any).final_total))) return Number((r as any).final_total)
+  if ((r as any).finalPrice != null && isFinite(Number((r as any).finalPrice))) return Number((r as any).finalPrice)
+  return safeNum(r.volume) * safeNum((r as unknown as { unit_price?: number }).unit_price ?? (r as unknown as { unitPrice?: number }).unitPrice)
 }
 
 export function recursiveBudget(
   nodeId: string,
   items: WBSItem[],
-  rabItems: RABItem[]
+  rabItems: RABItem[],
+  visited: Set<string> = new Set()
 ): number {
+  if (visited.has(nodeId)) return 0
+  visited.add(nodeId)
   const direct = rabItems
     .filter(r => r.wbsId === nodeId)
     .reduce((s, r) => s + rabTotal(r), 0)
   const childSum = items
     .filter(i => i.parentId === nodeId)
-    .reduce((s, c) => s + recursiveBudget(c.id, items, rabItems), 0)
+    .reduce((s, c) => s + recursiveBudget(c.id, items, rabItems, visited), 0)
   return direct + childSum
 }
 
@@ -36,15 +42,16 @@ export function weightedProgress(
   }
   let totalBudget = 0
   let weightedSum = 0
+  const childProgresses: number[] = []
   for (const child of children) {
-    const b = recursiveBudget(child.id, items, rabItems)
+    const b = recursiveBudget(child.id, items, rabItems, new Set())
     const p = weightedProgress(child.id, items, rabItems)
+    childProgresses.push(p)
     totalBudget += b
     weightedSum += b * p
   }
   if (totalBudget === 0) {
-    const sum = children.reduce((s, c) => s + weightedProgress(c.id, items, rabItems), 0)
-    return Math.round(sum / children.length)
+    return Math.round(childProgresses.reduce((s, p) => s + p, 0) / children.length)
   }
   return Math.round(weightedSum / totalBudget)
 }
@@ -74,6 +81,25 @@ export function flattenVisibleRows(
   const rows: WBSFlatRow[] = []
   const itemMap = new Map(items.map(i => [i.id, i]))
 
+  const childrenByParent = new Map<string | null, WBSItem[]>()
+  for (const item of items) {
+    const key = item.parentId ?? null
+    if (!childrenByParent.has(key)) childrenByParent.set(key, [])
+    childrenByParent.get(key)!.push(item)
+  }
+
+  const budgetCache = new Map<string, number>()
+  const progressCache = new Map<string, number>()
+
+  function getCachedBudget(id: string): number {
+    if (!budgetCache.has(id)) budgetCache.set(id, recursiveBudget(id, items, rabItems, new Set()))
+    return budgetCache.get(id)!
+  }
+  function getCachedProgress(id: string): number {
+    if (!progressCache.has(id)) progressCache.set(id, weightedProgress(id, items, rabItems))
+    return progressCache.get(id)!
+  }
+
   let visibleIds: Set<string> | null = null
   if (activeFilter !== null) {
     const matchingIds = new Set(
@@ -90,20 +116,19 @@ export function flattenVisibleRows(
   }
 
   function walk(parentId: string | null, depth: number) {
-    items
-      .filter(i => i.parentId === parentId)
+    (childrenByParent.get(parentId) ?? [])
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .forEach(item => {
         if (visibleIds && !visibleIds.has(item.id)) return
-        const hasChildren = items.some(i => i.parentId === item.id)
+        const hasChildren = (childrenByParent.get(item.id) ?? []).length > 0
         const isExpanded = expandedIds.has(item.id)
         rows.push({
           item,
           depth,
           isExpanded,
           hasChildren,
-          recursiveBudget: recursiveBudget(item.id, items, rabItems),
-          weightedProgress: weightedProgress(item.id, items, rabItems),
+          recursiveBudget: getCachedBudget(item.id),
+          weightedProgress: getCachedProgress(item.id),
         })
         if (isExpanded) walk(item.id, depth + 1)
       })

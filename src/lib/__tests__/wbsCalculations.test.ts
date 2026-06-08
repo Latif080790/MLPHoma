@@ -38,6 +38,15 @@ describe('recursiveBudget', () => {
     const rabItems = [rab('root', 500), rab('child', 1000)] as RABItem[]
     expect(recursiveBudget('root', items, rabItems)).toBe(1500)
   })
+
+  it('handles cyclic parent references without crashing', () => {
+    const items: WBSItem[] = [
+      { id: 'a', parentId: 'b', code: 'a', name: 'a', level: 1, sortOrder: 0, projectId: 'p', createdAt: '', updatedAt: '' },
+      { id: 'b', parentId: 'a', code: 'b', name: 'b', level: 1, sortOrder: 0, projectId: 'p', createdAt: '', updatedAt: '' },
+    ]
+    expect(() => recursiveBudget('a', items, [])).not.toThrow()
+    expect(recursiveBudget('a', items, [])).toBe(0)
+  })
 })
 
 describe('weightedProgress', () => {
