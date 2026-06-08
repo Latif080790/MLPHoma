@@ -29,6 +29,38 @@
 
 ---
 
+## Color Token Reference (MERIDIAN v1.1)
+
+All new WBS components **must use CSS variables** — no hardcoded hex. This enables dual light/dark mode from `src/styles/design-tokens-meridian.css`.
+
+| Purpose | CSS Variable | Dark hex | Tailwind usage |
+|---|---|---|---|
+| Page background | `var(--bg-page)` | `#0C0C0E` | `bg-[var(--bg-page)]` |
+| Surface / cards | `var(--bg-surface)` | `#121215` | `bg-[var(--bg-surface)]` |
+| Surface hover | `var(--bg-surface-hover)` | `#1A1A1E` | `bg-[var(--bg-surface-hover)]` |
+| Elevated (modals) | `var(--bg-elevated)` | `#1A1A1E` | `bg-[var(--bg-elevated)]` |
+| Border default | `var(--border-default)` | `#222225` | `border-[var(--border-default)]` |
+| Border subtle | `var(--border-subtle)` | `#1A1A1E` | `border-[var(--border-subtle)]` |
+| Text primary | `var(--text-primary)` | `#E2EAF5` | `text-[var(--text-primary)]` |
+| Text secondary | `var(--text-secondary)` | `#94A3B8` | `text-[var(--text-secondary)]` |
+| Text muted | `var(--text-muted)` | `#475569` | `text-[var(--text-muted)]` |
+| IDR / budget values | `var(--text-idr)` | `#FBBF24` | `text-[var(--text-idr)]` |
+| Primary action btn | `var(--interactive-bg)` | `#3B82F6` | `bg-[var(--interactive-bg)]` |
+| Orange (root/action) | `hsl(var(--amber-500))` | `#F97316` | `bg-[hsl(var(--amber-500))]` |
+| Cobalt (badges/links) | `hsl(var(--cobalt-400))` | `#60A5FA` | `text-[hsl(var(--cobalt-400))]` |
+| Progress ≥ 80% | `var(--wbs-progress-high)` | `#22C55E` | inline style |
+| Progress 30–79% | `var(--wbs-progress-mid)` | `#2DD4BF` | inline style |
+| Progress < 30% | `var(--wbs-progress-low)` | `#FB923C` | inline style |
+| QC passed | `var(--qc-passed)` | `#22C55E` | inline style |
+| QC pending | `var(--qc-pending)` | `#FB923C` | inline style |
+| QC failed | `var(--qc-failed)` | `#FB7185` | inline style |
+| Drag-drop line | `hsl(var(--cobalt-500))` | `#3B82F6` | inline style |
+| Drag-drop inside | `hsl(var(--amber-400))` | `#FB923C` | inline style |
+
+> **Note:** Code samples in task steps below use hardcoded hex as readable references. When writing actual code, replace each hex value with the CSS variable from this table.
+
+---
+
 ## Task 1: Pure calculation functions
 
 **Files:**

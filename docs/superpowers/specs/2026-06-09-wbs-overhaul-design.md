@@ -84,12 +84,12 @@ Six clickable cells rendered above the toolbar. Each cell acts as a toggle filte
 
 | Cell | Value | Token |
 |---|---|---|
-| Total Item | count | Cobalt |
-| Budget RAB ↕ | recursive sum | Gold (FBBF24) |
-| Progress | weighted % with subtitle "Σ(p×b)/Σb" | Cyan (22D3EE) |
-| QC Passed | `passed / total` | Jade (4ADE80) |
-| RAB Unlinked | count of nodes with no RAB link | Amber (FB923C) |
-| Timeline Linked | count of nodes with ≥1 timeline task | default |
+| Total Item | count | `var(--cobalt-400)` (#60A5FA) |
+| Budget RAB ↕ | recursive sum | `var(--text-idr)` (#FBBF24 dark / #CA8A04 light) |
+| Progress | weighted % with subtitle "Σ(p×b)/Σb" | `var(--wbs-progress-mid)` (#2DD4BF) |
+| QC Passed | `passed / total` | `var(--wbs-progress-high)` (#22C55E) |
+| RAB Unlinked | count of nodes with no RAB link | `var(--wbs-progress-low)` (#FB923C) |
+| Timeline Linked | count of nodes with ≥1 timeline task | `var(--text-secondary)` |
 
 ### 4.2 Toolbar
 
@@ -255,20 +255,29 @@ No new external dependencies. No migration required.
 
 ---
 
-## 6. Color Token Reference (MERIDIAN System)
+## 6. Color Token Reference (MERIDIAN v1.1 — Zinc Surface)
 
-| Token | Hex | Use in WBS |
-|---|---|---|
-| Orange | `#f97316` | Root nodes (mini-map), primary action button, active selection indicator, drag-drop line |
-| Gold | `#FBBF24` | All IDR budget values, budget column, budget badges |
-| Jade | `#4ADE80` | Progress ≥ 80%, QC passed, mini-map bar (complete) |
-| Cyan | `#22D3EE` | Progress 30–79%, actual/live data, mini-map bar (active) |
-| Amber | `#FB923C` | Progress < 30%, unlinked RAB warning, drag-drop inside-border |
-| Cobalt | `#60A5FA` | WBS code badge, links, drag-drop before/after line, tree selection border |
-| Coral | — | Errors, critical alerts (not used in WBS v1) |
-| Violet | — | AI/analytics only (not used in WBS v1) |
+All WBS components use CSS variables from `src/styles/design-tokens-meridian.css`. **No hardcoded hex in component code.**
 
-**Do not use:** emerald (`#10b981`), indigo, red, or raw Tailwind color classes that are not in the MERIDIAN token set.
+| CSS Variable | Dark value | Light value | Use in WBS |
+|---|---|---|---|
+| `var(--bg-page)` | `#0C0C0E` | `#F8FAFC` | Page / tree container background |
+| `var(--bg-surface)` | `#121215` | `#ffffff` | Cards, panels, detail panel |
+| `var(--border-default)` | `#222225` | `#E2E8F0` | Row borders, dividers |
+| `var(--text-primary)` | `#E2EAF5` | `#0F172A` | Item names (depth 0), labels |
+| `var(--text-secondary)` | `#94A3B8` | `#475569` | Item names (depth 1+), metadata |
+| `var(--text-idr)` | `#FBBF24` | `#CA8A04` | All IDR budget values, budget column, budget badges |
+| `hsl(var(--amber-500))` | `#F97316` | same | Root nodes (mini-map), primary action button, active indicator |
+| `hsl(var(--cobalt-400))` | `#60A5FA` | → cobalt-700 | WBS code badge, links, drag-drop before/after line |
+| `var(--wbs-progress-high)` / jade-500 | `#22C55E` | `#16A34A` | Progress ≥ 80%, QC passed, mini-map complete bar |
+| `var(--wbs-progress-mid)` / teal-300 | `#2DD4BF` | same | Progress 30–79%, mini-map active bar |
+| `var(--wbs-progress-low)` / amber-400 | `#FB923C` | `#B45309` | Progress < 30%, unlinked RAB warning, drag-drop inside-border |
+| `var(--status-danger-fg)` | `#FB7185` | `#DC2626` | Errors, critical alerts (not used in WBS v1) |
+| `var(--status-ai-fg)` | — | — | AI/analytics only (not used in WBS v1) |
+
+**Do not use:** emerald (`#10b981`), indigo, red, or raw Tailwind color classes that are not in the MERIDIAN token set. Do not hardcode hex values in component JSX — always reference the CSS variable.
+
+**Surface note:** Dark surfaces now use zinc-neutral (obsidian scale v1.1). The visual output: `#0C0C0E` page bg, `#121215` surface, `#222225` borders — removing the previous blue-navy cast for a cleaner enterprise look.
 
 ---
 
