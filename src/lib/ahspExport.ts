@@ -88,3 +88,25 @@ export function exportAHSPToXLSX(
     throw new Error(`Gagal mengekspor Excel: ${(err as Error).message ?? String(err)}`)
   }
 }
+
+export function exportResourcesToXLSX(resources: Resource[]): void {
+  const wb = XLSX.utils.book_new()
+  const ws = XLSX.utils.json_to_sheet(
+    resources.map(r => ({
+      'Kode': safe(r.code),
+      'Nama Resource': safe(r.name),
+      'Tipe': safe(r.type),
+      'Satuan': safe(r.unit),
+      'Harga Satuan (Rp)': r.unitPrice,
+      'Supplier': safe(r.supplier),
+      'Spesifikasi': safe(r.specifications),
+      'Status': r.isActive ? 'Aktif' : 'Nonaktif',
+    }))
+  )
+  XLSX.utils.book_append_sheet(wb, ws, 'DKH Resources')
+  try {
+    XLSX.writeFile(wb, `DKH_Resources_${new Date().toISOString().split('T')[0]}.xlsx`)
+  } catch (err) {
+    throw new Error(`Gagal mengekspor Excel: ${(err as Error).message ?? String(err)}`)
+  }
+}
