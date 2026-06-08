@@ -12,6 +12,10 @@ export interface WBSMiniMapProps {
   onNavigate: (rowIndex: number) => void
 }
 
+const BAR_HEIGHT = 3
+const MIN_INDENT = 4
+const MAX_WIDTH = 44
+
 function rowColor(row: WBSFlatRow): string {
   if (row.depth === 0) return 'hsl(var(--amber-500))'
   if (row.weightedProgress >= 80) return 'var(--wbs-progress-high)'
@@ -28,9 +32,6 @@ export function WBSMiniMap({
 }: WBSMiniMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const total = allRows.length
-  const BAR_HEIGHT = 3
-  const MIN_INDENT = 4
-  const MAX_WIDTH = 44
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || total === 0) return
@@ -58,7 +59,7 @@ export function WBSMiniMap({
           const marginLeft = indentFraction * MIN_INDENT
           return (
             <div
-              key={i}
+              key={row.item.id}
               style={{
                 height: BAR_HEIGHT,
                 width,

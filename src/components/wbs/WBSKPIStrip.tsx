@@ -36,7 +36,7 @@ export function WBSKPIStrip({
     {
       id: null,
       label: 'Progress',
-      value: `${projectWeightedProgress}%`,
+      value: `${Math.round(projectWeightedProgress)}%`,
       valueColor: 'var(--wbs-progress-mid)',
       subtitle: 'Σ(p×b)/Σb',
     },
