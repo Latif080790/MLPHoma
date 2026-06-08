@@ -7,6 +7,9 @@
 /** Resource types */
 export type ResourceType = 'material' | 'labor' | 'equipment' | 'subcontractor'
 
+/** AHSP approval workflow status */
+export type AHSPStatus = 'draft' | 'review' | 'approved' | 'archived'
+
 /** Resource unit types */
 export type ResourceUnit = 'kg' | 'm3' | 'm2' | 'm' | "m'" | 'ltr' | 'bh' | 'oh' | 'jam' | 'hr' | 'hari' | 'unit' | 'ha' | 'set' | 'ls' | 'btg' | 'lembar'
 
@@ -96,6 +99,8 @@ export interface AHSPItem {
   description?: string
   /** Whether this AHSP is active */
   isActive: boolean
+  /** Approval workflow status */
+  status?: AHSPStatus
   /** Creation timestamp */
   createdAt: string
   /** Last update timestamp */
@@ -170,6 +175,7 @@ export interface AHSPActions {
   // AHSP item actions
   addAHSPItem: (item: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => string
   updateAHSPItem: (id: string, updates: Partial<AHSPItem>) => void
+  updateAHSPItemStatus: (id: string, status: AHSPStatus) => void
   deleteAHSPItem: (id: string) => void
   importAHSPItems: (items: Omit<AHSPItem, 'id' | 'createdAt' | 'updatedAt'>[]) => Promise<void>
   exportAHSPItems: () => AHSPItem[]
@@ -284,8 +290,8 @@ export interface AHSPItemWithRelations extends AHSPItem {
   grandTotalPrice?: number
   /** AHSP level classification */
   level?: 'master' | 'custom' | 'project_review' | 'historis'
-  /** Item status */
-  status?: 'active' | 'draft' | 'archived'
+  /** Item status (overrides AHSPItem.status for relations view) */
+  status?: AHSPStatus
   /** Division category */
   division?: string
   /** Tags for categorization */

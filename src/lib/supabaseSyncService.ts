@@ -476,6 +476,7 @@ export function syncAHSPItem(item: any): string {
       price_labor: item.price_labor || 0,
       price_equipment: item.price_equipment || 0,
       price_subcon: item.price_subcon || 0,
+      status: item.status || 'draft',
       created_at: item.createdAt,
       updated_at: new Date().toISOString(),
     },
@@ -532,6 +533,7 @@ export function syncAHSPItems(items: any[]): string {
       price_labor: item.price_labor || 0,
       price_equipment: item.price_equipment || 0,
       price_subcon: item.price_subcon || 0,
+      status: item.status || 'draft',
       created_at: item.createdAt || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })),
@@ -666,6 +668,7 @@ export async function syncAHSPItemsWithComponents(items: any[], components: any[
       price_labor: item.price_labor || 0,
       price_equipment: item.price_equipment || 0,
       price_subcon: item.price_subcon || 0,
+      status: item.status || 'draft',
       created_at: item.createdAt || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }))

@@ -27,7 +27,7 @@ import {
 } from '../ui/alert-dialog'
 import { useAHSPStore } from '../../store/ahspStore'
 import { toast } from 'sonner'
-import type { AHSPItem, ResourceType, ResourceUnit } from '../../types/ahsp'
+import type { AHSPItem, ResourceType, ResourceUnit, AHSPStatus } from '../../types/ahsp'
 import type { AHSPCreationMode } from './AHSPCreationModeDialog'
 import { getMainCategories } from '../../lib/workCategories'
 import { AHSPMasterDataForm } from './AHSPMasterDataForm'
@@ -117,6 +117,7 @@ export function AHSPItemEditor({
     fetchComponents,
     commitDraftComponents,
     clearDraftComponents,
+    updateAHSPItemStatus,
   } = useAHSPStore()
 
   // AHSP items usable as SNI templates. Seeded SNI master data has no creation log,
@@ -644,6 +645,9 @@ export function AHSPItemEditor({
                 isSubmitting={isSubmitting}
                 item={item}
                 mode={mode}
+                status={item?.status ?? 'draft'}
+                onStatusChange={item ? (newStatus: AHSPStatus) => updateAHSPItemStatus(item.id, newStatus) : undefined}
+                isEdit={!!item}
                 mainCategories={mainCategories}
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}

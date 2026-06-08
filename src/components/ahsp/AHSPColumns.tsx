@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Edit2, History, Trash2 } from 'lucide-react'
 import { formatIDR } from '@/lib/utils'
-import type { AHSPItem } from '@/types/ahsp'
+import type { AHSPItem, AHSPStatus } from '@/types/ahsp'
 import { sellingFromBase } from '@/lib/costingMargin'
+import { AHSPStatusBadge } from './AHSPStatusBadge'
 
 interface AHSPItemWithPrices extends AHSPItem {
   price_material?: number
@@ -46,6 +47,7 @@ export const getAHSPColumns = (
     ahspUsageMap,
     showBidPrice,
     bidMarginPct,
+    onStatusChange,
   }: {
     onEditItem: (item: AHSPItemWithPrices) => void
     onHistoryClick: (item: AHSPItemWithPrices) => void
@@ -54,6 +56,7 @@ export const getAHSPColumns = (
     ahspUsageMap: Map<string, number>
     showBidPrice: boolean
     bidMarginPct: number
+    onStatusChange?: (id: string, status: AHSPStatus) => void
   }
 ): ColumnDef<AHSPItemWithPrices>[] => [
   {
@@ -136,6 +139,20 @@ export const getAHSPColumns = (
       </div>
     ),
     size: 70,
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    size: 130,
+    cell: ({ row }) => {
+      const item = row.original as AHSPItem
+      return (
+        <AHSPStatusBadge
+          status={item.status ?? 'draft'}
+          onStatusChange={onStatusChange ? (newStatus) => onStatusChange(item.id, newStatus) : undefined}
+        />
+      )
+    },
   },
   {
     id: 'material',

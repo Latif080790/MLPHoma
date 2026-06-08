@@ -20,7 +20,8 @@ import type {
     ResourceUnit,
     PriceHistory,
     Zone,
-    AhspZonePrice
+    AhspZonePrice,
+    AHSPStatus
 } from '../types/ahsp'
 
 // ─── Row-to-Model Mappers ───
@@ -55,6 +56,7 @@ function mapAhspItemRow(item: AhspItemRow): AHSPItem {
         profitPercentage: item.profit_percentage || 0,
         subcategory: item.subcategory || '',
         currentVersion: (item as unknown as { current_version?: number }).current_version ?? 1,
+        status: (item.status as AHSPStatus) || 'draft',
         createdAt: item.created_at,
         updatedAt: item.updated_at
     } as AHSPItem

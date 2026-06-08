@@ -10,8 +10,9 @@ import { Textarea } from '../ui/textarea'
 import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { SNIPresetPicker } from './SNIPresetPicker'
+import { AHSPStatusBadge } from './AHSPStatusBadge'
 import { getSubcategories, getCategoryPath } from '../../lib/workCategories'
-import type { AHSPItem, ResourceUnit } from '../../types/ahsp'
+import type { AHSPItem, ResourceUnit, AHSPStatus } from '../../types/ahsp'
 import type { WorkCategory } from '../../lib/workCategories'
 import type { AHSPCreationMode } from './AHSPCreationModeDialog'
 
@@ -41,6 +42,12 @@ export interface AHSPMasterDataFormProps {
   item?: AHSPItem | null
   /** Creation mode (controls SNI selector visibility) */
   mode?: AHSPCreationMode
+  /** Current approval status (shown when editing an existing item) */
+  status?: AHSPStatus
+  /** Callback to change the approval status */
+  onStatusChange?: (newStatus: AHSPStatus) => void
+  /** Whether the form is in edit mode (enables status transitions) */
+  isEdit?: boolean
 
   /** Main category list */
   mainCategories: WorkCategory[]
@@ -79,6 +86,9 @@ export function AHSPMasterDataForm({
   isSubmitting,
   item,
   mode,
+  status,
+  onStatusChange,
+  isEdit,
   mainCategories,
   selectedCategory,
   setSelectedCategory,
@@ -98,10 +108,17 @@ export function AHSPMasterDataForm({
         <div className="bg-blue-500/10 p-2 rounded-xl ring-1 ring-blue-500/20">
           <Database className="h-5 w-5 text-blue-500" />
         </div>
-        <div>
+        <div className="flex-1">
           <h3 className="font-display font-bold text-base text-foreground uppercase tracking-wide">Master Data</h3>
           <p className="text-xs text-muted-foreground font-medium">Identifikasi umum dan kategorisasi</p>
         </div>
+        {status && (
+          <AHSPStatusBadge
+            status={status}
+            onStatusChange={onStatusChange}
+            readonly={!isEdit}
+          />
+        )}
       </div>
       <div className="grid gap-5">
         {/* Identification Grid */}

@@ -11,9 +11,10 @@ import { toast } from 'sonner'
 import { Button } from '../ui/button'
 import { TableCell, TableRow } from '../ui/table'
 import { formatIDR } from '../../lib/utils'
-import type { AHSPItem } from '../../types/ahsp'
+import type { AHSPItem, AHSPStatus } from '../../types/ahsp'
 import { DataTable } from '../shared/DataTable'
 import { getAHSPColumns } from './AHSPColumns'
+import { useAHSPStore } from '../../store/ahspStore'
 
 /** Grouped row shape produced by the catalog (section header or item row). */
 type GroupedDisplayRow =
@@ -89,6 +90,8 @@ export function AHSPCatalogTable({
   onBulkDelete,
   onExport,
 }: AHSPCatalogTableProps) {
+  const updateAHSPItemStatus = useAHSPStore(state => state.updateAHSPItemStatus)
+
   return (
     <div className="hidden rounded-lg border border-border overflow-hidden shadow-sm bg-card md:block">
       <div
@@ -114,6 +117,7 @@ export function AHSPCatalogTable({
               ahspUsageMap,
               showBidPrice,
               bidMarginPct,
+              onStatusChange: (id: string, status: AHSPStatus) => updateAHSPItemStatus(id, status),
             })}
             data={groupedDisplayRows.map(r => r.type === 'section' ? r : r.item)}
             virtualized={true}

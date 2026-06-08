@@ -17,7 +17,7 @@ import {
   calculateAHSPPriceInWorker,
   ahspDataService
 } from '../services/ahspService'
-import { syncAHSPItem, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources, syncAHSPItems, syncComponentOrder } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources, syncAHSPItems, syncComponentOrder, syncQueue } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -36,7 +36,8 @@ import type {
   ResourceType,
   AHSPState,
   Zone,
-  AhspZonePrice
+  AhspZonePrice,
+  AHSPStatus
 } from '../types/ahsp'
 
 /**
@@ -304,6 +305,21 @@ export const useAHSPStore = create<AHSPStore>()(
           set((state) => ({
             ahspItems: state.ahspItems.map(item => item.id === id ? updated : item),
           }))
+        },
+
+        updateAHSPItemStatus: (id: string, status: AHSPStatus) => {
+          const now = new Date().toISOString()
+          set(state => ({
+            ahspItems: state.ahspItems.map(item =>
+              item.id === id ? { ...item, status, updatedAt: now } : item
+            ),
+          }))
+          syncQueue.enqueue({
+            operation: 'update',
+            table: 'ahsp_items',
+            data: { id, status, updated_at: now },
+            maxRetries: 3,
+          })
         },
 
         deleteAHSPItem: (id) => {

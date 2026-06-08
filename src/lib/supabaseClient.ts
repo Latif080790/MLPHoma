@@ -38,6 +38,7 @@ export interface AhspItemRow {
   overhead_percentage?: number
   profit_percentage?: number
   is_active?: boolean
+  status?: string
   created_at?: string
   updated_at?: string
 }
