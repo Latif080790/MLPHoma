@@ -371,7 +371,7 @@ export const ahspDataService = {
         ahspRepository.deleteResource(id)
     },
 
-    async updateAHSPItemWithHistory(id: string, updates: Partial<AHSPItem>, oldItem?: AHSPItem) {
+    async updateAHSPItemWithHistory(id: string, updates: Partial<AHSPItem>, oldItem?: AHSPItem, skipSync = false) {
         const updatedItem = {
             ...oldItem,
             ...updates,
@@ -379,7 +379,9 @@ export const ahspDataService = {
             currentVersion: (oldItem?.currentVersion ?? 1) + 1,
         } as AHSPItem
 
-        ahspRepository.syncAHSPItem(updatedItem)
+        if (!skipSync) {
+            ahspRepository.syncAHSPItem(updatedItem)
+        }
 
         // Version History Record (Async)
         void (async () => {

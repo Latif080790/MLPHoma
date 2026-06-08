@@ -171,7 +171,7 @@ class SyncQueueManager {
             const payload = { ...updateData }
             delete payload._expected_updated_at
 
-            const { count, error: updateError } = await supabase
+            const { data: updatedRows, error: updateError } = await supabase
               .from('ahsp_items')
               .update(payload)
               .eq('id', payload.id)
@@ -180,7 +180,7 @@ class SyncQueueManager {
 
             if (updateError) throw updateError
 
-            if ((count ?? 0) === 0) {
+            if (!updatedRows || updatedRows.length === 0) {
               // Conflict detected — row was modified by another user/tab
               toast.warning('Konflik Data', {
                 description: 'Data AHSP ini sudah diubah dari perangkat atau tab lain. Refresh halaman untuk melihat perubahan terbaru.',

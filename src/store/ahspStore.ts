@@ -303,7 +303,7 @@ export const useAHSPStore = create<AHSPStore>()(
           // Snapshot updatedAt BEFORE the optimistic update for conflict detection
           const expectedUpdatedAt = oldItem.updatedAt
 
-          const updated = await ahspDataService.updateAHSPItemWithHistory(id, validation.data!, oldItem)
+          const updated = await ahspDataService.updateAHSPItemWithHistory(id, validation.data!, oldItem, true)
 
           set((state) => ({
             ahspItems: state.ahspItems.map(item => item.id === id ? updated : item),
