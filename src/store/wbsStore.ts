@@ -7,7 +7,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import { notify as toast } from '../lib/toast'
-import type { WBSStore, WBSItem } from '../types/wbs'
+import type { WBSStore, WBSItem, WBSSnapshot, KPIFilter } from '../types/wbs'
 import { validate, mergeErrorMessages } from '../lib/validationMiddleware'
 import { wbsItemInputSchema, wbsItemUpdateSchema } from '../lib/validationSchemas'
 import { wbsService } from '../services/wbsService'
@@ -56,6 +56,14 @@ export const useWBSStore = create<WBSStore>()(
       function executeDelete(projectId: string, toDelete: Set<string>) {
         const toDeleteIds: string[] = [...toDelete]
 
+        // Snapshot for undo
+        const snapshotBeforeDelete: WBSSnapshot = {
+          items: (get().itemsByProject[projectId] || []).map(i => ({ ...i })),
+          action: 'delete',
+          timestamp: Date.now(),
+        }
+        set({ lastAction: snapshotBeforeDelete })
+
         set((state) => {
           const items = state.itemsByProject[projectId] || []
           const updatedItems = items.filter(item => !toDelete.has(item.id))
@@ -85,6 +93,8 @@ export const useWBSStore = create<WBSStore>()(
       loading: false,
       error: null,
       pendingDeleteConfirmation: null,
+      lastAction: null as WBSSnapshot | null,
+      activeFilter: null as KPIFilter,
 
       // Add new WBS item
       addItem: (projectId, item) => {
@@ -299,9 +309,33 @@ export const useWBSStore = create<WBSStore>()(
         set({ pendingDeleteConfirmation: null })
       },
 
+      undoLastAction: (projectId: string) => {
+        const { lastAction } = get()
+        if (!lastAction) return
+        set((state) => ({
+          itemsByProject: { ...state.itemsByProject, [projectId]: lastAction.items },
+          lastAction: null,
+        }))
+        const restored = get().itemsByProject[projectId] || []
+        wbsService.syncItems(restored, projectId)
+        toast.success('Undo berhasil')
+      },
+
+      setActiveFilter: (filter: KPIFilter) => {
+        set((state) => ({ activeFilter: state.activeFilter === filter ? null : filter }))
+      },
+
 
       // Move item (drag & drop)
       moveItem: (projectId, itemId, newParentId, newIndex) => {
+        // Snapshot for undo
+        const snapshotBeforeMove: WBSSnapshot = {
+          items: (get().itemsByProject[projectId] || []).map(i => ({ ...i })),
+          action: 'move',
+          timestamp: Date.now(),
+        }
+        set({ lastAction: snapshotBeforeMove })
+
         set((state) => {
           const currentItems = state.itemsByProject[projectId] || []
           // Deep copy to avoid mutation issues
