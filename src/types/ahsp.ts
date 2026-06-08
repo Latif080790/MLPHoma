@@ -290,8 +290,6 @@ export interface AHSPItemWithRelations extends AHSPItem {
   grandTotalPrice?: number
   /** AHSP level classification */
   level?: 'master' | 'custom' | 'project_review' | 'historis'
-  /** Item status (overrides AHSPItem.status for relations view) */
-  status?: AHSPStatus
   /** Division category */
   division?: string
   /** Tags for categorization */
