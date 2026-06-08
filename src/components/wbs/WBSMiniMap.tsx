@@ -78,8 +78,8 @@ export function WBSMiniMap({
         style={{
           top: `${vpTop}%`,
           height: `${Math.max(vpHeight, 3)}%`,
-          border: '1px solid rgba(251,146,60,0.6)',
-          background: 'rgba(249,115,22,0.04)',
+          border: '1px solid hsl(var(--amber-500) / 0.6)',
+          background: 'hsl(var(--amber-500) / 0.04)',
           borderRadius: 2,
         }}
       />
