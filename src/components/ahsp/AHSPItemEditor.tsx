@@ -1,21 +1,14 @@
 
 /**
  * AHSPItemEditor.tsx
- * Editor for creating and editing AHSP items with component management
+ * Editor for creating and editing AHSP items with component management.
+ * Thin orchestrator: holds state + handlers, delegates UI to sub-components
+ * (AHSPMasterDataForm, AHSPComponentsTable, AHSPCostSummary, SNIPresetPicker).
  */
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Trash2, Calculator, Edit2, Check, Database, Search, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Database, Check, ChevronRight, ChevronLeft, Edit2 } from 'lucide-react'
 import { Button } from '../ui/button'
-import { Input } from '../ui/input'
-import { Textarea } from '../ui/textarea'
-import { Label } from '../ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table'
-import { Badge } from '../ui/badge'
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command'
-import { ChevronsUpDown } from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -33,11 +26,13 @@ import {
   AlertDialogTitle,
 } from '../ui/alert-dialog'
 import { useAHSPStore } from '../../store/ahspStore'
-import { formatIDR } from '../../lib/utils'
 import { toast } from 'sonner'
 import type { AHSPItem, ResourceType, ResourceUnit } from '../../types/ahsp'
 import type { AHSPCreationMode } from './AHSPCreationModeDialog'
-import { getMainCategories, getSubcategories, getCategoryPath } from '../../lib/workCategories'
+import { getMainCategories } from '../../lib/workCategories'
+import { AHSPMasterDataForm } from './AHSPMasterDataForm'
+import { AHSPComponentsTable } from './AHSPComponentsTable'
+import { AHSPCostSummary } from './AHSPCostSummary'
 
 /** Props for AHSPItemEditor component */
 export interface AHSPItemEditorProps {
@@ -538,6 +533,16 @@ export function AHSPItemEditor({
     }
   }
 
+  /**
+   * Handle selecting an SNI preset from the picker — sets selection state, closes the
+   * picker, then applies the chosen template.
+   */
+  const handleSelectSNIPreset = async (sniItem: AHSPItem) => {
+    setSelectedSNIPreset(sniItem.id)
+    setSniPickerOpen(false)
+    await handleApplySNIItem(sniItem)
+  }
+
   // Filter resources by type
   const _resourcesByType = React.useMemo(() => {
     const grouped: Record<ResourceType, typeof resources> = {
@@ -566,6 +571,9 @@ export function AHSPItemEditor({
 
     return grouped
   }, [resources])
+
+  const componentsCount = components.length + manualComponents.filter(c => !c.editing).length
+
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[90vw] xl:max-w-[85vw] p-0 gap-0 border-l border-border flex flex-col top-14 h-[calc(100vh-3.5rem)] max-h-[calc(100vh-3.5rem)] overflow-hidden bg-background shadow-2xl">
@@ -623,9 +631,9 @@ export function AHSPItemEditor({
                 currentStep === 2 ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
               }`}>2</span>
               Komponen
-              {components.length + manualComponents.filter(c => !c.editing).length > 0 && (
+              {componentsCount > 0 && (
                 <span className="ml-1 inline-flex items-center justify-center h-4 min-w-[1rem] px-1 rounded-full text-xs font-bold bg-white/20 text-white">
-                  {components.length + manualComponents.filter(c => !c.editing).length}
+                  {componentsCount}
                 </span>
               )}
             </button>
@@ -637,627 +645,60 @@ export function AHSPItemEditor({
           <div className="flex-1 overflow-y-auto lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-0">
             {/* Section 1: Master Data — shown on Step 1 */}
             {currentStep === 1 && (
-            <div className="border-b border-border bg-background p-4 sm:p-5 space-y-5 lg:col-[1]">
-              <div className="flex items-center gap-3 pb-3 border-b border-border">
-                <div className="bg-blue-500/10 p-2 rounded-xl ring-1 ring-blue-500/20">
-                  <Database className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <h3 className="font-display font-bold text-base text-foreground uppercase tracking-wide">Master Data</h3>
-                  <p className="text-xs text-muted-foreground font-medium">Identifikasi umum dan kategorisasi</p>
-                </div>
-              </div>
-              <div className="grid gap-5">
-                {/* Identification Grid */}
-                <div className="bg-muted/30 p-4 rounded-xl border border-border space-y-4">
-                  <div className="flex items-center gap-2 font-bold text-sm mb-1">
-                    <div className="h-4 w-1 bg-blue-500 rounded-full" />
-                    <span className="text-foreground">Identifikasi Umum</span>
-                  </div>
-
-                  {/* SNI AHSP Selector */}
-                  {mode === 'sni' && !item && (
-                    <div className="bg-card p-5 rounded-xl border border-blue-500/30 space-y-4 mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-blue-500/10 p-2 rounded-xl ring-1 ring-blue-500/20">
-                          <Database className="h-5 w-5 text-blue-500" />
-                        </div>
-                        <div>
-                          <h3 className="text-foreground font-bold text-sm">Pilih dari AHSP SNI yang Ada</h3>
-                          <p className="text-muted-foreground text-xs">Template dari database proyek Anda</p>
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        Pilih AHSP SNI yang sudah ada untuk menyalin semua component & coefficient-nya
-                      </p>
-                      {(() => {
-                        const picked = sniAHSPItems.find(i => i.id === selectedSNIPreset)
-                        return (
-                          <Popover open={sniPickerOpen} onOpenChange={setSniPickerOpen}>
-                            <PopoverTrigger asChild>
-                              <button
-                                type="button"
-                                role="combobox"
-                                aria-expanded={sniPickerOpen}
-                                className="flex w-full items-center gap-2 h-10 rounded-lg border border-border bg-background px-3 text-left hover:border-blue-400/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/10"
-                              >
-                                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                <span className={`flex-1 truncate text-sm ${picked ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
-                                  {picked ? `${picked.code} — ${picked.name}` : 'Cari & pilih AHSP SNI dari database...'}
-                                </span>
-                                <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="p-0 w-[--radix-popover-trigger-width] min-w-[320px]" align="start">
-                              <Command
-                                filter={(value, search) => {
-                                  // value carries "code name category" lowercased for matching
-                                  return value.includes(search.toLowerCase()) ? 1 : 0
-                                }}
-                              >
-                                <CommandInput placeholder="Ketik kode / nama / kategori..." className="text-sm" />
-                                <CommandList className="max-h-72">
-                                  <CommandEmpty>
-                                    {sniAHSPItems.length === 0
-                                      ? 'Belum ada AHSP SNI di database.'
-                                      : 'Tidak ada AHSP yang cocok.'}
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {sniAHSPItems.map(it => (
-                                      <CommandItem
-                                        key={it.id}
-                                        value={`${it.code} ${it.name} ${it.category}`.toLowerCase()}
-                                        onSelect={async () => {
-                                          setSelectedSNIPreset(it.id)
-                                          setSniPickerOpen(false)
-                                          await handleApplySNIItem(it)
-                                        }}
-                                        className="flex flex-col items-start gap-1 py-2.5"
-                                      >
-                                        <span className="font-semibold text-foreground text-sm leading-tight">{it.code} — {it.name}</span>
-                                        <div className="flex items-center gap-2">
-                                          <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400">
-                                            {it.category}
-                                          </Badge>
-                                          <span className="text-xs text-muted-foreground font-mono">{it.unit} • {formatIDR(it.finalPrice)}</span>
-                                        </div>
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                        )
-                      })()}
-                      {selectedSNIPreset && (
-                        <div className="flex items-center gap-2 p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                          <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                            {components.length} komponen tersalin — buka tab <strong>Komponen</strong> untuk meninjau.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="code" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1 flex items-center gap-1.5">
-                        AHSP Code
-                        <span className="text-blue-500 dark:text-blue-400 normal-case tracking-normal font-medium">· otomatis</span>
-                      </Label>
-                      <Input
-                        id="code"
-                        value={formData.code}
-                        onChange={(e) => handleChange('code', e.target.value)}
-                        placeholder="dari kategori / sub-kategori"
-                        className={`h-9 text-sm font-mono font-bold rounded-lg border-border transition-all focus:ring-2 focus:ring-primary/10 ${errors.code ? 'border-red-500 bg-red-50' : 'bg-background'}`}
-                        disabled={isSubmitting}
-                      />
-                      {errors.code && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.code}</p>}
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="unit" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Satuan</Label>
-                      <Select value={formData.unit || undefined} onValueChange={(value: string) => handleChange('unit', value)}>
-                        <SelectTrigger className={`h-9 rounded-lg border-border bg-background text-sm font-semibold transition-all focus:ring-2 focus:ring-primary/10 ${errors.unit ? 'border-red-500' : ''}`}>
-                          <SelectValue placeholder="Pilih satuan..." />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-border shadow-xl">
-                          <SelectItem value="m3" className="font-semibold py-2">m³ (Kubik)</SelectItem>
-                          <SelectItem value="m2" className="font-semibold py-2">m² (Luas)</SelectItem>
-                          <SelectItem value="m" className="font-semibold py-2">m (Meter Lari)</SelectItem>
-                          <SelectItem value="m'" className="font-semibold py-2">{"m' (Meter Panjang)"}</SelectItem>
-                          <SelectItem value="kg" className="font-semibold py-2">kg (Berat)</SelectItem>
-                          <SelectItem value="ltr" className="font-semibold py-2">liter</SelectItem>
-                          <SelectItem value="bh" className="font-semibold py-2">buah (Item)</SelectItem>
-                          <SelectItem value="oh" className="font-semibold py-2">OH (Labor)</SelectItem>
-                          <SelectItem value="jam" className="font-semibold py-2">jam (Tool)</SelectItem>
-                          <SelectItem value="hr" className="font-semibold py-2">hari (hr)</SelectItem>
-                          <SelectItem value="hari" className="font-semibold py-2">hari</SelectItem>
-                          <SelectItem value="ha" className="font-semibold py-2">ha (Hektar)</SelectItem>
-                          <SelectItem value="set" className="font-semibold py-2">set</SelectItem>
-                          <SelectItem value="ls" className="font-semibold py-2">ls (Lumpsum)</SelectItem>
-                          <SelectItem value="btg" className="font-semibold py-2">btg (Batang)</SelectItem>
-                          <SelectItem value="lembar" className="font-semibold py-2">lembar</SelectItem>
-                          <SelectItem value="unit" className="font-semibold py-2">unit</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {errors.unit && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.unit}</p>}
-                    </div>
-                  </div>
-
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Klasifikasi / Kategori</Label>
-                      <Select
-                        value={selectedCategory}
-                        onValueChange={(value) => {
-                          setSelectedCategory(value)
-                          setSelectedSubcategory('')
-                          const category = mainCategories.find(c => c.id === value)
-                          if (category) {
-                            handleChange('category', category.name)
-                            // If this category has no sub-classifications, auto-number from the
-                            // category code now; otherwise wait for the sub-classification pick.
-                            if (getSubcategories(value).length === 0) {
-                              handleChange('code', nextAhspCode(category.code))
-                            }
-                          }
-                        }}
-                      >
-                        <SelectTrigger className={`h-9 rounded-lg border-border bg-background text-sm font-semibold transition-all focus:ring-2 focus:ring-primary/10 ${errors.category ? 'border-red-500 shadow-sm' : ''}`}>
-                          <SelectValue placeholder="Pilih kategori pekerjaan..." />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-border shadow-xl max-h-80">
-                          {mainCategories.map(cat => (
-                            <SelectItem key={cat.id} value={cat.id} className="py-2 font-semibold">
-                              {cat.code} - {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.category && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.category}</p>}
-                    </div>
-
-                    {selectedCategory && getSubcategories(selectedCategory).length > 0 && (
-                      <div className="space-y-1.5 animate-in fade-in slide-in-from-left-2 duration-300">
-                        <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Sub-Klasifikasi</Label>
-                        <Select
-                          value={selectedSubcategory}
-                          onValueChange={(value) => {
-                            setSelectedSubcategory(value)
-                            const subcat = getSubcategories(selectedCategory).find(c => c.id === value)
-                            if (subcat) {
-                              const path = getCategoryPath(value)
-                              handleChange('category', path.map(p => p.name).join(' > '))
-                              // Auto-number the AHSP code from the sub-classification code.
-                              handleChange('code', nextAhspCode(subcat.code))
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="h-9 rounded-lg border-border bg-background text-sm font-semibold transition-all focus:ring-2 focus:ring-primary/10">
-                            <SelectValue placeholder="Pilih sub-klasifikasi..." />
-                          </SelectTrigger>
-                          <SelectContent className="rounded-xl border-border shadow-xl max-h-80">
-                            {getSubcategories(selectedCategory).map(subcat => (
-                              <SelectItem key={subcat.id} value={subcat.id} className="py-2 font-semibold">
-                                {subcat.code} - {subcat.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Judul Item / Uraian Pekerjaan</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleChange('name', e.target.value)}
-                      placeholder="e.g., Pemasangan 1m2 Dinding Bata Merah 1:4"
-                      className={`h-9 text-base font-semibold rounded-lg border-border transition-all focus:ring-2 focus:ring-primary/10 ${errors.name ? 'border-red-500 bg-red-50 text-red-900' : 'bg-background text-foreground'}`}
-                      disabled={isSubmitting}
-                    />
-                    {errors.name && <p className="text-xs text-red-500 font-bold mt-1 pl-1">{errors.name}</p>}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pl-1">Spesifikasi Teknis Detail</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleChange('description', e.target.value)}
-                      placeholder="Detail metode, kebutuhan material, dan standar teknis..."
-                      rows={3}
-                      className="resize-none rounded-lg border-border bg-background p-3 text-sm text-foreground leading-relaxed transition-all focus:ring-2 focus:ring-primary/10"
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 border-t pt-6 sm:pt-8">
-                  <div className="bg-card p-6 rounded-xl border border-border space-y-4">
-                    <div className="flex items-center gap-2 text-muted-foreground font-bold text-sm">
-                      <Calculator className="h-4 w-4" />
-                      Faktor Overhead
-                    </div>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        value={formData.overheadPercentage}
-                        onChange={(e) => handleChange('overheadPercentage', parseFloat(e.target.value) || 0)}
-                        className="h-10 pl-4 pr-10 text-xl font-mono font-semibold text-primary rounded-lg border-border bg-background"
-                      />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-blue-400">%</span>
-                    </div>
-                    <p className="text-xs text-blue-400 leading-tight font-medium uppercase tracking-wider">Biaya untuk manajemen proyek dan logistik lapangan</p>
-                  </div>
-
-                  <div className="bg-card p-6 rounded-xl border border-emerald-200/40 space-y-4">
-                    <div className="flex items-center gap-2 text-muted-foreground font-bold text-sm">
-                      <Check className="h-4 w-4" />
-                      Margin Keuntungan
-                    </div>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        value={formData.profitPercentage}
-                        onChange={(e) => handleChange('profitPercentage', parseFloat(e.target.value) || 0)}
-                        className="h-10 pl-4 pr-10 text-xl font-mono font-semibold text-emerald-700 rounded-lg border-border bg-background"
-                      />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-emerald-400">%</span>
-                    </div>
-                    <p className="text-xs text-emerald-400 leading-tight font-medium uppercase tracking-wider">Margin keuntungan bersih untuk keseluruhan item AHSP</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <AHSPMasterDataForm
+                formData={formData}
+                errors={errors}
+                onChange={handleChange}
+                isSubmitting={isSubmitting}
+                item={item}
+                mode={mode}
+                mainCategories={mainCategories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedSubcategory={selectedSubcategory}
+                setSelectedSubcategory={setSelectedSubcategory}
+                nextAhspCode={nextAhspCode}
+                sniAHSPItems={sniAHSPItems}
+                sniPickerOpen={sniPickerOpen}
+                setSniPickerOpen={setSniPickerOpen}
+                selectedSNIPreset={selectedSNIPreset}
+                onSelectSNIPreset={handleSelectSNIPreset}
+                componentsCount={components.length}
+              />
             )}
 
             {/* Section 2: Component Analysis — shown on Step 2 */}
             {currentStep === 2 && (
-            <div className="min-h-[600px] border-b border-border bg-background lg:col-[1]">
-              <div className="px-4 sm:px-6 lg:px-8 py-5 bg-card border-b border-border flex items-center gap-3">
-                <div className="bg-amber-500/10 p-2 rounded-xl ring-1 ring-amber-500/20">
-                  <Calculator className="h-5 w-5 text-amber-500" />
-                </div>
-                <div>
-                  <h3 className="font-display font-bold text-base text-foreground uppercase tracking-wide">Analisa Komponen</h3>
-                  <p className="text-xs text-muted-foreground font-medium">Struktur rincian biaya pekerjaan</p>
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <div className="px-4 sm:px-6 lg:px-8 py-3 border-b border-border bg-background flex items-center justify-end shrink-0">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleAddManualComponent}
-                    className="h-8 px-3 rounded-lg border-border text-blue-600 hover:bg-blue-500/10 hover:border-blue-400/50 font-bold text-xs dark:text-blue-400"
-                  >
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    Komponen Kustom
-                  </Button>
-                </div>
-
-                <div className="p-4 md:p-6 min-h-[400px]">
-                  <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
-                      <Table className="w-full min-w-[680px]">
-                        <TableHeader className="bg-muted/50 sticky top-0 z-10 border-b border-border">
-                          <TableRow className="hover:bg-transparent border-0">
-                            <TableHead className="w-24 text-xs font-bold uppercase tracking-widest text-muted-foreground py-3 pl-6">Type</TableHead>
-                            <TableHead className="min-w-[180px] text-xs font-bold uppercase tracking-widest text-muted-foreground py-3">Deskripsi Resource</TableHead>
-                            <TableHead className="w-16 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground py-3">Unit</TableHead>
-                            <TableHead className="w-28 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground py-3">Rate</TableHead>
-                            <TableHead className="w-24 text-center text-xs font-bold uppercase tracking-widest text-blue-600 py-3 bg-blue-500/5 italic dark:text-blue-400">Koef</TableHead>
-                            <TableHead className="w-32 text-right text-xs font-bold uppercase tracking-widest text-amber-600 py-3 pr-6 dark:text-amber-400">Subtotal</TableHead>
-                            <TableHead className="w-12"></TableHead>
-                          </TableRow>
-                        </TableHeader>
-                      <TableBody>
-                        {manualComponents.length === 0 && components.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={7} className="h-48 text-center bg-muted/30/30">
-                              <div className="flex flex-col items-center gap-2 opacity-30">
-                                <Plus className="h-10 w-10" />
-                                <p className="font-bold text-muted-foreground uppercase tracking-widest text-xs">Belum ada komponen analisa.</p>
-                                <p className="text-xs text-muted-foreground">Cari resource di bawah untuk memulai analisa.</p>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          <>
-                            {/* Manual Components */}
-                            {manualComponents.map((comp) => (
-                              <TableRow key={comp.tempId} className="group hover:bg-muted/30/30 transition-colors border-b border-border last:border-0">
-                                <TableCell className="pl-6">
-                                  <Badge variant="secondary" className="font-semibold text-xs uppercase tracking-wider h-5 bg-muted/50 text-muted-foreground border-none">
-                                    {comp.type}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  {comp.editing ? (
-                                    <Input
-                                      value={comp.resourceName}
-                                      onChange={(e) => handleUpdateManualComponent(comp.tempId, 'resourceName', e.target.value)}
-                                      className="h-9 border-border rounded-lg text-sm font-bold bg-background"
-                                    />
-                                  ) : (
-                                    <div className="font-bold text-muted-foreground text-sm flex items-center gap-2">
-                                      {comp.resourceName}
-                                    </div>
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                  <span className="text-xs font-semibold text-muted-foreground uppercase">{comp.unit}</span>
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                                  {formatIDR(comp.unitPrice)}
-                                </TableCell>
-                                <TableCell className="text-right bg-blue-50/20">
-                                  <Input
-                                    type="number"
-                                    value={comp.coefficient}
-                                    onChange={(e) => handleUpdateManualComponent(comp.tempId, 'coefficient', parseFloat(e.target.value) || 0)}
-                                    className="h-8 py-0 text-right font-semibold border-transparent bg-transparent hover:border-border focus:bg-background focus:border-primary/40 transition-all rounded-lg"
-                                  />
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-sm font-semibold text-foreground pr-6">
-                                  {formatIDR(comp.coefficient * comp.unitPrice)}
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label="Hapus komponen"
-                                    onClick={() => handleDeleteManualComponent(comp.tempId)}
-                                    className="h-8 w-8 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-full opacity-80 transition-all md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-
-                            {/* Resource-based Components */}
-                            {components.map((component) => (
-                              <TableRow key={component.id} className="group hover:bg-accent/40/20 transition-colors border-b border-border last:border-0">
-                                <TableCell className="pl-6">
-                                  <Badge
-                                    className={`font-semibold text-xs uppercase tracking-wider h-5 border-none ${component.type === 'material' ? 'bg-primary/10 text-primary' :
-                                      component.type === 'labor' ? 'bg-orange-100 text-orange-700' :
-                                        'bg-indigo-100 text-indigo-700'
-                                      }`}
-                                  >
-                                    {component.type}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  {(() => {
-                                    const res = component.resource ?? resources.find(r => r.id === component.resourceId)
-                                    return (
-                                      <div className="flex flex-col">
-                                        <span className="font-bold text-foreground text-sm">{res?.name || 'Komponen tanpa nama'}</span>
-                                        <span className="text-xs font-mono text-muted-foreground tracking-wide">{res?.code || '—'}</span>
-                                      </div>
-                                    )
-                                  })()}
-                                </TableCell>
-                                <TableCell className="text-center font-semibold text-xs text-muted-foreground uppercase">
-                                  {component.unit}
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                                  {formatIDR(component.unitPrice)}
-                                </TableCell>
-                                <TableCell className="bg-blue-50/10">
-                                  <Input
-                                    type="number"
-                                    value={component.coefficient}
-                                    onChange={(e) => handleUpdateComponent(component.id, 'coefficient', parseFloat(e.target.value) || 0)}
-                                    className="h-8 px-2 text-right font-semibold text-foreground border-transparent bg-transparent hover:border-border focus:bg-background focus:border-primary/40 transition-all rounded-lg"
-                                  />
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-sm font-semibold text-foreground pr-6">
-                                  {formatIDR(component.subtotal)}
-                                </TableCell>
-                                <TableCell>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label="Hapus komponen"
-                                    onClick={() => handleDeleteComponent(component.id)}
-                                    className="h-8 w-8 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-full opacity-80 transition-all md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </>
-                        )}
-                      </TableBody>
-                    </Table>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Integrated Import / Resource Search */}
-                <div className="shrink-0 p-4 sm:p-6 lg:p-8 border-t bg-card z-10 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
-                  <div className="max-w-4xl mx-auto space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Search className="h-4 w-4 text-blue-600" />
-                        <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Integrasi Resource Library</h4>
-                      </div>
-                      <Badge variant="outline" className="text-xs font-bold uppercase tracking-widest text-muted-foreground border-border">
-                        {filteredResources.length} tersedia di katalog
-                      </Badge>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <Select value={selectedComponentType} onValueChange={(value: string) => setSelectedComponentType(value as ResourceType)}>
-                        <SelectTrigger className="w-full sm:w-40 h-10 rounded-lg border-border bg-muted/30 font-bold text-xs uppercase tracking-wider">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-border shadow-xl">
-                          <SelectItem value="material" className="py-3 font-semibold">MATERIAL</SelectItem>
-                          <SelectItem value="labor" className="py-3 font-semibold">LABOR / TENAGA</SelectItem>
-                          <SelectItem value="equipment" className="py-3 font-semibold">EQUIPMENT / ALAT</SelectItem>
-                          <SelectItem value="subcontractor" className="py-3 font-semibold">SUBCONTRACTOR</SelectItem>
-                        </SelectContent>
-                      </Select>
-
-                      <div className="relative flex-1 group">
-                        <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-blue-500 transition-colors" />
-                        <Input
-                          placeholder={`Cari resource ${selectedComponentType}...`}
-                          value={resourceSearch}
-                          onChange={(e) => setResourceSearch(e.target.value)}
-                          className="h-10 pl-12 pr-4 rounded-lg border-border bg-muted/30 focus:bg-background focus:ring-2 focus:ring-primary/10 transition-all font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    {resourceSearch && filteredResources.length > 0 && (
-                      <div className="mt-2 rounded-lg border border-border bg-background shadow-2xl max-h-60 overflow-y-auto animate-in slide-in-from-top-2 duration-300 divide-y divide-border z-50 relative pointer-events-auto">
-                        {filteredResources.map((res) => (
-                          <div
-                            key={res.id}
-                            className="px-6 py-4 flex items-center justify-between hover:bg-accent/40/50 cursor-pointer transition-colors group"
-                            onClick={() => handleAddResource(res)}
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className="h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground font-semibold group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                                {res.name[0]}
-                              </div>
-                              <div className="flex flex-col text-left">
-                                <span className="font-bold text-muted-foreground text-sm group-hover:text-blue-700">{res.name}</span>
-                                <div className="flex items-center gap-3 mt-0.5">
-                                  <span className="text-xs font-mono font-medium text-muted-foreground uppercase">{res.code}</span>
-                                  <div className="h-1 w-1 rounded-full bg-muted" />
-                                  <span className="text-xs bg-muted/50 px-1.5 py-0.5 rounded text-muted-foreground font-semibold uppercase">{res.unit}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-end">
-                              <span className="font-mono text-sm font-semibold text-foreground">{formatIDR(res.unitPrice)}</span>
-                              <Button size="sm" variant="ghost" className="h-8 px-4 text-xs font-semibold uppercase text-blue-600 opacity-100 transition-opacity">
-                                Tambahkan
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+              <AHSPComponentsTable
+                components={components}
+                resources={resources}
+                manualComponents={manualComponents}
+                onAddManualComponent={handleAddManualComponent}
+                onUpdateManualComponent={handleUpdateManualComponent}
+                onDeleteManualComponent={handleDeleteManualComponent}
+                onUpdateComponent={handleUpdateComponent}
+                onDeleteComponent={handleDeleteComponent}
+                onAddResource={handleAddResource}
+                selectedComponentType={selectedComponentType}
+                setSelectedComponentType={setSelectedComponentType}
+                resourceSearch={resourceSearch}
+                setResourceSearch={setResourceSearch}
+                filteredResources={filteredResources}
+              />
             )}
 
             {/* Section 3: Cost Distribution Summary — always visible right sidebar */}
-            <div className="bg-card p-4 sm:p-5 space-y-5 lg:col-[2] lg:row-[1/span_2] lg:border-l lg:border-border lg:sticky lg:top-0 lg:h-fit lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
-              <div className="flex items-center gap-3 pb-4 border-b border-border">
-                <div className="bg-emerald-500/10 p-2 rounded-xl ring-1 ring-emerald-500/20">
-                  <Check className="h-5 w-5 text-emerald-500" />
-                </div>
-                <div>
-                  <h3 className="font-display font-bold text-base text-foreground uppercase tracking-wide">Distribusi Biaya</h3>
-                  <p className="text-xs text-muted-foreground font-medium">Ringkasan komposisi dan harga</p>
-                </div>
-              </div>
-              <div className="grid gap-6">
-                {/* Kalkulasi Akhir — accent hero */}
-                <div className="flex flex-col items-center justify-center py-5 px-5 rounded-xl bg-muted/40 border border-border relative overflow-hidden">
-                  <div className="relative z-10 flex flex-col items-center text-center">
-                    <span className="text-xs uppercase font-bold tracking-[0.2em] text-muted-foreground mb-3">Kalkulasi Akhir AHSP</span>
-                    <div className="text-2xl lg:text-3xl font-bold font-mono tracking-tight tabular-nums text-amber-500 dark:text-amber-400 mb-2 break-all">
-                      {formatIDR(totals.final)}
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground font-semibold uppercase tracking-[0.1em] text-xs">
-                      Harga Satuan per <span className="bg-muted px-2 py-0.5 rounded font-mono text-foreground">{formData.unit}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rincian Biaya Dasar */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-0.5 bg-blue-500 rounded-full" />
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-foreground">Rincian Biaya Dasar</h3>
-                  </div>
-                  <div className="space-y-3 bg-muted/30 p-4 rounded-xl border border-border">
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between items-end">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Biaya Material</span>
-                        <span className="font-mono text-xs font-bold text-foreground">{formatIDR(totals.material)}</span>
-                      </div>
-                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full transition-all duration-700" style={{ width: `${(totals.material / (totals.base || 1)) * 100}%` }} />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between items-end">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Biaya Tenaga Kerja</span>
-                        <span className="font-mono text-xs font-bold text-foreground">{formatIDR(totals.labor)}</span>
-                      </div>
-                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-amber-500 rounded-full transition-all duration-700" style={{ width: `${(totals.labor / (totals.base || 1)) * 100}%` }} />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between items-end">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Alat / Peralatan</span>
-                        <span className="font-mono text-xs font-bold text-foreground">{formatIDR(totals.equipment + totals.subcontractor)}</span>
-                      </div>
-                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500 rounded-full transition-all duration-700" style={{ width: `${((totals.equipment + totals.subcontractor) / (totals.base || 1)) * 100}%` }} />
-                      </div>
-                    </div>
-                    <div className="pt-3 mt-1 border-t border-border flex justify-between items-center">
-                      <span className="text-xs font-bold text-foreground uppercase tracking-wider">Subtotal Biaya Dasar</span>
-                      <span className="text-base font-bold font-mono text-blue-600 dark:text-blue-400">{formatIDR(totals.base)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Overhead & Keuntungan */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-0.5 bg-emerald-500 rounded-full" />
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-foreground">Overhead &amp; Keuntungan</h3>
-                  </div>
-                  <div className="bg-muted/30 p-4 rounded-xl border border-border space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                      <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Overhead</span>
-                        <span className="text-xs text-muted-foreground/60 ml-2">{formData.overheadPercentage}%</span>
-                      </div>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">+{formatIDR(totals.base * (formData.overheadPercentage / 100))}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-card rounded-lg border border-border">
-                      <div>
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Keuntungan</span>
-                        <span className="text-xs text-muted-foreground/60 ml-2">{formData.profitPercentage}%</span>
-                      </div>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">+{formatIDR(totals.base * (formData.profitPercentage / 100))}</span>
-                    </div>
-                    <div className="p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20 flex justify-between items-center">
-                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Total Penyesuaian</span>
-                      <span className="text-base font-bold font-mono text-emerald-700 dark:text-emerald-400">{formatIDR(totals.final - totals.base)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <AHSPCostSummary
+              basePrice={totals.base}
+              finalPrice={totals.final}
+              price_material={totals.material}
+              price_labor={totals.labor}
+              price_equipment={totals.equipment}
+              price_subcon={totals.subcontractor}
+              overheadPercentage={formData.overheadPercentage}
+              profitPercentage={formData.profitPercentage}
+              unit={formData.unit}
+            />
           </div>
 
           <div className="shrink-0 px-4 sm:px-8 py-4 sm:py-5 border-t border-border bg-card flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between z-30 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
