@@ -164,6 +164,33 @@ class SyncQueueManager {
 
         case 'update': {
           const updateData = Array.isArray(task.data) ? task.data[0] : task.data
+
+          // Conditional (optimistic-lock) path for ahsp_items updates
+          if (task.table === 'ahsp_items' && updateData._expected_updated_at) {
+            const expected = updateData._expected_updated_at as string
+            const payload = { ...updateData }
+            delete payload._expected_updated_at
+
+            const { count, error: updateError } = await supabase
+              .from('ahsp_items')
+              .update(payload)
+              .eq('id', payload.id)
+              .eq('updated_at', expected)
+              .select('id')
+
+            if (updateError) throw updateError
+
+            if ((count ?? 0) === 0) {
+              // Conflict detected — row was modified by another user/tab
+              toast.warning('Konflik Data', {
+                description: 'Data AHSP ini sudah diubah dari perangkat atau tab lain. Refresh halaman untuk melihat perubahan terbaru.',
+                duration: 8000,
+              })
+              return { success: true } // Terminal — don't retry, don't propagate as error
+            }
+            return { success: true }
+          }
+
           result = await supabase.from(task.table)
             .update(updateData)
             .eq('id', updateData.id)
@@ -486,25 +513,30 @@ export function syncAHSPItem(item: any): string {
 
 /**
  * Update single AHSP item (UPDATE only — avoids RLS INSERT block for existing catalog items)
+ * Pass `expectedUpdatedAt` to enable optimistic conflict detection.
  */
-export function syncAHSPItemUpdate(item: any): string {
+export function syncAHSPItemUpdate(item: any, expectedUpdatedAt?: string): string {
+  const data: Record<string, unknown> = {
+    id: item.id,
+    base_price: item.basePrice,
+    final_price: item.finalPrice,
+    overhead_percentage: item.overheadPercentage,
+    profit_percentage: item.profitPercentage,
+    subcategory: item.subcategory || '',
+    price_material: item.price_material || 0,
+    price_labor: item.price_labor || 0,
+    price_equipment: item.price_equipment || 0,
+    price_subcon: item.price_subcon || 0,
+    updated_at: new Date().toISOString(),
+  }
+  if (expectedUpdatedAt) {
+    data._expected_updated_at = expectedUpdatedAt
+  }
   return syncQueue.enqueue({
     operation: 'update',
     table: 'ahsp_items',
-    data: {
-      id: item.id,
-      base_price: item.basePrice,
-      final_price: item.finalPrice,
-      overhead_percentage: item.overheadPercentage,
-      profit_percentage: item.profitPercentage,
-      subcategory: item.subcategory || '',
-      price_material: item.price_material || 0,
-      price_labor: item.price_labor || 0,
-      price_equipment: item.price_equipment || 0,
-      price_subcon: item.price_subcon || 0,
-      updated_at: new Date().toISOString(),
-    },
-    maxRetries: 3,
+    data,
+    maxRetries: 1, // Conflicts should not be retried
   })
 }
 

@@ -17,7 +17,7 @@ import {
   calculateAHSPPriceInWorker,
   ahspDataService
 } from '../services/ahspService'
-import { syncAHSPItem, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources, syncAHSPItems, syncComponentOrder, syncQueue } from '../lib/supabaseSyncService'
+import { syncAHSPItem, syncAHSPComponent, syncDelete, syncAHSPItemsWithComponents, syncResources, syncAHSPItems, syncComponentOrder, syncQueue, syncAHSPItemUpdate } from '../lib/supabaseSyncService'
 import { validate } from '../lib/validationMiddleware'
 import {
   resourceInputSchema,
@@ -300,11 +300,19 @@ export const useAHSPStore = create<AHSPStore>()(
           const oldItem = get().ahspItems.find(i => i.id === id)
           if (!oldItem) return
 
+          // Snapshot updatedAt BEFORE the optimistic update for conflict detection
+          const expectedUpdatedAt = oldItem.updatedAt
+
           const updated = await ahspDataService.updateAHSPItemWithHistory(id, validation.data!, oldItem)
 
           set((state) => ({
             ahspItems: state.ahspItems.map(item => item.id === id ? updated : item),
           }))
+
+          // Enqueue a conditional UPDATE that will detect conflicts via updated_at check.
+          // updateAHSPItemWithHistory already enqueued a upsert via syncAHSPItem; this
+          // additional targeted update carries _expected_updated_at for conflict detection.
+          syncAHSPItemUpdate(updated, expectedUpdatedAt)
         },
 
         updateAHSPItemStatus: (id: string, status: AHSPStatus) => {
