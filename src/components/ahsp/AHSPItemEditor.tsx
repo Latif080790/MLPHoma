@@ -31,7 +31,7 @@ import type { AHSPItem, ResourceType, ResourceUnit } from '../../types/ahsp'
 import type { AHSPCreationMode } from './AHSPCreationModeDialog'
 import { getMainCategories } from '../../lib/workCategories'
 import { AHSPMasterDataForm } from './AHSPMasterDataForm'
-import { AHSPComponentsTable } from './AHSPComponentsTable'
+import { AHSPComponentsTable, type ManualComponent } from './AHSPComponentsTable'
 import { AHSPCostSummary } from './AHSPCostSummary'
 
 /** Props for AHSPItemEditor component */
@@ -84,15 +84,7 @@ export function AHSPItemEditor({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedComponentType, setSelectedComponentType] = useState<ResourceType>('material')
-  const [manualComponents, setManualComponents] = useState<Array<{
-    tempId: string
-    type: ResourceType
-    resourceName: string
-    unit: ResourceUnit
-    coefficient: number
-    unitPrice: number
-    editing: boolean
-  }>>([])
+  const [manualComponents, setManualComponents] = useState<ManualComponent[]>([])
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedSubcategory, setSelectedSubcategory] = useState('')
   const [pendingDeleteComponentId, setPendingDeleteComponentId] = useState<string | null>(null)
@@ -663,7 +655,7 @@ export function AHSPItemEditor({
                 setSniPickerOpen={setSniPickerOpen}
                 selectedSNIPreset={selectedSNIPreset}
                 onSelectSNIPreset={handleSelectSNIPreset}
-                componentsCount={components.length}
+                componentsCount={componentsCount}
               />
             )}
 
