@@ -75,6 +75,8 @@ export interface WBSTreeState {
     wbsCode: string
     affectedTaskNames: string[]
   } | null
+  lastAction: WBSSnapshot | null
+  activeFilter: KPIFilter
 }
 
 /** WBS Actions */
@@ -109,10 +111,37 @@ export interface WBSActions {
   confirmDelete: () => void
   /** Cancel pending delete — dismisses the confirmation dialog */
   cancelDelete: () => void
+  undoLastAction: (projectId: string) => void
+  setActiveFilter: (filter: KPIFilter) => void
 }
 
 /** WBS Store Interface */
 export interface WBSStore extends WBSTreeState, WBSActions { }
+
+/** Filter mode for KPI strip. null = show all. */
+export type KPIFilter =
+  | 'rab-unlinked'
+  | 'timeline-linked'
+  | 'qc-passed'
+  | 'low-progress'
+  | null
+
+/** One visible row in the virtualized flat-list tree */
+export interface WBSFlatRow {
+  item: WBSItem
+  depth: number
+  isExpanded: boolean
+  hasChildren: boolean
+  recursiveBudget: number
+  weightedProgress: number
+}
+
+/** Undo snapshot — taken before a move or delete mutation */
+export interface WBSSnapshot {
+  items: WBSItem[]
+  action: 'move' | 'delete'
+  timestamp: number
+}
 
 /** WBS Validation Result */
 export interface WBSValidationResult {
