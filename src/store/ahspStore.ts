@@ -346,13 +346,24 @@ export const useAHSPStore = create<AHSPStore>()(
         importAHSPItems: async (items) => {
           const DIRECT_IMPORT_THRESHOLD = 100
 
+          // Duplicate code guard: skip items whose code already exists in the catalog
+          const existingCodes = new Set(get().ahspItems.map(i => i.code))
+          const duplicates = items.filter(i => existingCodes.has(i.code))
+          if (duplicates.length > 0) {
+            const preview = duplicates.slice(0, 5).map(d => d.code).join(', ')
+            const suffix = duplicates.length > 5 ? ` (+${duplicates.length - 5} lainnya)` : ''
+            toast.warning(`${duplicates.length} item dilewati — kode sudah ada: ${preview}${suffix}`)
+          }
+          const filteredItems = duplicates.length > 0 ? items.filter(i => !existingCodes.has(i.code)) : items
+          if (filteredItems.length === 0) return
+
           const { newItems, allNewResources, allNewComponents, componentsByAHSP } = prepareImportData(
-            items,
+            filteredItems,
             get().resources
           )
 
-          if (items.length > DIRECT_IMPORT_THRESHOLD) {
-            toast.info(`Import besar (${items.length} items) - langsung ke Supabase...`)
+          if (filteredItems.length > DIRECT_IMPORT_THRESHOLD) {
+            toast.info(`Import besar (${filteredItems.length} items) - langsung ke Supabase...`)
 
             try {
               const { ahspRows, resourceRows, componentRows } = toSupabaseRows(
@@ -365,7 +376,7 @@ export const useAHSPStore = create<AHSPStore>()(
 
               if (!result.success) throw new Error(result.error || 'Unknown error')
 
-              toast.success(`Berhasil import ${items.length} items ke Supabase!`)
+              toast.success(`Berhasil import ${filteredItems.length} items ke Supabase!`)
 
               const state = get()
               await Promise.all([

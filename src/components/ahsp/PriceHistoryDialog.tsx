@@ -19,6 +19,15 @@ import { useAHSPStore } from '../../store/ahspStore'
 import { formatIDR } from '../../lib/utils'
 import type { PriceHistory } from '../../types/ahsp'
 import { format } from 'date-fns'
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip as RechartsTooltip,
+    ResponsiveContainer,
+} from 'recharts'
 
 interface PriceHistoryDialogProps {
     open: boolean
@@ -57,12 +66,56 @@ export function PriceHistoryDialog({
         return zone ? zone.name : 'Zona Tidak Diketahui'
     }
 
+    const chartData = history
+        .slice()
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        .map(r => ({
+            date: format(new Date(r.createdAt), 'dd MMM yy'),
+            price: r.newPrice,
+        }))
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[700px]">
                 <DialogHeader>
                     <DialogTitle>Riwayat Harga: {itemName}</DialogTitle>
                 </DialogHeader>
+
+                {chartData.length >= 2 && (
+                    <div className="h-[160px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#f97316" stopOpacity={0.25} />
+                                        <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                                <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="var(--muted-foreground)" />
+                                <YAxis
+                                    tick={{ fontSize: 10 }}
+                                    stroke="var(--muted-foreground)"
+                                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                                    width={44}
+                                />
+                                <RechartsTooltip
+                                    contentStyle={{ fontSize: 11, borderRadius: 6 }}
+                                    formatter={(value: number) => [formatIDR(value), 'Harga']}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="price"
+                                    stroke="#f97316"
+                                    strokeWidth={2}
+                                    fill="url(#priceGradient)"
+                                    dot={{ r: 3, fill: '#f97316', strokeWidth: 0 }}
+                                    activeDot={{ r: 5 }}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
 
                 <ScrollArea className="h-[400px] w-full rounded-md border p-4">
                     <Table>
