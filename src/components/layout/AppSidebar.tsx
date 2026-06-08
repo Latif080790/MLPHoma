@@ -169,7 +169,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                                     aria-expanded={!isGroupCollapsed}
                                     aria-label={`${isGroupCollapsed ? 'Expand' : 'Collapse'} ${group.label}`}
                                 >
-                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 group-hover/grp:text-muted-foreground transition-colors">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-foreground/50 group-hover/grp:text-foreground/70 transition-colors">
                                         {group.label}
                                         {hasActiveItem && isGroupCollapsed && (
                                             <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-nl-orange align-middle" />
@@ -177,7 +177,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                                     </span>
                                     <ChevronDown
                                         size={11}
-                                        className={`text-muted-foreground/40 group-hover/grp:text-muted-foreground/70 transition-transform duration-200 ${isGroupCollapsed ? '-rotate-90' : ''}`}
+                                        className={`text-foreground/30 group-hover/grp:text-foreground/60 transition-transform duration-200 ${isGroupCollapsed ? '-rotate-90' : ''}`}
                                     />
                                 </button>
                             )}
@@ -194,7 +194,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
                                                     "group flex items-center gap-3 rounded-lg px-3 py-2 text-xs font-medium transition-colors relative overflow-hidden",
                                                     isActive
                                                         ? "bg-[rgba(249,115,22,0.1)] text-[#FB923C] dark:bg-[rgba(249,115,22,0.12)] dark:text-[#FB923C]"
-                                                        : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                                                        : "text-foreground/65 hover:bg-accent/60 hover:text-foreground"
                                                 )}
                                                 title={collapsed ? item.label : undefined}
                                             >
@@ -232,7 +232,7 @@ export function AppSidebar({ collapsed, setCollapsed, open = true, isOverlay = f
             <div className="p-3 border-t border-border shrink-0">
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="flex w-full items-center justify-center gap-3 rounded-lg p-2 text-muted-foreground/60 hover:bg-accent/60 hover:text-foreground transition-colors"
+                    className="flex w-full items-center justify-center gap-3 rounded-lg p-2 text-foreground/50 hover:bg-accent/60 hover:text-foreground transition-colors"
                     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 >
                     {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
