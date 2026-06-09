@@ -32,6 +32,7 @@ export interface WBSVirtualTreeProps {
   onVisibleRangeChange: (start: number, end: number) => void
   onUndo: () => void
   rabCountByWbs: Map<string, number>
+  onGenerateCodes?: () => void
 }
 
 function DropLine({ mode, id, dropTarget }: { mode: DropMode; id: string; dropTarget: DropTarget | null }) {
@@ -47,13 +48,23 @@ function DropLine({ mode, id, dropTarget }: { mode: DropMode; id: string; dropTa
 
 export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreeProps>(
   function WBSVirtualTree(
-    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs },
+    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes },
     ref
   ) {
     const parentRef = useRef<HTMLDivElement>(null)
     const [draggedId, setDraggedId] = useState<string | null>(null)
     const [dropTarget, setDropTarget] = useState<DropTarget | null>(null)
     const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+
+    const [checklistDismissed, setChecklistDismissed] = useState(false)
+
+    const showChecklist =
+      !checklistDismissed &&
+      rows.length > 0 &&
+      rows.every((r) => (rabCountByWbs.get(r.item.id) ?? 0) === 0) &&
+      rows.every((r) => r.weightedProgress === 0)
+
+    const anyCodeSet = rows.some((r) => !!r.item.code)
 
     const virtualizer = useVirtualizer({
       count: rows.length,
@@ -171,6 +182,66 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
         >
           ⌨ ↩
         </span>
+
+        {showChecklist && (
+          <div
+            className="mx-2 mb-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface-hover)] p-2 relative"
+          >
+            <button
+              onClick={() => setChecklistDismissed(true)}
+              className="absolute top-1 right-1.5 leading-none text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+              style={{ fontSize: 12 }}
+              title="Tutup"
+            >
+              ×
+            </button>
+            <div
+              className="font-bold uppercase tracking-wider mb-1.5"
+              style={{ color: 'var(--text-muted)', fontSize: 8 }}
+            >
+              Setup WBS Proyek
+            </div>
+            {[
+              { done: true,       label: 'Item WBS dibuat',        action: null },
+              { done: anyCodeSet, label: 'Generate kode WBS',      action: onGenerateCodes ?? null },
+              { done: false,      label: 'Hubungkan RAB ke item',  action: null },
+              { done: false,      label: 'Isi progress pertama',   action: null },
+            ].map((step, i) => (
+              <div key={i} className="flex items-center gap-2 py-0.5">
+                <span style={{
+                  fontSize: 9,
+                  color: step.done ? 'var(--wbs-progress-high)' : 'var(--wbs-progress-low)',
+                }}>
+                  {step.done ? '✓' : '○'}
+                </span>
+                <span
+                  className="flex-1"
+                  style={{
+                    fontSize: 8,
+                    color: 'var(--text-secondary)',
+                    textDecoration: step.done ? 'line-through' : 'none',
+                    opacity: step.done ? 0.5 : 1,
+                  }}
+                >
+                  {step.label}
+                </span>
+                {step.action && (
+                  <button
+                    onClick={step.action}
+                    className="font-bold px-1.5 py-0.5 rounded"
+                    style={{
+                      fontSize: 7,
+                      background: 'hsl(var(--cobalt-400) / 0.15)',
+                      color: 'hsl(var(--cobalt-400))',
+                    }}
+                  >
+                    Jalankan
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
           {virtualItems.map((vItem) => {
