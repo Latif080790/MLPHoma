@@ -161,12 +161,16 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     return (
       <div
         ref={parentRef}
-        className="w-full h-full overflow-auto outline-none"
+        className="w-full h-full overflow-auto outline-none relative"
         tabIndex={0}
       >
-        <div className="text-[7px] px-2 py-0.5 select-none text-[var(--text-muted)]">
-          Ctrl+Z untuk undo pindah/hapus
-        </div>
+        <span
+          className="absolute top-1 right-2 select-none opacity-40 hover:opacity-100 transition-opacity z-10"
+          style={{ fontSize: 9, color: 'var(--text-muted)', cursor: 'default' }}
+          title="Ctrl+Z: undo pindah/hapus"
+        >
+          ⌨ ↩
+        </span>
 
         <div style={{ height: virtualizer.getTotalSize(), position: 'relative', width: '100%' }}>
           {virtualItems.map((vItem) => {
