@@ -234,17 +234,21 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
 
                 {/* WBS code badge — lighter cobalt for L3+ */}
                 <span
-                  className="shrink-0 font-mono text-[7px] font-bold px-1.5 rounded leading-none py-0.5"
-                  style={{ color: codeColor, background: codeBg }}
+                  className="shrink-0 font-mono font-bold px-1.5 rounded leading-none py-0.5"
+                  style={{ fontSize: 8, color: codeColor, background: codeBg }}
                 >
                   {item.code || '—'}
                 </span>
 
-                {/* RAB count badge */}
-                {rabCount > 0 && (
+                {/* RAB count badge — always shown for leaf items (amber=warning, cobalt=linked) */}
+                {(rabCount > 0 || !row.hasChildren) && (
                   <span
-                    className="shrink-0 text-[7px] font-mono font-semibold px-1 rounded leading-none py-0.5"
-                    style={{ color: 'hsl(var(--cobalt-300))', background: 'hsl(var(--cobalt-300) / 0.12)' }}
+                    className="shrink-0 font-mono font-semibold px-1 rounded leading-none py-0.5"
+                    style={{
+                      fontSize: 7,
+                      color: rabCount > 0 ? 'hsl(var(--cobalt-300))' : 'var(--wbs-progress-low)',
+                      background: rabCount > 0 ? 'hsl(var(--cobalt-300) / 0.12)' : 'hsl(var(--wbs-progress-low) / 0.15)',
+                    }}
                   >
                     {rabCount} RAB
                   </span>
@@ -278,23 +282,24 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                   </span>
                 )}
 
-                {/* Progress bar + badge */}
-                {progress > 0 && (
-                  <>
-                    <div className="shrink-0 w-7 h-[2px] rounded overflow-hidden bg-[var(--border-default)]">
-                      <div
-                        className="h-full rounded"
-                        style={{ width: `${Math.min(100, progress)}%`, background: progressColor(progress) }}
-                      />
-                    </div>
-                    <span
-                      className="shrink-0 text-[7px] font-mono font-bold"
-                      style={{ color: progressColor(progress) }}
-                    >
-                      {progress}%
-                    </span>
-                  </>
-                )}
+                {/* Progress bar + badge — always shown; muted when 0% */}
+                <div className="shrink-0 w-7 h-[2px] rounded overflow-hidden bg-[var(--border-default)]">
+                  {progress > 0 && (
+                    <div
+                      className="h-full rounded"
+                      style={{ width: `${Math.min(100, progress)}%`, background: progressColor(progress) }}
+                    />
+                  )}
+                </div>
+                <span
+                  className="shrink-0 font-mono font-bold"
+                  style={{
+                    fontSize: 7,
+                    color: progress > 0 ? progressColor(progress) : 'var(--text-muted)',
+                  }}
+                >
+                  {progress}%
+                </span>
 
                 {/* Quick actions — visible on hover */}
                 <div
