@@ -37,7 +37,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '../../components/ui/alert-dialog'
-import { formatIDR } from '../../lib/utils'
 import { flattenVisibleRows, recursiveBudget, weightedProgress } from '../../lib/wbsCalculations'
 import type { WBSItem, KPIFilter } from '../../types/wbs'
 import type { RABItem } from '../../types/rab'
@@ -335,7 +334,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   if (!activeProjectId) {
     if (embedded) {
       return (
-        <div className="flex h-48 items-center justify-center text-sm text-slate-400">
+        <div className="flex h-48 items-center justify-center text-sm text-[var(--text-muted)]">
           Pilih proyek aktif untuk melihat WBS.
         </div>
       )
@@ -350,9 +349,6 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
       />
     )
   }
-
-  const selectedBudget = selectedId ? budgetByWbs.get(selectedId) ?? 0 : 0
-  const selectedTimelineCount = selectedId ? timelineCountByWbs.get(selectedId) ?? 0 : 0
 
   // ── Shared content blocks ───────────────────────────────────────────────
   const toolbar = (
