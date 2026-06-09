@@ -653,10 +653,10 @@ export function WBSDetailPanel({
               value={tab.value}
               className="group flex flex-1 items-center justify-center gap-1 px-1 py-2 text-xs font-semibold transition-colors"
               style={{
-                color: activeTab === tab.value ? 'hsl(var(--cobalt-400))' : 'var(--text-secondary)',
+                color: activeTab === tab.value ? 'hsl(var(--amber-500))' : 'var(--text-secondary)',
                 borderBottom:
                   activeTab === tab.value
-                    ? '2px solid hsl(var(--cobalt-400))'
+                    ? '2px solid hsl(var(--amber-500))'
                     : '2px solid transparent',
                 background: 'transparent',
                 outline: 'none',

@@ -267,7 +267,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                 <span
                   className="flex-1 min-w-0 truncate"
                   style={{
-                    fontSize: row.depth === 0 ? '9px' : '8.5px',
+                    fontSize: row.depth === 0 ? '10px' : '9px',
                     fontWeight: row.depth === 0 ? 700 : 400,
                     color: row.depth === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
                   }}
@@ -283,7 +283,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                 )}
 
                 {/* Progress bar + badge — always shown; muted when 0% */}
-                <div className="shrink-0 w-7 h-[2px] rounded overflow-hidden bg-[var(--border-default)]">
+                <div className="shrink-0 w-9 h-[3px] rounded overflow-hidden bg-[var(--border-default)]">
                   {progress > 0 && (
                     <div
                       className="h-full rounded"
