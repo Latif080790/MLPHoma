@@ -424,6 +424,8 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
       onDelete={handleDelete}
       onAddChild={(parentId) => openAddChild(parentId)}
       onClose={() => selectItem(null)}
+      onNavigateToRab={(wbsId) => toast.info(`Buka tab RAB untuk menghubungkan item ${wbsId}`)}
+      onNavigateToTimeline={(wbsId) => toast.info(`Buka tab Timeline untuk menghubungkan item ${wbsId}`)}
     />
   )
 

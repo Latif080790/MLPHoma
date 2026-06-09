@@ -46,6 +46,10 @@ export interface WBSDetailPanelProps {
   onAddChild?: (parentId: string) => void
   /** Optional close handler (mobile drawer dismiss) */
   onClose?: () => void
+  /** Called when user wants to navigate to the RAB module for this item */
+  onNavigateToRab?: (wbsId: string) => void
+  /** Called when user wants to navigate to the Timeline module for this item */
+  onNavigateToTimeline?: (wbsId: string) => void
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -143,12 +147,14 @@ function QcPill({ status }: { status: WBSItem['qc_status'] }) {
 
 // ─── Tab content components ───────────────────────────────────────────────────
 
-function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0, rabItems = [], timelineTasks = [] }: {
+function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0, rabItems = [], timelineTasks = [], onNavigateToRab, onNavigateToTimeline }: {
   item: WBSItem
   budgetLinked?: number
   timelineTaskCount?: number
   rabItems?: RABItem[]
   timelineTasks?: Array<{ id: string; name: string; wbsId?: string }>
+  onNavigateToRab?: (wbsId: string) => void
+  onNavigateToTimeline?: (wbsId: string) => void
 }) {
   const progress = Math.min(100, Math.max(0, item.progress ?? 0))
   const isComplete = progress >= 100
@@ -254,7 +260,23 @@ function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0, rabItems =
             )}
           </>
         ) : (
-          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Belum ada RAB terhubung</span>
+          <>
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Belum ada RAB terhubung</span>
+            {onNavigateToRab && (
+              <button
+                onClick={() => onNavigateToRab(item.id)}
+                className="mt-2 w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[8px] font-bold"
+                style={{
+                  border: '1px solid hsl(var(--amber-500) / 0.4)',
+                  background: 'hsl(var(--amber-500) / 0.06)',
+                  color: 'hsl(var(--amber-500))',
+                }}
+              >
+                <ReceiptText size={10} />
+                Buka RAB — link item ini
+              </button>
+            )}
+          </>
         )}
       </div>
 
@@ -300,7 +322,23 @@ function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0, rabItems =
             )}
           </>
         ) : (
-          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Tidak ada</span>
+          <>
+            <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Tidak ada</span>
+            {onNavigateToTimeline && (
+              <button
+                onClick={() => onNavigateToTimeline(item.id)}
+                className="mt-2 w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[8px] font-bold"
+                style={{
+                  border: '1px solid hsl(var(--cobalt-400) / 0.4)',
+                  background: 'hsl(var(--cobalt-400) / 0.06)',
+                  color: 'hsl(var(--cobalt-400))',
+                }}
+              >
+                <CalendarDays size={10} />
+                Buka Timeline
+              </button>
+            )}
+          </>
         )}
       </div>
 
@@ -551,6 +589,8 @@ export function WBSDetailPanel({
   onDelete,
   onAddChild,
   onClose,
+  onNavigateToRab,
+  onNavigateToTimeline,
 }: WBSDetailPanelProps) {
   const [activeTab, setActiveTab] = useState<TabValue>('overview')
 
@@ -685,6 +725,8 @@ export function WBSDetailPanel({
               timelineTaskCount={timelineTaskCount}
               rabItems={rabItems}
               timelineTasks={timelineTasks}
+              onNavigateToRab={onNavigateToRab}
+              onNavigateToTimeline={onNavigateToTimeline}
             />
           </Tabs.Content>
 
