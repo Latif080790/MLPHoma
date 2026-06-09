@@ -7,7 +7,6 @@
 import React, { useState, KeyboardEvent } from 'react'
 import * as Tabs from '@radix-ui/react-tabs'
 import {
-  GitBranch,
   Edit2,
   Trash2,
   Clock,
@@ -597,22 +596,31 @@ export function WBSDetailPanel({
         }}
       >
         <div className="min-w-0 flex-1">
-          <div className="mb-1 flex items-center gap-2">
+          <div className="mb-1 flex items-center gap-1.5">
             <span
-              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-xs font-bold"
               style={{
-                background: 'color-mix(in srgb, hsl(var(--cobalt-400)) 15%, transparent)',
+                background: 'hsl(var(--cobalt-400) / 0.12)',
                 color: 'hsl(var(--cobalt-400))',
+                fontSize: 7,
+                fontWeight: 800,
+                padding: '1px 5px',
+                borderRadius: 3,
               }}
             >
-              <GitBranch size={10} />
-              {item.code || '—'}
+              L{item.level ?? 1}
             </span>
             <span
-              className="text-xs font-bold uppercase tracking-wider"
-              style={{ color: 'var(--text-secondary)' }}
+              className="font-mono"
+              style={{
+                background: 'hsl(var(--cobalt-400) / 0.12)',
+                color: 'hsl(var(--cobalt-400))',
+                fontSize: 8,
+                fontWeight: 800,
+                padding: '1px 5px',
+                borderRadius: 3,
+              }}
             >
-              Level {item.level ?? 1}
+              {item.code || '—'}
             </span>
           </div>
           <h3
