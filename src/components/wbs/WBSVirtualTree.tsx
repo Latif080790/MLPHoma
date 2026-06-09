@@ -81,6 +81,8 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     const [checklistDismissed, setChecklistDismissed] = useState(false)
 
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
+    const [editingProgressId, setEditingProgressId] = useState<string | null>(null)
+    const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
 
     // Refs used inside the keydown handler to avoid stale closures
     const focusedIdxRef = useRef<number | null>(null)
@@ -100,6 +102,13 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
         }
       }
     }, [selectedId, rows])
+
+    const confirmProgressEdit = (input: HTMLInputElement) => {
+      if (!editingProgressId) return
+      const val = Math.round(Math.min(100, Math.max(0, Number(input.value) || 0)))
+      onUpdateProgress?.(editingProgressId, val)
+      setEditingProgressId(null)
+    }
 
     const virtualizer = useVirtualizer({
       count: rows.length,
@@ -391,6 +400,8 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                 onDragOver={(e) => handleDragOver(e, row)}
                 onDrop={(e) => handleDrop(e, row)}
                 onClick={() => onSelect(item)}
+                onMouseEnter={() => setHoveredRowId(item.id)}
+                onMouseLeave={() => setHoveredRowId(null)}
               >
                 <DropLine mode="before" id={item.id} dropTarget={dropTarget} />
                 <DropLine mode="after" id={item.id} dropTarget={dropTarget} />
@@ -465,7 +476,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                   </span>
                 )}
 
-                {/* Progress bar + badge — always shown; muted when 0% */}
+                {/* Progress bar */}
                 <div className="shrink-0 w-9 h-[3px] rounded overflow-hidden bg-[var(--border-default)]">
                   {progress > 0 && (
                     <div
@@ -474,15 +485,56 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                     />
                   )}
                 </div>
-                <span
-                  className="shrink-0 font-mono font-bold"
-                  style={{
-                    fontSize: 7,
-                    color: progress > 0 ? progressColor(progress) : 'var(--text-muted)',
-                  }}
-                >
-                  {progress}%
-                </span>
+
+                {/* Progress badge — swaps to inline input when editingProgressId matches */}
+                {editingProgressId === item.id ? (
+                  <span className="flex items-center gap-0.5 shrink-0">
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      defaultValue={item.progress ?? 0}
+                      autoFocus
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') confirmProgressEdit(e.currentTarget)
+                        if (e.key === 'Escape') setEditingProgressId(null)
+                      }}
+                      onBlur={(e) => confirmProgressEdit(e.currentTarget)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-9 rounded border text-right font-mono px-1 py-px"
+                      style={{
+                        fontSize: 10,
+                        background: 'hsl(var(--bg-surface))',
+                        borderColor: 'hsl(var(--cobalt-400))',
+                        color: 'hsl(var(--cobalt-400))',
+                      }}
+                    />
+                    <span style={{ fontSize: 9, color: 'hsl(var(--text-muted))' }}>%</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 shrink-0">
+                    <span
+                      className="font-mono font-bold"
+                      style={{
+                        fontSize: 7,
+                        color: progress > 0 ? progressColor(progress) : 'var(--text-muted)',
+                      }}
+                    >
+                      {progress}%
+                    </span>
+                    {hoveredRowId === item.id && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditingProgressId(item.id) }}
+                        className="border-0 bg-transparent p-0 leading-none"
+                        style={{ color: 'hsl(var(--amber-500))', fontSize: 11, opacity: 0.75 }}
+                        tabIndex={-1}
+                        aria-label="Edit progress"
+                      >
+                        ✎
+                      </button>
+                    )}
+                  </span>
+                )}
 
                 {/* Quick actions — visible on hover */}
                 <div
