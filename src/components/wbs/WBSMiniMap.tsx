@@ -34,6 +34,11 @@ export function WBSMiniMap({
   const containerRef = useRef<HTMLDivElement>(null)
   const total = allRows.length
 
+  const isSparse = total <= 10
+  const BAR_H = isSparse ? 7 : BAR_HEIGHT
+  const BAR_GAP = isSparse ? 2 : 1
+  const MIN_H = isSparse ? 8 : MIN_BAR_HEIGHT
+
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || total === 0) return
     const rect = containerRef.current.getBoundingClientRect()
@@ -63,12 +68,20 @@ export function WBSMiniMap({
 
       {/* Bars area (grows to fill) */}
       <div className="relative flex-1 overflow-hidden">
-        <div className="px-[3px] flex flex-col gap-[1px] pt-[2px]">
+        {total === 0 && (
+          <div
+            className="flex h-full items-center justify-center"
+            style={{ color: 'var(--text-muted)', fontSize: 10 }}
+          >
+            —
+          </div>
+        )}
+        <div className="px-[3px] flex flex-col pt-[2px]" style={{ gap: BAR_GAP }}>
           {allRows.map((row) => {
             const indentFraction = Math.min(row.depth, 4) / 4
             const width = MAX_WIDTH - indentFraction * (MAX_WIDTH - MIN_INDENT)
             const marginLeft = indentFraction * MIN_INDENT
-            const h = Math.max(BAR_HEIGHT, MIN_BAR_HEIGHT - row.depth)
+            const h = Math.max(BAR_H, MIN_H - row.depth)
             return (
               <div
                 key={row.item.id}
@@ -91,6 +104,7 @@ export function WBSMiniMap({
           style={{
             top: `${vpTop}%`,
             height: `${Math.max(vpHeight, 3)}%`,
+            minHeight: '15%',
             border: '1px solid hsl(var(--amber-500) / 0.7)',
             background: 'hsl(var(--amber-500) / 0.06)',
             borderRadius: 2,
