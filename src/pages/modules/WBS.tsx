@@ -202,6 +202,16 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
     return map
   }, [rabItems])
 
+  // Checklist visibility — evaluated against full item set, not just visible rows,
+  // so collapsed subtrees with RAB linked are correctly excluded.
+  const showSetupChecklist = useMemo(
+    () =>
+      items.length > 0 &&
+      items.every((i) => (rabCountByWbs.get(i.id) ?? 0) === 0) &&
+      items.every((i) => (i.progress ?? 0) === 0),
+    [items, rabCountByWbs],
+  )
+
   // ── Handlers ────────────────────────────────────────────────────────────
   const handleToggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -411,6 +421,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
           onGenerateCodes={handleGenerateCodes}
           activeFilter={activeFilter}
           timelineCountByWbs={timelineCountByWbs}
+          showSetupChecklist={showSetupChecklist}
         />
       </div>
     </div>

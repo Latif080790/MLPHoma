@@ -35,6 +35,7 @@ export interface WBSVirtualTreeProps {
   onGenerateCodes?: () => void
   activeFilter: KPIFilter
   timelineCountByWbs: Map<string, number>
+  showSetupChecklist?: boolean
 }
 
 function DropLine({ mode, id, dropTarget }: { mode: DropMode; id: string; dropTarget: DropTarget | null }) {
@@ -66,7 +67,7 @@ function rowMatchesFilter(
 
 export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreeProps>(
   function WBSVirtualTree(
-    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs },
+    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs, showSetupChecklist = false },
     ref
   ) {
     const parentRef = useRef<HTMLDivElement>(null)
@@ -83,14 +84,6 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     const rowsRef = useRef(rows)
     const selectedIdRef = useRef<string | null>(selectedId)
     const cbRef = useRef({ onUndo, onSelect, onToggleExpand, onAddChild, onEdit, onDelete })
-
-    const showChecklist =
-      !checklistDismissed &&
-      rows.length > 0 &&
-      rows.every((r) => (rabCountByWbs.get(r.item.id) ?? 0) === 0) &&
-      rows.every((r) => r.weightedProgress === 0)
-
-    const anyCodeSet = rows.some((r) => !!r.item.code)
 
     useEffect(() => { rowsRef.current = rows })
     useEffect(() => { selectedIdRef.current = selectedId })
@@ -290,7 +283,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
           ⌨ ↩
         </span>
 
-        {showChecklist && (
+        {!checklistDismissed && showSetupChecklist && (
           <div
             className="mx-2 mb-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface-hover)] p-2 relative"
           >
@@ -310,7 +303,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
             </div>
             {[
               { done: true,       label: 'Item WBS dibuat',        action: null },
-              { done: anyCodeSet, label: 'Generate kode WBS',      action: onGenerateCodes ?? null },
+              { done: rows.some((r) => !!r.item.code), label: 'Generate kode WBS', action: onGenerateCodes ?? null },
               { done: false,      label: 'Hubungkan RAB ke item',  action: null },
               { done: false,      label: 'Isi progress pertama',   action: null },
             ].map((step, i) => (
@@ -388,7 +381,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                       ? 'bg-[var(--bg-surface-hover)] ring-1 ring-inset ring-[hsl(var(--cobalt-400)/0.4)]'
                       : 'hover:bg-[var(--bg-surface-hover)]',
                   isFlashing ? 'animate-pulse' : '',
-                ].join(' ')}
+                ].filter(Boolean).join(' ')}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item.id)}
                 onDragEnd={handleDragEnd}
