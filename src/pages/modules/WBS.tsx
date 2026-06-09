@@ -38,7 +38,7 @@ import {
   AlertDialogAction,
 } from '../../components/ui/alert-dialog'
 import { flattenVisibleRows, recursiveBudget, weightedProgress } from '../../lib/wbsCalculations'
-import type { WBSItem, KPIFilter } from '../../types/wbs'
+import type { WBSItem } from '../../types/wbs'
 import type { RABItem } from '../../types/rab'
 
 const EMPTY_WBS: WBSItem[] = []
@@ -99,7 +99,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   const [viewMode, setViewMode] = useState<'tree' | 'table'>('tree')
   const [bulkPasteOpen, setBulkPasteOpen] = useState(false)
   const [visibleRange, setVisibleRange] = useState<[number, number]>([0, 20])
-  const [flashId, setFlashId] = useState<string | null>(null)
+  const [flashId, _setFlashId] = useState<string | null>(null)
 
   // Fetch on mount / project change
   useEffect(() => {
@@ -391,22 +391,24 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
         visibleEndIndex={visibleRange[1]}
         onNavigate={(idx) => virtualTreeRef.current?.scrollToIndex(idx)}
       />
-      <WBSVirtualTree
-        ref={virtualTreeRef}
-        rows={flatRows}
-        selectedId={selectedId}
-        flashId={flashId}
-        onSelect={(item) => selectItem(item.id)}
-        onToggleExpand={handleToggleExpand}
-        onAddChild={openAddChild}
-        onEdit={openEdit}
-        onDelete={handleDelete}
-        onMoveItem={(itemId, newParentId, index) =>
-          moveItem(activeProjectId!, itemId, newParentId, index)
-        }
-        onVisibleRangeChange={(s, e) => setVisibleRange([s, e])}
-        onUndo={handleUndo}
-      />
+      <div className="flex-1 min-w-0 overflow-hidden">
+        <WBSVirtualTree
+          ref={virtualTreeRef}
+          rows={flatRows}
+          selectedId={selectedId}
+          flashId={flashId}
+          onSelect={(item) => selectItem(item.id)}
+          onToggleExpand={handleToggleExpand}
+          onAddChild={openAddChild}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+          onMoveItem={(itemId, newParentId, index) =>
+            moveItem(activeProjectId!, itemId, newParentId, index)
+          }
+          onVisibleRangeChange={(s, e) => setVisibleRange([s, e])}
+          onUndo={handleUndo}
+        />
+      </div>
     </div>
   )
 

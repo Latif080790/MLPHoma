@@ -192,7 +192,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                   outlineOffset: '-1px',
                 }}
                 className={[
-                  'flex items-center gap-1.5 pr-2 select-none relative cursor-pointer transition-colors rounded',
+                  'group flex items-center gap-1.5 pr-2 select-none relative cursor-pointer transition-colors rounded',
                   isSelected
                     ? 'bg-[var(--bg-surface-hover)] ring-1 ring-inset ring-[hsl(var(--amber-500)/0.3)]'
                     : 'hover:bg-[var(--bg-surface-hover)]',
@@ -208,6 +208,14 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                 <DropLine mode="before" id={item.id} dropTarget={dropTarget} />
                 <DropLine mode="after" id={item.id} dropTarget={dropTarget} />
 
+                {/* Drag grip — visible on hover */}
+                <span
+                  className="shrink-0 text-xs select-none opacity-0 group-hover:opacity-100 transition-opacity leading-none"
+                  style={{ color: 'var(--text-muted)', fontSize: 10 }}
+                >
+                  ⠿
+                </span>
+
                 {/* Expand/collapse */}
                 <button
                   onClick={(e) => { e.stopPropagation(); onToggleExpand(item.id) }}
@@ -222,10 +230,10 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
 
                 {/* WBS code badge */}
                 <span
-                  className="shrink-0 font-mono text-[7px] font-bold px-1 rounded leading-none py-0.5"
-                  style={{ color: 'hsl(var(--cobalt-400))', background: 'hsl(var(--cobalt-400) / 0.08)' }}
+                  className="shrink-0 font-mono text-[7px] font-bold px-1.5 rounded leading-none py-0.5"
+                  style={{ color: 'hsl(var(--cobalt-400))', background: 'hsl(var(--cobalt-400) / 0.18)' }}
                 >
-                  {item.code}
+                  {item.code || '—'}
                 </span>
 
                 {/* Name */}

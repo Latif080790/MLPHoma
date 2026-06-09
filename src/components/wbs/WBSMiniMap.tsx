@@ -50,42 +50,53 @@ export function WBSMiniMap({
     <div
       ref={containerRef}
       onClick={handleClick}
-      className="w-[64px] shrink-0 border-r border-[var(--border-default)] bg-[var(--bg-page)] cursor-pointer overflow-hidden relative select-none"
+      className="w-[64px] shrink-0 border-r border-[var(--border-default)] bg-[var(--bg-page)] cursor-pointer overflow-hidden relative select-none flex flex-col"
       title="Mini-map — klik untuk navigasi"
     >
-      <div className="px-[3px] py-[5px] flex flex-col gap-[1px]">
-        {allRows.map((row) => {
-          const indentFraction = Math.min(row.depth, 4) / 4
-          const width = MAX_WIDTH - indentFraction * (MAX_WIDTH - MIN_INDENT)
-          const marginLeft = indentFraction * MIN_INDENT
-          const h = Math.max(BAR_HEIGHT, MIN_BAR_HEIGHT - row.depth)
-          return (
-            <div
-              key={row.item.id}
-              style={{
-                height: h,
-                width,
-                marginLeft,
-                background: rowColor(row),
-                borderRadius: 1,
-                opacity: 0.75,
-              }}
-            />
-          )
-        })}
+      {/* Header label */}
+      <div
+        className="shrink-0 px-[3px] pt-[5px] pb-[3px] text-center font-bold uppercase tracking-widest"
+        style={{ fontSize: 6, color: 'var(--text-muted)' }}
+      >
+        MAP
       </div>
 
-      {/* Viewport indicator */}
-      <div
-        className="pointer-events-none absolute left-[3px] right-[3px]"
-        style={{
-          top: `${vpTop}%`,
-          height: `${Math.max(vpHeight, 3)}%`,
-          border: '1px solid hsl(var(--amber-500) / 0.6)',
-          background: 'hsl(var(--amber-500) / 0.04)',
-          borderRadius: 2,
-        }}
-      />
+      {/* Bars area (grows to fill) */}
+      <div className="relative flex-1 overflow-hidden">
+        <div className="px-[3px] flex flex-col gap-[1px] pt-[2px]">
+          {allRows.map((row) => {
+            const indentFraction = Math.min(row.depth, 4) / 4
+            const width = MAX_WIDTH - indentFraction * (MAX_WIDTH - MIN_INDENT)
+            const marginLeft = indentFraction * MIN_INDENT
+            const h = Math.max(BAR_HEIGHT, MIN_BAR_HEIGHT - row.depth)
+            return (
+              <div
+                key={row.item.id}
+                style={{
+                  height: h,
+                  width,
+                  marginLeft,
+                  background: rowColor(row),
+                  borderRadius: 1,
+                  opacity: 0.8,
+                }}
+              />
+            )
+          })}
+        </div>
+
+        {/* Viewport indicator — positioned relative to bars area */}
+        <div
+          className="pointer-events-none absolute left-[3px] right-[3px]"
+          style={{
+            top: `${vpTop}%`,
+            height: `${Math.max(vpHeight, 3)}%`,
+            border: '1px solid hsl(var(--amber-500) / 0.7)',
+            background: 'hsl(var(--amber-500) / 0.06)',
+            borderRadius: 2,
+          }}
+        />
+      </div>
     </div>
   )
 }
