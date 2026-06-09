@@ -100,7 +100,7 @@ function Pill({
   const styles: Record<string, React.CSSProperties> = {
     jade: { background: 'color-mix(in srgb, var(--wbs-progress-high) 15%, transparent)', color: 'var(--wbs-progress-high)' },
     amber: { background: 'color-mix(in srgb, var(--wbs-progress-low) 15%, transparent)', color: 'var(--wbs-progress-low)' },
-    coral: { background: 'rgba(239,68,68,0.12)', color: '#f87171' },
+    coral: { background: 'var(--status-danger-bg)', color: 'var(--status-danger-fg)' },
     cobalt: { background: 'color-mix(in srgb, hsl(var(--cobalt-400)) 15%, transparent)', color: 'hsl(var(--cobalt-400))' },
     cyan: { background: 'color-mix(in srgb, var(--wbs-progress-mid) 15%, transparent)', color: 'var(--wbs-progress-mid)' },
     neutral: { background: 'var(--bg-surface-hover)', color: 'var(--text-secondary)' },
@@ -643,7 +643,7 @@ export function WBSDetailPanel({
         <button
           onClick={() => onDelete(item)}
           className="flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
-          style={{ color: '#f87171', background: 'transparent' }}
+          style={{ color: 'var(--status-danger-fg)', background: 'transparent' }}
         >
           <Trash2 size={13} />
           Hapus

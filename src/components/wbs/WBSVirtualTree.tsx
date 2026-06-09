@@ -134,6 +134,11 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
       setDropTarget(null)
     }, [draggedId, dropTarget, rows, onMoveItem])
 
+    const handleDragEnd = useCallback(() => {
+      setDraggedId(null)
+      setDropTarget(null)
+    }, [])
+
     if (rows.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-8">
@@ -195,7 +200,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                 ].join(' ')}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item.id)}
-                onDragEnd={() => { setDraggedId(null); setDropTarget(null) }}
+                onDragEnd={handleDragEnd}
                 onDragOver={(e) => handleDragOver(e, row)}
                 onDrop={(e) => handleDrop(e, row)}
                 onClick={() => onSelect(item)}
@@ -287,7 +292,8 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                       </button>
                       <button
                         onClick={() => { onDelete(item); setOpenMenuId(null) }}
-                        className="flex w-full items-center gap-2 px-2.5 py-1.5 text-xs text-red-500 hover:bg-red-900/20"
+                        className="flex w-full items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-[var(--bg-surface-hover)]"
+                        style={{ color: 'var(--status-danger-fg)' }}
                       >
                         <Trash2 size={11} />Hapus
                       </button>
