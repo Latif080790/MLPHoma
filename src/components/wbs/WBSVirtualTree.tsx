@@ -2,7 +2,7 @@ import { useRef, useCallback, useEffect, useState, useImperativeHandle, forwardR
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, MoreHorizontal, CheckCircle2 } from 'lucide-react'
 import { formatIDR } from '../../lib/utils'
-import type { WBSFlatRow, WBSItem } from '../../types/wbs'
+import type { WBSFlatRow, WBSItem, KPIFilter } from '../../types/wbs'
 
 const ROW_HEIGHT = 28
 
@@ -33,6 +33,8 @@ export interface WBSVirtualTreeProps {
   onUndo: () => void
   rabCountByWbs: Map<string, number>
   onGenerateCodes?: () => void
+  activeFilter: KPIFilter
+  timelineCountByWbs: Map<string, number>
 }
 
 function DropLine({ mode, id, dropTarget }: { mode: DropMode; id: string; dropTarget: DropTarget | null }) {
@@ -46,9 +48,25 @@ function DropLine({ mode, id, dropTarget }: { mode: DropMode; id: string; dropTa
   return null
 }
 
+function rowMatchesFilter(
+  row: WBSFlatRow,
+  filter: KPIFilter,
+  rabCount: number,
+  timelineCountByWbs: Map<string, number>,
+): boolean {
+  if (!filter) return true
+  switch (filter) {
+    case 'rab-unlinked':    return rabCount === 0
+    case 'qc-passed':       return row.item.qc_status === 'PASSED'
+    case 'low-progress':    return row.weightedProgress < 30
+    case 'timeline-linked': return (timelineCountByWbs.get(row.item.id) ?? 0) > 0
+    default:                return true
+  }
+}
+
 export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreeProps>(
   function WBSVirtualTree(
-    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes },
+    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs },
     ref
   ) {
     const parentRef = useRef<HTMLDivElement>(null)
@@ -341,6 +359,8 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
             const isDragOver = dropTarget?.id === item.id && dropTarget.mode === 'inside'
             const progress = row.weightedProgress
             const rabCount = rabCountByWbs.get(item.id) ?? 0
+            const isDimmed =
+              activeFilter !== null && !rowMatchesFilter(row, activeFilter, rabCount, timelineCountByWbs)
             const codeColor = row.depth >= 2 ? 'hsl(var(--cobalt-300))' : 'hsl(var(--cobalt-400))'
             const codeBg = row.depth >= 2 ? 'hsl(var(--cobalt-300) / 0.12)' : 'hsl(var(--cobalt-400) / 0.18)'
 
@@ -361,6 +381,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                 }}
                 className={[
                   'group flex items-center gap-1.5 pr-2 select-none relative cursor-pointer transition-colors rounded',
+                  isDimmed ? 'opacity-30' : '',
                   isSelected
                     ? 'bg-[var(--bg-surface-hover)] ring-1 ring-inset ring-[hsl(var(--amber-500)/0.3)]'
                     : vItem.index === focusedIndex

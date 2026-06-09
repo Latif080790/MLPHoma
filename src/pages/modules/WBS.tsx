@@ -183,14 +183,14 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
 
   // ── Derived: flat rows for virtualized tree and mini-map ────────────────
   const flatRows = useMemo(
-    () => flattenVisibleRows(displayedItems, expandedIds, activeFilter, rabItems, timelineCountByWbs),
-    [displayedItems, expandedIds, activeFilter, rabItems, timelineCountByWbs]
+    () => flattenVisibleRows(displayedItems, expandedIds, null, rabItems, timelineCountByWbs),
+    [displayedItems, expandedIds, rabItems, timelineCountByWbs]
   )
 
   // All rows expanded — for mini-map structural overview
   const allRowsForMiniMap = useMemo(
-    () => flattenVisibleRows(items, new Set(items.map(i => i.id)), activeFilter, rabItems, timelineCountByWbs),
-    [items, activeFilter, rabItems, timelineCountByWbs]
+    () => flattenVisibleRows(items, new Set(items.map(i => i.id)), null, rabItems, timelineCountByWbs),
+    [items, rabItems, timelineCountByWbs]
   )
 
   // RAB item count per WBS node (for table view column)
@@ -409,6 +409,8 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
           onUndo={handleUndo}
           rabCountByWbs={rabCountByWbs}
           onGenerateCodes={handleGenerateCodes}
+          activeFilter={activeFilter}
+          timelineCountByWbs={timelineCountByWbs}
         />
       </div>
     </div>
