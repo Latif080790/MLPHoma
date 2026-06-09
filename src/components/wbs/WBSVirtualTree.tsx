@@ -70,7 +70,7 @@ function rowMatchesFilter(
 
 export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreeProps>(
   function WBSVirtualTree(
-    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs, showSetupChecklist = false, onUpdateProgress, onBulkUpdateProgress, onBulkDelete },
+    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs, showSetupChecklist = false, onUpdateProgress, onBulkUpdateProgress: _onBulkUpdateProgress, onBulkDelete: _onBulkDelete },
     ref
   ) {
     const parentRef = useRef<HTMLDivElement>(null)
@@ -83,6 +83,8 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
     const [editingProgressId, setEditingProgressId] = useState<string | null>(null)
     const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
+    const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(new Set())
+    const anchorIdxRef = useRef<number | null>(null)
 
     // Refs used inside the keydown handler to avoid stale closures
     const focusedIdxRef = useRef<number | null>(null)
@@ -286,6 +288,28 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
       )
     }
 
+    const handleRowClick = (e: React.MouseEvent, row: WBSFlatRow, idx: number) => {
+      if (editingProgressId !== null) return
+      if (e.shiftKey && anchorIdxRef.current !== null) {
+        const lo = Math.min(anchorIdxRef.current, idx)
+        const hi = Math.max(anchorIdxRef.current, idx)
+        setBulkSelectedIds(new Set(rows.slice(lo, hi + 1).map((r) => r.item.id)))
+        return
+      }
+      if (e.ctrlKey || e.metaKey) {
+        anchorIdxRef.current = idx
+        setBulkSelectedIds((prev) => {
+          const next = new Set(prev)
+          if (next.has(row.item.id)) { next.delete(row.item.id) } else { next.add(row.item.id) }
+          return next
+        })
+        return
+      }
+      anchorIdxRef.current = idx
+      setBulkSelectedIds(new Set())
+      cbRef.current.onSelect(row.item)
+    }
+
     const virtualItems = virtualizer.getVirtualItems()
 
     return (
@@ -373,6 +397,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
             const rabCount = rabCountByWbs.get(item.id) ?? 0
             const isDimmed =
               activeFilter !== null && !rowMatchesFilter(row, activeFilter, rabCount, timelineCountByWbs)
+            const isBulkSelected = bulkSelectedIds.has(item.id)
             const codeColor = row.depth >= 2 ? 'hsl(var(--cobalt-300))' : 'hsl(var(--cobalt-400))'
             const codeBg = row.depth >= 2 ? 'hsl(var(--cobalt-300) / 0.12)' : 'hsl(var(--cobalt-400) / 0.18)'
 
@@ -396,9 +421,11 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                   isDimmed ? 'opacity-30' : '',
                   isSelected
                     ? 'bg-[var(--bg-surface-hover)] ring-1 ring-inset ring-[hsl(var(--amber-500)/0.3)]'
-                    : vItem.index === focusedIndex
-                      ? 'bg-[var(--bg-surface-hover)] ring-1 ring-inset ring-[hsl(var(--cobalt-400)/0.4)]'
-                      : 'hover:bg-[var(--bg-surface-hover)]',
+                    : isBulkSelected
+                      ? 'ring-1 ring-inset ring-[hsl(var(--cobalt-400)/0.35)] bg-[hsl(var(--cobalt-400)/0.10)]'
+                      : vItem.index === focusedIndex
+                        ? 'bg-[var(--bg-surface-hover)] ring-1 ring-inset ring-[hsl(var(--cobalt-400)/0.4)]'
+                        : 'hover:bg-[var(--bg-surface-hover)]',
                   isFlashing ? 'animate-pulse' : '',
                 ].filter(Boolean).join(' ')}
                 draggable
@@ -406,7 +433,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => handleDragOver(e, row)}
                 onDrop={(e) => handleDrop(e, row)}
-                onClick={() => onSelect(item)}
+                onClick={(e) => handleRowClick(e, row, vItem.index)}
                 onMouseEnter={() => setHoveredRowId(item.id)}
                 onMouseLeave={() => setHoveredRowId(null)}
               >
