@@ -89,6 +89,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     const rowsRef = useRef(rows)
     const selectedIdRef = useRef<string | null>(selectedId)
     const cbRef = useRef({ onUndo, onSelect, onToggleExpand, onAddChild, onEdit, onDelete })
+    const cancelledRef = useRef(false)
 
     useEffect(() => { rowsRef.current = rows })
     useEffect(() => { selectedIdRef.current = selectedId })
@@ -105,6 +106,10 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
 
     const confirmProgressEdit = (input: HTMLInputElement) => {
       if (!editingProgressId) return
+      if (cancelledRef.current) {
+        cancelledRef.current = false
+        return
+      }
       const val = Math.round(Math.min(100, Math.max(0, Number(input.value) || 0)))
       onUpdateProgress?.(editingProgressId, val)
       setEditingProgressId(null)
@@ -147,6 +152,12 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
         if (e.ctrlKey || e.metaKey || e.altKey) return
         if (allRows.length === 0) return
 
+        // When focus is inside an editable element, only let text-editing shortcuts
+        // pass through. Tree navigation keys must not fire.
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as Element).tagName)) {
+          return
+        }
+
         const curIdx = focusedIdxRef.current !== null
           ? focusedIdxRef.current
           : allRows.findIndex((r) => r.item.id === selectedIdRef.current)
@@ -159,10 +170,6 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
           setFocusedIndex(clamped)
           virtualizer.scrollToIndex(clamped)
         }
-
-        const isEditable = ['INPUT', 'TEXTAREA', 'SELECT'].includes(
-          (e.target as Element).tagName,
-        )
 
         switch (e.key) {
           case 'ArrowDown':
@@ -191,14 +198,14 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
             select(row.item)
             break
           case 'n':
-            if (!isEditable) { e.preventDefault(); addChild(row.item.id) }
+            e.preventDefault(); addChild(row.item.id)
             break
           case 'e':
-            if (!isEditable) { e.preventDefault(); edit(row.item) }
+            e.preventDefault(); edit(row.item)
             break
           case 'Delete':
           case 'Backspace':
-            if (!isEditable) { e.preventDefault(); del(row.item) }
+            e.preventDefault(); del(row.item)
             break
         }
       }
@@ -497,7 +504,10 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                       autoFocus
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') confirmProgressEdit(e.currentTarget)
-                        if (e.key === 'Escape') setEditingProgressId(null)
+                        if (e.key === 'Escape') {
+                          cancelledRef.current = true
+                          setEditingProgressId(null)
+                        }
                       }}
                       onBlur={(e) => confirmProgressEdit(e.currentTarget)}
                       onClick={(e) => e.stopPropagation()}
