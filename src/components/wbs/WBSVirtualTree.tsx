@@ -36,6 +36,9 @@ export interface WBSVirtualTreeProps {
   activeFilter: KPIFilter
   timelineCountByWbs: Map<string, number>
   showSetupChecklist?: boolean
+  onUpdateProgress?: (id: string, progress: number) => void
+  onBulkUpdateProgress?: (ids: string[], progress: number) => void
+  onBulkDelete?: (ids: string[]) => void
 }
 
 function DropLine({ mode, id, dropTarget }: { mode: DropMode; id: string; dropTarget: DropTarget | null }) {
@@ -67,7 +70,7 @@ function rowMatchesFilter(
 
 export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreeProps>(
   function WBSVirtualTree(
-    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs, showSetupChecklist = false },
+    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs, showSetupChecklist = false, onUpdateProgress, onBulkUpdateProgress, onBulkDelete },
     ref
   ) {
     const parentRef = useRef<HTMLDivElement>(null)
