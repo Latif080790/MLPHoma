@@ -197,6 +197,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
             break
           case 'Enter':
             e.preventDefault()
+            setBulkSelectedIds(new Set())
             select(row.item)
             break
           case 'n':
@@ -228,6 +229,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
       e.dataTransfer.setData('text/plain', rowId)
       e.dataTransfer.effectAllowed = 'move'
       setDraggedId(rowId)
+      setBulkSelectedIds(new Set())
     }, [])
 
     const handleDragOver = useCallback((e: React.DragEvent, row: WBSFlatRow) => {
