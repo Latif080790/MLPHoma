@@ -58,6 +58,14 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
 
     const [checklistDismissed, setChecklistDismissed] = useState(false)
 
+    const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
+
+    // Refs used inside the keydown handler to avoid stale closures
+    const focusedIdxRef = useRef<number | null>(null)
+    const rowsRef = useRef(rows)
+    const selectedIdRef = useRef<string | null>(selectedId)
+    const cbRef = useRef({ onUndo, onSelect, onToggleExpand, onAddChild, onEdit, onDelete })
+
     const showChecklist =
       !checklistDismissed &&
       rows.length > 0 &&
@@ -65,6 +73,19 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
       rows.every((r) => r.weightedProgress === 0)
 
     const anyCodeSet = rows.some((r) => !!r.item.code)
+
+    useEffect(() => { rowsRef.current = rows })
+    useEffect(() => { selectedIdRef.current = selectedId })
+    useEffect(() => { cbRef.current = { onUndo, onSelect, onToggleExpand, onAddChild, onEdit, onDelete } })
+    useEffect(() => {
+      if (selectedId) {
+        const idx = rows.findIndex((r) => r.item.id === selectedId)
+        if (idx >= 0) {
+          focusedIdxRef.current = idx
+          setFocusedIndex(idx)
+        }
+      }
+    }, [selectedId, rows])
 
     const virtualizer = useVirtualizer({
       count: rows.length,
@@ -86,15 +107,83 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     useEffect(() => {
       const el = parentRef.current
       if (!el) return
+
       const handler = (e: KeyboardEvent) => {
+        const { onUndo: undo, onSelect: select, onToggleExpand: toggleExp,
+                onAddChild: addChild, onEdit: edit, onDelete: del } = cbRef.current
+        const allRows = rowsRef.current
+
+        // Ctrl+Z undo (unchanged behaviour)
         if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
           e.preventDefault()
-          onUndo()
+          undo()
+          return
+        }
+
+        // Ignore all other modified-key combos
+        if (e.ctrlKey || e.metaKey || e.altKey) return
+        if (allRows.length === 0) return
+
+        const curIdx = focusedIdxRef.current !== null
+          ? focusedIdxRef.current
+          : allRows.findIndex((r) => r.item.id === selectedIdRef.current)
+        const safeIdx = Math.max(0, Math.min(allRows.length - 1, curIdx >= 0 ? curIdx : 0))
+        const row = allRows[safeIdx]
+
+        const moveTo = (idx: number) => {
+          const clamped = Math.max(0, Math.min(allRows.length - 1, idx))
+          focusedIdxRef.current = clamped
+          setFocusedIndex(clamped)
+          virtualizer.scrollToIndex(clamped)
+        }
+
+        const isEditable = ['INPUT', 'TEXTAREA', 'SELECT'].includes(
+          (e.target as Element).tagName,
+        )
+
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault()
+            moveTo(safeIdx + 1)
+            break
+          case 'ArrowUp':
+            e.preventDefault()
+            moveTo(safeIdx - 1)
+            break
+          case 'ArrowRight':
+            e.preventDefault()
+            if (row.hasChildren && !row.isExpanded) toggleExp(row.item.id)
+            break
+          case 'ArrowLeft':
+            e.preventDefault()
+            if (row.hasChildren && row.isExpanded) {
+              toggleExp(row.item.id)
+            } else if (row.item.parentId) {
+              const pi = allRows.findIndex((r) => r.item.id === row.item.parentId)
+              if (pi >= 0) moveTo(pi)
+            }
+            break
+          case 'Enter':
+            e.preventDefault()
+            select(row.item)
+            break
+          case 'n':
+            if (!isEditable) { e.preventDefault(); addChild(row.item.id) }
+            break
+          case 'e':
+            if (!isEditable) { e.preventDefault(); edit(row.item) }
+            break
+          case 'Delete':
+          case 'Backspace':
+            if (!isEditable) { e.preventDefault(); del(row.item) }
+            break
         }
       }
+
       el.addEventListener('keydown', handler)
       return () => el.removeEventListener('keydown', handler)
-    }, [onUndo])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])  // Empty: all values accessed via stable refs or captured-once stable virtualizer
 
     useEffect(() => {
       if (!openMenuId) return
@@ -274,7 +363,9 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                   'group flex items-center gap-1.5 pr-2 select-none relative cursor-pointer transition-colors rounded',
                   isSelected
                     ? 'bg-[var(--bg-surface-hover)] ring-1 ring-inset ring-[hsl(var(--amber-500)/0.3)]'
-                    : 'hover:bg-[var(--bg-surface-hover)]',
+                    : vItem.index === focusedIndex
+                      ? 'bg-[var(--bg-surface-hover)] ring-1 ring-inset ring-[hsl(var(--cobalt-400)/0.4)]'
+                      : 'hover:bg-[var(--bg-surface-hover)]',
                   isFlashing ? 'animate-pulse' : '',
                 ].join(' ')}
                 draggable
