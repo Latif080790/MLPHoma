@@ -76,7 +76,7 @@ export function WBSMiniMap({
             —
           </div>
         )}
-        <div className="px-[3px] flex flex-col pt-[2px]" style={{ gap: BAR_GAP }}>
+        <div className="px-[3px] flex flex-col pt-[2px]" style={{ gap: `${BAR_GAP}px` }}>
           {allRows.map((row) => {
             const indentFraction = Math.min(row.depth, 4) / 4
             const width = MAX_WIDTH - indentFraction * (MAX_WIDTH - MIN_INDENT)
