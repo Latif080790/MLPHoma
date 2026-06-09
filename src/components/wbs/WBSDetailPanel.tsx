@@ -144,10 +144,12 @@ function QcPill({ status }: { status: WBSItem['qc_status'] }) {
 
 // ─── Tab content components ───────────────────────────────────────────────────
 
-function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0 }: {
+function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0, rabItems = [], timelineTasks = [] }: {
   item: WBSItem
   budgetLinked?: number
   timelineTaskCount?: number
+  rabItems?: RABItem[]
+  timelineTasks?: Array<{ id: string; name: string; wbsId?: string }>
 }) {
   const progress = Math.min(100, Math.max(0, item.progress ?? 0))
   const isComplete = progress >= 100
@@ -157,6 +159,10 @@ function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0 }: {
     : progress >= 50
     ? 'hsl(var(--cobalt-400))'
     : 'var(--wbs-progress-low)'
+
+  const linkedRab = rabItems.filter((r) => r.wbsId === item.id)
+  const linkedTimeline = timelineTasks.filter((t) => t.wbsId === item.id)
+  const timelineDisplay = linkedTimeline.length > 0 ? linkedTimeline.length : timelineTaskCount
 
   return (
     <div className="space-y-4 p-4">
@@ -176,6 +182,7 @@ function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0 }: {
         ) : (
           <Pill tone="neutral">Manual</Pill>
         )}
+        <QcPill status={item.qc_status} />
       </div>
 
       {/* Progress bar */}
@@ -207,6 +214,99 @@ function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0 }: {
 
       <hr style={{ borderColor: 'var(--border-default)' }} />
 
+      {/* Budget + inline RAB mini-list */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+          Budget RAB Terhubung
+          {linkedRab.length > 0 && (
+            <span className="ml-1 font-normal normal-case" style={{ color: 'var(--text-muted)' }}>
+              ({linkedRab.length} item)
+            </span>
+          )}
+        </div>
+        {budgetLinked > 0 ? (
+          <>
+            <div className="text-base font-bold font-mono" style={{ color: 'var(--text-idr)' }}>
+              {formatIDR(budgetLinked)}
+            </div>
+            {linkedRab.length > 0 && (
+              <div className="space-y-1">
+                {linkedRab.slice(0, 3).map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-center justify-between gap-2 rounded px-2 py-1 text-xs"
+                    style={{ background: 'var(--bg-surface-hover)' }}
+                  >
+                    <span className="min-w-0 flex-1 truncate" style={{ color: 'var(--text-secondary)' }}
+                      title={rabName(r)}>
+                      {rabName(r)}
+                    </span>
+                    <span className="shrink-0 font-mono font-semibold" style={{ color: 'var(--text-idr)' }}>
+                      {formatIDR(rabTotal(r))}
+                    </span>
+                  </div>
+                ))}
+                {linkedRab.length > 3 && (
+                  <p className="pl-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    +{linkedRab.length - 3} item lainnya → tab RAB
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Belum ada RAB terhubung</span>
+        )}
+      </div>
+
+      <hr style={{ borderColor: 'var(--border-default)' }} />
+
+      {/* Timeline inline mini-list */}
+      <div className="space-y-2">
+        <div className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
+          Timeline Tasks
+          {timelineDisplay > 0 && (
+            <span className="ml-1 font-normal normal-case" style={{ color: 'var(--text-muted)' }}>
+              ({timelineDisplay})
+            </span>
+          )}
+        </div>
+        {timelineDisplay > 0 ? (
+          <>
+            {linkedTimeline.length > 0 ? (
+              <div className="space-y-1">
+                {linkedTimeline.slice(0, 3).map((t) => (
+                  <div
+                    key={t.id}
+                    className="flex items-center gap-2 rounded px-2 py-1 text-xs"
+                    style={{ background: 'var(--bg-surface-hover)' }}
+                  >
+                    <CalendarDays size={10} style={{ color: 'hsl(var(--cobalt-400))', flexShrink: 0 }} />
+                    <span className="min-w-0 flex-1 truncate" style={{ color: 'var(--text-secondary)' }}
+                      title={t.name}>
+                      {t.name}
+                    </span>
+                  </div>
+                ))}
+                {linkedTimeline.length > 3 && (
+                  <p className="pl-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    +{linkedTimeline.length - 3} task lainnya → tab Timeline
+                  </p>
+                )}
+              </div>
+            ) : (
+              <span className="text-sm" style={{ color: 'hsl(var(--cobalt-400))' }}>
+                {timelineDisplay} task terhubung
+              </span>
+            )}
+          </>
+        ) : (
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Tidak ada</span>
+        )}
+      </div>
+
+      <hr style={{ borderColor: 'var(--border-default)' }} />
+
       {/* Progress Source */}
       <Field label="Progress Source">
         {item.physicalProgressLocked ? (
@@ -215,33 +315,6 @@ function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0 }: {
           <span style={{ color: 'var(--wbs-progress-mid)' }}>Otomatis dari Timeline</span>
         ) : (
           <span style={{ color: 'var(--text-primary)' }}>Manual</span>
-        )}
-      </Field>
-
-      {/* QC Status */}
-      <Field label="Status QC">
-        <QcPill status={item.qc_status} />
-      </Field>
-
-      {/* Budget */}
-      <Field label="Budget RAB Terhubung">
-        {budgetLinked > 0 ? (
-          <span className="text-base font-bold" style={{ color: 'var(--text-idr)' }}>
-            {formatIDR(budgetLinked)}
-          </span>
-        ) : (
-          <span style={{ color: 'var(--text-secondary)' }}>Belum ada RAB terhubung</span>
-        )}
-      </Field>
-
-      {/* Timeline count */}
-      <Field label="Timeline Tasks">
-        {timelineTaskCount > 0 ? (
-          <span style={{ color: 'hsl(var(--cobalt-400))' }}>
-            {timelineTaskCount} task terhubung
-          </span>
-        ) : (
-          <span style={{ color: 'var(--text-secondary)' }}>Tidak ada</span>
         )}
       </Field>
 
@@ -459,9 +532,9 @@ function AddChildTab({
 // ─── Tab list style helpers ───────────────────────────────────────────────────
 
 const TAB_LIST_TABS = [
-  { value: 'overview', label: 'Info', icon: <ListTree size={11} /> },
+  { value: 'overview', label: 'Overview', icon: <ListTree size={11} /> },
   { value: 'rab', label: 'RAB', icon: <ReceiptText size={11} /> },
-  { value: 'timeline', label: 'Jadwal', icon: <CalendarDays size={11} /> },
+  { value: 'timeline', label: 'Timeline', icon: <CalendarDays size={11} /> },
   { value: 'child', label: '+Child', icon: <Plus size={11} /> },
 ] as const
 
@@ -602,6 +675,8 @@ export function WBSDetailPanel({
               item={item}
               budgetLinked={budgetLinked}
               timelineTaskCount={timelineTaskCount}
+              rabItems={rabItems}
+              timelineTasks={timelineTasks}
             />
           </Tabs.Content>
 

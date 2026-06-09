@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect, useState, useImperativeHandle, forwardRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, MoreHorizontal } from 'lucide-react'
+import { ChevronRight, ChevronDown, Plus, Edit2, Trash2, MoreHorizontal, CheckCircle2 } from 'lucide-react'
 import { formatIDR } from '../../lib/utils'
 import type { WBSFlatRow, WBSItem } from '../../types/wbs'
 
@@ -31,6 +31,7 @@ export interface WBSVirtualTreeProps {
   onMoveItem: (itemId: string, newParentId: string | null, index: number) => void
   onVisibleRangeChange: (start: number, end: number) => void
   onUndo: () => void
+  rabCountByWbs: Map<string, number>
 }
 
 function DropLine({ mode, id, dropTarget }: { mode: DropMode; id: string; dropTarget: DropTarget | null }) {
@@ -46,7 +47,7 @@ function DropLine({ mode, id, dropTarget }: { mode: DropMode; id: string; dropTa
 
 export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreeProps>(
   function WBSVirtualTree(
-    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo },
+    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs },
     ref
   ) {
     const parentRef = useRef<HTMLDivElement>(null)
@@ -175,6 +176,9 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
             const isFlashing = item.id === flashId
             const isDragOver = dropTarget?.id === item.id && dropTarget.mode === 'inside'
             const progress = row.weightedProgress
+            const rabCount = rabCountByWbs.get(item.id) ?? 0
+            const codeColor = row.depth >= 2 ? 'hsl(var(--cobalt-300))' : 'hsl(var(--cobalt-400))'
+            const codeBg = row.depth >= 2 ? 'hsl(var(--cobalt-300) / 0.12)' : 'hsl(var(--cobalt-400) / 0.18)'
 
             return (
               <div
@@ -228,13 +232,32 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                     : <span className="text-xs text-[var(--border-default)]">—</span>}
                 </button>
 
-                {/* WBS code badge */}
+                {/* WBS code badge — lighter cobalt for L3+ */}
                 <span
                   className="shrink-0 font-mono text-[7px] font-bold px-1.5 rounded leading-none py-0.5"
-                  style={{ color: 'hsl(var(--cobalt-400))', background: 'hsl(var(--cobalt-400) / 0.18)' }}
+                  style={{ color: codeColor, background: codeBg }}
                 >
                   {item.code || '—'}
                 </span>
+
+                {/* RAB count badge */}
+                {rabCount > 0 && (
+                  <span
+                    className="shrink-0 text-[7px] font-mono font-semibold px-1 rounded leading-none py-0.5"
+                    style={{ color: 'hsl(var(--cobalt-300))', background: 'hsl(var(--cobalt-300) / 0.12)' }}
+                  >
+                    {rabCount} RAB
+                  </span>
+                )}
+
+                {/* QC passed indicator */}
+                {item.qc_status === 'PASSED' && (
+                  <CheckCircle2
+                    size={9}
+                    className="shrink-0"
+                    style={{ color: 'var(--wbs-progress-high)' }}
+                  />
+                )}
 
                 {/* Name */}
                 <span
@@ -273,7 +296,28 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
                   </>
                 )}
 
-                {/* Context menu */}
+                {/* Quick actions — visible on hover */}
+                <div
+                  className="flex items-center shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => onAddChild(item.id)}
+                    className="p-0.5 rounded text-[var(--text-muted)] hover:bg-[var(--border-default)] hover:text-[var(--text-secondary)]"
+                    title="Tambah child"
+                  >
+                    <Plus size={10} />
+                  </button>
+                  <button
+                    onClick={() => onEdit(item)}
+                    className="p-0.5 rounded text-[var(--text-muted)] hover:bg-[var(--border-default)] hover:text-[var(--text-secondary)]"
+                    title="Edit"
+                  >
+                    <Edit2 size={10} />
+                  </button>
+                </div>
+
+                {/* Context menu (delete + overflow) */}
                 <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}

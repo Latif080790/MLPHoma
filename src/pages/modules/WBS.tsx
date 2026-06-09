@@ -407,6 +407,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
           }
           onVisibleRangeChange={(s, e) => setVisibleRange([s, e])}
           onUndo={handleUndo}
+          rabCountByWbs={rabCountByWbs}
         />
       </div>
     </div>
