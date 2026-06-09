@@ -18,11 +18,15 @@ import { useWBSStore } from '../../store/wbsStore'
 import { useRabStore } from '../../store/rabStore'
 import { useTimelineStore } from '../../store/timelineStore'
 
-import { WBSTree } from '../../components/wbs/WBSTree'
 import { WBSEditor } from '../../components/wbs/WBSEditor'
 import { WBSToolbar, type WBSLevelFilter } from '../../components/wbs/WBSToolbar'
 import { WBSDetailPanel } from '../../components/wbs/WBSDetailPanel'
-import { WorkspaceHeader, SummaryStrip } from '../../components/patterns'
+import { WBSKPIStrip } from '../../components/wbs/WBSKPIStrip'
+import { WBSMiniMap } from '../../components/wbs/WBSMiniMap'
+import { WBSVirtualTree, type WBSVirtualTreeHandle } from '../../components/wbs/WBSVirtualTree'
+import { WBSBulkPaste } from '../../components/wbs/WBSBulkPaste'
+import { WBSTableView } from '../../components/wbs/WBSTableView'
+import { WorkspaceHeader } from '../../components/patterns'
 import {
   AlertDialog,
   AlertDialogContent,
@@ -34,7 +38,8 @@ import {
   AlertDialogAction,
 } from '../../components/ui/alert-dialog'
 import { formatIDR } from '../../lib/utils'
-import type { WBSItem } from '../../types/wbs'
+import { flattenVisibleRows, recursiveBudget, weightedProgress } from '../../lib/wbsCalculations'
+import type { WBSItem, KPIFilter } from '../../types/wbs'
 import type { RABItem } from '../../types/rab'
 
 const EMPTY_WBS: WBSItem[] = []
@@ -73,6 +78,9 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   const importWBS = useWBSStore((s) => s.importWBS)
   const exportWBS = useWBSStore((s) => s.exportWBS)
   const selectItem = useWBSStore((s) => s.selectItem)
+  const undoLastAction = useWBSStore((s) => s.undoLastAction)
+  const setActiveFilter = useWBSStore((s) => s.setActiveFilter)
+  const activeFilter = useWBSStore((s) => s.activeFilter)
 
   // ── Cross-module data for budget / timeline linkage ─────────────────────
   const rabItems = useRabStore((s) => (activeProjectId ? s.getItems(activeProjectId) : EMPTY_RAB))
@@ -88,6 +96,11 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   const [editorItem, setEditorItem] = useState<WBSItem | null>(null)
   const [editorParentId, setEditorParentId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const virtualTreeRef = useRef<WBSVirtualTreeHandle>(null)
+  const [viewMode, setViewMode] = useState<'tree' | 'table'>('tree')
+  const [bulkPasteOpen, setBulkPasteOpen] = useState(false)
+  const [visibleRange, setVisibleRange] = useState<[number, number]>([0, 20])
+  const [flashId, setFlashId] = useState<string | null>(null)
 
   // Fetch on mount / project change
   useEffect(() => {
@@ -102,7 +115,16 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items.length])
 
-  // ── Derived: budget per WBS node + grand total ──────────────────────────
+  // ── Derived: recursive budget per node (aggregates children recursively) ─
+  const recursiveBudgetByWbs = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const item of items) {
+      map.set(item.id, recursiveBudget(item.id, items, rabItems))
+    }
+    return map
+  }, [items, rabItems])
+
+  // ── Derived: direct budget per WBS node + grand total ──────────────────
   const { budgetByWbs, budgetLinkedTotal } = useMemo(() => {
     const map = new Map<string, number>()
     let total = 0
@@ -127,15 +149,30 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   // ── Derived: summary KPIs ───────────────────────────────────────────────
   const summary = useMemo(() => {
     const n = items.length
-    const avgProgress = n ? Math.round(items.reduce((s, i) => s + (i.progress ?? 0), 0) / n) : 0
-    const qcPassed = items.filter((i) => i.qc_status === 'PASSED').length
-    const idSet = new Set(items.map((i) => i.id))
+    const rootItems = items.filter(i => !i.parentId)
+    let totalBudget = 0
+    let weightedSum = 0
+    for (const root of rootItems) {
+      const b = recursiveBudgetByWbs.get(root.id) ?? 0
+      const p = weightedProgress(root.id, items, rabItems)
+      totalBudget += b
+      weightedSum += b * p
+    }
+    const projectWeightedProgress = totalBudget > 0
+      ? Math.round(weightedSum / totalBudget)
+      : rootItems.length > 0
+        ? Math.round(rootItems.reduce((s, r) => s + weightedProgress(r.id, items, rabItems), 0) / rootItems.length)
+        : 0
+
+    const qcPassed = items.filter(i => i.qc_status === 'PASSED').length
+    const rabLinkedIds = new Set(rabItems.filter(r => r.wbsId).map(r => r.wbsId!))
+    const rabUnlinked = items.filter(i => !rabLinkedIds.has(i.id)).length
+    const idSet = new Set(items.map(i => i.id))
     let timelineLinked = 0
-    timelineCountByWbs.forEach((c, id) => {
-      if (idSet.has(id)) timelineLinked += c
-    })
-    return { n, avgProgress, qcPassed, timelineLinked }
-  }, [items, timelineCountByWbs])
+    timelineCountByWbs.forEach((c, id) => { if (idSet.has(id) && c > 0) timelineLinked++ })
+
+    return { n, projectWeightedProgress, qcPassed, rabUnlinked, timelineLinked }
+  }, [items, rabItems, recursiveBudgetByWbs, timelineCountByWbs])
 
   // Level filter is a max-depth display filter — ancestors are always lower level
   const displayedItems = useMemo(
@@ -144,6 +181,27 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   )
 
   const selectedItem = useMemo(() => items.find((i) => i.id === selectedId) ?? null, [items, selectedId])
+
+  // ── Derived: flat rows for virtualized tree and mini-map ────────────────
+  const flatRows = useMemo(
+    () => flattenVisibleRows(displayedItems, expandedIds, activeFilter, rabItems, timelineCountByWbs),
+    [displayedItems, expandedIds, activeFilter, rabItems, timelineCountByWbs]
+  )
+
+  // All rows expanded — for mini-map structural overview
+  const allRowsForMiniMap = useMemo(
+    () => flattenVisibleRows(items, new Set(items.map(i => i.id)), activeFilter, rabItems, timelineCountByWbs),
+    [items, activeFilter, rabItems, timelineCountByWbs]
+  )
+
+  // RAB item count per WBS node (for table view column)
+  const rabCountByWbs = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const r of rabItems) {
+      if (r.wbsId) map.set(r.wbsId, (map.get(r.wbsId) ?? 0) + 1)
+    }
+    return map
+  }, [rabItems])
 
   // ── Handlers ────────────────────────────────────────────────────────────
   const handleToggleExpand = useCallback((id: string) => {
@@ -248,6 +306,31 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
     [activeProjectId, importWBS],
   )
 
+  const handleUndo = useCallback(() => {
+    if (!activeProjectId) return
+    undoLastAction(activeProjectId)
+  }, [activeProjectId, undoLastAction])
+
+  const handleBulkPasteImport = useCallback(
+    (nodes: Array<{ name: string; relativeDepth: number }>) => {
+      if (!activeProjectId) return
+      const baseParentId = selectedId ?? null
+      const baseItem = baseParentId ? items.find(i => i.id === baseParentId) : null
+      const baseLevel = baseItem ? (baseItem.level ?? 1) : 0
+      nodes.forEach((node) => {
+        addItem(activeProjectId, {
+          code: '',
+          name: node.name,
+          level: baseLevel + 1,
+          parentId: baseParentId,
+          sortOrder: 999,
+          projectId: activeProjectId,
+        } as Parameters<typeof addItem>[1])
+      })
+    },
+    [activeProjectId, items, selectedId, addItem]
+  )
+
   // ── Guard: no project ───────────────────────────────────────────────────
   if (!activeProjectId) {
     if (embedded) {
@@ -284,46 +367,63 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
       onExport={handleExport}
       onGenerateCodes={handleGenerateCodes}
       onAddRoot={openAddRoot}
+      onBulkPaste={() => setBulkPasteOpen(true)}
+      viewMode={viewMode}
+      onViewModeChange={setViewMode}
       compact={embedded}
     />
   )
 
-  const summaryStrip = (
-    <SummaryStrip
-      items={[
-        { label: 'Total Item', value: summary.n, status: 'info' },
-        { label: 'Progress Rata', value: `${summary.avgProgress}%`, status: summary.avgProgress >= 100 ? 'success' : 'info' },
-        { label: 'Budget RAB', value: formatIDR(budgetLinkedTotal), status: 'warning' },
-        { label: 'QC Passed', value: `${summary.qcPassed}/${summary.n}`, status: summary.qcPassed === summary.n && summary.n > 0 ? 'success' : 'neutral' },
-        { label: 'Timeline Linked', value: summary.timelineLinked, status: 'info' },
-      ]}
+  const kpiStrip = (
+    <WBSKPIStrip
+      totalItems={summary.n}
+      totalBudget={budgetLinkedTotal}
+      projectWeightedProgress={summary.projectWeightedProgress}
+      qcPassed={summary.qcPassed}
+      rabUnlinked={summary.rabUnlinked}
+      timelineLinked={summary.timelineLinked}
+      activeFilter={activeFilter}
+      onFilterChange={setActiveFilter}
     />
   )
 
-  const tree = (
-    <WBSTree
-      items={displayedItems}
-      selectedId={selectedId}
-      expandedIds={expandedIds}
-      loading={loading}
-      filterText={filterText}
-      budgetByWbs={budgetByWbs}
-      onItemClick={(item) => selectItem(item.id)}
-      onToggleExpand={handleToggleExpand}
-      onAddItem={openAddChild}
-      onEditItem={openEdit}
-      onDeleteItem={handleDelete}
-      onMoveItem={(itemId, newParentId, index) => moveItem(activeProjectId, itemId, newParentId, index)}
-    />
+  const treePanel = (
+    <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
+      <WBSMiniMap
+        allRows={allRowsForMiniMap}
+        visibleStartIndex={visibleRange[0]}
+        visibleEndIndex={visibleRange[1]}
+        onNavigate={(idx) => virtualTreeRef.current?.scrollToIndex(idx)}
+      />
+      <WBSVirtualTree
+        ref={virtualTreeRef}
+        rows={flatRows}
+        selectedId={selectedId}
+        flashId={flashId}
+        onSelect={(item) => selectItem(item.id)}
+        onToggleExpand={handleToggleExpand}
+        onAddChild={openAddChild}
+        onEdit={openEdit}
+        onDelete={handleDelete}
+        onMoveItem={(itemId, newParentId, index) =>
+          moveItem(activeProjectId!, itemId, newParentId, index)
+        }
+        onVisibleRangeChange={(s, e) => setVisibleRange([s, e])}
+        onUndo={handleUndo}
+      />
+    </div>
   )
 
   const detailPanel = (
     <WBSDetailPanel
       item={selectedItem}
-      budgetLinked={selectedBudget}
-      timelineTaskCount={selectedTimelineCount}
+      budgetLinked={selectedId ? budgetByWbs.get(selectedId) ?? 0 : 0}
+      timelineTaskCount={selectedId ? timelineCountByWbs.get(selectedId) ?? 0 : 0}
+      rabItems={rabItems}
+      timelineTasks={timelineTasks}
       onEdit={openEdit}
       onDelete={handleDelete}
+      onAddChild={(parentId) => openAddChild(parentId)}
       onClose={() => selectItem(null)}
     />
   )
@@ -370,6 +470,14 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Bulk paste dialog */}
+      <WBSBulkPaste
+        open={bulkPasteOpen}
+        parentCode={selectedItem?.code ?? null}
+        onClose={() => setBulkPasteOpen(false)}
+        onImport={handleBulkPasteImport}
+      />
+
       {/* Mobile detail drawer (below lg) */}
       {selectedItem && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -385,27 +493,27 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   // ── Embedded layout (Project Costing pipeline) ──────────────────────────
   if (embedded) {
     return (
-      <div
-        className="flex flex-col gap-2 overflow-hidden"
-        style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}
-      >
+      <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 180px)', minHeight: '480px' }}>
+        {kpiStrip}
         {toolbar}
-        <div
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-[#1e253c] dark:bg-[#131c2e]"
-        >
-          {summaryStrip}
-        </div>
-        <div className="flex min-h-0 flex-1 gap-3">
-          <div
-            className="min-w-0 flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 dark:border-[#1e253c] dark:bg-[#0e1523]"
-          >
-            {tree}
-          </div>
-          <aside
-            className="hidden w-80 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-[#1e253c] dark:bg-[#0e1523] lg:flex lg:flex-col"
-          >
-            {detailPanel}
-          </aside>
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          {viewMode === 'tree' ? (
+            <>
+              {treePanel}
+              <aside
+                className="hidden w-[200px] shrink-0 border-l overflow-hidden lg:flex lg:flex-col"
+                style={{ borderColor: 'var(--border-default)', background: 'var(--bg-surface)' }}
+              >
+                {detailPanel}
+              </aside>
+            </>
+          ) : (
+            <WBSTableView
+              rows={flatRows}
+              timelineCountByWbs={timelineCountByWbs}
+              rabCountByWbs={rabCountByWbs}
+            />
+          )}
         </div>
         {dialogs}
       </div>
@@ -414,22 +522,34 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
 
   // ── Standalone layout ───────────────────────────────────────────────────
   return (
-    <section className="space-y-4" aria-label="WBS Workspace">
+    <section className="flex flex-col h-full overflow-hidden" aria-label="WBS Workspace">
       <WorkspaceHeader
         title="WBS Structure"
         subtitle={`${activeProjectName ?? 'Proyek'} — ${loading ? 'Memuat…' : `${items.length} item`}`}
       />
+      {kpiStrip}
       {toolbar}
-      <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-[#1e253c] dark:bg-[#131c2e]">
-        {summaryStrip}
-      </div>
-      <div className="flex gap-4">
-        <div className="min-h-[480px] min-w-0 flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 dark:border-[#1e253c] dark:bg-[#0e1523]">
-          {tree}
-        </div>
-        <aside className="hidden w-80 shrink-0 self-start overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-[#1e253c] dark:bg-[#0e1523] lg:sticky lg:top-4 lg:flex lg:max-h-[calc(100vh-6rem)] lg:flex-col">
-          {detailPanel}
-        </aside>
+      <div
+        className="flex min-h-0 flex-1 overflow-hidden rounded-xl border mt-2"
+        style={{ borderColor: 'var(--border-default)' }}
+      >
+        {viewMode === 'tree' ? (
+          <>
+            {treePanel}
+            <aside
+              className="hidden w-[200px] shrink-0 border-l overflow-hidden lg:flex lg:flex-col"
+              style={{ borderColor: 'var(--border-default)', background: 'var(--bg-surface)' }}
+            >
+              {detailPanel}
+            </aside>
+          </>
+        ) : (
+          <WBSTableView
+            rows={flatRows}
+            timelineCountByWbs={timelineCountByWbs}
+            rabCountByWbs={rabCountByWbs}
+          />
+        )}
       </div>
       {dialogs}
     </section>
