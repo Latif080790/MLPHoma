@@ -12,7 +12,8 @@ export interface WBSMiniMapProps {
   onNavigate: (rowIndex: number) => void
 }
 
-const BAR_HEIGHT = 3
+const BAR_HEIGHT = 4
+const MIN_BAR_HEIGHT = 6
 const MIN_INDENT = 4
 const MAX_WIDTH = 44
 
@@ -53,20 +54,21 @@ export function WBSMiniMap({
       title="Mini-map — klik untuk navigasi"
     >
       <div className="px-[3px] py-[5px] flex flex-col gap-[1px]">
-        {allRows.map((row, i) => {
+        {allRows.map((row) => {
           const indentFraction = Math.min(row.depth, 4) / 4
           const width = MAX_WIDTH - indentFraction * (MAX_WIDTH - MIN_INDENT)
           const marginLeft = indentFraction * MIN_INDENT
+          const h = Math.max(BAR_HEIGHT, MIN_BAR_HEIGHT - row.depth)
           return (
             <div
               key={row.item.id}
               style={{
-                height: BAR_HEIGHT,
+                height: h,
                 width,
                 marginLeft,
                 background: rowColor(row),
                 borderRadius: 1,
-                opacity: 0.7,
+                opacity: 0.75,
               }}
             />
           )

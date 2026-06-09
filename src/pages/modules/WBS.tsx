@@ -497,7 +497,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
             <>
               {treePanel}
               <aside
-                className="hidden w-[200px] shrink-0 border-l overflow-hidden lg:flex lg:flex-col"
+                className="hidden w-[260px] shrink-0 border-l overflow-hidden lg:flex lg:flex-col"
                 style={{ borderColor: 'var(--border-default)', background: 'var(--bg-surface)' }}
               >
                 {detailPanel}
@@ -533,7 +533,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
           <>
             {treePanel}
             <aside
-              className="hidden w-[200px] shrink-0 border-l overflow-hidden lg:flex lg:flex-col"
+              className="hidden w-[260px] shrink-0 border-l overflow-hidden lg:flex lg:flex-col"
               style={{ borderColor: 'var(--border-default)', background: 'var(--bg-surface)' }}
             >
               {detailPanel}

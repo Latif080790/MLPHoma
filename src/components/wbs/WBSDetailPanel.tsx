@@ -459,10 +459,10 @@ function AddChildTab({
 // ─── Tab list style helpers ───────────────────────────────────────────────────
 
 const TAB_LIST_TABS = [
-  { value: 'overview', label: 'Overview', icon: <ListTree size={12} /> },
-  { value: 'rab', label: 'RAB', icon: <ReceiptText size={12} /> },
-  { value: 'timeline', label: 'Timeline', icon: <CalendarDays size={12} /> },
-  { value: 'child', label: '+Child', icon: <Plus size={12} /> },
+  { value: 'overview', label: 'Info', icon: <ListTree size={11} /> },
+  { value: 'rab', label: 'RAB', icon: <ReceiptText size={11} /> },
+  { value: 'timeline', label: 'Jadwal', icon: <CalendarDays size={11} /> },
+  { value: 'child', label: '+Child', icon: <Plus size={11} /> },
 ] as const
 
 type TabValue = (typeof TAB_LIST_TABS)[number]['value']
