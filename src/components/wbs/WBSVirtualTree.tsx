@@ -70,7 +70,7 @@ function rowMatchesFilter(
 
 export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreeProps>(
   function WBSVirtualTree(
-    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs, showSetupChecklist = false, onUpdateProgress, onBulkUpdateProgress: _onBulkUpdateProgress, onBulkDelete: _onBulkDelete },
+    { rows, selectedId, flashId, onSelect, onToggleExpand, onAddChild, onEdit, onDelete, onMoveItem, onVisibleRangeChange, onUndo, rabCountByWbs, onGenerateCodes, activeFilter, timelineCountByWbs, showSetupChecklist = false, onUpdateProgress, onBulkUpdateProgress, onBulkDelete },
     ref
   ) {
     const parentRef = useRef<HTMLDivElement>(null)
@@ -85,6 +85,8 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
     const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(new Set())
     const anchorIdxRef = useRef<number | null>(null)
+    const [showProgressPopover, setShowProgressPopover] = useState(false)
+    const popoverInputRef = useRef<HTMLInputElement>(null)
 
     // Refs used inside the keydown handler to avoid stale closures
     const focusedIdxRef = useRef<number | null>(null)
@@ -115,6 +117,13 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
       const val = Math.round(Math.min(100, Math.max(0, Number(input.value) || 0)))
       onUpdateProgress?.(editingProgressId, val)
       setEditingProgressId(null)
+    }
+
+    const confirmBulkProgress = (input: HTMLInputElement) => {
+      const val = Math.round(Math.min(100, Math.max(0, Number(input.value) || 0)))
+      onBulkUpdateProgress?.(Array.from(bulkSelectedIds), val)
+      setBulkSelectedIds(new Set())
+      setShowProgressPopover(false)
     }
 
     const virtualizer = useVirtualizer({
@@ -315,11 +324,8 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     const virtualItems = virtualizer.getVirtualItems()
 
     return (
-      <div
-        ref={parentRef}
-        className="w-full h-full overflow-auto outline-none relative"
-        tabIndex={0}
-      >
+      <div className="w-full h-full flex flex-col outline-none">
+        <div ref={parentRef} className="flex-1 min-h-0 overflow-auto relative" tabIndex={0}>
         <span
           className="absolute top-1 right-2 select-none opacity-40 hover:opacity-100 transition-opacity z-10"
           style={{ fontSize: 9, color: 'var(--text-muted)', cursor: 'default' }}
@@ -635,6 +641,97 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
             )
           })}
         </div>
+        </div>
+
+        {bulkSelectedIds.size > 0 && (
+          <div className="relative shrink-0">
+            {showProgressPopover && (
+              <div
+                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-20
+                           flex items-center gap-2 rounded-md border px-3 py-2 shadow-lg"
+                style={{
+                  background: 'hsl(var(--bg-surface))',
+                  borderColor: 'hsl(var(--cobalt-400) / 0.4)',
+                }}
+              >
+                <span style={{ fontSize: 10, color: 'hsl(var(--text-muted))' }}>
+                  Set {bulkSelectedIds.size} item →
+                </span>
+                <input
+                  ref={popoverInputRef}
+                  type="number"
+                  min={0}
+                  max={100}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') confirmBulkProgress(e.currentTarget)
+                    if (e.key === 'Escape') setShowProgressPopover(false)
+                  }}
+                  className="w-10 rounded border text-right font-mono px-1 py-px"
+                  style={{
+                    fontSize: 11,
+                    background: 'hsl(var(--bg-base))',
+                    borderColor: 'hsl(var(--cobalt-400))',
+                    color: 'hsl(var(--cobalt-400))',
+                  }}
+                />
+                <span style={{ fontSize: 9, color: 'hsl(var(--text-muted))' }}>%</span>
+                <button
+                  onClick={() => popoverInputRef.current && confirmBulkProgress(popoverInputRef.current)}
+                  className="rounded px-2 py-px text-white"
+                  style={{ fontSize: 9, background: 'hsl(var(--cobalt-400))' }}
+                >
+                  ✓
+                </button>
+              </div>
+            )}
+
+            <div
+              className="flex items-center gap-2 border-t px-3 py-1.5"
+              style={{
+                background: 'hsl(var(--bg-surface))',
+                borderColor: 'hsl(var(--cobalt-400) / 0.25)',
+              }}
+            >
+              <span className="font-bold" style={{ fontSize: 10, color: 'hsl(var(--cobalt-400))' }}>
+                {bulkSelectedIds.size} dipilih
+              </span>
+              <span className="flex-1" />
+              <button
+                onClick={() => setShowProgressPopover((p) => !p)}
+                className="rounded px-2 py-0.5"
+                style={{
+                  fontSize: 10,
+                  background: 'hsl(var(--cobalt-400) / 0.15)',
+                  color: 'hsl(var(--cobalt-400))',
+                }}
+              >
+                Set %
+              </button>
+              <button
+                onClick={() => {
+                  onBulkDelete?.(Array.from(bulkSelectedIds))
+                  setBulkSelectedIds(new Set())
+                  setShowProgressPopover(false)
+                }}
+                className="rounded px-2 py-0.5"
+                style={{ fontSize: 10, background: 'hsl(0 70% 55% / 0.15)', color: 'hsl(0 70% 65%)' }}
+              >
+                Hapus
+              </button>
+              <button
+                onClick={() => {
+                  setBulkSelectedIds(new Set())
+                  setShowProgressPopover(false)
+                }}
+                className="border-0 bg-transparent leading-none"
+                style={{ fontSize: 12, color: 'hsl(var(--text-muted))' }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
