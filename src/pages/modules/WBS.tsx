@@ -320,6 +320,36 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
     undoLastAction(activeProjectId)
   }, [activeProjectId, undoLastAction])
 
+  const handleUpdateProgress = useCallback(
+    (id: string, progress: number) => {
+      if (!activeProjectId) return
+      updateItem(activeProjectId, id, { progress })
+    },
+    [activeProjectId, updateItem],
+  )
+
+  const handleBulkUpdateProgress = useCallback(
+    (ids: string[], progress: number) => {
+      if (!activeProjectId) return
+      ids.forEach((id) => updateItem(activeProjectId, id, { progress }))
+    },
+    [activeProjectId, updateItem],
+  )
+
+  const handleBulkDelete = useCallback(
+    (ids: string[]) => {
+      if (!activeProjectId) return
+      // Delete deepest items first to avoid cascading double-delete
+      const sorted = [...ids].sort((a, b) => {
+        const la = items.find((i) => i.id === a)?.level ?? 0
+        const lb = items.find((i) => i.id === b)?.level ?? 0
+        return lb - la
+      })
+      sorted.forEach((id) => deleteItem(activeProjectId, id))
+    },
+    [activeProjectId, items, deleteItem],
+  )
+
   const handleBulkPasteImport = useCallback(
     (nodes: Array<{ name: string; relativeDepth: number }>) => {
       if (!activeProjectId) return
@@ -422,6 +452,9 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
           activeFilter={activeFilter}
           timelineCountByWbs={timelineCountByWbs}
           showSetupChecklist={showSetupChecklist}
+          onUpdateProgress={handleUpdateProgress}
+          onBulkUpdateProgress={handleBulkUpdateProgress}
+          onBulkDelete={handleBulkDelete}
         />
       </div>
     </div>
