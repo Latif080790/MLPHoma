@@ -122,6 +122,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
     const confirmBulkProgress = (input: HTMLInputElement) => {
       const val = Math.round(Math.min(100, Math.max(0, Number(input.value) || 0)))
       onBulkUpdateProgress?.(Array.from(bulkSelectedIds), val)
+      anchorIdxRef.current = null
       setBulkSelectedIds(new Set())
       setShowProgressPopover(false)
     }
@@ -206,6 +207,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
             break
           case 'Enter':
             e.preventDefault()
+            anchorIdxRef.current = null
             setBulkSelectedIds(new Set())
             setShowProgressPopover(false)
             select(row.item)
@@ -239,6 +241,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
       e.dataTransfer.setData('text/plain', rowId)
       e.dataTransfer.effectAllowed = 'move'
       setDraggedId(rowId)
+      anchorIdxRef.current = null
       setBulkSelectedIds(new Set())
       setShowProgressPopover(false)
     }, [])
@@ -646,7 +649,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
         </div>
 
         {bulkSelectedIds.size > 0 && (
-          <div className="relative shrink-0">
+          <div className="relative shrink-0" onMouseDown={(e) => e.preventDefault()}>
             {showProgressPopover && (
               <div
                 className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-20
@@ -713,6 +716,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
               <button
                 onClick={() => {
                   onBulkDelete?.(Array.from(bulkSelectedIds))
+                  anchorIdxRef.current = null
                   setBulkSelectedIds(new Set())
                   setShowProgressPopover(false)
                 }}
@@ -723,6 +727,7 @@ export const WBSVirtualTree = forwardRef<WBSVirtualTreeHandle, WBSVirtualTreePro
               </button>
               <button
                 onClick={() => {
+                  anchorIdxRef.current = null
                   setBulkSelectedIds(new Set())
                   setShowProgressPopover(false)
                 }}

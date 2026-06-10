@@ -266,6 +266,54 @@ export const useWBSStore = create<WBSStore>()(
         // ── End Guard ─────────────────────────────────────────────────────────
       },
 
+      /** Delete multiple WBS items atomically — single timeline check + single undo snapshot */
+      bulkDeleteItems: (projectId, ids) => {
+        if (ids.length === 0) return
+        const currentItems = get().itemsByProject[projectId] || []
+
+        // Expand input IDs to include all descendants in one combined set
+        const toDelete = new Set<string>(ids)
+        let added = true
+        while (added) {
+          added = false
+          currentItems.forEach(item => {
+            if (item.parentId && toDelete.has(item.parentId) && !toDelete.has(item.id)) {
+              toDelete.add(item.id)
+              added = true
+            }
+          })
+        }
+
+        // Single timeline check across all items
+        import('./timelineStore').then(module => {
+          const timelineState = module.useTimelineStore.getState()
+          const allTasks = timelineState.tasksByProject[projectId] || []
+          const linkedTasks = allTasks.filter(
+            (t: { wbsId?: string; name: string }) => t.wbsId && toDelete.has(t.wbsId)
+          )
+
+          if (linkedTasks.length > 0) {
+            // Use first linked item for the blocking dialog
+            const firstLinkedId =
+              ids.find(id => linkedTasks.some((t: { wbsId?: string }) => t.wbsId === id)) ?? ids[0]
+            const firstLinkedItem = currentItems.find(i => i.id === firstLinkedId)
+            set({
+              pendingDeleteConfirmation: {
+                projectId,
+                wbsId: firstLinkedId,
+                wbsCode: firstLinkedItem?.code ?? firstLinkedId,
+                affectedTaskNames: linkedTasks.slice(0, 5).map((t: { name: string }) => t.name),
+              },
+            })
+            return
+          }
+
+          // No linked tasks — one executeDelete = one snapshot = atomic undo
+          executeDelete(projectId, toDelete)
+        }).catch(() => {
+          executeDelete(projectId, toDelete)
+        })
+      },
 
       /** Confirm pending delete — executes the guarded deletion */
       confirmDelete: () => {

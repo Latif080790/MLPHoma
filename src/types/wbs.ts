@@ -111,6 +111,8 @@ export interface WBSActions {
   confirmDelete: () => void
   /** Cancel pending delete — dismisses the confirmation dialog */
   cancelDelete: () => void
+  /** Delete multiple WBS items atomically — single timeline check, single undo snapshot */
+  bulkDeleteItems: (projectId: string, ids: string[]) => void
   undoLastAction: (projectId: string) => void
   setActiveFilter: (filter: KPIFilter) => void
 }

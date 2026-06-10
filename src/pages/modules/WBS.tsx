@@ -78,6 +78,7 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   const exportWBS = useWBSStore((s) => s.exportWBS)
   const selectItem = useWBSStore((s) => s.selectItem)
   const undoLastAction = useWBSStore((s) => s.undoLastAction)
+  const bulkDeleteItems = useWBSStore((s) => s.bulkDeleteItems)
   const setActiveFilter = useWBSStore((s) => s.setActiveFilter)
   const activeFilter = useWBSStore((s) => s.activeFilter)
 
@@ -339,15 +340,9 @@ export default function WBS({ embedded = false }: { embedded?: boolean } = {}) {
   const handleBulkDelete = useCallback(
     (ids: string[]) => {
       if (!activeProjectId) return
-      // Delete deepest items first to avoid cascading double-delete
-      const sorted = [...ids].sort((a, b) => {
-        const la = items.find((i) => i.id === a)?.level ?? 0
-        const lb = items.find((i) => i.id === b)?.level ?? 0
-        return lb - la
-      })
-      sorted.forEach((id) => deleteItem(activeProjectId, id))
+      bulkDeleteItems(activeProjectId, ids)
     },
-    [activeProjectId, items, deleteItem],
+    [activeProjectId, bulkDeleteItems],
   )
 
   const handleBulkPasteImport = useCallback(
