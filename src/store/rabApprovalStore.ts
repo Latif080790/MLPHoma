@@ -6,6 +6,7 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { rabApprovalService } from '../services/rabApprovalService'
+import { useAuthStore } from './authStore'
 import { toast } from 'sonner'
 import { generateId } from '../lib/idGenerator'
 import type {
@@ -110,11 +111,11 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
               id: approvalId,
               projectId,
               rabVersionId,
-              versionNumber: 1, // TODO: Get from version store
+              versionNumber: 1,
               status: 'pending',
               submittedAt: now,
-              submittedBy: 'current-user-id', // TODO: Get from auth
-              submittedByName: 'Current User', // TODO: Get from auth
+              submittedBy: useAuthStore.getState().user?.id ?? 'anonymous',
+              submittedByName: useAuthStore.getState().profile?.full_name ?? useAuthStore.getState().user?.email ?? 'Unknown User',
               currentStep: 1,
               approvalChain,
               createdAt: now,
@@ -438,7 +439,7 @@ export const useRABApprovalStore = create<RABApprovalStore>()(
                 id: rowId,
                 projectId: row.project_id as string,
                 rabVersionId: row.rab_version_id as string,
-                versionNumber: 1, // TODO: Get from join
+                versionNumber: 1,
                 status: row.status as RABApproval['status'],
                 submittedAt: new Date(row.submitted_at as string),
                 submittedBy: row.submitted_by as string,

@@ -7,6 +7,7 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { RABVersion, RABChangeLog, RABVersionSnapshot, RABVersionComparison } from '../types/rabVersion'
 import { generateId } from '../lib/idGenerator'
+import { useAuthStore } from './authStore'
 import { toast } from 'sonner'
 import { rabVersionService } from '../services/rabVersionService'
 import { useRabStore } from './rabStore'
@@ -46,8 +47,8 @@ export const useRABVersionStore = create<RABVersionState>()(
             projectId,
             version: newVersion,
             createdAt: new Date().toISOString(),
-            createdBy: 'current-user', // TODO: Get from auth store
-            createdByName: 'Current User',
+            createdBy: useAuthStore.getState().user?.id ?? 'anonymous',
+            createdByName: useAuthStore.getState().profile?.full_name ?? useAuthStore.getState().user?.email ?? 'Unknown User',
             description,
             changeType,
             changes,

@@ -51,7 +51,7 @@ describe('CashFlow page', () => {
   test('shows empty state when there are no saved scenarios', () => {
     render(<CashFlow />)
     expect(screen.getAllByText(/No saved scenarios/i).length).toBeGreaterThan(0)
-    expect(screen.getByText(/You don't have any saved cashflow scenarios/i)).toBeTruthy()
+    expect(screen.getByText(/You do not have any saved cashflow scenarios/i)).toBeTruthy()
   })
 
   test('does not show empty state when scenarios exist', () => {

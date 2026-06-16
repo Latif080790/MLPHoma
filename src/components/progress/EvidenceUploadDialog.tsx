@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import { useAuthStore } from '../../store/authStore'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -61,6 +62,9 @@ export function EvidenceUploadDialog({
     
     const [uploading, setUploading] = useState(false)
     const [uploadedCount, setUploadedCount] = useState(0)
+
+    const user = useAuthStore((s) => s.user)
+    const profile = useAuthStore((s) => s.profile)
     
     useEffect(() => {
         if (isOpen) {
@@ -129,8 +133,8 @@ export function EvidenceUploadDialog({
         setUploading(true)
         setUploadedCount(0)
         
-        const userId = '1' // TODO: Get from auth context
-        const userName = 'Current User' // TODO: Get from auth context
+        const userId = user?.id ?? 'anonymous'
+        const userName = profile?.full_name ?? user?.email ?? 'Unknown User'
         
         try {
             for (let i = 0; i < files.length; i++) {

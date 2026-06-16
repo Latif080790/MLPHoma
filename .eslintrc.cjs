@@ -30,6 +30,9 @@ module.exports = {
     'react-hooks/purity': 'off',
     'react-hooks/immutability': 'off',
     
+    // Prevent debug console.log from reaching production (warn/error are allowed)
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
+
     // WCAG Compliance Rule: Ban sub-12px typography
     'no-restricted-syntax': [
       'error',

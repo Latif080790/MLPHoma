@@ -20,7 +20,7 @@ function makeChain(result: unknown) {
 }
 
 describe('costDashboardService', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => { vi.clearAllMocks() })
 
   describe('getDashboardSnapshot', () => {
     it('returns all zero values when project has no data', async () => {

@@ -34,6 +34,7 @@ import {
   Shield,
 } from 'lucide-react'
 import { useRABApprovalStore } from '../../store/rabApprovalStore'
+import { useAuthStore } from '../../store/authStore'
 import { toast } from 'sonner'
 import type { RABApproval, ApprovalStatus, ApprovalStep } from '../../types/rabApproval'
 import { formatDistanceToNow } from 'date-fns'
@@ -160,6 +161,9 @@ export function RABApprovalPanel({
     loadTemplates
   } = useRABApprovalStore()
 
+  const user = useAuthStore((s) => s.user)
+  const profile = useAuthStore((s) => s.profile)
+
   const [selectedTemplate, setSelectedTemplate] = useState<string>('standard')
   const [actionComments, setActionComments] = useState('')
   const [showActionDialog, setShowActionDialog] = useState<'approve' | 'reject' | null>(null)
@@ -202,8 +206,8 @@ export function RABApprovalPanel({
         approvalId: selectedApproval.id,
         action: 'approve',
         comments: actionComments,
-        approverId: 'current-user-id', // TODO: Get from auth
-        approverName: 'Current User' // TODO: Get from auth
+        approverId: user?.id ?? 'anonymous',
+        approverName: profile?.full_name ?? user?.email ?? 'Unknown User',
       })
       setShowActionDialog(null)
       setActionComments('')
@@ -221,8 +225,8 @@ export function RABApprovalPanel({
         approvalId: selectedApproval.id,
         action: 'reject',
         comments: actionComments,
-        approverId: 'current-user-id', // TODO: Get from auth
-        approverName: 'Current User' // TODO: Get from auth
+        approverId: user?.id ?? 'anonymous',
+        approverName: profile?.full_name ?? user?.email ?? 'Unknown User',
       })
       setShowActionDialog(null)
       setActionComments('')

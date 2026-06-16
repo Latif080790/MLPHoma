@@ -22,13 +22,9 @@ import { useAuthStore } from './authStore'
 import { auditService } from '@/services/auditService'
 
 function normalizeProjectDates<T extends Record<string, unknown>>(payload: T): T {
-  const next = { ...payload }
-  if (next.startDate === '') {
-    next.startDate = undefined
-  }
-  if (next.endDate === '') {
-    next.endDate = undefined
-  }
+  const next = { ...payload } as Record<string, unknown>
+  if (next['startDate'] === '') next['startDate'] = undefined
+  if (next['endDate'] === '') next['endDate'] = undefined
   return next as T
 }
 

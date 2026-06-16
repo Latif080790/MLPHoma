@@ -46,7 +46,8 @@ describe('rapService', () => {
 
       const result = await rapService.getByProject('P1')
       expect(result).toHaveLength(2)
-      expect(result[0].wbs_items.name).toBe('Foundation')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result[0].wbs_items as any).name).toBe('Foundation')
     })
 
     it('should return empty array on error', async () => {
