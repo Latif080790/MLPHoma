@@ -66,28 +66,13 @@ export const financeService = {
             )
         }
         
-        // 3-Way Match Check for Alerts (intentionally fire-and-forget — must not block invoice creation)
+        // Auto 3-way match after invoice creation
         if (data.po_id && data.project_id) {
-            void Promise.all([
-                supplyChainService.getPurchaseOrders(data.project_id),
-                supplyChainService.getInventoryTransactions(data.project_id)
-            ]).then(([pos, grns]) => {
-                const matchResult = matchInvoice(data as Invoice, pos, grns)
-                if (matchResult.status === 'mismatch' || matchResult.status === 'partial') {
-                    const highVariance = matchResult.discrepancies.find(d => !d.tolerable && d.variance > 5)
-                    if (highVariance && userId) {
-                        void notificationService.createNotification({
-                            userId,
-                            title: 'Invoice Variance Alert',
-                            message: `Invoice ${data.invoice_number} exceeds PO limit by ${highVariance.variance.toFixed(1)}%. Review required.`,
-                            type: 'BUDGET_CRITICAL',
-                            severity: 'critical',
-                            metadata: { linkUrl: '/finance' },
-                            projectId: data.project_id
-                        }).catch(err => console.error('[financeService] 3-way match notification failed', data.invoice_number, err))
-                    }
-                }
-            }).catch(err => console.warn('[financeService] 3-way match check failed for invoice', data.invoice_number, err))
+            void financeService.performThreeWayMatch(
+                (invoice.po_id as string) ?? '',
+                data.project_id as string,
+                data as Invoice,
+            )
         }
 
         return data
@@ -320,6 +305,38 @@ export const financeService = {
             .eq('id', id)
 
         if (error) throw error
+    },
+
+    async performThreeWayMatch(
+        poId: string,
+        projectId: string,
+        invoice: Invoice,
+    ): Promise<void> {
+        try {
+            const [pos, invTxns] = await Promise.all([
+                supplyChainService.getPurchaseOrders(projectId),
+                supplyChainService.getInventoryTransactions(projectId),
+            ])
+            const matchResult = matchInvoice(invoice, pos, invTxns)
+            if (matchResult.status === 'mismatch' || matchResult.status === 'partial') {
+                const highVariance = matchResult.discrepancies.find(
+                    (d) => !d.tolerable && d.variance > 5,
+                )
+                if (highVariance) {
+                    await notificationService.notifyByRole(projectId, 'manager', {
+                        projectId,
+                        type: 'BUDGET_CRITICAL',
+                        severity: 'critical',
+                        title: `3-Way Match Alert: ${invoice.invoice_number}`,
+                        message: `Invoice ${invoice.invoice_number} exceeds PO by ${highVariance.variance.toFixed(1)}%. Review required.`,
+                        entityType: 'INVOICE',
+                        entityId: invoice.id,
+                    })
+                }
+            }
+        } catch (err) {
+            console.warn('[Finance] 3-way match failed for PO', poId, err)
+        }
     },
 
     // --- Analytics / Matching ---

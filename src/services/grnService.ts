@@ -9,9 +9,7 @@ import { generateId } from '../lib/idGenerator'
 import { notificationService } from './notificationService'
 import { auditService } from './auditService'
 import { supplyChainService } from './supplyChainService'
-// TODO: trigger 3-way match when financeService exposes performThreeWayMatch(poId)
-// import { financeService } from './financeService'
-import { matchInvoice } from './invoiceMatchingService'
+import { financeService } from './financeService'
 import type { Invoice } from '../types/finance'
 import type { GoodsReceipt, CreateGrnInput, GrnStatus, GrnItem } from '../types/grn'
 
@@ -269,29 +267,9 @@ export const grnService = {
                         status: 'UNPAID',
                     }).select().single()
 
-                    // Auto 3-way match: PO ↔ GRN ↔ Invoice triggered immediately on GRN verification.
-                    // TODO: replace with financeService.performThreeWayMatch(grn.poId) once that method is exposed.
+                    // Auto 3-way match: PO ↔ GRN ↔ Invoice
                     if (newInvoice) {
-                        void Promise.all([
-                            supplyChainService.getPurchaseOrders(grn.projectId),
-                            supplyChainService.getInventoryTransactions(grn.projectId),
-                        ]).then(([pos, invTxns]) => {
-                            const matchResult = matchInvoice(newInvoice as Invoice, pos, invTxns)
-                            if (matchResult.status === 'mismatch' || matchResult.status === 'partial') {
-                                const highVariance = matchResult.discrepancies.find(d => !d.tolerable && d.variance > 5)
-                                if (highVariance) {
-                                    void notificationService.notifyByRole(grn.projectId, 'manager', {
-                                        projectId: grn.projectId,
-                                        type: 'BUDGET_CRITICAL',
-                                        severity: 'critical',
-                                        title: `3-Way Match Alert: ${newInvoice.invoice_number}`,
-                                        message: `GRN ${grn.grnNumber} invoice exceeds PO by ${highVariance.variance.toFixed(1)}%. Review required.`,
-                                        entityType: 'INVOICE',
-                                        entityId: newInvoice.id,
-                                    }).catch(err => console.warn('[GRN] 3-way match notification failed:', err))
-                                }
-                            }
-                        }).catch(err => console.warn('[GRN] Auto 3-way match failed for GRN', grn.grnNumber, err))
+                        void financeService.performThreeWayMatch(grn.poId, grn.projectId, newInvoice as Invoice)
                     }
                 }
 
