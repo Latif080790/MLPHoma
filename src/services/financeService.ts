@@ -69,8 +69,8 @@ export const financeService = {
         // Auto 3-way match after invoice creation
         if (data.po_id && data.project_id) {
             void financeService.performThreeWayMatch(
-                (invoice.po_id as string) ?? '',
-                data.project_id as string,
+                data.po_id,        // confirmed non-null by guard above
+                data.project_id,   // confirmed non-null by guard above
                 data as Invoice,
             )
         }
@@ -331,11 +331,12 @@ export const financeService = {
                         message: `Invoice ${invoice.invoice_number} exceeds PO by ${highVariance.variance.toFixed(1)}%. Review required.`,
                         entityType: 'INVOICE',
                         entityId: invoice.id,
+                        metadata: { linkUrl: '/finance' },
                     })
                 }
             }
         } catch (err) {
-            console.warn('[Finance] 3-way match failed for PO', poId, err)
+            console.warn('[Finance] 3-way match failed for invoice', invoice.invoice_number, 'PO', poId, err)
         }
     },
 
