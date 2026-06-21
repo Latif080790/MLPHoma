@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
-import { Plus, Send } from "lucide-react"
+import { Plus, Send, FileText } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -40,8 +40,8 @@ import type { PurchaseOrder, InventoryTransaction } from "@/types/supply-chain"
 
 const AP_STATUS_OPTIONS = [
     { value: 'all', label: 'All Status' },
-    { value: 'DRAFT', label: 'Draft' },
-    { value: 'ISSUED', label: 'Issued' },
+    { value: 'UNPAID', label: 'Unpaid' },
+    { value: 'PARTIAL', label: 'Partial' },
     { value: 'PENDING_PAYMENT', label: 'Pending Payment' },
     { value: 'OVERDUE', label: 'Overdue' },
     { value: 'PAID', label: 'Paid' },
@@ -382,9 +382,14 @@ export function FinanceAPTab({
                         </Button>
                     </div>
                 </div>
-                <Button size="sm" variant="outline" className="gap-2" onClick={onOpenInvoiceDialog}>
-                    <Plus size={14} /> Record Invoice
-                </Button>
+                <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="gap-2" onClick={() => setInvoiceImportOpen(true)}>
+                        <FileText size={14} /> Import Excel
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-2" onClick={onOpenInvoiceDialog}>
+                        <Plus size={14} /> Record Invoice
+                    </Button>
+                </div>
             </div>
 
             {/* Bulk Action Bar */}
