@@ -13,13 +13,6 @@ export const INCIDENT_TYPE_LABEL: Record<string, string> = {
     ENVIRONMENTAL: 'Environmental',
 }
 
-export const SEVERITY_COLORS: Record<string, string> = {
-    LOW: 'bg-green-500/10 text-green-400 border border-green-500/20',
-    MEDIUM: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    HIGH: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
-    CRITICAL: 'bg-red-500/10 text-red-400 border border-red-500/20',
-}
-
 // Enhanced severity badge config with animated dot for critical
 export const SEVERITY_BADGE_CONFIG: Record<string, { cls: string; dot: string }> = {
     CRITICAL: { cls: 'bg-rose-100 text-rose-700 border-rose-200', dot: 'animate-pulse bg-rose-500' },
@@ -28,28 +21,11 @@ export const SEVERITY_BADGE_CONFIG: Record<string, { cls: string; dot: string }>
     LOW: { cls: 'bg-slate-100 text-slate-600 border-slate-200', dot: 'bg-slate-400' },
 }
 
-export const INCIDENT_TYPE_COLORS: Record<string, string> = {
-    NEAR_MISS: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
-    FIRST_AID: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    MEDICAL_TREATMENT: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-    LOST_TIME: 'bg-red-500/10 text-red-400 border border-red-500/20',
-    FATALITY: 'bg-red-500/10 text-red-400 border border-red-500/20',
-    PROPERTY_DAMAGE: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
-    ENVIRONMENTAL: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
-}
-
 export const RISK_LEVEL_COLORS: Record<string, string> = {
     LOW: 'bg-green-500/10 text-green-400 border border-green-500/20',
     MEDIUM: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
     HIGH: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
     CRITICAL: 'bg-red-500/10 text-red-400 border border-red-500/20',
-}
-
-export const RISK_LEVEL_TEXT: Record<string, string> = {
-    LOW: 'text-green-400',
-    MEDIUM: 'text-amber-400',
-    HIGH: 'text-orange-400',
-    CRITICAL: 'text-red-400',
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
