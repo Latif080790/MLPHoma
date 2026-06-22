@@ -223,7 +223,7 @@ export function WBSEditor({
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="Contoh: Pekerjaan Pondasi"
-              className={errors.name ? 'border-[var(--status-danger-fg)] focus-visible:ring-[var(--status-danger-fg)]/40' : ''}
+              className={errors.name ? 'border-[var(--status-danger-fg)] focus-visible:ring-[var(--status-danger-fg)]' : ''}
               disabled={isSubmitting}
               autoFocus
             />
@@ -253,7 +253,7 @@ export function WBSEditor({
 
           {/* Error message */}
           {errors.submit && (
-            <div className="p-3 bg-[var(--status-danger-bg)] border border-[var(--status-danger-fg)]/30 rounded-lg text-xs text-[var(--status-danger-fg)]">
+            <div className="p-3 bg-[var(--status-danger-bg)] border border-[var(--status-danger-fg)] rounded-lg text-xs text-[var(--status-danger-fg)]">
               {errors.submit}
             </div>
           )}

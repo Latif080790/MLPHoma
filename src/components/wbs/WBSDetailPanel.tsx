@@ -96,7 +96,7 @@ function Pill({
   icon,
   children,
 }: {
-  tone: 'jade' | 'amber' | 'coral' | 'cobalt' | 'cyan' | 'neutral'
+  tone: 'jade' | 'amber' | 'coral' | 'cyan' | 'neutral'
   icon?: React.ReactNode
   children: React.ReactNode
 }) {
@@ -104,7 +104,6 @@ function Pill({
     jade: { background: 'color-mix(in srgb, var(--wbs-progress-high) 15%, transparent)', color: 'var(--wbs-progress-high)' },
     amber: { background: 'color-mix(in srgb, var(--wbs-progress-low) 15%, transparent)', color: 'var(--wbs-progress-low)' },
     coral: { background: 'var(--status-danger-bg)', color: 'var(--status-danger-fg)' },
-    cobalt: { background: 'color-mix(in srgb, hsl(var(--cobalt-400)) 15%, transparent)', color: 'hsl(var(--cobalt-400))' },
     cyan: { background: 'color-mix(in srgb, var(--wbs-progress-mid) 15%, transparent)', color: 'var(--wbs-progress-mid)' },
     neutral: { background: 'var(--bg-surface-hover)', color: 'var(--text-secondary)' },
   }
