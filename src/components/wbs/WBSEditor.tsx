@@ -216,19 +216,19 @@ export function WBSEditor({
           {/* Name field */}
           <div className="space-y-1.5">
             <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Nama Item <span className="text-red-500">*</span>
+              Nama Item <span className="text-[var(--status-danger-fg)]">*</span>
             </Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="Contoh: Pekerjaan Pondasi"
-              className={errors.name ? 'border-red-500 focus-visible:ring-red-400' : ''}
+              className={errors.name ? 'border-[var(--status-danger-fg)] focus-visible:ring-[var(--status-danger-fg)]/40' : ''}
               disabled={isSubmitting}
               autoFocus
             />
             {errors.name && (
-              <p className="text-xs text-red-500">{errors.name}</p>
+              <p className="text-xs text-[var(--status-danger-fg)]">{errors.name}</p>
             )}
           </div>
 
@@ -243,17 +243,17 @@ export function WBSEditor({
               onChange={(e) => handleChange('description', e.target.value)}
               placeholder="Opsional — deskripsi singkat item ini"
               rows={2}
-              className={errors.description ? 'border-red-500' : ''}
+              className={errors.description ? 'border-[var(--status-danger-fg)]' : ''}
               disabled={isSubmitting}
             />
             {errors.description && (
-              <p className="text-xs text-red-500">{errors.description}</p>
+              <p className="text-xs text-[var(--status-danger-fg)]">{errors.description}</p>
             )}
           </div>
 
           {/* Error message */}
           {errors.submit && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+            <div className="p-3 bg-[var(--status-danger-bg)] border border-[var(--status-danger-fg)]/30 rounded-lg text-xs text-[var(--status-danger-fg)]">
               {errors.submit}
             </div>
           )}
