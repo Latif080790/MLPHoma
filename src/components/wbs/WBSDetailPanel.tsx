@@ -159,10 +159,10 @@ function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0, rabItems =
   const progress = Math.min(100, Math.max(0, item.progress ?? 0))
   const isComplete = progress >= 100
 
-  const progressColor = isComplete
+  const progressColor = isComplete || progress >= 80
     ? 'var(--wbs-progress-high)'
-    : progress >= 50
-    ? 'hsl(var(--cobalt-400))'
+    : progress >= 30
+    ? 'var(--wbs-progress-mid)'
     : 'var(--wbs-progress-low)'
 
   const linkedRab = rabItems.filter((r) => r.wbsId === item.id)
@@ -176,7 +176,7 @@ function OverviewTab({ item, budgetLinked = 0, timelineTaskCount = 0, rabItems =
         {isComplete ? (
           <Pill tone="jade" icon={<CheckCircle2 size={11} />}>Selesai</Pill>
         ) : progress > 0 ? (
-          <Pill tone="cobalt">Berjalan</Pill>
+          <Pill tone="cyan">Berjalan</Pill>
         ) : (
           <Pill tone="neutral">Belum Mulai</Pill>
         )}
