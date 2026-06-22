@@ -312,7 +312,6 @@ export default function Finance() {
                     fetchAll={fetchAll}
                     onOpenClaimDialog={() => setClaimDialogOpen(true)}
                     handleAsync={handleAsync}
-                    loading={loading}
                 />
 
                 {/* --- AGING REPORT --- */}

@@ -46,7 +46,6 @@ interface FinanceARTabProps {
     fetchAll: (projectId: string) => Promise<void>
     onOpenClaimDialog: () => void
     handleAsync: <T>(fn: () => Promise<T>, key?: string) => Promise<T | null>
-    loading?: boolean
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -293,7 +292,7 @@ export function FinanceARTab({
                                     toast.success("Monthly billing generated", { description: "Claims created from progress data." })
                                     setSrStatus('Monthly billing generated successfully.')
                                     setBillingDialogOpen(false)
-                                    fetchAll(projectId)
+                                    await handleAsync(() => fetchAll(projectId), 'finance.general')
                                 } else {
                                     setSrStatus('Failed to generate monthly billing.')
                                 }
