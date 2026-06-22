@@ -1,21 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react"
-import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, ArrowRightLeft, PieChart, Send, ShieldCheck, CheckCircle, Plus, Zap, Wallet } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import React, { useEffect, useState } from "react"
+import { Receipt, FileText, Clock, AlertTriangle, TrendingUp, DollarSign, ArrowRightLeft, PieChart, Plus, Wallet } from "lucide-react"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useProjectStore } from "@/store/projectStore"
 import { useFinanceStore } from "@/store/financeStore"
 import { format } from "date-fns"
-import { EmptyState } from "@/components/common/EmptyState"
-import { ClientClaim } from "@/types/finance"
-import { toast } from "sonner"
-import { progressBillingService } from "@/services/progressBillingService"
 import { InvoiceDialog } from "@/components/finance/InvoiceDialog"
 import { ClaimDialog } from "@/components/finance/ClaimDialog"
 import { AgingReport } from "@/components/finance/AgingReport"
@@ -23,33 +15,19 @@ import { ThreeWayMatch } from "@/components/finance/ThreeWayMatch"
 import { OpnameBoard } from "@/components/finance/OpnameBoard"
 import { CashflowForecastWidget } from "@/components/finance/CashflowForecastWidget"
 import { FinanceAPTab } from "@/components/finance/FinanceAPTab"
+import { FinanceARTab } from "@/components/finance/FinanceARTab"
 import { AnomalyWidget } from "@/components/common/AnomalyWidget"
 import { useShallow } from "zustand/react/shallow"
 import { useSupplyChainStore } from "@/store/supplyChainStore"
 import type { Invoice } from "@/types/finance"
 import { useErrorHandler } from "@/hooks/useErrorHandler"
 import ModulePageState from "@/components/common/ModulePageState"
-import ModuleListToolbar from "@/components/common/ModuleListToolbar"
 import { ExportMenu, type ExportColumn } from "@/components/shared/ExportMenu"
 
 // ── Enterprise Pattern Imports ──────────────────────────────────────────────
 import { PageShell } from '@/components/layouts'
 import { GlobalContextBar, WorkspaceHeader, SummaryStrip, ModeSwitch, AlertStrip } from '@/components/patterns'
 
-const AR_STATUS_OPTIONS = [
-    { value: 'all', label: 'All Status' },
-    { value: 'DRAFT', label: 'Draft' },
-    { value: 'SUBMITTED', label: 'Submitted' },
-    { value: 'APPROVED', label: 'Approved' },
-    { value: 'PAID', label: 'Paid' },
-]
-
-const AR_SORT_OPTIONS = [
-    { value: 'period-latest', label: 'Latest Period' },
-    { value: 'period-oldest', label: 'Oldest Period' },
-    { value: 'amount-high', label: 'Amount High-Low' },
-    { value: 'amount-low', label: 'Amount Low-High' },
-]
 
 export default function Finance() {
     const { activeProjectId } = useProjectStore()
@@ -58,25 +36,6 @@ export default function Finance() {
     const [activeTab, setActiveTab] = useState("overview")
     const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
     const [claimDialogOpen, setClaimDialogOpen] = useState(false)
-    const [billingDialogOpen, setBillingDialogOpen] = useState(false)
-    const [billingProgressInput, setBillingProgressInput] = useState(() => {
-        try { return localStorage.getItem('finance.billing.progress') || '0' } catch { return '0' }
-    })
-    const [arQuery, setArQuery] = useState(() => {
-        try { return localStorage.getItem('finance.ar.query') || '' } catch { return '' }
-    })
-    const [arStatusFilter, setArStatusFilter] = useState(() => {
-        try { return localStorage.getItem('finance.ar.status') || 'all' } catch { return 'all' }
-    })
-    const [arSortBy, setArSortBy] = useState(() => {
-        try { return localStorage.getItem('finance.ar.sort') || 'period-latest' } catch { return 'period-latest' }
-    })
-    const [arPeriodFrom, setArPeriodFrom] = useState(() => {
-        try { return localStorage.getItem('finance.ar.periodFrom') || '' } catch { return '' }
-    })
-    const [arPeriodTo, setArPeriodTo] = useState(() => {
-        try { return localStorage.getItem('finance.ar.periodTo') || '' } catch { return '' }
-    })
     const [srStatus, setSrStatus] = useState('')
     const { purchaseOrders, inventoryTransactions } = useSupplyChainStore(
         useShallow(s => ({ purchaseOrders: s.purchaseOrders, inventoryTransactions: s.inventoryTransactions }))
@@ -93,31 +52,6 @@ export default function Finance() {
         updateClaimStatus: s.updateClaimStatus, updateInvoiceStatus: s.updateInvoiceStatus,
     })))
 
-    const filteredClaims = useMemo(() => {
-        const q = arQuery.trim().toLowerCase()
-        return [...claims]
-            .filter((claim) => {
-                const matchesQuery = !q ||
-                    claim.claim_number.toLowerCase().includes(q) ||
-                    (claim.notes || '').toLowerCase().includes(q)
-                const matchesStatus = arStatusFilter === 'all' || claim.status === arStatusFilter
-                const periodDate = new Date(claim.period_end || claim.period_start || claim.created_at || 0)
-                const fromBoundary = arPeriodFrom ? new Date(`${arPeriodFrom}T00:00:00`) : null
-                const toBoundary = arPeriodTo ? new Date(`${arPeriodTo}T23:59:59`) : null
-                const matchesPeriodFrom = !fromBoundary || periodDate >= fromBoundary
-                const matchesPeriodTo = !toBoundary || periodDate <= toBoundary
-
-                return matchesQuery && matchesStatus && matchesPeriodFrom && matchesPeriodTo
-            })
-            .sort((a, b) => {
-                const aPeriod = new Date(a.period_end || a.period_start || 0).getTime()
-                const bPeriod = new Date(b.period_end || b.period_start || 0).getTime()
-                if (arSortBy === 'period-oldest') return aPeriod - bPeriod
-                if (arSortBy === 'amount-high') return b.amount - a.amount
-                if (arSortBy === 'amount-low') return a.amount - b.amount
-                return bPeriod - aPeriod
-            })
-    }, [claims, arQuery, arStatusFilter, arSortBy, arPeriodFrom, arPeriodTo])
 
     useEffect(() => {
         if (activeProjectId) {
@@ -142,53 +76,6 @@ export default function Finance() {
         setSrStatus(`Finance ${activeTab} data ready.`)
     }, [activeProjectId, loading, activeTab])
 
-    useEffect(() => {
-        try {
-            localStorage.setItem('finance.billing.progress', billingProgressInput)
-            localStorage.setItem('finance.ar.query', arQuery)
-            localStorage.setItem('finance.ar.status', arStatusFilter)
-            localStorage.setItem('finance.ar.sort', arSortBy)
-            localStorage.setItem('finance.ar.periodFrom', arPeriodFrom)
-            localStorage.setItem('finance.ar.periodTo', arPeriodTo)
-        } catch {
-            // ignore storage errors
-        }
-    }, [billingProgressInput, arQuery, arStatusFilter, arSortBy, arPeriodFrom, arPeriodTo])
-
-    const resetArAdvancedFilters = () => {
-        setArPeriodFrom('')
-        setArPeriodTo('')
-        setSrStatus('AR advanced filters reset.')
-    }
-
-    const claimActions = (claim: ClientClaim) => {
-        const transitions: Record<string, { label: string; next: ClientClaim['status']; icon: React.ReactNode }> = {
-            DRAFT: { label: 'Submit', next: 'SUBMITTED', icon: <Send size={12} /> },
-            SUBMITTED: { label: 'Approve', next: 'APPROVED', icon: <ShieldCheck size={12} /> },
-            APPROVED: { label: 'Mark Paid', next: 'PAID', icon: <CheckCircle size={12} /> }
-        }
-        const action = transitions[claim.status]
-        if (!action) return null
-        return (
-            <Button
-                size="sm"
-                variant="outline"
-                className="gap-1"
-                onClick={async () => {
-                    if (!activeProjectId) return
-                    setSrStatus(`Updating claim ${claim.claim_number} status to ${action.next}...`)
-                    try {
-                        await updateClaimStatus(claim.id, action.next, activeProjectId)
-                        setSrStatus(`Claim ${claim.claim_number} updated to ${action.next}.`)
-                    } catch {
-                        setSrStatus(`Failed to update claim ${claim.claim_number}.`)
-                    }
-                }}
-            >
-                {action.icon} {action.label}
-            </Button>
-        )
-    }
 
     if (!activeProjectId) {
         return (
@@ -243,14 +130,6 @@ export default function Finance() {
         { header: 'Due Date', accessor: r => r.due_date ?? '' },
     ]
 
-    const claimExportCols: ExportColumn<typeof filteredClaims[number]>[] = [
-        { header: 'Claim #', accessor: r => (r as any).claim_number ?? (r as any).id ?? '' },
-        { header: 'Period', accessor: r => (r as any).period ?? '' },
-        { header: 'Amount', accessor: r => (r as any).amount ?? 0 },
-        { header: 'Status', accessor: r => (r as any).status ?? '' },
-        { header: 'Submitted', accessor: r => (r as any).submitted_at ?? '' },
-    ]
-
     const exportFilename = `Finance_${activeProjectId}_${new Date().toISOString().slice(0, 10)}`
 
     return (
@@ -293,8 +172,8 @@ export default function Finance() {
                     ]}
                     extraContent={
                         <ExportMenu
-                            data={activeTab === 'ar' ? filteredClaims as any[] : invoices}
-                            columns={activeTab === 'ar' ? claimExportCols as any : invoiceExportCols}
+                            data={invoices}
+                            columns={invoiceExportCols}
                             filename={exportFilename}
                             size="sm"
                         />
@@ -426,87 +305,15 @@ export default function Finance() {
                 </TabsContent>
 
                 {/* --- AR (CLAIMS) --- */}
-                <TabsContent value="ar">
-                    <div className="flex flex-col gap-3 mb-4">
-                        <ModuleListToolbar
-                            query={arQuery}
-                            onQueryChange={setArQuery}
-                            queryPlaceholder="Search claim number or notes..."
-                            filterValue={arStatusFilter}
-                            onFilterChange={setArStatusFilter}
-                            filterOptions={AR_STATUS_OPTIONS}
-                            sortValue={arSortBy}
-                            onSortChange={setArSortBy}
-                            sortOptions={AR_SORT_OPTIONS}
-                            resultCount={filteredClaims.length}
-                            resultLabel="claims"
-                        />
-                        <div className="flex flex-col gap-2 rounded-md border border-border/60 bg-background/80 p-3 md:flex-row md:items-end md:gap-3">
-                            <div className="grid gap-1 md:w-[170px]">
-                                <Label className="text-xs text-muted-foreground">Period from</Label>
-                                <Input
-                                    type="date"
-                                    value={arPeriodFrom}
-                                    onChange={(event) => setArPeriodFrom(event.target.value)}
-                                    aria-label="Filter AR period from"
-                                    className="h-9"
-                                />
-                            </div>
-                            <div className="grid gap-1 md:w-[170px]">
-                                <Label className="text-xs text-muted-foreground">Period to</Label>
-                                <Input
-                                    type="date"
-                                    value={arPeriodTo}
-                                    onChange={(event) => setArPeriodTo(event.target.value)}
-                                    aria-label="Filter AR period to"
-                                    className="h-9"
-                                />
-                            </div>
-                            <Button type="button" variant="outline" className="h-9 md:ml-auto" onClick={resetArAdvancedFilters}>
-                                Reset Filters
-                            </Button>
-                        </div>
-                        <div className="flex flex-wrap justify-end gap-2">
-                        <Button size="sm" variant="outline" className="gap-2" onClick={() => setBillingDialogOpen(true)}>
-                            <Zap size={14} /> Auto-Generate Billing
-                        </Button>
-                        <Button size="sm" variant="outline" className="gap-2" onClick={() => setClaimDialogOpen(true)}>
-                            <Plus size={14} /> Create Claim
-                        </Button>
-                        </div>
-                    </div>
-                    {filteredClaims.length === 0 ? (
-                        <EmptyState title="No Claims Found" description="No claim matches current search/filter." imageKeyword="contract" />
-                    ) : (
-                        <div className="grid gap-4">
-                            {filteredClaims.map(claim => (
-                                <Card key={claim.id}>
-                                    <CardContent className="p-4 flex justify-between items-center">
-                                        <div>
-                                            <div className="font-bold">{claim.claim_number}</div>
-                                            <div className="text-sm text-neutral-500">
-                                                Period: {claim.period_start || '—'} → {claim.period_end || '—'}
-                                                <span className="ml-2">Progress: {claim.progress_percentage}%</span>
-                                            </div>
-                                            {claim.notes && <div className="text-xs text-muted-foreground mt-1">{claim.notes}</div>}
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="text-right">
-                                                <div className="text-xl font-bold text-green-600">Rp {claim.amount.toLocaleString()}</div>
-                                                <Badge variant={
-                                                    claim.status === 'PAID' ? 'default' :
-                                                        claim.status === 'APPROVED' ? 'secondary' :
-                                                            'outline'
-                                                }>{claim.status}</Badge>
-                                            </div>
-                                            {claimActions(claim)}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
-                </TabsContent>
+                <FinanceARTab
+                    projectId={activeProjectId!}
+                    claims={claims}
+                    updateClaimStatus={updateClaimStatus}
+                    fetchAll={fetchAll}
+                    onOpenClaimDialog={() => setClaimDialogOpen(true)}
+                    handleAsync={handleAsync}
+                    loading={loading}
+                />
 
                 {/* --- AGING REPORT --- */}
                 <TabsContent value="aging">
@@ -588,57 +395,6 @@ export default function Finance() {
                 projectId={activeProjectId!}
             />
 
-            <Dialog open={billingDialogOpen} onOpenChange={setBillingDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Auto-Generate Billing</DialogTitle>
-                        <DialogDescription>
-                            Generate monthly client billing from current overall progress percentage.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-muted-foreground">Overall Progress (%)</label>
-                        <Input
-                            type="number"
-                            min={0}
-                            max={100}
-                            step={0.1}
-                            value={billingProgressInput}
-                            onChange={(e) => setBillingProgressInput(e.target.value)}
-                            placeholder="e.g. 35.5"
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setBillingDialogOpen(false)}>Cancel</Button>
-                        <Button
-                            onClick={async () => {
-                                const pct = parseFloat(billingProgressInput)
-                                if (!Number.isFinite(pct) || pct <= 0 || pct > 100) {
-                                    toast.error('Progress must be between 0 and 100')
-                                    setSrStatus('Progress must be between 0 and 100.')
-                                    return
-                                }
-
-                                setSrStatus('Generating monthly billing from progress data...')
-
-                                const generated = await handleAsync(async () => {
-                                    await progressBillingService.generateMonthlyBilling(activeProjectId!, pct)
-                                    return true
-                                }, 'finance.general')
-
-                                if (generated) {
-                                    toast.success("Monthly billing generated", { description: "Claims created from progress data." })
-                                    setSrStatus('Monthly billing generated successfully.')
-                                    setBillingDialogOpen(false)
-                                    fetchAll(activeProjectId!)
-                                } else {
-                                    setSrStatus('Failed to generate monthly billing.')
-                                }
-                            }}
-                        >Generate</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
             <ClaimDialog
                 open={claimDialogOpen}
                 onOpenChange={setClaimDialogOpen}
