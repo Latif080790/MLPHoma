@@ -12,8 +12,12 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 // Supabase credentials
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://gtnc3ijizj12gepmnwj0f.supabase.co'
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '***REMOVED-SECRET***'
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  throw new Error('Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_KEY in environment variables')
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 

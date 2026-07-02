@@ -12,8 +12,12 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Supabase configuration
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://yyznspvhfnbvyabccywm.supabase.co'
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || '***REMOVED-SECRET***'
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in environment variables')
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
