@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
+import { useShallow } from "zustand/react/shallow"
 import { Plus, Send, FileText } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -114,11 +115,11 @@ export function FinanceAPTab({
 
     // ── Store actions ────────────────────────────────────────────────────────
 
-    const { payInvoice, createInvoice, fetchAll } = useFinanceStore(s => ({
+    const { payInvoice, createInvoice, fetchAll } = useFinanceStore(useShallow(s => ({
         payInvoice: s.payInvoice,
         createInvoice: s.createInvoice,
         fetchAll: s.fetchAll,
-    }))
+    })))
 
     // ── Persistence ──────────────────────────────────────────────────────────
 
