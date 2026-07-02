@@ -31,10 +31,22 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
     return <PageSkeleton />
   }
 
-  // Fail-open approach: If Supabase not configured, allow access for development
+  // If Supabase is not configured: allow access only in dev builds.
+  // Production builds fail closed — a missing/misread env must never
+  // expose protected pages without authentication.
   if (!supabase) {
-    // Supabase not configured, allow access (dev mode)
-    return <>{children}</>
+    if (import.meta.env.DEV) {
+      return <>{children}</>
+    }
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background p-6 text-center">
+        <h1 className="text-lg font-semibold text-foreground">Konfigurasi aplikasi tidak lengkap</h1>
+        <p className="max-w-md text-sm text-muted-foreground">
+          Koneksi ke server autentikasi tidak tersedia (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
+          tidak terbaca). Demi keamanan, akses ditolak. Hubungi administrator.
+        </p>
+      </div>
+    )
   }
 
   // If auth is initialized but user is not authenticated, redirect to login
